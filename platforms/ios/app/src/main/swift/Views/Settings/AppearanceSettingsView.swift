@@ -45,7 +45,7 @@ struct AppearanceSettingsView: View {
                 ) { showLandscapePicker = true }
                 .modifier(BackgroundSourcePicker(isPresented: $showLandscapePicker, role: .landscape, existingAsset: { settings.backgroundLandscapeAsset }) { updateLandscape($0) })
             } header: {
-                Text(settings.localized("Library Background"))
+                Text(settings.localized("Background"))
             } footer: {
                 Text(settings.localized("Each orientation keeps its own background. Setting one never overwrites the other."))
             }
@@ -101,6 +101,22 @@ struct AppearanceSettingsView: View {
                     .accessibilityValue(String(format: "%d%%", Int(settings.backgroundDim * 100)))
                 }
                 .padding(.vertical, 4)
+            }
+
+            Section {
+                Toggle(isOn: $settings.backgroundEnabledInBIOS) {
+                    Label(settings.localized("BIOS"), systemImage: "cpu")
+                }
+                Toggle(isOn: $settings.backgroundEnabledInHelp) {
+                    Label(settings.localized("Help"), systemImage: "questionmark.circle")
+                }
+                Toggle(isOn: $settings.backgroundEnabledInSettings) {
+                    Label(settings.localized("Settings"), systemImage: "gearshape")
+                }
+            } header: {
+                Text(settings.localized("Show Background In"))
+            } footer: {
+                Text(settings.localized("The background also shows behind the Games library. Each tab can be toggled independently. Dim or mute from the settings above."))
             }
         }
         .navigationTitle(settings.localized("Appearance"))

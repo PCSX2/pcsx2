@@ -65,6 +65,10 @@ struct MenuTabView: View {
     @State private var settings = SettingsStore.shared
     @State private var selectedTab = 0
 
+    private var biosBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInBIOS }
+    private var helpBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInHelp }
+    private var settingsBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInSettings }
+
     var body: some View {
 #if targetEnvironment(macCatalyst)
         VStack(spacing: 0) {
@@ -101,8 +105,15 @@ struct MenuTabView: View {
                 }
                 .tag(0)
 
-            SafeAreaProtectedMenuTabContent {
-                BIOSListView()
+            // When a tab's background is active it owns its edge-to-edge MenuBackgroundLayer
+            // inside its own NavigationStack (matching GameListView), so it must NOT be wrapped
+            // in SafeAreaProtectedMenuTabContent — the padding would clip the wallpaper.
+            Group {
+                if biosBackgroundActive {
+                    BIOSListView()
+                } else {
+                    SafeAreaProtectedMenuTabContent { BIOSListView() }
+                }
             }
                 .environment(\.menuTabIsActive, selectedTab == 1)
                 .tabItem {
@@ -110,8 +121,12 @@ struct MenuTabView: View {
                 }
                 .tag(1)
 
-            SafeAreaProtectedMenuTabContent {
-                HelpView()
+            Group {
+                if helpBackgroundActive {
+                    HelpView()
+                } else {
+                    SafeAreaProtectedMenuTabContent { HelpView() }
+                }
             }
                 .environment(\.menuTabIsActive, selectedTab == 2)
                 .tabItem {
@@ -119,9 +134,17 @@ struct MenuTabView: View {
                 }
                 .tag(2)
 
-            SafeAreaProtectedMenuTabContent {
-                NavigationStack {
-                    SettingsRootView()
+            Group {
+                if settingsBackgroundActive {
+                    NavigationStack {
+                        SettingsRootView()
+                    }
+                } else {
+                    SafeAreaProtectedMenuTabContent {
+                        NavigationStack {
+                            SettingsRootView()
+                        }
+                    }
                 }
             }
             .environment(\.menuTabIsActive, selectedTab == 3)
@@ -161,17 +184,24 @@ private struct SafeAreaProtectedMenuTabContent<Content: View>: View {
     }
 
     var body: some View {
-        // SwiftUI's GeometryReader safe-area insets are unreliable inside a TabView
-        // page (the left/right notch/Dynamic Island insets read as zero in landscape),
-        // so read the real key-window insets instead and use the geometry size only as
-        // a reliable signal to recompute them on rotation. This keeps normal app tab
-        // content clear of the notch without touching gameplay or overlay surfaces.
+        // Pre-iOS 26, SwiftUI reports no horizontal safe-area inset for a TabView page in
+        // landscape, so a bare list slides under the notch and we pad it manually from the
+        // key-window insets. On iOS 26+ SwiftUI gets it right, and padding again would
+        // double-inset the column. Tabs that draw their own edge-to-edge background skip
+        // this wrapper entirely (see MenuTabView).
         GeometryReader { geometry in
-            let insets = NormalTabContentMargin.effectiveHorizontalInsets(
-                raw: safeAreaInsets,
-                isLandscape: geometry.size.width > geometry.size.height,
-                idiom: UIDevice.current.userInterfaceIdiom
-            )
+            let isLandscapePhone = geometry.size.width > geometry.size.height
+                && UIDevice.current.userInterfaceIdiom == .phone
+            let systemProvidesInset = geometry.safeAreaInsets.leading > 0
+                || geometry.safeAreaInsets.trailing > 0
+            let insets: (left: CGFloat, right: CGFloat) = {
+                guard isLandscapePhone, !systemProvidesInset else { return (0, 0) }
+                return NormalTabContentMargin.effectiveHorizontalInsets(
+                    raw: safeAreaInsets,
+                    isLandscape: true,
+                    idiom: .phone
+                )
+            }()
             content
                 .padding(.leading, layoutDirection == .rightToLeft ? insets.right : insets.left)
                 .padding(.trailing, layoutDirection == .rightToLeft ? insets.left : insets.right)
@@ -209,11 +239,10 @@ private enum KeyWindowSafeArea {
 
 /// Adds a small readable horizontal margin for normal app tabs in iPhone landscape.
 ///
-/// The raw key-window safe-area insets only clear the hardware cutout (notch / Dynamic
-/// Island / sensor housing) by the minimum amount, which still leaves tab content cramped
-/// against the cutout in landscape. This applies a small minimum content margin on each
-/// side so Games, BIOS, Help, and Settings sit in a balanced, readable column. Portrait and
-/// iPad keep the raw insets unchanged, and gameplay surfaces never use this helper.
+/// Only used on the legacy path of `SafeAreaProtectedMenuTabContent` (pre-iOS 26, where
+/// SwiftUI reports no horizontal safe-area inset in a TabView page). The raw key-window
+/// insets only just clear the notch, so this pads each side a bit more. Portrait, iPad,
+/// and gameplay surfaces are unaffected.
 private enum NormalTabContentMargin {
     /// Minimum horizontal content margin for normal app tabs on an iPhone in landscape.
     static let minimumLandscapeMargin: CGFloat = 20

@@ -244,21 +244,11 @@ struct GameListView: View {
         }
     }
 
-    @ViewBuilder
-    private var libraryBackgroundLayer: some View {
-        GeometryReader { geometry in
-            BackgroundContainerView(size: geometry.size)
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
-		.allowsHitTesting(false)
-    }
-
     var body: some View {
         NavigationStack {
             ZStack {
                 if hasCustomBackground && shouldRenderLibraryBackground {
-                    libraryBackgroundLayer
+                    MenuBackgroundLayer()
                 }
 
                 GeometryReader { geo in
@@ -594,7 +584,7 @@ struct GameListView: View {
             }
             ForEach(games) { game in
                 gameRow(game)
-                    .libraryBackgroundListRow(hasCustomBackground)
+                    .menuBackgroundListRow(hasCustomBackground)
             }
         }
         .scrollContentBackground(hasCustomBackground ? .hidden : .automatic)
@@ -726,7 +716,7 @@ struct GameListView: View {
                 .padding(.vertical, 6)
             }
             .tint(.primary)
-            .libraryBackgroundListRow(hasCustomBackground)
+            .menuBackgroundListRow(hasCustomBackground)
 
             // Stop button — separate row with confirmation alert
             Button(role: .destructive) {
@@ -739,7 +729,7 @@ struct GameListView: View {
                     Spacer()
                 }
             }
-            .libraryBackgroundListRow(hasCustomBackground)
+            .menuBackgroundListRow(hasCustomBackground)
         }
         .alert(settings.localized("Stop Emulation?"), isPresented: $showStopAlert) {
             Button(settings.localized("Cancel"), role: .cancel) { }
@@ -1512,32 +1502,6 @@ struct GameListView: View {
         return String(format: "%.0f MB", mb)
     }
 
-}
-
-private struct LibraryBackgroundListRowModifier: ViewModifier {
-    let isEnabled: Bool
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    @ViewBuilder
-    func body(content: Content) -> some View {
-        if isEnabled {
-            content
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(reduceTransparency ? AnyShapeStyle(.background) : AnyShapeStyle(.regularMaterial), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-        } else {
-            content
-        }
-    }
-}
-
-private extension View {
-    func libraryBackgroundListRow(_ isEnabled: Bool) -> some View {
-        modifier(LibraryBackgroundListRowModifier(isEnabled: isEnabled))
-    }
 }
 
 private struct GameInfoPanel: View {

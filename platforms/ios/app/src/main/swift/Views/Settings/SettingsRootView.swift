@@ -11,6 +11,7 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
     case appearance
     case emulator
     case graphics
+    case framePacing
     case audio
     case network
     case memoryCards
@@ -35,6 +36,8 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
             return "Emulator"
         case .graphics:
             return "Graphics"
+        case .framePacing:
+            return "Frame Pacing"
         case .audio:
             return "Audio"
         case .network:
@@ -70,6 +73,8 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
             return "cpu"
         case .graphics:
             return "paintbrush"
+        case .framePacing:
+            return "speedometer"
         case .audio:
             return "speaker.wave.2"
         case .network:
@@ -102,9 +107,14 @@ struct SettingsRootView: View {
     @State private var noJITFallbackActive = ARMSX2Bridge.isNoJITFallbackActive()
     @State private var stikDebugOpenFailed = false
     @State private var stikDebugOpenInProgress = false
+    @Environment(\.menuTabIsActive) private var menuTabIsActive
 #if targetEnvironment(macCatalyst)
     @State private var selectedPane: SettingsPane? = .emulator
 #endif
+
+    private var backgroundActive: Bool {
+        settings.hasCustomBackground && settings.backgroundEnabledInSettings && menuTabIsActive
+    }
 
     var body: some View {
 #if targetEnvironment(macCatalyst)
@@ -120,8 +130,13 @@ struct SettingsRootView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .navigationSplitViewStyle(.balanced)
+        .containerBackground(backgroundActive ? Color.clear : Color(uiColor: .systemGroupedBackground), for: .navigation)
 #else
-        List {
+        ZStack {
+            if backgroundActive {
+                MenuBackgroundLayer()
+            }
+            List {
             Section(settings.localized("Interface")) {
                 NavigationLink {
                     LanguageSettingsView()
@@ -145,6 +160,11 @@ struct SettingsRootView: View {
                     GraphicsSettingsView()
                 } label: {
                     Label(settings.localized("Graphics"), systemImage: "paintbrush")
+                }
+                NavigationLink {
+                    FramePacingSettingsView()
+                } label: {
+                    Label(settings.localized("Frame Pacing"), systemImage: "speedometer")
                 }
                 NavigationLink {
                     AudioSettingsView()
@@ -243,7 +263,10 @@ struct SettingsRootView: View {
                 }
             }
         }
+        .scrollContentBackground(backgroundActive ? .hidden : .automatic)
+        }
         .navigationTitle(settings.localized("Settings"))
+        .toolbarBackground(backgroundActive ? .hidden : .automatic, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .top) {
             Color.clear.frame(height: 6)
@@ -343,6 +366,8 @@ struct SettingsRootView: View {
             EmulatorSettingsView()
         case .graphics:
             GraphicsSettingsView()
+        case .framePacing:
+            FramePacingSettingsView()
         case .audio:
             AudioSettingsView()
         case .network:
