@@ -98,34 +98,15 @@ namespace InternalServers
 
 #ifdef _WIN32
 	void DHCP_Server::AutoNetmask(PIP_ADAPTER_ADDRESSES adapter)
-	{
-		if (adapter != nullptr)
-		{
-			PIP_ADAPTER_UNICAST_ADDRESS address = adapter->FirstUnicastAddress;
-			while (address != nullptr && address->Address.lpSockaddr->sa_family != AF_INET)
-				address = address->Next;
-
-			if (address != nullptr)
-			{
-				ULONG mask;
-				if (ConvertLengthToIpv4Mask(address->OnLinkPrefixLength, &mask) == NO_ERROR)
-					netmask.integer = mask;
-			}
-		}
-	}
 #elif defined(__POSIX__)
 	void DHCP_Server::AutoNetmask(ifaddrs* adapter)
-	{
-		if (adapter != nullptr)
-		{
-			if (adapter->ifa_netmask != nullptr && adapter->ifa_netmask->sa_family == AF_INET)
-			{
-				sockaddr_in* sockaddr = (sockaddr_in*)adapter->ifa_netmask;
-				netmask = *(IP_Address*)&sockaddr->sin_addr;
-			}
-		}
-	}
 #endif
+	{
+		std::optional<IP_Address> mask = AdapterUtils::GetNetmask(adapter);
+
+		if (mask.has_value())
+			netmask = mask.value();
+	}
 
 #ifdef _WIN32
 	void DHCP_Server::AutoGateway(PIP_ADAPTER_ADDRESSES adapter)
