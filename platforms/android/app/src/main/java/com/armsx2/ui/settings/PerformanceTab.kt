@@ -268,42 +268,40 @@ fun PerformanceTab(state: MutableState<Settings>) {
         SettingsDivider()
         CollapsibleSection(str("perf.gamedbFixes.title")) {
             HelpText(str("perf.gamedbFixes.help"))
-            ToggleRow(str("perf.fix.skipBios"), s.enableFastBoot) { apply(s.copy(enableFastBoot = it)) }
-            ToggleRow(str("perf.fix.gamedbFixes"), s.enableGameFixes) { apply(s.copy(enableGameFixes = it)) }
-            ToggleRow(str("perf.fix.skipMpeg"), s.gamefixSkipMpeg) { apply(s.copy(enableGameFixes = true, gamefixSkipMpeg = it)) }
+            ToggleRow(str("perf.fix.skipBios"), s.enableFastBoot, description = str("perf.fix.skipBios.desc")) { apply(s.copy(enableFastBoot = it)) }
+            ToggleRow(str("perf.fix.gamedbFixes"), s.enableGameFixes, description = str("perf.fix.gamedbFixes.desc")) { apply(s.copy(enableGameFixes = it)) }
+            ToggleRow(str("perf.fix.skipMpeg"), s.gamefixSkipMpeg, description = str("perf.fix.skipMpeg.desc")) { apply(s.copy(enableGameFixes = true, gamefixSkipMpeg = it)) }
             if (s.gamefixSkipMpeg) HelpText(str("perf.fix.skipMpeg.warning"))
-            ToggleRow(str("perf.fix.fmvSoftware"), s.gamefixSoftwareRendererFmv) { apply(s.copy(enableGameFixes = true, gamefixSoftwareRendererFmv = it)) }
-            ToggleRow(str("perf.fix.eeTiming"), s.gamefixEETiming) { apply(s.copy(enableGameFixes = true, gamefixEETiming = it)) }
-            ToggleRow(str("perf.fix.instantDma"), s.gamefixInstantDma) { apply(s.copy(enableGameFixes = true, gamefixInstantDma = it)) }
-            ToggleRow(str("perf.fix.blitFps"), s.gamefixBlitInternalFps) { apply(s.copy(enableGameFixes = true, gamefixBlitInternalFps = it)) }
-            ToggleRow(str("perf.fix.fpuMultiply"), s.gamefixFpuMul) { apply(s.copy(enableGameFixes = true, gamefixFpuMul = it)) }
-            ToggleRow(str("perf.fix.ophFlag"), s.gamefixOphFlag) { apply(s.copy(enableGameFixes = true, gamefixOphFlag = it)) }
-            ToggleRow(str("perf.fix.gifFifo"), s.gamefixGifFifo) { apply(s.copy(enableGameFixes = true, gamefixGifFifo = it)) }
-            ToggleRow(str("perf.fix.dmaBusy"), s.gamefixDmaBusy) { apply(s.copy(enableGameFixes = true, gamefixDmaBusy = it)) }
-            ToggleRow(str("perf.fix.vif1Stall"), s.gamefixVif1Stall) { apply(s.copy(enableGameFixes = true, gamefixVif1Stall = it)) }
-            ToggleRow(str("perf.fix.iBit"), s.gamefixIbit) { apply(s.copy(enableGameFixes = true, gamefixIbit = it)) }
-            ToggleRow(str("perf.fix.fullVu0Sync"), s.gamefixFullVu0Sync) { apply(s.copy(enableGameFixes = true, gamefixFullVu0Sync = it)) }
-            ToggleRow(str("perf.fix.vuAddSub"), s.gamefixVuAddSub) { apply(s.copy(enableGameFixes = true, gamefixVuAddSub = it)) }
-            ToggleRow(str("perf.fix.vuOverflow"), s.gamefixVuOverflow) { apply(s.copy(enableGameFixes = true, gamefixVuOverflow = it)) }
-            ToggleRow(str("perf.fix.extraXgkick"), s.gamefixXgkick) { apply(s.copy(enableGameFixes = true, gamefixXgkick = it)) }
-            ToggleRow(str("perf.fix.goemonTlb"), s.gamefixGoemonTlb) { apply(s.copy(enableGameFixes = true, gamefixGoemonTlb = it)) }
-            ToggleRow(str("perf.fix.vuSync"), s.gamefixVuSync) { apply(s.copy(enableGameFixes = true, gamefixVuSync = it)) }
-            HelpText(str("perf.gamedbFixes.legend"))
+            ToggleRow(str("perf.fix.fmvSoftware"), s.gamefixSoftwareRendererFmv, description = str("perf.fix.fmvSoftware.desc")) { apply(s.copy(enableGameFixes = true, gamefixSoftwareRendererFmv = it)) }
+            ToggleRow(str("perf.fix.eeTiming"), s.gamefixEETiming, description = str("perf.fix.eeTiming.desc")) { apply(s.copy(enableGameFixes = true, gamefixEETiming = it)) }
+            ToggleRow(str("perf.fix.instantDma"), s.gamefixInstantDma, description = str("perf.fix.instantDma.desc")) { apply(s.copy(enableGameFixes = true, gamefixInstantDma = it)) }
+            ToggleRow(str("perf.fix.blitFps"), s.gamefixBlitInternalFps, description = str("perf.fix.blitFps.desc")) { apply(s.copy(enableGameFixes = true, gamefixBlitInternalFps = it)) }
+            ToggleRow(str("perf.fix.fpuMultiply"), s.gamefixFpuMul, description = str("perf.fix.fpuMultiply.desc")) { apply(s.copy(enableGameFixes = true, gamefixFpuMul = it)) }
+            ToggleRow(str("perf.fix.ophFlag"), s.gamefixOphFlag, description = str("perf.fix.ophFlag.desc")) { apply(s.copy(enableGameFixes = true, gamefixOphFlag = it)) }
+            ToggleRow(str("perf.fix.gifFifo"), s.gamefixGifFifo, description = str("perf.fix.gifFifo.desc")) { apply(s.copy(enableGameFixes = true, gamefixGifFifo = it)) }
+            ToggleRow(str("perf.fix.dmaBusy"), s.gamefixDmaBusy, description = str("perf.fix.dmaBusy.desc")) { apply(s.copy(enableGameFixes = true, gamefixDmaBusy = it)) }
+            ToggleRow(str("perf.fix.vif1Stall"), s.gamefixVif1Stall, description = str("perf.fix.vif1Stall.desc")) { apply(s.copy(enableGameFixes = true, gamefixVif1Stall = it)) }
+            ToggleRow(str("perf.fix.iBit"), s.gamefixIbit, description = str("perf.fix.iBit.desc")) { apply(s.copy(enableGameFixes = true, gamefixIbit = it)) }
+            ToggleRow(str("perf.fix.fullVu0Sync"), s.gamefixFullVu0Sync, description = str("perf.fix.fullVu0Sync.desc")) { apply(s.copy(enableGameFixes = true, gamefixFullVu0Sync = it)) }
+            ToggleRow(str("perf.fix.vuAddSub"), s.gamefixVuAddSub, description = str("perf.fix.vuAddSub.desc")) { apply(s.copy(enableGameFixes = true, gamefixVuAddSub = it)) }
+            ToggleRow(str("perf.fix.vuOverflow"), s.gamefixVuOverflow, description = str("perf.fix.vuOverflow.desc")) { apply(s.copy(enableGameFixes = true, gamefixVuOverflow = it)) }
+            ToggleRow(str("perf.fix.extraXgkick"), s.gamefixXgkick, description = str("perf.fix.extraXgkick.desc")) { apply(s.copy(enableGameFixes = true, gamefixXgkick = it)) }
+            ToggleRow(str("perf.fix.goemonTlb"), s.gamefixGoemonTlb, description = str("perf.fix.goemonTlb.desc")) { apply(s.copy(enableGameFixes = true, gamefixGoemonTlb = it)) }
+            ToggleRow(str("perf.fix.vuSync"), s.gamefixVuSync, description = str("perf.fix.vuSync.desc")) { apply(s.copy(enableGameFixes = true, gamefixVuSync = it)) }
         }
         SettingsDivider()
         CollapsibleSection(str("perf.advancedSpeedhacks.title")) {
             Spacer(Modifier.height(8.dp))
-            ToggleRow(str("perf.hack.mtvu"), s.mtvu) { apply(s.copy(mtvu = it)) }
-            ToggleRow(str("perf.hack.instantVu1"), s.vu1Instant) { apply(s.copy(vu1Instant = it)) }
-            ToggleRow(str("perf.hack.vuFlagHack"), s.vuFlagHack) { apply(s.copy(vuFlagHack = it)) }
-            ToggleRow(str("perf.hack.fastCdvd"), s.fastCDVD) { apply(s.copy(fastCDVD = it)) }
-            ToggleRow(str("perf.hack.intcStat"), s.intcStat) { apply(s.copy(intcStat = it)) }
-            ToggleRow(str("perf.hack.waitLoop"), s.waitLoop) { apply(s.copy(waitLoop = it)) }
-            ToggleRow(str("perf.hack.vuNeonFusions"), s.vuNeonFusions) { apply(s.copy(vuNeonFusions = it)) }
-            ToggleRow(str("perf.hack.skipVuStallSim"), s.vuSkipStallSim) { apply(s.copy(vuSkipStallSim = it)) }
-            ToggleRow(str("perf.hack.deferVuWrites"), s.vuDeferredWrites) { apply(s.copy(vuDeferredWrites = it)) }
-            ToggleRow(str("perf.hack.skipDupeFrames"), s.skipDuplicateFrames) { apply(s.copy(skipDuplicateFrames = it)) }
-            HelpText(str("perf.advancedSpeedhacks.legend"))
+            ToggleRow(str("perf.hack.mtvu"), s.mtvu, description = str("perf.hack.mtvu.desc")) { apply(s.copy(mtvu = it)) }
+            ToggleRow(str("perf.hack.instantVu1"), s.vu1Instant, description = str("perf.hack.instantVu1.desc")) { apply(s.copy(vu1Instant = it)) }
+            ToggleRow(str("perf.hack.vuFlagHack"), s.vuFlagHack, description = str("perf.hack.vuFlagHack.desc")) { apply(s.copy(vuFlagHack = it)) }
+            ToggleRow(str("perf.hack.fastCdvd"), s.fastCDVD, description = str("perf.hack.fastCdvd.desc")) { apply(s.copy(fastCDVD = it)) }
+            ToggleRow(str("perf.hack.intcStat"), s.intcStat, description = str("perf.hack.intcStat.desc")) { apply(s.copy(intcStat = it)) }
+            ToggleRow(str("perf.hack.waitLoop"), s.waitLoop, description = str("perf.hack.waitLoop.desc")) { apply(s.copy(waitLoop = it)) }
+            ToggleRow(str("perf.hack.vuNeonFusions"), s.vuNeonFusions, description = str("perf.hack.vuNeonFusions.desc")) { apply(s.copy(vuNeonFusions = it)) }
+            ToggleRow(str("perf.hack.skipVuStallSim"), s.vuSkipStallSim, description = str("perf.hack.skipVuStallSim.desc")) { apply(s.copy(vuSkipStallSim = it)) }
+            ToggleRow(str("perf.hack.deferVuWrites"), s.vuDeferredWrites, description = str("perf.hack.deferVuWrites.desc")) { apply(s.copy(vuDeferredWrites = it)) }
+            ToggleRow(str("perf.hack.skipDupeFrames"), s.skipDuplicateFrames, description = str("perf.hack.skipDupeFrames.desc")) { apply(s.copy(skipDuplicateFrames = it)) }
         }
     }
 }

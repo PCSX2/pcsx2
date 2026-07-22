@@ -172,17 +172,29 @@ fun HomeScreen(
             val libraryBg = LibraryBackground.uri.value
             if (libraryBg == null) {
                 // Default: the live PS3-XMB wave (XmbGlView — a GLES3 port of linkev's
-                // grid-displacement mesh, matching iOS). The bundled still sits behind it as a
-                // fallback for the rare case GL init fails. Custom backgrounds below override
-                // both, and clearing one returns here.
-                Image(
-                    painter = painterResource(R.drawable.library_bg_xmb),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
+                // grid-displacement mesh, matching iOS). When GL can't init — older Mali without
+                // float-texture filtering, or any EGL failure — we fall back to a looping GIF
+                // instead of a frozen still. The bundled still is the cheap floor shown during GL
+                // startup (and, once the wave is up, sits hidden behind it), so capable devices
+                // never decode the heavy GIF. Custom backgrounds below override all of this.
+                var xmbGlState by remember { mutableStateOf<Boolean?>(null) } // null=starting, true=up, false=failed
+                if (xmbGlState == false) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context).data(R.raw.library_fallback).build(),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.library_bg_xmb),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
                 AndroidView(
-                    factory = { XmbGlView(it) },
+                    factory = { XmbGlView(it).apply { onGlStatus = { ok -> xmbGlState = ok } } },
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {

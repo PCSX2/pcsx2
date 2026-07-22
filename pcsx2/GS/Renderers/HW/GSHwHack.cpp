@@ -10,6 +10,28 @@
 
 static bool s_nativeres;
 
+// Per-game state for GSC hacks — reset on game change via ResetState().
+static bool s_irem_first_shuffle = false;
+static u32 s_burnout_state = 0;
+static GIFRegTEX0 s_burnout_main_fb;
+static GSVector2i s_burnout_main_fb_size;
+static GIFRegTEX0 s_burnout_downsample_fb;
+static GIFRegTEX0 s_burnout_bloom_fb;
+static bool s_polyphony_shuffle_hle_active = false;
+static u32 s_polyphony_shuffle_fbmsk = 0;
+
+void GSHwHack::ResetState()
+{
+	s_irem_first_shuffle = false;
+	s_burnout_state = 0;
+	memset(&s_burnout_main_fb, 0, sizeof(s_burnout_main_fb));
+	s_burnout_main_fb_size = GSVector2i(0, 0);
+	memset(&s_burnout_downsample_fb, 0, sizeof(s_burnout_downsample_fb));
+	memset(&s_burnout_bloom_fb, 0, sizeof(s_burnout_bloom_fb));
+	s_polyphony_shuffle_hle_active = false;
+	s_polyphony_shuffle_fbmsk = 0;
+}
+
 #define RPRIM r.PRIM
 #define RCONTEXT r.m_context
 
@@ -39,13 +61,11 @@ static bool s_nativeres;
 
 bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 {
-	static bool first_shuffle = false;
-
 	if (skip > 0)
 	{
-		if (skip == 1 && first_shuffle)
+		if (skip == 1 && s_irem_first_shuffle)
 		{
-			first_shuffle = false;
+			s_irem_first_shuffle = false;
 
 			GIFRegTEX0 RTLookup = GIFRegTEX0::Create(RTBP0, RFBW, RFPSM);
 			GSTextureCache::Source* src = g_texture_cache->LookupSource(true, RTLookup, r.m_cached_ctx.TEXA, r.m_cached_ctx.CLAMP, GSVector4i(0, 0, 1, 1), nullptr, true, false, r.m_cached_ctx.FRAME, true, true);
@@ -89,7 +109,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 		else
 		{
 			skip--;
-			return !first_shuffle;
+			return !s_irem_first_shuffle;
 		}
 	}
 
@@ -169,7 +189,7 @@ bool GSHwHack::GSC_IRem(GSRendererHW& r, int& skip)
 
 				rt = nullptr;
 				src = nullptr;
-				first_shuffle = true;
+				s_irem_first_shuffle = true;
 			}
 		}
 	}
@@ -443,12 +463,7 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 	// After this, they do a blur on the buffer, which is fine, because all the buffer swap BS has
 	// finished, so we can return to normal.
 
-	static u32 state = 0;
-	static GIFRegTEX0 main_fb;
-	static GSVector2i main_fb_size;
-	static GIFRegTEX0 downsample_fb;
-	static GIFRegTEX0 bloom_fb;
-	switch (state)
+	switch (s_burnout_state)
 	{
 		case 0: // waiting for double striped clear
 		{
@@ -466,33 +481,33 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 				break;
 
 			// Clear temp render target.
-			main_fb = tgt->m_TEX0;
-			main_fb_size = tgt->GetUnscaledSize();
+			s_burnout_main_fb = tgt->m_TEX0;
+			s_burnout_main_fb_size = tgt->GetUnscaledSize();
 			r.m_cached_ctx.FRAME.FBW = tgt->m_TEX0.TBW;
 			r.m_cached_ctx.ZBUF.ZMSK = true;
-			r.ReplaceVerticesWithSprite(GSVector4i::loadh(main_fb_size), main_fb_size);
-			bloom_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
-			state = 1;
+			r.ReplaceVerticesWithSprite(GSVector4i::loadh(s_burnout_main_fb_size), s_burnout_main_fb_size);
+			s_burnout_bloom_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
+			s_burnout_state = 1;
 			GL_INS("GSC_BurnoutGames(): Initial double-striped clear.");
 			return true;
 		}
 
 		case 1: // reverse blend to extract bright pixels
 		{
-			r.ReplaceVerticesWithSprite(GSVector4i::loadh(main_fb_size), main_fb_size);
+			r.ReplaceVerticesWithSprite(GSVector4i::loadh(s_burnout_main_fb_size), s_burnout_main_fb_size);
 			r.m_cached_ctx.ZBUF.ZMSK = true;
-			state = 2;
+			s_burnout_state = 2;
 			GL_INS("GSC_BurnoutGames(): Extract Bright Pixels.");
 			return true;
 		}
 
 		case 2: // downsample
 		{
-			const GSVector4i downsample_rect = GSVector4i(0, 0, ((main_fb_size.x / 2)), ((main_fb_size.y / 2)));
-			const GSVector4i uv_rect = GSVector4i(0, 0, main_fb_size.x, main_fb_size.y);
-			r.ReplaceVerticesWithSprite(downsample_rect, uv_rect, main_fb_size, downsample_rect);
-			downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
-			state = 3;
+			const GSVector4i downsample_rect = GSVector4i(0, 0, ((s_burnout_main_fb_size.x / 2)), ((s_burnout_main_fb_size.y / 2)));
+			const GSVector4i uv_rect = GSVector4i(0, 0, s_burnout_main_fb_size.x, s_burnout_main_fb_size.y);
+			r.ReplaceVerticesWithSprite(downsample_rect, uv_rect, s_burnout_main_fb_size, downsample_rect);
+			s_burnout_downsample_fb = GIFRegTEX0::Create(RFBP, RFBW, RFPSM);
+			s_burnout_state = 3;
 			GL_INS("GSC_BurnoutGames(): Downsampling.");
 			// Fix up the texture width so the native scaling code can properly detect it as a downscale.
 			RTBW = RFBW * 2;
@@ -503,14 +518,14 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 		{
 			// Kill the downsample source, because we made it way larger than it was supposed to be.
 			// That way we don't risk confusing any other targets.
-			g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, bloom_fb.TBP0);
-			state = 4;
+			g_texture_cache->InvalidateVideoMemType(GSTextureCache::RenderTarget, s_burnout_bloom_fb.TBP0);
+			s_burnout_state = 4;
 			[[fallthrough]];
 		}
 
 		case 4: // Skip until it's downsampled again.
 		{
-			if (!RTME || RTBP0 != downsample_fb.TBP0)
+			if (!RTME || RTBP0 != s_burnout_downsample_fb.TBP0)
 			{
 				GL_INS("GSC_BurnoutGames(): Skipping extra pass.");
 				skip = 1;
@@ -520,7 +535,7 @@ bool GSHwHack::GSC_BurnoutGames(GSRendererHW& r, int& skip)
 			// Finally, we're done, let the game take over.
 			GL_INS("GSC_BurnoutGames(): Bloom effect done.");
 			skip = 0;
-			state = 0;
+			s_burnout_state = 0;
 			return true;
 		}
 	}
@@ -692,13 +707,10 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	// Need to track the FBMSK as well. The transition at the start of the race does both an RGB
 	// and A shuffle, but obviously changes FBMSK mid-way, so we can restart then.
 
-	static bool shuffle_hle_active = false;
-	static u32 shuffle_fbmsk = 0;
-
 	const bool is_cs = r.IsPossibleChannelShuffle();
-	if (shuffle_hle_active && is_cs)
+	if (s_polyphony_shuffle_hle_active && is_cs)
 	{
-		if (RFBMSK == shuffle_fbmsk)
+		if (RFBMSK == s_polyphony_shuffle_fbmsk)
 		{
 			skip = 1;
 			return true;
@@ -706,7 +718,7 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 	}
 	else if (!is_cs)
 	{
-		shuffle_hle_active = false;
+		s_polyphony_shuffle_hle_active = false;
 		return false;
 	}
 
@@ -723,8 +735,8 @@ bool GSHwHack::GSC_PolyphonyDigitalGames(GSRendererHW& r, int& skip)
 		return false;
 
 	// skip this draw, and until the end of the CS, ignoring fbmsk and cbp
-	shuffle_hle_active = true;
-	shuffle_fbmsk = RFBMSK;
+	s_polyphony_shuffle_hle_active = true;
+	s_polyphony_shuffle_fbmsk = RFBMSK;
 	skip = 1;
 
 	const u32 fbmsk = RFBMSK;

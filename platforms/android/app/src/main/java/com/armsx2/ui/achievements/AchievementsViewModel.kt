@@ -57,6 +57,8 @@ data class AchievementsUiState(
     val unofficialTestMode: Boolean = false,
     // Display name of the user's custom achievement-unlock sound, or null for the default.
     val unlockSoundName: String? = null,
+    // Volume of the unlock sound effect, 0..100 % (app-side, applied in NativeApp.playSound).
+    val soundVolume: Int = 100,
     // Non-null while the hardcore confirm dialog is up; holds the target state.
     val pendingHardcore: Boolean? = null,
     val loading: Boolean = false,
@@ -170,6 +172,7 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             spectatorMode = root.optBoolean("spectatorMode", false),
             unofficialTestMode = root.optBoolean("unofficialTestMode", false),
             unlockSoundName = MainActivityRuntime.prefs.getString(UNLOCK_SOUND_PREF, null),
+            soundVolume = MainActivityRuntime.prefs.getInt(SOUND_VOLUME_PREF, 100),
         )
     }
 
@@ -209,6 +212,16 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
         state.value = state.value.copy(unlockSoundName = null)
     }
 
+    /** Volume for the unlock/info sound effect, 0..100 %. Applied app-side in
+     *  NativeApp.playSound (MediaPlayer.setVolume) — the native core just hands it the .wav path,
+     *  so this needs no [Achievements] setting. Takes effect on the next sound. */
+    fun setSoundVolume(pct: Int) {
+        val clamped = pct.coerceIn(0, 100)
+        MainActivityRuntime.prefs.edit().putInt(SOUND_VOLUME_PREF, clamped).apply()
+        NativeApp.sSoundVolume = clamped / 100f
+        state.value = state.value.copy(soundVolume = clamped)
+    }
+
     private fun queryDisplayName(context: android.content.Context, uri: android.net.Uri): String? =
         runCatching {
             context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
@@ -221,8 +234,17 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
         super.onCleared()
     }
 
-    private companion object {
+    companion object {
         const val UNLOCK_SOUND_PREF = "ra.unlockSoundName"
+        const val SOUND_VOLUME_PREF = "ra.soundVolume"
+
+        /** Push the persisted unlock-sound volume into NativeApp at app start, before any
+         *  achievement can unlock — otherwise the first sound of the session plays at full
+         *  volume regardless of the slider until the RA screen is opened. */
+        fun syncSoundVolume() {
+            NativeApp.sSoundVolume =
+                MainActivityRuntime.prefs.getInt(SOUND_VOLUME_PREF, 100).coerceIn(0, 100) / 100f
+        }
     }
 }
 

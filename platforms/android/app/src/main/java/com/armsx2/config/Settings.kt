@@ -146,6 +146,17 @@ data class Settings(
      *  CPU-bound devices; default off uses the scalar reference (unchanged
      *  audio). Applied on the next game boot/reset. */
     val spu2NeonReverb: Boolean = false,
+    /** SPU2/Output/AndroidOpenSLES — opt-in legacy OpenSL ES audio path (Oboe)
+     *  instead of AAudio. Slightly higher latency, but Android doesn't reclaim
+     *  the idle stream, so pause/resume (and fast-forward toggling through the
+     *  menu) never triggers the ~1s stream rebuild. Applies live (stream
+     *  reconfigures). Default off = AAudio low-latency. */
+    val audioOpenSLES: Boolean = false,
+    /** SPU2/Output/LightweightMode — low-end audio lever: skip the SPU2 reverb
+     *  pipeline (all echo/spatial reverb) in the mixer. Frees CPU on devices that
+     *  can't keep up even with NEON reverb; default off = full reverb. Applies
+     *  live (read per-sample in MixCore). */
+    val spu2LightweightMix: Boolean = false,
 
     // ---- EmuCore — patches / cheats ----
     /** EmuCore/EnablePatches — game-compatibility patches (default on). */
@@ -715,6 +726,11 @@ data class Settings(
         // Opt-in NEON reverb FIR (ARM64). Read by SPU2::InternalReset on the
         // next game boot; default off = scalar reference (unchanged audio).
         put("SPU2", "NeonReverbSIMD", "bool", spu2NeonReverb.toString())
+        // Opt-in OpenSL ES output (Oboe). Lives in the SPU2/Output StreamParameters,
+        // so ApplySettings → CheckForConfigChanges recreates the stream on toggle.
+        put("SPU2/Output", "AndroidOpenSLES", "bool", audioOpenSLES.toString())
+        // Lightweight mix (skip reverb) — read live in MixCore via EmuConfig.SPU2.
+        put("SPU2/Output", "LightweightMode", "bool", spu2LightweightMix.toString())
         // Patches / cheats (EmuCore). Reloaded by ApplySettings →
         // CheckForPatchConfigChanges; widescreen/no-interlacing take effect on
         // the next boot for most games.
@@ -922,6 +938,8 @@ data class Settings(
             audioOutputLatencyMs = intAt("SPU2/Output/OutputLatencyMS") ?: this.audioOutputLatencyMs,
             audioFastForwardVolume = intAt("SPU2/Output/FastForwardVolume") ?: this.audioFastForwardVolume,
             spu2NeonReverb = boolAt("SPU2/NeonReverbSIMD") ?: this.spu2NeonReverb,
+            audioOpenSLES = boolAt("SPU2/Output/AndroidOpenSLES") ?: this.audioOpenSLES,
+            spu2LightweightMix = boolAt("SPU2/Output/LightweightMode") ?: this.spu2LightweightMix,
             // ---- EmuCore patches / cheats ----
             enablePatches = boolAt("EmuCore/EnablePatches") ?: this.enablePatches,
             enableCheats = boolAt("EmuCore/EnableCheats") ?: this.enableCheats,
@@ -1154,7 +1172,7 @@ data class Settings(
      *  running game already reflects the change live, so the native commit does
      *  not reload — the INI applies as the game layer on the next boot. No-op
      *  when no VM is running. */
-    fun writeGameSettingsIni(global: Settings) {
+    fun writeGameSettingsIni(global: Settings, serial: String? = null) {
         // Baseline: global's persisted keys. applyTo early-returns before the
         // live pokes/commit while emitSink is set, so nothing touches the VM.
         val baseline = HashMap<String, String>()
@@ -1164,7 +1182,12 @@ data class Settings(
         } finally {
             emitSink = null
         }
-        if (!NativeApp.gameIniBeginWrite()) return
+        // With a running VM the target is the current game (gameIniBeginWrite). With no VM — a
+        // per-game Reset done from the library — pass [serial] to locate the file directly; false
+        // there means no stale override file exists, so there is nothing to rewrite.
+        val began = if (serial == null) NativeApp.gameIniBeginWrite()
+                    else NativeApp.gameIniBeginWriteForSerial(serial)
+        if (!began) return
         // Effective pass: stream only the keys that differ from the baseline.
         emitSink = { section, key, _, value ->
             if (baseline["$section$key"] != value)
@@ -1469,6 +1492,8 @@ data class Settings(
         put("audioOutputLatencyMs", audioOutputLatencyMs)
         put("audioFastForwardVolume", audioFastForwardVolume)
         put("spu2NeonReverb", spu2NeonReverb)
+        put("audioOpenSLES", audioOpenSLES)
+        put("spu2LightweightMix", spu2LightweightMix)
         put("renderer", renderer)
         put("upscaleFloat", upscaleFloat.toDouble())
         put("customDriverId", customDriverId)
@@ -1716,6 +1741,8 @@ data class Settings(
                 audioOutputLatencyMs = json.optInt("audioOutputLatencyMs", def.audioOutputLatencyMs),
                 audioFastForwardVolume = json.optInt("audioFastForwardVolume", def.audioFastForwardVolume),
                 spu2NeonReverb = json.optBoolean("spu2NeonReverb", def.spu2NeonReverb),
+                audioOpenSLES = json.optBoolean("audioOpenSLES", def.audioOpenSLES),
+                spu2LightweightMix = json.optBoolean("spu2LightweightMix", def.spu2LightweightMix),
                 renderer = json.optString("renderer", def.renderer),
                 upscaleFloat = json.optDouble("upscaleFloat", def.upscaleFloat.toDouble()).toFloat(),
                 customDriverId = json.optString("customDriverId", def.customDriverId),
@@ -1949,6 +1976,8 @@ data class Settings(
             if (current.audioOutputLatencyMs != base.audioOutputLatencyMs) j.put("audioOutputLatencyMs", current.audioOutputLatencyMs)
             if (current.audioFastForwardVolume != base.audioFastForwardVolume) j.put("audioFastForwardVolume", current.audioFastForwardVolume)
             if (current.spu2NeonReverb != base.spu2NeonReverb) j.put("spu2NeonReverb", current.spu2NeonReverb)
+            if (current.audioOpenSLES != base.audioOpenSLES) j.put("audioOpenSLES", current.audioOpenSLES)
+            if (current.spu2LightweightMix != base.spu2LightweightMix) j.put("spu2LightweightMix", current.spu2LightweightMix)
             if (current.renderer != base.renderer) j.put("renderer", current.renderer)
             if (current.upscaleFloat != base.upscaleFloat) j.put("upscaleFloat", current.upscaleFloat.toDouble())
             if (current.customDriverId != base.customDriverId) j.put("customDriverId", current.customDriverId)
@@ -2163,6 +2192,8 @@ data class Settings(
             audioOutputLatencyMs = if (overrides.has("audioOutputLatencyMs")) overrides.getInt("audioOutputLatencyMs") else base.audioOutputLatencyMs,
             audioFastForwardVolume = if (overrides.has("audioFastForwardVolume")) overrides.getInt("audioFastForwardVolume") else base.audioFastForwardVolume,
             spu2NeonReverb = if (overrides.has("spu2NeonReverb")) overrides.getBoolean("spu2NeonReverb") else base.spu2NeonReverb,
+            audioOpenSLES = if (overrides.has("audioOpenSLES")) overrides.getBoolean("audioOpenSLES") else base.audioOpenSLES,
+            spu2LightweightMix = if (overrides.has("spu2LightweightMix")) overrides.getBoolean("spu2LightweightMix") else base.spu2LightweightMix,
             renderer = if (overrides.has("renderer")) overrides.getString("renderer") else base.renderer,
             upscaleFloat = if (overrides.has("upscaleFloat")) overrides.getDouble("upscaleFloat").toFloat() else base.upscaleFloat,
             customDriverId = if (overrides.has("customDriverId")) overrides.getString("customDriverId") else base.customDriverId,

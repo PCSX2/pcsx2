@@ -255,6 +255,18 @@ fun PadTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
                 ControllerMappings.setRumbleEnabled(it)
                 refreshToken.intValue++
             }
+            // Vibration strength: one multiplier over BOTH controller rumble and on-screen touch
+            // haptics (they share the motor path), so an over-eager motor can be tamed or a weak
+            // one boosted. 100% = as authored; 0% = off.
+            IntSliderRow(
+                label = str("pad.hapticStrength.label"),
+                value = ControllerMappings.hapticIntensity(),
+                min = 0,
+                max = 200,
+                description = str("pad.hapticStrength.description"),
+                valueFormatter = { if (it == 0) "Off" else "${it}%" },
+                onChange = { ControllerMappings.setHapticIntensity(it); refreshToken.intValue++ },
+            )
             SettingsDivider()
             // PS2 Multitap: route up to 8 controllers (both ports become 4-slot taps).
             // The pref drives PadRouter's slot count + the boot-time native arming; when a

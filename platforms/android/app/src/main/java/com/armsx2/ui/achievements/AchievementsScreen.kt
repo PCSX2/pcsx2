@@ -223,6 +223,19 @@ private fun AchievementAccount(
                     onRight = { if (!state.soundEffects) viewModel.setOption("soundEffects", true) },
                 ),
             )
+            // Volume of that unlock sound — only meaningful while the effect is on, so it slides
+            // in right under the toggle. App-side (MediaPlayer), no .wav editing needed.
+            if (state.soundEffects) {
+                com.armsx2.ui.settings.IntSliderRow(
+                    label = str("ra.options.soundVolume"),
+                    value = state.soundVolume,
+                    min = 0,
+                    max = 100,
+                    description = str("ra.options.soundVolume.desc"),
+                    valueFormatter = { if (it == 0) "Muted" else "${it}%" },
+                    onChange = { viewModel.setSoundVolume(it) },
+                )
+            }
             // Achievement modes. Toggling reloads the RA session (no VM reset); the native
             // rc_client setters already exist, so these are plain option toggles.
             SettingSwitchRow(

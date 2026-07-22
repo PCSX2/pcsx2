@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/HW/GSRendererHW.h"
+#include "GS/Renderers/HW/GSHwHack.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -87,6 +88,7 @@ void GSRendererHW::Reset(bool hardware_reset)
 		g_texture_cache->ReadbackAll();
 
 	g_texture_cache->RemoveAll(true, true, true);
+	GSHwHack::ResetState();
 
 	GSRenderer::Reset(hardware_reset);
 }

@@ -1278,8 +1278,11 @@ void GSDeviceOGL::DestroyResources()
 	m_vertex_push_constants_stream_buffer.reset();
 
 	glBindVertexArray(0);
-	if (m_expand_ibo != 0)
-		glDeleteVertexArrays(1, &m_expand_ibo);
+	// Delete the expand VAO here (not m_expand_ibo, which is a buffer object and is
+	// correctly freed with glDeleteBuffers below). The old code deleted m_expand_ibo
+	// as a VAO — a no-op — so m_expand_vao leaked on every device teardown/recreate.
+	if (m_expand_vao != 0)
+		glDeleteVertexArrays(1, &m_expand_vao);
 	if (m_vao != 0)
 		glDeleteVertexArrays(1, &m_vao);
 	if (m_dummy_vao != 0)

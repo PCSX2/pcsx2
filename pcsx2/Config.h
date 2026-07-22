@@ -1058,6 +1058,8 @@ struct Pcsx2Config
 		u32 StandardVolume = 100;
 		u32 FastForwardVolume = 100;
 		bool OutputMuted = false;
+		// Low-end Android lever: skip the SPU2 reverb pipeline in MixCore. Off by default.
+		bool LightweightMode = false;
 
 		AudioBackend Backend = DEFAULT_BACKEND;
 		SPU2SyncMode SyncMode = DEFAULT_SYNC_MODE;

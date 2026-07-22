@@ -2,11 +2,13 @@ package com.armsx2.ui.settingshub
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.armsx2.EmuState
 import com.armsx2.GameInfo
 import com.armsx2.config.ConfigStore
 import com.armsx2.config.Settings
 import com.armsx2.config.SettingsScope
 import com.armsx2.navigation.SettingsCategory
+import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.InGameOverlay
 
 data class SettingsUiState(
@@ -62,6 +64,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         } else {
             settings.value = settings.value.resetCategory(category)
             ConfigStore.saveGlobal(settings.value)
+        }
+        // Push the reset into the emulator's native config + per-game INI. Pruning the override
+        // JSON above only updates the on-screen values and the store; the native per-game INI
+        // (gamesettings/<serial>_<CRC>.ini) still holds the pruned keys, and VMManager reloads the
+        // game layer from it on every commit/boot so the stale keys keep winning — which is why
+        // Reset "did nothing". Rewriting that INI clears the tab's keys while preserving the
+        // [Patches]/[Cheats] enable lists.
+        val running = MainActivityRuntime.nativeReady.value &&
+            MainActivityRuntime.eState.value != EmuState.STOPPED
+        val gameSerial = serial?.takeIf { it.isNotBlank() }
+        runCatching {
+            when {
+                // In-game: re-apply live so the change shows immediately, then regenerate the
+                // running game's INI for the next boot (mirrors InGameOverlay.saveSettings).
+                gameSerial != null && running -> {
+                    settings.value.applyTo()
+                    ConfigStore.resolveForGame(gameSerial).writeGameSettingsIni(ConfigStore.loadGlobal())
+                }
+                // From the library (no VM): the INI can't be reached through a running game, so
+                // rewrite it by serial. A no-op when the game never wrote one — then the pruned
+                // JSON alone already resolves to global at the next boot.
+                gameSerial != null -> ConfigStore.resolveForGame(gameSerial)
+                    .writeGameSettingsIni(ConfigStore.loadGlobal(), gameSerial)
+                // Global scope with a game live: re-apply the reset globals to the base layer.
+                running -> settings.value.applyTo()
+            }
         }
     }
 }

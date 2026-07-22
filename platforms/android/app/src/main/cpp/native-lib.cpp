@@ -2019,6 +2019,17 @@ void Host::BeginPresentFrame() {
 
 void Host::OnGameChanged(const std::string& title, const std::string& elf_override, const std::string& disc_path,
                          const std::string& disc_serial, u32 disc_crc, u32 current_crc) {
+    // Free-software / anti-resale notice on each game boot, rendered through PCSX2's own OSD (the
+    // same message system + renderer as the FPS/stats overlay) so it reads as a native emulator
+    // pop-up rather than an Android layer drawn on top. Keyed so a re-fire just refreshes the one
+    // message. Guarded on a real game loading — OnGameChanged also fires with everything empty on
+    // shutdown/eject.
+    if (current_crc != 0 || !disc_path.empty() || !title.empty()) {
+        Host::AddKeyedOSDMessage("armsx2_free_software_notice",
+            "You are using ARMSX2, and it should not be sold, or distributed as part of any other "
+            "app. If you paid for this app, you should get your money back.",
+            10.0f);
+    }
 }
 
 void Host::PumpMessagesOnCPUThread() {
@@ -2309,6 +2320,13 @@ Java_kr_co_iefriends_pcsx2_NativeApp_pause(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_resume(JNIEnv *env, jclass clazz) {
+    // Always drop the audio-keep-alive suppression a menu/overlay pause may have set
+    // (see setOutputPauseSuppressed). Clearing it on EVERY resume — overlay close and
+    // lifecycle onResume alike — means it can never get stuck on and starve a later
+    // background/quit of a real audio pause. The stream was never paused while
+    // suppressed, so this doesn't itself touch the device.
+    SPU2::SetOutputPauseSuppressed(false);
+
     if (!VMManager::HasValidVM())
         return;
 
@@ -2317,6 +2335,20 @@ Java_kr_co_iefriends_pcsx2_NativeApp_resume(JNIEnv *env, jclass clazz) {
             VMManager::SetPaused(false);
     });
     Console.WriteLn("@@ANDROID_RESUME@@ queued state=%d", static_cast<int>(VMManager::GetState()));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setOutputPauseSuppressed(JNIEnv *env, jclass clazz, jboolean suppressed) {
+    // Set by pauseForOverlay(true) right before the in-game menu pauses the VM: while
+    // suppressed, SPU2::SetOutputPaused() is a no-op so the audio device keeps running
+    // (underrunning to silence — no audible artifact) instead of being paused. A paused
+    // low-latency AAudio stream is what Android reclaims when idle, forcing a full
+    // Close/Open rebuild on resume — the ~1s fast-forward-from-menu hitch, and the
+    // "audio dies a few seconds into a paused menu" bug (#333). Keeping it alive across
+    // the brief menu pause means resume is a cheap no-op with no rebuild. Only the
+    // overlay pause sets this; background/quit pause normally, and resume() clears it.
+    SPU2::SetOutputPauseSuppressed(suppressed == JNI_TRUE);
 }
 
 extern "C"
@@ -2917,7 +2949,17 @@ void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool def
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
 {
-    // noop
+    // Cache the account score so the RA panels can show it even with no game loaded. The
+    // persistent rc_client (and thus rc_client_get_user_info, which is where GetAchievementsAsJSON
+    // normally reads the score) is null until a game WITH achievements loads — so before that the
+    // library / in-game RA menu had no score to show and hid the points chip. Persist it beside
+    // the token in secrets so it survives a restart; GetAchievementsAsJSON falls back to it.
+    if (s_secrets_settings_interface)
+    {
+        s_secrets_settings_interface->SetIntValue("Achievements", "LastScore", static_cast<int>(points));
+        s_secrets_settings_interface->SetIntValue("Achievements", "LastScoreSoftcore", static_cast<int>(sc_points));
+        s_secrets_settings_interface->Save();
+    }
 }
 
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
@@ -3507,6 +3549,27 @@ Java_kr_co_iefriends_pcsx2_NativeApp_osdApplyFlags(JNIEnv*, jclass,
 // next boot via UpdateGameSettingsLayer.
 static std::unique_ptr<INISettingsInterface> s_export_game_ini;
 
+// The [sections] applyTo() owns and fully regenerates on each per-game write. We LOAD the
+// existing file and clear only these, rather than starting from a FRESH (unloaded) interface:
+// a fresh start dropped every FOREIGN key in the file, most visibly the [Patches]/[Cheats]
+// "Enable" lists written by setEnabledPatches, so changing ANY in-game setting silently wiped
+// that game's enabled patches. Clearing just the sections we own still drops stale overrides
+// (the original intent) while leaving anything we don't own alone — robust for future keys too.
+static constexpr const char* OWNED_GAME_INI_SECTIONS[] = {
+    "EmuCore", "EmuCore/CPU", "EmuCore/CPU/Recompiler", "EmuCore/GS",
+    "EmuCore/Gamefixes", "EmuCore/Speedhacks", "Framerate", "MemoryCards",
+};
+
+// Open [path] as the active export interface for the gameIniPut/gameIniCommitWrite stream that
+// follows: load what's there (so foreign keys survive), then blank the sections we regenerate.
+static void BeginGameIniExport(const std::string& path) {
+    auto ini = std::make_unique<INISettingsInterface>(path);
+    ini->Load(); // failure just means there was no file yet, i.e. nothing to preserve
+    for (const char* sec : OWNED_GAME_INI_SECTIONS)
+        ini->ClearSection(sec);
+    s_export_game_ini = std::move(ini);
+}
+
 extern "C" JNIEXPORT jboolean JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_gameIniBeginWrite(JNIEnv*, jclass) {
     if (!VMManager::HasValidVM())
@@ -3519,24 +3582,34 @@ Java_kr_co_iefriends_pcsx2_NativeApp_gameIniBeginWrite(JNIEnv*, jclass) {
         crc = VMManager::GetCurrentCRC();
     if (crc == 0)
         return JNI_FALSE;
-    // LOAD the existing file, then clear only the sections applyTo regenerates.
-    //
-    // This used to build a FRESH (unloaded) interface so stale per-game overrides couldn't
-    // linger — but that also dropped every FOREIGN key in the file, most visibly the
-    // [Patches]/[Cheats] "Enable" lists written by setEnabledPatches. The result was that
-    // changing ANY in-game setting silently wiped that game's enabled patches. Clearing just
-    // the sections we own still drops stale overrides (the original intent) while leaving
-    // anything we don't own alone — robust for future keys too, not only patches.
-    auto ini = std::make_unique<INISettingsInterface>(
-        VMManager::GetGameSettingsPath(VMManager::GetDiscSerial(), crc));
-    ini->Load(); // failure just means there was no file yet, i.e. nothing to preserve
-    static constexpr const char* OWNED_SECTIONS[] = {
-        "EmuCore", "EmuCore/CPU", "EmuCore/CPU/Recompiler", "EmuCore/GS",
-        "EmuCore/Gamefixes", "EmuCore/Speedhacks", "Framerate", "MemoryCards",
-    };
-    for (const char* sec : OWNED_SECTIONS)
-        ini->ClearSection(sec);
-    s_export_game_ini = std::move(ini);
+    BeginGameIniExport(VMManager::GetGameSettingsPath(VMManager::GetDiscSerial(), crc));
+    return JNI_TRUE;
+}
+
+// VM-less variant: rewrite a game's per-game INI when NOTHING is running — the case behind the
+// per-game "Reset" not sticking from the library. With no VM there is no disc CRC to build the
+// <serial>_<CRC>.ini name, and the file only exists at all if the user previously changed a
+// setting IN-GAME (that's the sole writer). So glob by serial: a match means a stale override
+// file the JSON prune couldn't reach, which we rewrite from the post-reset settings the Kotlin
+// stream puts next; no match means there is nothing to shadow global and JNI_FALSE tells Kotlin
+// to skip the (now unnecessary) put/commit.
+extern "C" JNIEXPORT jboolean JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_gameIniBeginWriteForSerial(JNIEnv* env, jclass, jstring p_serial) {
+    if (!p_serial)
+        return JNI_FALSE;
+    const char* serial_c = env->GetStringUTFChars(p_serial, nullptr);
+    const std::string serial = serial_c ? serial_c : "";
+    if (serial_c) env->ReleaseStringUTFChars(p_serial, serial_c);
+    if (serial.empty())
+        return JNI_FALSE;
+    FileSystem::FindResultsArray results;
+    FileSystem::FindFiles(EmuFolders::GameSettings.c_str(),
+        fmt::format("{}_*.ini", Path::SanitizeFileName(serial)).c_str(),
+        FILESYSTEM_FIND_FILES, &results);
+    if (results.empty())
+        return JNI_FALSE;
+    // A serial normally has exactly one CRC-keyed file; rewrite that one.
+    BeginGameIniExport(results.front().FileName);
     return JNI_TRUE;
 }
 

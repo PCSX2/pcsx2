@@ -883,6 +883,11 @@ open class MainActivityRuntime : ComponentActivity() {
         fun pauseForOverlay() {
             if (vmStopInProgress)
                 return
+            // Keep the audio device alive across this brief in-game menu pause so Android
+            // doesn't reclaim the idle low-latency stream and force a ~1s rebuild on resume
+            // (the fast-forward-from-menu hitch, and audio dying after a paused menu).
+            // resume() clears the suppression; background/quit still pause audio normally.
+            NativeApp.setOutputPauseSuppressed(true)
             NativeApp.pause()
         }
 
@@ -1499,6 +1504,23 @@ open class MainActivityRuntime : ComponentActivity() {
         copyAssetAll(applicationContext, "bios")
         copyAssetAll(applicationContext, "resources")
 
+        // On an app UPDATE (versionCode changed), drop the regenerable GPU caches. Installing a
+        // new build over an old one keeps the compiled GS shader/pipeline cache under
+        // <dataRoot>/cache, and a cache baked by a different core build can render corrupt — the
+        // "scrambled PS2 logo" and post-update graphical glitches users currently fix by
+        // reinstalling clean (#376/#385). The cache is pure derived data (rebuilt on demand),
+        // never user content, so wiping it is always safe. Skipped on first install (no prior
+        // version recorded) — there is nothing stale to clear.
+        runCatching {
+            val prevVc = prefs.getInt("lastRunVersionCode", 0)
+            val curVc = BuildConfig.VERSION_CODE
+            if (prevVc != 0 && prevVc != curVc) {
+                File(assetCopyRoot(applicationContext), "cache").deleteRecursively()
+                android.util.Log.i("ARMSX2", "Update $prevVc -> $curVc: cleared GS shader/pipeline cache")
+            }
+            if (prevVc != curVc) prefs.edit { putInt("lastRunVersionCode", curVc) }
+        }
+
         // Point the ANGLE EGL env vars at the bundled libs (or clear them) before the
         // GS thread ever opens a GL context. Re-applied per launch below too.
         applyAngleEnv(applicationContext)
@@ -1762,6 +1784,10 @@ open class MainActivityRuntime : ComponentActivity() {
         startAutosaveIntervalJob()
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
         NativeApp.sRumbleEnabled = ControllerMappings.rumbleEnabled()
+        // Push the saved haptic strength + achievement-sound volume into their native gates before
+        // any rumble or unlock sound can fire (both default to 1.0 = as authored until set here).
+        ControllerMappings.syncHapticIntensity()
+        com.armsx2.ui.achievements.AchievementsViewModel.syncSoundVolume()
         // Seed the pad-router's multitap gate before any in-game input is dispatched, so
         // slot routing (2 vs 8 slots) is correct from the first controller event.
         com.armsx2.input.PadRouter.multitapEnabled = ControllerMappings.multitapEnabled()

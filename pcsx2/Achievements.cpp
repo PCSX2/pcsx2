@@ -485,14 +485,20 @@ std::string Achievements::GetAchievementsAsJSON()
 	out += ",\"userName\":";
 	append_json_string(out, display_name.c_str());
 
-	// Player score. Only available from the persistent client (a game with
-	// achievements is loaded); the post-login temporary client is destroyed,
-	// so report -1 ("unknown") when we can't read it. The panel hides the
-	// points chip on -1 rather than showing a misleading 0.
+	// Player score. Prefer the live persistent-client value; when it's unavailable — logged in
+	// but no game with achievements loaded yet, e.g. the library RA menu — fall back to the score
+	// cached at login (Host::OnAchievementsLoginSuccess persists it to secrets). Only a genuinely
+	// unknown score (never logged in) stays -1, which the panel treats as "hide the chip".
+	const long long score_val = user
+		? static_cast<long long>(user->score)
+		: static_cast<long long>(Host::GetIntSettingValue("Achievements", "LastScore", -1));
+	const long long score_sc_val = user
+		? static_cast<long long>(user->score_softcore)
+		: static_cast<long long>(Host::GetIntSettingValue("Achievements", "LastScoreSoftcore", -1));
 	out += ",\"score\":";
-	out += std::to_string(user ? static_cast<long long>(user->score) : -1LL);
+	out += std::to_string(score_val);
 	out += ",\"softcoreScore\":";
-	out += std::to_string(user ? static_cast<long long>(user->score_softcore) : -1LL);
+	out += std::to_string(score_sc_val);
 
 	// RA presentation options (global [Achievements] settings) so the panel
 	// can show + toggle them without a second JNI poll. Defaults mirror

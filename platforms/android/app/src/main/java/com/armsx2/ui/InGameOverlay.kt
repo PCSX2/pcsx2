@@ -45,7 +45,20 @@ object InGameOverlay {
      *  choice (Full / Min / Off) isn't reset to the per-stat selection every launch. */
     fun applyStoredOsdMode() {
         ensureOsdLoaded()
-        applyOsdMode(osdMode.value)
+        // Custom = "the user's saved per-stat flags". At boot settingsState is NOT yet populated
+        // with THIS game's resolved settings, so reading it here applied stale/empty flags — which
+        // hid an enabled stat until a reset repopulated it (#385). Resolve the current game's
+        // settings ourselves. (A fresh install has every stat defaulting off, so this also cleanly
+        // shows nothing by default rather than whatever stale state was left in settingsState.)
+        if (osdMode.value == OsdMode.Custom) {
+            applyOsdFlags(
+                com.armsx2.config.ConfigStore.resolveForGame(
+                    MainActivityRuntime.currentGame.value?.settingsKey,
+                ),
+            )
+        } else {
+            applyOsdMode(osdMode.value)
+        }
     }
 
     /** Short label for [mode], shown by the hotkey toast and the menu selector. */
@@ -141,20 +154,25 @@ object InGameOverlay {
                 NativeApp.osdApplyFlags(true, false, false, true, false, false, false, false, false, false, false, false)
                 NativeApp.osdShowGpuStats(false)
             }
-            OsdMode.Custom -> {
-                val s = settingsState.value
-                NativeApp.osdApplyFlags(
-                    s.osdShowFps, s.osdShowVps, s.osdShowSpeed, s.osdShowCpu, s.osdShowGpu,
-                    s.osdShowResolution, s.osdShowGsStats, s.osdShowFrameTimes, s.osdShowHardwareInfo,
-                    s.osdShowVersion, s.osdShowSettings, s.osdShowInputs,
-                )
-                NativeApp.osdShowGpuStats(s.osdShowGpuStats)
-            }
+            OsdMode.Custom -> applyOsdFlags(settingsState.value)
             OsdMode.Off -> {
                 NativeApp.osdApplyFlags(false, false, false, false, false, false, false, false, false, false, false, false)
                 NativeApp.osdShowGpuStats(false)
             }
         }
+    }
+
+    /** Push a Settings object's saved per-stat OSD selection to native — the Custom mode. Split
+     *  out so applyStoredOsdMode can feed it the boot-resolved settings (settingsState isn't ready
+     *  yet at boot), while the live path feeds it settingsState. */
+    private fun applyOsdFlags(s: com.armsx2.config.Settings) {
+        osdMode.value = OsdMode.Custom
+        NativeApp.osdApplyFlags(
+            s.osdShowFps, s.osdShowVps, s.osdShowSpeed, s.osdShowCpu, s.osdShowGpu,
+            s.osdShowResolution, s.osdShowGsStats, s.osdShowFrameTimes, s.osdShowHardwareInfo,
+            s.osdShowVersion, s.osdShowSettings, s.osdShowInputs,
+        )
+        NativeApp.osdShowGpuStats(s.osdShowGpuStats)
     }
 
     fun editTouchLayout() {

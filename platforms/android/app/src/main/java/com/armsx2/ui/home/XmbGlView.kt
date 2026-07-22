@@ -37,16 +37,22 @@ import kotlin.math.sin
 class XmbGlView(context: Context) : TextureView(context), TextureView.SurfaceTextureListener {
     private var thread: RenderThread? = null
 
+    /** Reports whether the GL wave actually came up: true once the first frame presents, false if
+     *  EGL/GLES3 init fails (e.g. older Mali without float-texture filtering). HomeScreen uses it
+     *  to run an animated Compose backdrop only when the wave can't — no wasted work when it can.
+     *  Always delivered on the main thread. */
+    var onGlStatus: ((Boolean) -> Unit)? = null
+
     init {
         surfaceTextureListener = this
-        // Non-opaque so that if EGL/GLES3 init ever fails and nothing renders, the still image
-        // layered behind this view in HomeScreen shows through instead of a black rectangle. When
-        // the GL path works it draws an opaque gradient every frame, fully covering that still.
+        // Non-opaque so that if EGL/GLES3 init ever fails and nothing renders, the layer behind
+        // this view in HomeScreen shows through instead of a black rectangle. When the GL path
+        // works it draws an opaque gradient every frame, fully covering that layer.
         isOpaque = false
     }
 
     override fun onSurfaceTextureAvailable(st: SurfaceTexture, w: Int, h: Int) {
-        thread = RenderThread(st, w, h).also { it.start() }
+        thread = RenderThread(st, w, h) { ok -> post { onGlStatus?.invoke(ok) } }.also { it.start() }
     }
 
     override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, w: Int, h: Int) {
@@ -65,6 +71,7 @@ class XmbGlView(context: Context) : TextureView(context), TextureView.SurfaceTex
         private val surfaceTexture: SurfaceTexture,
         private var width: Int,
         private var height: Int,
+        private val onStatus: (Boolean) -> Unit,
     ) : Thread("xmb-gl") {
         @Volatile private var running = true
         @Volatile private var sizeDirty = true
@@ -91,15 +98,17 @@ class XmbGlView(context: Context) : TextureView(context), TextureView.SurfaceTex
         fun finish() { running = false; runCatching { join(500) } }
 
         override fun run() {
-            if (!initEgl()) return
-            runCatching { initGl() }.onFailure { Log.w(TAG, "GL init failed", it); teardown(); return }
+            if (!initEgl()) { onStatus(false); return }
+            runCatching { initGl() }.onFailure { Log.w(TAG, "GL init failed", it); onStatus(false); teardown(); return }
             startNanos = System.nanoTime()
+            var announced = false
             while (running) {
                 val frameStart = System.nanoTime()
                 if (sizeDirty) { GLES30.glViewport(0, 0, width, height); sizeDirty = false }
                 val t = (frameStart - startNanos) / 1_000_000_000f
                 runCatching { drawFrame(t) }
                 if (!EGL14.eglSwapBuffers(eglDisplay, eglSurface)) running = false
+                else if (!announced) { announced = true; onStatus(true) }
                 // Cap to ~30 fps. The wave is slow, so 30 looks identical to 60 but roughly
                 // halves GPU/CPU load — without this the loop ran flat-out at vsync (60) and
                 // spun the RP6's fans up. Still more than a GIF (real mesh render vs a blit),

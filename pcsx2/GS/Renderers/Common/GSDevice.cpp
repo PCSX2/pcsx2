@@ -966,7 +966,12 @@ void GSDevice::SortMultiStretchRects(MultiStretchRect* rects, u32 num_rects)
 {
 	// Depending on num_rects, insertion sort may be better here.
 	std::sort(rects, rects + num_rects, [](const MultiStretchRect& lhs, const MultiStretchRect& rhs) {
-		return lhs.src < rhs.src || lhs.filter < rhs.filter;
+		// Strict weak ordering: only tie-break on filter when src is equal. The old
+		// `lhs.src < rhs.src || lhs.filter < rhs.filter` is not a valid comparator
+		// (it can report both a<b and b<a), which is undefined behaviour in std::sort.
+		if (lhs.src != rhs.src)
+			return lhs.src < rhs.src;
+		return lhs.filter < rhs.filter;
 	});
 }
 

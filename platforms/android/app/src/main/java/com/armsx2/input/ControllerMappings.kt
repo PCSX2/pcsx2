@@ -340,6 +340,22 @@ object ControllerMappings {
         kr.co.iefriends.pcsx2.NativeApp.sRumbleEnabled = on
     }
 
+    // Haptic strength: one multiplier scaling ALL vibration — controller rumble AND on-screen
+    // touch ticks both funnel through NativeApp.rumbleOne. 0..200 % (100 = as the game/UI
+    // authored it), so it tames a too-strong motor or boosts a weak one. Persisted and mirrored
+    // into NativeApp.sHapticScale live on change and at app start (MainActivityRuntime).
+    private const val KEY_HAPTIC_INTENSITY = "pad.haptic.intensity"
+    fun hapticIntensity(): Int = MainActivityRuntime.prefs.getInt(KEY_HAPTIC_INTENSITY, 100)
+    fun setHapticIntensity(pct: Int) {
+        val clamped = pct.coerceIn(0, 200)
+        MainActivityRuntime.prefs.edit { putInt(KEY_HAPTIC_INTENSITY, clamped) }
+        kr.co.iefriends.pcsx2.NativeApp.sHapticScale = clamped / 100f
+    }
+    /** Push the persisted haptic strength into the native gate; call once at app start. */
+    fun syncHapticIntensity() {
+        kr.co.iefriends.pcsx2.NativeApp.sHapticScale = hapticIntensity() / 100f
+    }
+
     // PS2 Multitap master switch. OFF (default) = classic 2-player co-op. ON = up to 8
     // controllers routed to the 2 ports x 4 slots. Extra pads (slots 2-7) reuse the P1
     // button mapping. Also drives PadRouter's routing gate.

@@ -195,6 +195,16 @@ bool OboeAudioStream::Open()
 	oboe::AudioStreamBuilder builder;
 	builder.setDirection(oboe::Direction::Output);
 	builder.setPerformanceMode(m_perf_mode);
+	// Opt-in legacy OpenSL ES output. AAudio's low-latency fast path is the one
+	// Android silently reclaims when the stream sits idle (e.g. the in-game pause
+	// menu), which then forces a full Close/Open stream rebuild on resume — the
+	// ~1s hitch users see toggling fast-forward through the menu, and the cause of
+	// audio dying a few seconds into a pause (#333). OpenSL ES is a higher-latency
+	// buffer-queue path Android does NOT aggressively reclaim, so pause→resume
+	// stays a cheap requestPause/requestStart with no rebuild. Off by default; the
+	// trade is a little more output latency.
+	if (m_parameters.android_use_opensles)
+		builder.setAudioApi(oboe::AudioApi::OpenSLES);
 	builder.setSharingMode(oboe::SharingMode::Shared);
 	builder.setFormat(oboe::AudioFormat::Float);
 	builder.setSampleRate(m_sample_rate);

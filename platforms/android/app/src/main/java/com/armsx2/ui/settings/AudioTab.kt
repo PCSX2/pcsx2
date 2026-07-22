@@ -99,5 +99,17 @@ fun AudioTab(state: MutableState<Settings>) {
             s.spu2NeonReverb,
             description = str("audio.spu2Simd.description"),
         ) { apply(s.copy(spu2NeonReverb = it)) }
+        SettingsDivider()
+        ToggleRow(
+            str("audio.openSles.label"),
+            s.audioOpenSLES,
+            description = str("audio.openSles.description"),
+        ) { apply(s.copy(audioOpenSLES = it)) }
+        SettingsDivider()
+        ToggleRow(
+            str("audio.lightweight.label"),
+            s.spu2LightweightMix,
+            description = str("audio.lightweight.description"),
+        ) { apply(s.copy(spu2LightweightMix = it)) }
     }
 }
