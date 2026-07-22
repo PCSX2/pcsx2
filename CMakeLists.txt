@@ -98,12 +98,12 @@ if(UNIX AND NOT APPLE)
 	endif()
 endif()
 
-# libretro core (yaps2_libretro.so) — opt-in only. When ENABLE_LIBRETRO is OFF
+# libretro core (armsx2_libretro.so) — opt-in only. When ENABLE_LIBRETRO is OFF
 # (the default) the subdirectory is not added at all, so neither the target nor
 # its install(TARGETS) rule exist. Adding it EXCLUDE_FROM_ALL instead keeps the
 # target out of the default `all`, but its unconditional install() rule still
 # drags the core into install-driven builds (ninja/make install, packaging) and
-# "build all targets" flows (IDEs) — which is how a plain yaps2-sdl build ended
+# "build all targets" flows (IDEs) — which is how a plain SDL build ended
 # up compiling libretro. Build it with -DENABLE_LIBRETRO=ON.
 if(UNIX AND NOT APPLE AND ENABLE_LIBRETRO)
 	add_subdirectory(pcsx2-libretro)

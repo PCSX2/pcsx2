@@ -672,8 +672,9 @@ static void mVUdispatcherAB(mV)
 	a64::Label cleanUpReturn, cleanUpResetTail, eeSkipDone;
 
 	// (1) Cycle accounting — runs on BOTH paths (normal and reset), so it MUST
-	// precede the cache-bounds branch below. Unlike stock x86/ARMSX2 (whose
-	// C++ mVUcleanUp still carries this math), yaps2 inlined it here and trimmed
+	// precede the cache-bounds branch below. Unlike stock x86 and the
+	// pre-transplant line (whose C++ mVUcleanUp still carries this math), this
+	// backend inlined it here and trimmed
 	// it out of the helper — so if it ran only on the in-range path, a
 	// cache-exhaustion exit would drop the VU cycle credit entirely, leaving
 	// regs().cycle up to totalCycles below the EE clock and detonating the next

@@ -11,7 +11,7 @@
 // raw pre-broadcast 4-deep pipeline tail makes the next program's early
 // delayed-STATUS reads (FSAND/FSOR/FSEQ) see stale instances.
 //
-// yaps2's shared dispatcher `exitFunct` unconditionally re-saves the raw status
+// The shared dispatcher `exitFunct` unconditionally re-saves the raw status
 // registers gprF0..3 -> micro_statusflags on every block exit. On the E-bit
 // path that runs AFTER the end-program helper's broadcast, so without a
 // compensating write the re-save clobbered the broadcast (regression fixed in

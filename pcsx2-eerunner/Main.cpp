@@ -3903,7 +3903,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 		// harness config) — ApplySettings() below calls LoadSettings() which re-applies
 		// Perf::SetJitDumpEnabled(EnablePerfDump), so a manual enable here would just get
 		// reset to the config default (false). No-op on non-jitdump builds.
-		// EERUNNER_LEGACY_CORE: building against a pre-yaps2 emu core (ARMSX2
+		// EERUNNER_LEGACY_CORE: building against a pre-transplant emu core (ARMSX2
 		// master) whose common/Perf.h has no SetJitDumpDir — the dump lands in
 		// the default dir there, which is fine for the twin golden side.
 #ifndef EERUNNER_LEGACY_CORE
@@ -4011,7 +4011,7 @@ int main(int argc, char* argv[])
 	if (!EERunner::ParseCommandLineArgs(argc, argv, params))
 		return EXIT_FAILURE;
 
-	// EERUNNER_LEGACY_CORE: pre-yaps2 cores allocate VM memory inside
+	// EERUNNER_LEGACY_CORE: pre-transplant cores allocate VM memory inside
 	// VMManager::Internal::CPUThreadInitialize (SysMemory::Allocate) instead of
 	// exposing a frontend-driven reservation.
 #ifndef EERUNNER_LEGACY_CORE
