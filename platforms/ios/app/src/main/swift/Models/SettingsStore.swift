@@ -554,6 +554,16 @@ final class SettingsStore {
         _textureFilteringConfig.writer(_textureFilteringConfig.section, _textureFilteringConfig.key, textureFiltering)
         _textureFilteringConfig.onSet?(textureFiltering)
     }}
+    let _backThreadModeConfig = Setting<Int>(
+        section: "EmuCore/GS", key: "GSBackThreadMode", default: 0,
+        suppressible: false,
+        writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
+    var backThreadMode: Int = 0 { didSet {
+        guard !(_backThreadModeConfig.suppressible && suppressINIWrites) else { return }
+        _backThreadModeConfig.writer(_backThreadModeConfig.section, _backThreadModeConfig.key, backThreadMode)
+        _backThreadModeConfig.onSet?(backThreadMode)
+    }}
     let _hardwareMipmappingConfig = Setting<Bool>(
         section: "EmuCore/GS", key: "hw_mipmap", default: true,
         suppressible: false,
@@ -1724,6 +1734,7 @@ final class SettingsStore {
         upscaleMultiplier = ARMSX2Bridge.getINIFloat("EmuCore/GS", key: "upscale_multiplier", defaultValue: 1.0)
         vsyncQueueSize = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "VsyncQueueSize", defaultValue: 8))
         textureFiltering = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "filter", defaultValue: 2))
+        backThreadMode = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "GSBackThreadMode", defaultValue: 0))
         hardwareMipmapping = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "hw_mipmap", defaultValue: true)
         fxaa = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "fxaa", defaultValue: false)
         casMode = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "CASMode", defaultValue: 0))
@@ -1947,6 +1958,7 @@ final class SettingsStore {
         upscaleMultiplier = ARMSX2Bridge.getINIFloat("EmuCore/GS", key: "upscale_multiplier", defaultValue: 1.0)
         vsyncQueueSize = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "VsyncQueueSize", defaultValue: 8))
         textureFiltering = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "filter", defaultValue: 2))
+        backThreadMode = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "GSBackThreadMode", defaultValue: 0))
         hardwareMipmapping = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "hw_mipmap", defaultValue: true)
         fxaa = ARMSX2Bridge.getINIBool("EmuCore/GS", key: "fxaa", defaultValue: false)
         casMode = Int(ARMSX2Bridge.getINIInt("EmuCore/GS", key: "CASMode", defaultValue: 0))
@@ -2455,6 +2467,7 @@ final class SettingsStore {
         upscaleMultiplier = 1.0 // Native PS2
         vsyncQueueSize = 8
         textureFiltering = 2    // Bilinear (PS2)
+        backThreadMode = 0            // Disabled
         hardwareMipmapping = true
         fxaa = false
         casMode = 0             // Disabled

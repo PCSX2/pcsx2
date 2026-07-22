@@ -34,6 +34,24 @@ struct GraphicsSettingsView: View {
 
     var body: some View {
         Form {
+            Section {
+                intPicker("GS Back Thread", selection: $settings.backThreadMode, options: [
+                    ("Disabled (Default)", 0),
+                    ("Inline Records (Debug)", 1),
+                    ("Lockstep (Debug)", 2),
+                    ("Pipelined (Second GS Thread)", 3),
+                ])
+                if settings.backThreadMode == 1 || settings.backThreadMode == 2 {
+                    Text(settings.localized("Debug mode — much slower than the default. Do not use for play."))
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            } header: {
+                Text(settings.localized("Performance"))
+            } footer: {
+                Text(settings.localized("Pipelined splits GS emulation across two threads on multi-core systems and competes for cores with EE/VU threads. The debug modes are much slower — do not use them for play."))
+            }
+
             Section(settings.localized("Renderer")) {
                 Picker(settings.localized("Renderer"), selection: $settings.renderer) {
                     Text(settings.localized("Metal (Hardware)")).tag(17)
