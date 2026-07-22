@@ -476,7 +476,8 @@ extern "C" void ARMSX2_PostRetroAchievementsStateChanged(void)
     });
 }
 
-extern "C" void ARMSX2_PostRetroAchievementsNotification(const char* title, const char* message, const char* badgePath)
+extern "C" void ARMSX2_PostRetroAchievementsNotification(const char* title, const char* message,
+	const char* badgePath, float duration)
 {
     NSString* titleString = title ? [NSString stringWithUTF8String:title] : nil;
     if (titleString.length == 0)
@@ -489,27 +490,22 @@ extern "C" void ARMSX2_PostRetroAchievementsNotification(const char* title, cons
     if (!badgePathString)
         badgePathString = @"";
 
-    std::fprintf(stderr, "@@RA_NOTIFY@@ title_len=%lu message_len=%lu badge=%d hardcore=%d notifications=%d overlays=%d\n",
-        static_cast<unsigned long>(titleString.length),
-        static_cast<unsigned long>(messageString.length),
-        badgePathString.length > 0 ? 1 : 0,
-        Achievements::IsHardcoreModeActive() ? 1 : 0,
-        EmuConfig.Achievements.Notifications ? 1 : 0,
-        EmuConfig.Achievements.Overlays ? 1 : 0);
-    std::fflush(stderr);
+    // A non-positive duration means "use the SwiftUI default"; the key is omitted so the
+    // receiver falls back to its own configured display time.
+    NSNumber* durationNumber = (duration > 0.0f) ? @(duration) : nil;
 
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary* userInfo = @{
-            @"title": titleString,
-            @"message": messageString,
-            @"badgePath": badgePathString,
-            @"handledByUIKit": @NO,
-        };
+        NSMutableDictionary* userInfo = [NSMutableDictionary dictionaryWithCapacity:4];
+        userInfo[@"title"] = titleString;
+        userInfo[@"message"] = messageString;
+        userInfo[@"badgePath"] = badgePathString;
+        if (durationNumber != nil)
+            userInfo[@"duration"] = durationNumber;
+        userInfo[@"handledByUIKit"] = @NO;
         s_pendingRetroAchievementsNotification = userInfo;
-        std::fprintf(stderr, "@@RA_NOTIFY_QUEUED@@ title_len=%lu pending=1\n",
-            static_cast<unsigned long>(titleString.length));
-        std::fflush(stderr);
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ARMSX2RetroAchievementsNotification" object:nil userInfo:userInfo];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"ARMSX2RetroAchievementsNotification"
+                                                           object:nil
+                                                         userInfo:userInfo];
     });
 }
 
@@ -561,8 +557,6 @@ static bool ARMSX2RetroAchievementsHardcoreActive()
 
 static void ARMSX2LogRetroAchievementsHardcoreBlock(const char* action)
 {
-    std::fprintf(stderr, "@@RA_HARDCORE_BLOCK@@ action=%s\n", action ? action : "unknown");
-    std::fflush(stderr);
     NSLog(@"[ARMSX2Bridge] RetroAchievements Hardcore blocked action=%s", action ? action : "unknown");
 }
 
@@ -4446,18 +4440,6 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
         displayName = savedUsernameValue;
     }
 
-    std::fprintf(stderr, "@@RA_STATE@@ enabled=%d active=%d logged_in=%d saved_username=%d saved_token=%d login_pending=%d has_game=%d hardcore_pref=%d hardcore_active=%d\n",
-        EmuConfig.Achievements.Enabled ? 1 : 0,
-        active ? 1 : 0,
-        loggedIn ? 1 : 0,
-        savedUsername ? 1 : 0,
-        savedToken ? 1 : 0,
-        loginPending ? 1 : 0,
-        hasGame ? 1 : 0,
-        EmuConfig.Achievements.HardcoreMode ? 1 : 0,
-        hardcoreActive ? 1 : 0);
-    std::fflush(stderr);
-
     return @{
         @"supported": @(ARMSX2RetroAchievementsAvailable),
         @"hardcoreSupported": @(ARMSX2RetroAchievementsHardcoreAvailable),
@@ -4535,8 +4517,6 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
         dispatch_sync(dispatch_get_main_queue(), consume);
     }
 
-    std::fprintf(stderr, "@@RA_NOTIFY_CONSUME@@ pending=%d\n", pending ? 1 : 0);
-    std::fflush(stderr);
     return pending;
 }
 

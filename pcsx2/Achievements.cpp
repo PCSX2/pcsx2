@@ -256,6 +256,11 @@ std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 
 void Achievements::BeginLoadingScreen(const char* text, bool* was_running_idle)
 {
+	// FullscreenUI's progress dialog is offscreen on platforms with their own UI (iOS),
+	// and initializing it here would spin up its per-frame render loop for nothing.
+	if (Host::HasNativeAchievementNotifications())
+		return;
+
 	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 	ImGuiFullscreen::OpenProgressDialog("achievements_loading", text, 0, 0, 0);
 }
@@ -1380,8 +1385,11 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	s_game_icon = {};
 	s_game_icon_url = info->badge_url;
 
-	// ensure fullscreen UI is ready for notifications
-	MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
+	// FullscreenUI is only needed when notifications render through ImGui. Platforms with
+	// native notifications skip this so FullscreenUI never initializes and its per-frame
+	// render work stays disabled.
+	if (!Host::HasNativeAchievementNotifications())
+		MTGS::RunOnGSThread(&ImGuiManager::InitializeFullscreenUI);
 
 	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
 	{
@@ -1430,6 +1438,30 @@ void Achievements::ClearGameHash()
 	std::string().swap(s_game_hash);
 }
 
+// Send an achievement notification to the native UI when
+// Host::HasNativeAchievementNotifications() is true, otherwise to the ImGui
+// overlay. On native platforms this also keeps FullscreenUI uninitialized,
+// which would otherwise render offscreen on iOS but still run every frame.
+static void PostAchievementNotification(std::string key, float duration, std::string title,
+	std::string message, std::string badge_path)
+{
+	if (Host::HasNativeAchievementNotifications())
+	{
+		Host::OnAchievementNotification(key.c_str(), duration, title.c_str(), message.c_str(),
+			badge_path.c_str());
+		return;
+	}
+
+	MTGS::RunOnGSThread([key = std::move(key), duration, title = std::move(title),
+		message = std::move(message), badge_path = std::move(badge_path)]() {
+		if (ImGuiManager::InitializeFullscreenUI())
+		{
+			ImGuiFullscreen::AddNotification(key, duration, std::move(title), std::move(message),
+				std::move(badge_path));
+		}
+	});
+}
+
 void Achievements::DisplayAchievementSummary()
 {
 	if (EmuConfig.Achievements.Notifications)
@@ -1457,19 +1489,19 @@ void Achievements::DisplayAchievementSummary()
 			summary = TRANSLATE_STR("Achievements", "This game has no achievements.");
 		}
 
-		MTGS::RunOnGSThread([title = std::move(title), summary = std::move(summary), icon = s_game_icon]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(
-					"achievement_summary", ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME, std::move(title), std::move(summary), std::move(icon));
-			}
-		});
+		PostAchievementNotification("achievement_summary", ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME,
+			std::move(title), std::move(summary), s_game_icon);
 	}
 	Achievements::PlayAchievementSound(EmuConfig.Achievements.InfoSound, EmuConfig.Achievements.InfoSoundName, DEFAULT_INFO_SOUND_NAME);
 }
 
 void Achievements::DisplayHardcoreDeferredMessage()
 {
+	// This OSD message renders through ImGui FullscreenUI, which is invisible (and kept
+	// uninitialized) on platforms with native notifications.
+	if (Host::HasNativeAchievementNotifications())
+		return;
+
 	MTGS::RunOnGSThread([]() {
 		if (VMManager::HasValidVM() && EmuConfig.Achievements.HardcoreMode && !s_hardcore_mode &&
 			ImGuiManager::InitializeFullscreenUI())
@@ -1509,11 +1541,9 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 		std::string badge_path = GetAchievementBadgePath(cheevo, cheevo->state);
 
-		MTGS::RunOnGSThread(
-			[title = std::move(title), summary = std::string(cheevo->description), badge_path = std::move(badge_path), id = cheevo->id]() {
-				ImGuiFullscreen::AddNotification(fmt::format("achievement_unlock_{}", id), EmuConfig.Achievements.NotificationsDuration,
-					std::move(title), std::move(summary), std::move(badge_path));
-			});
+		PostAchievementNotification(fmt::format("achievement_unlock_{}", cheevo->id),
+			EmuConfig.Achievements.NotificationsDuration, std::move(title),
+			std::string(cheevo->description), std::move(badge_path));
 	}
 	Achievements::PlayAchievementSound(EmuConfig.Achievements.UnlockSound, EmuConfig.Achievements.UnlockSoundName, DEFAULT_UNLOCK_SOUND_NAME);
 }
@@ -1532,13 +1562,8 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 				s_game_summary.num_unlocked_achievements),
 			TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(
-					"achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title), std::move(message), std::move(icon));
-			}
-		});
+		PostAchievementNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME,
+			std::move(title), std::move(message), s_game_icon);
 	}
 }
 
@@ -1559,13 +1584,8 @@ void Achievements::HandleSubsetCompleteEvent(const rc_client_event_t* event)
 
 		std::string badge_path = GetSubsetBadgePath(subset);
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), badge_path = std::move(badge_path)]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(
-					"achievement_subset_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title), std::move(message), std::move(badge_path));
-			}
-		});
+		PostAchievementNotification("achievement_subset_mastery", GAME_COMPLETE_NOTIFICATION_TIME,
+			std::move(title), std::move(message), std::move(badge_path));
 	}
 }
 
@@ -1578,13 +1598,8 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 		std::string title = event->leaderboard->title;
 		std::string message = TRANSLATE_STR("Achievements", "Leaderboard attempt started.");
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon, id = event->leaderboard->id]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_STARTED_NOTIFICATION_TIME, std::move(title),
-					std::move(message), std::move(icon));
-			}
-		});
+		PostAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
+			LEADERBOARD_STARTED_NOTIFICATION_TIME, std::move(title), std::move(message), s_game_icon);
 	}
 }
 
@@ -1597,13 +1612,8 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 		std::string title = event->leaderboard->title;
 		std::string message = TRANSLATE_STR("Achievements", "Leaderboard attempt failed.");
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon, id = event->leaderboard->id]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", id), LEADERBOARD_FAILED_NOTIFICATION_TIME, std::move(title),
-					std::move(message), std::move(icon));
-			}
-		});
+		PostAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
+			LEADERBOARD_FAILED_NOTIFICATION_TIME, std::move(title), std::move(message), s_game_icon);
 	}
 }
 
@@ -1626,13 +1636,8 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 				event->leaderboard->tracker_value ? event->leaderboard->tracker_value : "Unknown",
 				EmuConfig.Achievements.SpectatorMode ? std::string_view() : TRANSLATE_SV("Achievements", " (Submitting)"));
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon, id = event->leaderboard->id]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", id), EmuConfig.Achievements.LeaderboardsDuration,
-					std::move(title), std::move(message), std::move(icon));
-			}
-		});
+		PostAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
+			EmuConfig.Achievements.LeaderboardsDuration, std::move(title), std::move(message), s_game_icon);
 	}
 	Achievements::PlayAchievementSound(EmuConfig.Achievements.LBSubmitSound, EmuConfig.Achievements.LBSubmitSoundName, DEFAULT_LBSUBMIT_SOUND_NAME);
 }
@@ -1657,13 +1662,8 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 				event->leaderboard_scoreboard->submitted_score, event->leaderboard_scoreboard->best_score),
 			event->leaderboard_scoreboard->new_rank, event->leaderboard_scoreboard->num_entries);
 
-		MTGS::RunOnGSThread([title = std::move(title), message = std::move(message), icon = s_game_icon, id = event->leaderboard->id]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", id), EmuConfig.Achievements.LeaderboardsDuration,
-					std::move(title), std::move(message), std::move(icon));
-			}
-		});
+		PostAchievementNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
+			EmuConfig.Achievements.LeaderboardsDuration, std::move(title), std::move(message), s_game_icon);
 	}
 }
 
@@ -1784,26 +1784,20 @@ void Achievements::HandleServerDisconnectedEvent(const rc_client_event_t* event)
 {
 	Console.Warning("Achievements: Server disconnected.");
 
-	MTGS::RunOnGSThread([]() {
-		if (ImGuiManager::InitializeFullscreenUI())
-		{
-			ImGuiFullscreen::AddNotification("achievements_disconnect", Host::OSD_ERROR_DURATION, TRANSLATE_STR("Achievements", "Achievements Disconnected"),
-				TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."), s_game_icon);
-		}
-	});
+	PostAchievementNotification("achievements_disconnect", Host::OSD_ERROR_DURATION,
+		TRANSLATE_STR("Achievements", "Achievements Disconnected"),
+		TRANSLATE_STR("Achievements", "An unlock request could not be completed. We will keep retrying to submit this request."),
+		s_game_icon);
 }
 
 void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
 {
 	Console.Warning("Achievements: Server reconnected.");
 
-	MTGS::RunOnGSThread([]() {
-		if (ImGuiManager::InitializeFullscreenUI())
-		{
-			ImGuiFullscreen::AddNotification("achievements_reconnect", Host::OSD_INFO_DURATION, TRANSLATE_STR("Achievements", "Achievements Reconnected"),
-				TRANSLATE_STR("Achievements", "All pending unlock requests have completed."), s_game_icon);
-		}
-	});
+	PostAchievementNotification("achievements_reconnect", Host::OSD_INFO_DURATION,
+		TRANSLATE_STR("Achievements", "Achievements Reconnected"),
+		TRANSLATE_STR("Achievements", "All pending unlock requests have completed."),
+		s_game_icon);
 }
 
 
@@ -1900,7 +1894,8 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 	// new mode
 	s_hardcore_mode = enabled;
 
-	if (VMManager::HasValidVM() && (HasActiveGame() || force_display_message))
+	if (VMManager::HasValidVM() && (HasActiveGame() || force_display_message) &&
+		!Host::HasNativeAchievementNotifications())
 	{
 		MTGS::RunOnGSThread([enabled]() {
 			if (ImGuiManager::InitializeFullscreenUI())
@@ -2207,7 +2202,7 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
 	if (s_client != client)
 		return;
 
-	if (EmuConfig.Achievements.Notifications && MTGS::IsOpen())
+	if (EmuConfig.Achievements.Notifications && (Host::HasNativeAchievementNotifications() || MTGS::IsOpen()))
 	{
 		std::string badge_path = GetLoggedInUserBadgePath();
 
@@ -2216,13 +2211,8 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
 		std::string summary = fmt::format(TRANSLATE_FS("Achievements", "Score: {0} pts (Casual: {1} pts)\nUnread messages: {2}"), user->score,
 			user->score_softcore, user->num_unread_messages);
 
-		MTGS::RunOnGSThread([title = std::move(title), summary = std::move(summary), badge_path = std::move(badge_path)]() {
-			if (ImGuiManager::InitializeFullscreenUI())
-			{
-				ImGuiFullscreen::AddNotification(
-					"achievements_login", LOGIN_NOTIFICATION_TIME, std::move(title), std::move(summary), std::move(badge_path));
-			}
-		});
+		PostAchievementNotification("achievements_login", LOGIN_NOTIFICATION_TIME,
+			std::move(title), std::move(summary), std::move(badge_path));
 	}
 }
 
@@ -4274,21 +4264,113 @@ bool Achievements::IsUsingRAIntegration()
 	return false;
 }
 
-// Declared in the header but not yet implemented. Return false (no data) so
-// callers handle the unavailable case; all call sites check the bool result.
 bool Achievements::GetCurrentUserStats(UserStats* stats)
 {
-	return false;
+	auto lock = GetLock();
+	if (!s_client)
+		return false;
+
+	const rc_client_user_t* user = rc_client_get_user_info(s_client);
+	if (!user)
+		return false;
+
+	stats->username = user->username ? user->username : "";
+	stats->display_name = user->display_name ? user->display_name : "";
+	stats->points = user->score;
+	stats->softcore_points = user->score_softcore;
+	stats->unread_messages = user->num_unread_messages;
+	stats->avatar_path = GetUserBadgePath(user->username ? user->username : "");
+	return true;
 }
 
 bool Achievements::GetCurrentGameStats(GameStats* stats)
 {
-	return false;
+	auto lock = GetLock();
+	if (!s_client)
+		return false;
+
+	const rc_client_game_t* game = rc_client_get_game_info(s_client);
+	if (!game)
+		return false;
+
+	rc_client_user_game_summary_t summary;
+	std::memset(&summary, 0, sizeof(summary));
+	rc_client_get_user_game_summary(s_client, &summary);
+
+	stats->title = game->title ? game->title : "";
+	stats->icon_url = game->badge_url ? game->badge_url : "";
+	stats->icon_path = s_game_icon;
+	stats->rich_presence = s_rich_presence_string;
+	stats->game_id = game->id;
+	stats->unlocked_achievements = summary.num_unlocked_achievements;
+	stats->total_achievements = summary.num_core_achievements;
+	stats->unlocked_points = summary.points_unlocked;
+	stats->total_points = summary.points_core;
+	stats->has_achievements = rc_client_has_achievements(s_client) != 0;
+	stats->has_leaderboards = rc_client_has_leaderboards(s_client) != 0;
+	stats->has_rich_presence = rc_client_has_rich_presence(s_client) != 0;
+	return true;
 }
 
 bool Achievements::GetCurrentAchievementList(std::vector<AchievementInfo>* achievements)
 {
-	return false;
+	auto lock = GetLock();
+	if (!s_client || !achievements)
+		return false;
+
+	rc_client_achievement_list_t* list = rc_client_create_achievement_list(
+		s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+		RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE);
+	if (!list)
+		return false;
+
+	static constexpr u32 bucket_order[] = {
+		RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL,
+		RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED,
+	};
+
+	achievements->clear();
+	for (u32 bucket_type : bucket_order)
+	{
+		for (u32 b = 0; b < list->num_buckets; b++)
+		{
+			const rc_client_achievement_bucket_t& bucket = list->buckets[b];
+			if (bucket.bucket_type != bucket_type)
+				continue;
+			for (u32 a = 0; a < bucket.num_achievements; a++)
+			{
+				const rc_client_achievement_t* ach = bucket.achievements[a];
+				if (!ach)
+					continue;
+
+				AchievementInfo info;
+				info.id = ach->id;
+				info.title = ach->title ? ach->title : "";
+				info.description = ach->description ? ach->description : "";
+				info.badge_path = GetAchievementBadgePath(ach, ach->state);
+				if (ach->measured_progress[0])
+					info.measured_progress = ach->measured_progress;
+				info.points = ach->points;
+				info.unlock_time = static_cast<u32>(ach->unlock_time);
+				info.state = ach->state;
+				info.category = ach->category;
+				info.bucket = bucket.bucket_type;
+				info.unlocked = ach->unlocked;
+				info.measured_percent = ach->measured_percent;
+				info.rarity = ach->rarity;
+				info.rarity_hardcore = ach->rarity_hardcore;
+				achievements->push_back(std::move(info));
+			}
+		}
+	}
+
+	rc_client_destroy_achievement_list(list);
+	return true;
 }
 
 #endif // ENABLE_RAINTEGRATION

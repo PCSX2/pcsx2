@@ -243,6 +243,9 @@ void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_p
 {
 }
 
+bool Host::HasNativeAchievementNotifications() { return false; }
+void Host::OnAchievementNotification(const char*, float, const char*, const char*, const char*) {}
+
 void Host::OnAchievementsRefreshed()
 {
 }

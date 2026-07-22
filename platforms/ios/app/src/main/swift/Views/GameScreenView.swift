@@ -1022,7 +1022,11 @@ struct GameScreenView: View {
             badgePath: badgePathValue.isEmpty ? nil : badgePathValue
         )
 
-        achievementsBanner.present(toast)
+        // Honor the per-event duration the core passes through (seconds) instead of
+        // the banner default, so longer popups (e.g. mastery) and shorter ones are
+        // each respected.
+        let customDuration = notification.userInfo?["duration"] as? TimeInterval
+        achievementsBanner.present(toast, displayDuration: customDuration)
     }
 
     private func consumePendingRetroAchievementsToast() {

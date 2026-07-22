@@ -77,6 +77,10 @@ extern std::deque<std::shared_ptr<CPUThreadTask>> s_cpuTasks;
 void ARMSX2DrainCPUThreadTasks();
 
 extern "C" void ARMSX2_PostRetroAchievementsStateChanged(void);
+// Posts a RetroAchievements toast to the SwiftUI layer. `duration` is the on-screen
+// time in seconds (<= 0 falls back to the SwiftUI default). Safe to call from any thread.
+extern "C" void ARMSX2_PostRetroAchievementsNotification(const char* title, const char* message,
+	const char* badgePath, float duration);
 extern "C" void ARMSX2_PostRuntimeMenuStateChanged(void);
 // Runtime telemetry gate (env-gated, cached).
 bool ARMSX2IOSRuntimeTelemetryEnabled();

@@ -93,6 +93,8 @@ namespace Host {
     void OnAchievementsLoginRequested(Achievements::LoginRequestReason r) {}
     void OnAchievementsLoginSuccess(const char* u, u32 p, u32 sc, u32 us) {}
     void OnAchievementsRefreshed() {}
+    bool HasNativeAchievementNotifications() { return false; }
+    void OnAchievementNotification(const char*, float, const char*, const char*, const char*) {}
     void OnCoverDownloaderOpenRequested() {}
     void OnCreateMemoryCardOpenRequested() {}
     void OnInputDeviceConnected(std::string_view i, std::string_view d) {}

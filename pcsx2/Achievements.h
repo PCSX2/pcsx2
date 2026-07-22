@@ -247,4 +247,21 @@ namespace Host
 
 	/// Called whenever hardcore mode is toggled.
 	void OnAchievementsHardcoreModeChanged(bool enabled);
+
+	/// Returns true when the platform renders RetroAchievements notifications through its
+	/// own native UI (for example the iOS SwiftUI toast). When this returns true the shared
+	/// core routes achievement notifications through OnAchievementNotification instead of
+	/// the ImGui FullscreenUI overlay. That also keeps the (invisible on such platforms)
+	/// FullscreenUI from being initialized, which would otherwise add per-frame render cost
+	/// for nothing.
+	bool HasNativeAchievementNotifications();
+
+	/// Presents a RetroAchievements notification natively. Only invoked when
+	/// HasNativeAchievementNotifications() returns true; desktop/Android frontends keep
+	/// using the ImGui overlay and never call this. `key` deduplicates against an in-flight
+	/// notification of the same kind, `duration` is in seconds, and `badge_path` may be
+	/// empty. May be called from any thread; implementations must copy the strings before
+	/// returning.
+	void OnAchievementNotification(const char* key, float duration, const char* title,
+		const char* message, const char* badge_path);
 } // namespace Host

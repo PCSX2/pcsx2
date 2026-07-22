@@ -1158,6 +1158,9 @@ void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_p
 	emit g_emu_thread->statusMessage(message);
 }
 
+bool Host::HasNativeAchievementNotifications() { return false; }
+void Host::OnAchievementNotification(const char*, float, const char*, const char*, const char*) {}
+
 void Host::OnAchievementsRefreshed()
 {
 	u32 game_id = 0;

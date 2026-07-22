@@ -249,6 +249,19 @@ namespace Host
     {
         ARMSX2_PostRetroAchievementsStateChanged();
     }
+    bool HasNativeAchievementNotifications()
+    {
+        // iOS renders achievement notifications through its SwiftUI toast overlay, so the
+        // shared core should hand them to OnAchievementNotification instead of the ImGui
+        // FullscreenUI overlay, which is invisible here and would add per-frame render
+        // cost if it were ever initialized.
+        return true;
+    }
+    void OnAchievementNotification(const char* /*key*/, float duration, const char* title,
+        const char* message, const char* badge_path)
+    {
+        ARMSX2_PostRetroAchievementsNotification(title, message, badge_path, duration);
+    }
     void PumpMessagesOnCPUThread()
     {
         ARMSX2DrainCPUThreadTasks();

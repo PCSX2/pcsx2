@@ -534,6 +534,9 @@ void Host::OnAchievementsHardcoreModeChanged(bool enabled)
 	// noop
 }
 
+bool Host::HasNativeAchievementNotifications() { return false; }
+void Host::OnAchievementNotification(const char*, float, const char*, const char*, const char*) {}
+
 void Host::OnAchievementsRefreshed()
 {
 	// noop

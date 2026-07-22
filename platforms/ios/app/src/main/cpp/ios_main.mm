@@ -520,7 +520,7 @@ void ARMSX2IOSApplyRetroAchievementsOverlayDefaults(SettingsInterface* si, const
     EmuConfig.Achievements.OverlayPosition = AchievementOverlayPosition::TopLeft;
     EmuConfig.Achievements.NotificationPosition = OsdOverlayPos::TopCenter;
 
-    Console.WriteLn("@@RA_IOS_OVERLAY_DEFAULTS@@ reason=%s overlay=top_left notification=top_center notifications=1 overlays=1",
+    Console.WriteLn("iOS RetroAchievements overlay defaults applied (reason: %s)",
         reason ? reason : "unknown");
 }
 
