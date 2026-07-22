@@ -806,6 +806,9 @@ struct Pcsx2Config
 					// Deliberately separate from UseDebugDevice, which also installs the
 					// validation layer and so makes any capture perf-meaningless.
 					DebugLabels : 1,
+					// Record the per-draw ledger (GSDrawLog). Attribution only -- it is
+					// not free, so never leave it on for one arm of an A/B.
+					DumpDrawLog : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,

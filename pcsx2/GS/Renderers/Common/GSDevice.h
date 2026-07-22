@@ -1852,3 +1852,8 @@ template <>
 struct std::hash<GSHWDrawConfig::PSSelector> : public GSHWDrawConfig::PSSelectorHash {};
 
 extern std::unique_ptr<GSDevice> g_gs_device;
+
+// Draw-config stringifiers, shared between the per-draw config dump and the draw log.
+const char* GSGetTopologyName(GSHWDrawConfig::Topology topology);
+const char* GSGetTexHazardName(u32 tex_hazard);
+const char* GSGetDestinationAlphaModeName(GSHWDrawConfig::DestinationAlphaMode datm);

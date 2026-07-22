@@ -1372,7 +1372,7 @@ private:
 	}
 };
 
-static const char* GetTopologyName(GSHWDrawConfig::Topology topology)
+const char* GSGetTopologyName(GSHWDrawConfig::Topology topology)
 {
 	switch (topology)
 	{
@@ -1596,7 +1596,7 @@ static const char* GetBlendFactorFormula(GSDevice::BlendFactor blendfactor)
 	return "Unknown";
 }
 
-static const char* GetDestinationAlphaModeName(GSHWDrawConfig::DestinationAlphaMode datm)
+const char* GSGetDestinationAlphaModeName(GSHWDrawConfig::DestinationAlphaMode datm)
 {
 	switch (datm)
 	{
@@ -1646,7 +1646,7 @@ static const char* GetPSAA1Name(GSHWDrawConfig::PS_AA1 aa1)
 	return "Unknown";
 }
 
-static const char* GetTexHazardName(u32 tex_hazard)
+const char* GSGetTexHazardName(u32 tex_hazard)
 {
 	switch (tex_hazard)
 	{
@@ -1852,14 +1852,14 @@ static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VS
 static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
 {
-	out.WriteLn("topology: {} ({})", GetTopologyName(conf.topology), static_cast<u32>(conf.topology));
+	out.WriteLn("topology: {} ({})", GSGetTopologyName(conf.topology), static_cast<u32>(conf.topology));
 	out.WriteLn("require_one_barrier: {}", conf.require_one_barrier);
 	out.WriteLn("require_full_barrier: {}", conf.require_full_barrier);
 	DumpVector4(out, "drawarea", conf.drawarea);
 	DumpVector4(out, "samplearea", conf.samplearea);
-	out.WriteLn("tex_hazard: {}", GetTexHazardName(conf.tex_hazard));
+	out.WriteLn("tex_hazard: {}", GSGetTexHazardName(conf.tex_hazard));
 
-	out.WriteLn("destination_alpha: {} ({})", GetDestinationAlphaModeName(conf.destination_alpha), static_cast<u32>(conf.destination_alpha));
+	out.WriteLn("destination_alpha: {} ({})", GSGetDestinationAlphaModeName(conf.destination_alpha), static_cast<u32>(conf.destination_alpha));
 	out.WriteLn("datm: {} ({})", GetSetDATMName(conf.datm), static_cast<u32>(conf.datm));
 	out.WriteLn("line_expand: {}", conf.line_expand);
 	out.WriteLn("colormask: {:x}", conf.colormask.wrgba);

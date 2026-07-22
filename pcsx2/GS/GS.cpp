@@ -21,6 +21,7 @@
 #include "GS/Renderers/Null/GSRendererNull.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSHwHack.h"
+#include "GS/Renderers/HW/GSDrawLog.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "VMManager.h"
 
@@ -1040,6 +1041,24 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.DumpReplaceableTextures != old_config.DumpReplaceableTextures)
 	{
 		g_gs_renderer->PurgeTextureCache(true, false, true);
+	}
+
+	// Per-draw ledger. Writing on the true->false edge means a live capture is just
+	// "turn it on, play the slow bit, turn it off" -- both edges drivable over PINE.
+	if (GSConfig.DumpDrawLog != old_config.DumpDrawLog)
+	{
+		if (GSConfig.DumpDrawLog)
+		{
+			GSDrawLog::Reset();
+			GSDrawLog::Start();
+			Console.WriteLn("GSDrawLog: recording started.");
+		}
+		else
+		{
+			GSDrawLog::Stop();
+			if (GSDrawLog::GetRecordCount() > 0)
+				GSDrawLog::WriteCSV(Path::Combine(EmuFolders::Logs, "gs_drawlog.csv"));
+		}
 	}
 
 	if (GSConfig.OsdShowGPU && !old_config.OsdShowGPU)

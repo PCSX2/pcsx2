@@ -3,6 +3,7 @@
 
 #include "GS/Renderers/HW/GSRendererHW.h"
 #include "GS/Renderers/HW/GSHwHack.h"
+#include "GS/Renderers/HW/GSDrawLog.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "GS/GSGL.h"
 #include "GS/GSPerfMon.h"
@@ -2768,8 +2769,8 @@ void GSRendererHW::RoundSpriteOffset()
 
 namespace
 {
-	/// Closes the per-draw debugger label on every exit from Draw(), which has many
-	/// early returns.
+	/// Closes the per-draw debugger label and the open draw-log row on every exit from
+	/// Draw(), which has many early returns.
 	struct ScopedDrawLabel
 	{
 		bool active = false;
@@ -2777,9 +2778,54 @@ namespace
 		{
 			if (active)
 				g_gs_device->PopDrawLabel();
+
+			// Unconditional: a draw that returns before submit still gets a row, marked
+			// unsubmitted, because "which draws were skipped" is itself a useful signal.
+			GSDrawLog::FinishDraw();
 		}
 	};
 } // namespace
+
+void GSRendererHW::RecordDrawLogEntry() const
+{
+	const GIFRegTEST& TEST = m_cached_ctx.TEST;
+	const GIFRegALPHA& ALPHA = m_context->ALPHA;
+
+	GSDrawLog::Record rec = {};
+	rec.frame = static_cast<u32>(g_perfmon.GetFrame());
+	rec.draw = static_cast<u32>(s_n);
+	rec.prim_type = static_cast<u8>(PRIM->PRIM);
+	rec.prim_count = static_cast<u16>(std::min<u32>(m_index->tail, 0xFFFFu));
+
+	rec.frame_block = m_cached_ctx.FRAME.Block();
+	rec.frame_psm = static_cast<u8>(m_cached_ctx.FRAME.PSM);
+	rec.frame_fbw = static_cast<u8>(m_cached_ctx.FRAME.FBW);
+	rec.frame_fbmsk = m_cached_ctx.FRAME.FBMSK;
+
+	rec.z_block = m_cached_ctx.ZBUF.Block();
+	rec.z_psm = static_cast<u8>(m_cached_ctx.ZBUF.PSM);
+	rec.z_ztst = static_cast<u8>(TEST.ZTST);
+
+	rec.tex_tbp0 = m_cached_ctx.TEX0.TBP0;
+	rec.tex_psm = static_cast<u8>(m_cached_ctx.TEX0.PSM);
+	rec.tex_tbw = static_cast<u8>(m_cached_ctx.TEX0.TBW);
+	rec.tex_tw = static_cast<u8>(m_cached_ctx.TEX0.TW);
+	rec.tex_th = static_cast<u8>(m_cached_ctx.TEX0.TH);
+
+	rec.alpha = static_cast<u16>((ALPHA.A << 6) | (ALPHA.B << 4) | (ALPHA.C << 2) | ALPHA.D);
+	rec.atst = static_cast<u8>(TEST.ATST);
+	rec.afail = static_cast<u8>(TEST.AFAIL);
+	rec.datm = static_cast<u8>(TEST.DATM);
+
+	rec.flags = static_cast<u8>((PRIM->TME ? GSDrawLog::FlagTextured : 0) |
+								(PRIM->ABE ? GSDrawLog::FlagBlend : 0) |
+								(TEST.ATE ? GSDrawLog::FlagAlphaTest : 0) |
+								(TEST.DATE ? GSDrawLog::FlagDate : 0) |
+								(TEST.ZTE ? GSDrawLog::FlagZTest : 0) |
+								(m_cached_ctx.ZBUF.ZMSK ? GSDrawLog::FlagZMask : 0));
+
+	GSDrawLog::BeginDraw(rec);
+}
 
 std::string GSRendererHW::DescribeDraw() const
 {
@@ -2969,6 +3015,9 @@ void GSRendererHW::Draw()
 		g_gs_device->PushDrawLabel(DescribeDraw());
 		draw_label.active = true;
 	}
+
+	if (GSDrawLog::IsActive()) [[unlikely]]
+		RecordDrawLogEntry();
 
 	GL_PUSH("HW: Draw %lld (Context %u)", s_n, PRIM->CTXT);
 	GL_INS("HW: FLUSH REASON: %s%s", GetFlushReasonString(m_state_flush_reason),
@@ -9621,6 +9670,10 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	{
 		GSHWDrawConfig::DumpConfig(GetDrawDumpPath("%05d_hwconfig.txt", s_n), m_conf);
 	}
+
+	// Completes the row opened at the top of Draw() with the backend view, which only
+	// exists here.
+	GSDrawLog::EndDraw(m_conf);
 
 	if (!m_channel_shuffle_width)
 		g_gs_device->RenderHW(m_conf);

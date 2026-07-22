@@ -388,6 +388,10 @@ public:
 	/// instead of showing an anonymous list.
 	std::string DescribeDraw() const;
 
+	/// Opens a per-draw ledger row from the PS2 register state. The backend half of the
+	/// row is filled at submit; see GSDrawLog.
+	void RecordDrawLogEntry() const;
+
 	void PurgeTextureCache(bool sources, bool targets, bool hash_cache) override;
 	void ReadbackTextureCache() override;
 

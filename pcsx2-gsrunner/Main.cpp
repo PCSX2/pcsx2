@@ -36,6 +36,7 @@
 #include "pcsx2/GS.h"
 #include "pcsx2/GS/Renderers/Common/GSDevice.h"
 #include "pcsx2/GS/GSPerfMon.h"
+#include "pcsx2/GS/Renderers/HW/GSDrawLog.h"
 #include "pcsx2/GSDumpReplayer.h"
 #include "pcsx2/GameList.h"
 #include "pcsx2/Host.h"
@@ -145,6 +146,7 @@ static std::condition_variable s_cpu_thread_tasks_done;
 static std::deque<std::function<void()>> s_cpu_thread_tasks;
 
 static std::string s_stats_json_path;
+static std::string s_drawlog_path;
 static std::vector<FrameSample> s_frame_samples;
 static u64 s_frame_timer_last = 0;
 static double s_last_prims = 0;
@@ -605,6 +607,7 @@ static void PrintCommandLineHelp(const char* progname)
 	std::fprintf(stderr, "  -logfile <filename>: Writes emu log to filename.\n");
 	std::fprintf(stderr, "  -noshadercache: Disables the shader cache (useful for parallel runs).\n");
 	std::fprintf(stderr, "  -perf: Enable frame timing performance stats.\n");
+	std::fprintf(stderr, "  -drawlog <path.csv>: Record a per-draw ledger (PS2 register state + backend draw config).\n");
 	std::fprintf(stderr, "  -stats-json <path>: Write per-frame and run-summary statistics as JSON. Combine with -perf "
 						 "for frame/GPU timing.\n");
 	std::fprintf(stderr, "  -set <Section/Key>=<value>: Override any setting, e.g. -set EmuCore/GS/AccurateBlendingUnit=3. "
@@ -922,6 +925,13 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			{
 				Console.WriteLn("Enable performance stats");
 				s_perf_enable = true;
+				continue;
+			}
+			else if (CHECK_ARG_PARAM("-drawlog"))
+			{
+				s_drawlog_path = argv[++i];
+				s_settings_interface.SetBoolValue("EmuCore/GS", "DumpDrawLog", true);
+				Console.WriteLn(fmt::format("Recording per-draw ledger to {}", s_drawlog_path));
 				continue;
 			}
 			else if (CHECK_ARG_PARAM("-stats-json"))
@@ -1253,6 +1263,9 @@ void GSRunner::DumpStats()
 
 	if (!s_stats_json_path.empty())
 		WriteStatsJson(s_stats_json_path);
+
+	if (!s_drawlog_path.empty())
+		GSDrawLog::WriteCSV(s_drawlog_path);
 }
 
 #ifdef _WIN32
