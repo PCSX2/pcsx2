@@ -5,6 +5,8 @@
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
+#include <deque>
+#include <functional>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -137,6 +139,11 @@ struct FrameSample
 	u64 hash_cache_hit;
 	u64 hash_cache_miss;
 };
+// Work posted from other threads (the PINE server) to run on the CPU thread.
+static std::mutex s_cpu_thread_tasks_mutex;
+static std::condition_variable s_cpu_thread_tasks_done;
+static std::deque<std::function<void()>> s_cpu_thread_tasks;
+
 static std::string s_stats_json_path;
 static std::vector<FrameSample> s_frame_samples;
 static u64 s_frame_timer_last = 0;
@@ -447,7 +454,18 @@ void Host::OnSaveStateSaved(const std::string_view filename)
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
-	pxFailRel("Not implemented");
+	// Queued here and drained in PumpMessagesOnCPUThread(). Previously a hard
+	// pxFailRel, which meant any PINE command that marshals to the CPU thread
+	// (settings apply, savestates, frame advance) aborted the whole run.
+	std::unique_lock lock(s_cpu_thread_tasks_mutex);
+	s_cpu_thread_tasks.push_back(std::move(function));
+
+	if (!block)
+		return;
+
+	// Wait for the drain to reach our task. The generation counter is bumped once
+	// per drain, so waiting for the queue to empty is enough.
+	s_cpu_thread_tasks_done.wait(lock, []() { return s_cpu_thread_tasks.empty(); });
 }
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
@@ -1331,6 +1349,24 @@ void Host::PumpMessagesOnCPUThread()
 	// safe to call. exchange() makes the transition fire exactly once.
 	if (s_signal_stop_requested.exchange(false))
 		VMManager::SetState(VMState::Stopping);
+
+	// Drain work posted by Host::RunOnCPUThread (PINE commands). Tasks run outside
+	// the lock so one that posts more work cannot deadlock.
+	for (;;)
+	{
+		std::function<void()> task;
+		{
+			std::unique_lock lock(s_cpu_thread_tasks_mutex);
+			if (s_cpu_thread_tasks.empty())
+			{
+				s_cpu_thread_tasks_done.notify_all();
+				break;
+			}
+			task = std::move(s_cpu_thread_tasks.front());
+			s_cpu_thread_tasks.pop_front();
+		}
+		task();
+	}
 
 	// update GS thread copy of frame number
 	MTGS::RunOnGSThread([frame_number = GSDumpReplayer::GetFrameNumber()]() { s_dump_frame_number = frame_number; });
