@@ -1007,6 +1007,11 @@ struct Pcsx2Config
 		/// (i.e. renderer change, swap chain mode change, etc.)
 		bool RestartOptionsAreEqual(const GSOptions& right) const;
 
+		/// Whether changing this INI key forces a GS device teardown, i.e. whether it is
+		/// one of the fields RestartOptionsAreEqual compares. Lets a caller mutating a
+		/// setting by name report the cost without diffing two whole configs.
+		static bool IsRestartOption(const char* ini_key);
+
 		/// Returns false if any options need to be applied to the MTGS.
 		bool OptionsAreEqual(const GSOptions& right) const;
 

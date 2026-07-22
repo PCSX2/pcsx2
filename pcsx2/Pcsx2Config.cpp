@@ -929,6 +929,37 @@ bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
 	return !operator==(right);
 }
 
+bool Pcsx2Config::GSOptions::IsRestartOption(const char* ini_key)
+{
+	// INI key names for the fields compared in RestartOptionsAreEqual below; keep the
+	// two in sync. Names match the field names except BackThreadMode, which is stored
+	// as "GSBackThreadMode".
+	static constexpr const char* keys[] = {
+		"Renderer",
+		"Adapter",
+		"UseDebugDevice",
+		"UseBlitSwapChain",
+		"DisableShaderCache",
+		"DisableFramebufferFetch",
+		"DisablePS2DepthQuantization",
+		"DisableVertexShaderExpand",
+		"EnableAdrenoFramebufferFetch",
+		"ForceMaliFramebufferFetch",
+		"OverrideTextureBarriers",
+		"DepthFeedbackMode",
+		"GSBackThreadMode",
+		"HWAA1",
+		"ExclusiveFullscreenControl",
+	};
+
+	for (const char* key : keys)
+	{
+		if (StringUtil::Strcasecmp(key, ini_key) == 0)
+			return true;
+	}
+	return false;
+}
+
 bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) const
 {
 	return OpEqu(Renderer) &&

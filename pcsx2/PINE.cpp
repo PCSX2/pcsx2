@@ -5,11 +5,16 @@
 #include "Common.h"
 #include "Host.h"
 #include "Elfheader.h"
+#include "GS.h"
+#include "GS/GSPerfMon.h"
+#include "MTGS.h"
+#include "PerformanceMetrics.h"
 #include "SaveState.h"
 #include "PINE.h"
 #include "VMManager.h"
 #include "vtlb.h"
 #include "common/Error.h"
+#include "common/SettingsInterface.h"
 #include "common/Threading.h"
 
 #include <atomic>
@@ -159,6 +164,14 @@ namespace PINEServer
 		MsgUUID = 0xD, /**< Returns the game UUID. */
 		MsgGameVersion = 0xE, /**< Returns the game verion. */
 		MsgStatus = 0xF, /**< Returns the emulator status. */
+
+		// ARMSX2-local extensions. Upstream PINE stops at 0xF; these are private to
+		// this fork, so a generic PINE client will simply never send them.
+		MsgGetStats = 0x10, /**< Returns host-side performance statistics as JSON. */
+		MsgGetSetting = 0x11, /**< Reads a setting by section/key. */
+		MsgSetSetting = 0x12, /**< Writes a setting by section/key and applies it. */
+		MsgFrameAdvance = 0x13, /**< Advances a paused VM by one frame. */
+
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -257,6 +270,85 @@ namespace PINEServer
 	{
 		return !((command_len + command_size) > buf_size ||
 				 (reply_len + reply_size) >= MAX_IPC_RETURN_SIZE);
+	}
+
+	/**
+	 * Reads a length-prefixed ([u32 len][len bytes], no NUL) string argument, advancing
+	 * buf_cnt past it. Returns false if the declared length runs off the end of the
+	 * request, in which case the caller must fail the command.
+	 */
+	static bool ReadLengthPrefixedString(std::span<u8> buf, u32& buf_cnt, u32 buf_size, std::string* out)
+	{
+		if ((buf_cnt + 4) > buf_size)
+			return false;
+
+		const u32 len = FromSpan<u32>(buf, buf_cnt);
+		buf_cnt += 4;
+
+		// Bound the allocation by what the request could actually contain.
+		if (len > buf_size || (buf_cnt + len) > buf_size)
+			return false;
+
+		out->assign(reinterpret_cast<const char*>(&buf[buf_cnt]), len);
+		buf_cnt += len;
+		return true;
+	}
+
+	/**
+	 * Builds the host-side statistics document. Called on the PINE thread.
+	 *
+	 * PerformanceMetrics and g_perfmon are plain scalar reads -- racy against the GS
+	 * thread but benign, since every field is an independently-meaningful number and a
+	 * torn sample only costs one stale stat. GSgetStats/GSgetMemoryStats are NOT safe
+	 * here: they dereference g_texture_cache and g_gs_device, which are GS-thread
+	 * owned, so the texture-cache memory figures are gathered via RunOnGSThread.
+	 */
+	static std::string BuildStatsJson()
+	{
+		SmallString gs_memory;
+		if (MTGS::IsOpen())
+		{
+			MTGS::RunOnGSThread([&gs_memory]() { GSgetMemoryStats(gs_memory); });
+			MTGS::WaitGS(false);
+		}
+
+		const auto counter = [](GSPerfMon::counter_t c) { return g_perfmon.Get(c); };
+
+		return fmt::format(
+			"{{"
+			"\"fps\":{:.3f},\"internal_fps\":{:.3f},\"speed\":{:.3f},"
+			"\"frame_ms_avg\":{:.3f},\"frame_ms_min\":{:.3f},\"frame_ms_max\":{:.3f},"
+			"\"cpu_thread_pct\":{:.3f},\"cpu_thread_ms\":{:.3f},"
+			"\"gs_thread_pct\":{:.3f},\"gs_thread_ms\":{:.3f},"
+			"\"vu_thread_pct\":{:.3f},\"vu_thread_ms\":{:.3f},"
+			"\"gpu_pct\":{:.3f},\"gpu_ms_avg\":{:.3f},\"gpu_ms_last\":{:.3f},"
+			"\"gpu_vs_invocations\":{:.0f},\"gpu_ps_invocations\":{:.0f},"
+			"\"prims\":{:.1f},\"draws\":{:.1f},\"draw_calls\":{:.1f},"
+			"\"render_passes\":{:.1f},\"barriers\":{:.1f},\"readbacks\":{:.1f},"
+			"\"texture_copies\":{:.1f},\"texture_uploads\":{:.1f},"
+			"\"draw_calls_rov\":{:.1f},\"barriers_rov\":{:.1f},\"texture_copies_rov\":{:.1f},"
+			"\"tc_source_hit\":{:.1f},\"tc_source_miss\":{:.1f},"
+			"\"tc_target_hit\":{:.1f},\"tc_target_miss\":{:.1f},"
+			"\"hash_cache_hit\":{:.1f},\"hash_cache_miss\":{:.1f},"
+			"\"gs_memory\":\"{}\",\"frame_number\":{}"
+			"}}",
+			PerformanceMetrics::GetFPS(), PerformanceMetrics::GetInternalFPS(), PerformanceMetrics::GetSpeed(),
+			PerformanceMetrics::GetAverageFrameTime(), PerformanceMetrics::GetMinimumFrameTime(),
+			PerformanceMetrics::GetMaximumFrameTime(),
+			PerformanceMetrics::GetCPUThreadUsage(), PerformanceMetrics::GetCPUThreadAverageTime(),
+			PerformanceMetrics::GetGSThreadUsage(), PerformanceMetrics::GetGSThreadAverageTime(),
+			PerformanceMetrics::GetVUThreadUsage(), PerformanceMetrics::GetVUThreadAverageTime(),
+			PerformanceMetrics::GetGPUUsage(), PerformanceMetrics::GetGPUAverageTime(),
+			PerformanceMetrics::GetLastGPUTime(),
+			PerformanceMetrics::GetGPUAverageVSInvocations(), PerformanceMetrics::GetGPUAveragePSInvocations(),
+			counter(GSPerfMon::Prim), counter(GSPerfMon::Draw), counter(GSPerfMon::DrawCalls),
+			counter(GSPerfMon::RenderPasses), counter(GSPerfMon::Barriers), counter(GSPerfMon::Readbacks),
+			counter(GSPerfMon::TextureCopies), counter(GSPerfMon::TextureUploads),
+			counter(GSPerfMon::DrawCallsROV), counter(GSPerfMon::BarriersROV), counter(GSPerfMon::TextureCopiesROV),
+			counter(GSPerfMon::TCSourceHit), counter(GSPerfMon::TCSourceMiss),
+			counter(GSPerfMon::TCTargetHit), counter(GSPerfMon::TCTargetMiss),
+			counter(GSPerfMon::HashCacheHit), counter(GSPerfMon::HashCacheMiss),
+			gs_memory.view(), PerformanceMetrics::GetFrameNumber());
 	}
 } // namespace PINEServer
 
@@ -744,6 +836,79 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 
 				ToResultVector(ret_buffer, status, ret_cnt);
 				ret_cnt += 4;
+				break;
+			}
+			case MsgGetStats:
+			{
+				const std::string stats = BuildStatsJson();
+				const u32 size = stats.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], stats.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgGetSetting:
+			{
+				std::string section, key;
+				if (!ReadLengthPrefixedString(buf, buf_cnt, buf_size, &section) ||
+					!ReadLengthPrefixedString(buf, buf_cnt, buf_size, &key)) [[unlikely]]
+					goto error;
+
+				std::string value;
+				{
+					auto lock = Host::GetSettingsLock();
+					value = Host::GetSettingsInterface()->GetStringValue(section.c_str(), key.c_str(), "");
+				}
+
+				const u32 size = value.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], value.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgSetSetting:
+			{
+				std::string section, key, value;
+				if (!ReadLengthPrefixedString(buf, buf_cnt, buf_size, &section) ||
+					!ReadLengthPrefixedString(buf, buf_cnt, buf_size, &key) ||
+					!ReadLengthPrefixedString(buf, buf_cnt, buf_size, &value)) [[unlikely]]
+					goto error;
+
+				// Whether this change tears down the GS device, so the caller knows
+				// whether it just paid for a reopen. Everything outside this set is
+				// applied in place by GSUpdateConfig.
+				const bool restart_required = Pcsx2Config::GSOptions::IsRestartOption(key.c_str());
+
+				// Write the persisted key rather than poking EmuConfig directly: a direct
+				// poke is silently reverted by the next ApplySettings, which re-derives
+				// EmuConfig from the INI layer stack.
+				Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), value.c_str());
+				Host::CommitBaseSettingChanges();
+				Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
+
+				const std::string reply = fmt::format("{{\"restart_required\":{}}}", restart_required ? "true" : "false");
+				const u32 size = reply.size() + 1;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size)) [[unlikely]]
+					goto error;
+				ToResultVector(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], reply.c_str(), size);
+				ret_cnt += size;
+				break;
+			}
+			case MsgFrameAdvance:
+			{
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 0, buf_size)) [[unlikely]]
+					goto error;
+				Host::RunOnCPUThread([]() { VMManager::FrameAdvance(1); });
 				break;
 			}
 			default:
