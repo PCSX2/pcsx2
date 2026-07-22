@@ -89,6 +89,12 @@ namespace VMManager
 	/// Returns the path of the disc currently running.
 	std::string GetDiscPath();
 
+	/// Returns the list of disc paths from the currently loaded M3U playlist.
+	const std::vector<std::string>& GetM3UPlaylistEntries();
+
+	/// Returns the current selected disc index for the loaded M3U playlist, or -1 if none.
+	int GetM3UPlaylistCurrentIndex();
+
 	/// Returns the serial of the disc currently running.
 	std::string GetDiscSerial();
 
