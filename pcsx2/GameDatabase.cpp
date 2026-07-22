@@ -438,6 +438,7 @@ static const char* s_gs_hw_fix_names[] = {
 	"recommendedBlendingLevel",
 	"recommendedAccurateAlphaTest",
 	"recommendedHWAA1",
+	"hwDownloadMode",
 	"getSkipCount",
 	"beforeDraw",
 	"moveHandler",
@@ -701,6 +702,10 @@ bool GameDatabaseSchema::GameEntry::configMatchesHWFix(const Pcsx2Config::GSOpti
 		case GSHWFixId::Deinterlace:
 			return (config.InterlaceMode == GSInterlaceMode::Automatic || static_cast<int>(config.InterlaceMode) == value);
 
+		case GSHWFixId::HWDownloadMode:
+			// A non-default user choice already "matches" (we never override it — see the apply switch).
+			return (config.HWDownloadMode != GSHardwareDownloadMode::Enabled || static_cast<int>(config.HWDownloadMode) == value);
+
 		case GSHWFixId::CPUSpriteRenderBW:
 			return (config.UserHacks_CPUSpriteRenderBW == value);
 
@@ -784,6 +789,20 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 			case GSHWFixId::PreloadFrameData:
 				config.PreloadFrameWithGSData = (value > 0);
+				break;
+
+			case GSHWFixId::HWDownloadMode:
+				// GameDB carries the recommended GS Hardware Download Mode as a DEFAULT only:
+				// it fills in for games the player hasn't touched, but must never override a
+				// deliberate choice (their per-game/global Hardware Download Mode wins, since
+				// LoadCoreSettings runs before this). So only apply when the current value is
+				// still the default (Enabled). Enable manual HW fixes to force Accurate back.
+				if (config.HWDownloadMode == GSHardwareDownloadMode::Enabled &&
+					value > static_cast<int>(GSHardwareDownloadMode::Enabled) &&
+					value <= static_cast<int>(GSHardwareDownloadMode::Disabled))
+				{
+					config.HWDownloadMode = static_cast<GSHardwareDownloadMode>(value);
+				}
 				break;
 
 			case GSHWFixId::DisablePartialInvalidation:

@@ -2461,6 +2461,7 @@ SCAJ-20169:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SCAJ-20170:
   name: "Tourist Trophy"
   region: "NTSC-C"
@@ -26324,6 +26325,7 @@ SLES-54185:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SLES-54186:
   name: "Devil May Cry 3 - Dante's Awakening [Special Edition]"
   region: "PAL-M5"
@@ -49258,6 +49260,7 @@ SLPM-66271:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SLPM-66272:
   name: "I/O"
   name-sort: "あいおー"
@@ -51516,6 +51519,7 @@ SLPM-66629:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SLPM-66630:
   name: "メルヘヴン ARM FIGHT DREAM [KONAMI the Best]"
   name-sort: "めるへゔん ARM FIGHT DREAM [KONAMI the Best]"
@@ -54143,6 +54147,7 @@ SLPM-68016:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SLPM-68017:
   name: "新 鬼武者 DAWN OF DREAMS [最強セーブデータ]"
   name-sort: "しん おにむしゃ DAWN OF DREAMS [さいきょうせーぶでーた]"
@@ -72899,6 +72904,7 @@ SLUS-21419:
     halfPixelOffset: 5 # Fixes ghosting.
     nativeScaling: 2 # Fixes post-processing.
     recommendedBlendingLevel: 4 # Fixes missing light brightness.
+    hwDownloadMode: 2 # No readbacks: full speed on Vulkan, otherwise GS-bound. Default only; a user's own Hardware Download Mode wins.
 SLUS-21420:
   name: "Disney's Chicken Little - Ace in Action"
   region: "NTSC-U"

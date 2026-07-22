@@ -83,6 +83,7 @@ namespace GameDatabaseSchema
 		RecommendedBlendingLevel,
 		RecommendedAccurateAlphaTest,
 		RecommendedHWAA1,
+		HWDownloadMode,
 		GetSkipCount,
 		BeforeDraw,
 		MoveHandler,
