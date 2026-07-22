@@ -3270,6 +3270,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost"), FSUI_CSTR("Enables brightness/contrast/gamma/saturation adjustment."), "EmuCore/GS",
 			"ShadeBoost", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEM, "Shade Boost for FMVs"), FSUI_CSTR("Applies brightness/contrast/gamma/saturation adjustment to FMVs."), "EmuCore/GS",
+			"ShadeBoostFMVs", shadeboost_active);
 		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_SUN, "Shade Boost Brightness"), FSUI_CSTR("Adjusts brightness. 50 is normal."), "EmuCore/GS",
 			"ShadeBoost_Brightness", 50, 1, 100, "%d", shadeboost_active);
 		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Shade Boost Contrast"), FSUI_CSTR("Adjusts contrast. 50 is normal."), "EmuCore/GS",

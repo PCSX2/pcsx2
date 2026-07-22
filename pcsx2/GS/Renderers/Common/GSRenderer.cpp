@@ -14,6 +14,7 @@
 #include "PerformanceMetrics.h"
 #include "pcsx2/Config.h"
 #include "VMManager.h"
+#include "Counters.h"
 
 #include "common/FileSystem.h"
 #include "common/Image.h"
@@ -245,7 +246,7 @@ bool GSRenderer::Merge(int field)
 		g_gs_device->Interlace(fs, field ^ field2, mode, offset);
 	}
 
-	if (GSConfig.ShadeBoost)
+	if (GSConfig.ShadeBoost && (!IsFMVPlaying() || GSConfig.ShadeBoostFMVs))
 		g_gs_device->ShadeBoost();
 
 	if (GSConfig.FXAA)
