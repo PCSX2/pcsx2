@@ -132,6 +132,7 @@ jobs:
         env:
           DEBUG: 0
           BUILD_FFMPEG: 1
+          BUILD_LIBRASHADER: 1
         run: .github/workflows/scripts/windows/build-dependencies.bat
 
       - name: Generate CMake

@@ -6,6 +6,7 @@
 #include "FullscreenUI.h"
 #include "ImGuiFullscreen.h"
 
+#include "GS/LibrashaderParams.h"
 #include "common/Timer.h"
 #include "Input/InputManager.h"
 
@@ -168,6 +169,7 @@ namespace FullscreenUI
 		BIOS,
 		Emulation,
 		Graphics,
+		PostProcessing,
 		OSD,
 		Audio,
 		MemoryCard,
@@ -181,6 +183,12 @@ namespace FullscreenUI
 		Cheats,
 		GameFixes,
 		Count
+	};
+
+	enum class PostProcessingSubview
+	{
+		Main,
+		LibrashaderParams,
 	};
 
 	enum class GameListView
@@ -404,6 +412,14 @@ namespace FullscreenUI
 	void DrawBIOSSettingsPage();
 	void DrawEmulationSettingsPage();
 	void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
+	void DrawPostProcessingSettingsPage();
+	void DrawPostProcessingMainSettings(SettingsInterface* bsi);
+	void DrawLibrashaderParamsPage(SettingsInterface* bsi);
+	void StartLibrashaderLoad(SettingsInterface* bsi, const std::string& preset_path);
+	void PollLibrashaderLoad();
+	void CommitLibrashaderParams(SettingsInterface* bsi, const std::string& preset_path);
+	void DrawLibrashaderFloatParam(size_t param_index, const LibrashaderParam& param, bool enabled);
+	void DrawLibrashaderFloatParamPopup(SettingsInterface* bsi, const std::string& preset_path, bool enabled);
 	void DrawOSDSettingsPage();
 	void DrawAudioSettingsPage();
 	void DrawMemoryCardSettingsPage();
@@ -501,6 +517,20 @@ namespace FullscreenUI
 	void DoCreateMemoryCard(std::string name, MemoryCardType type, MemoryCardFileType file_type, bool use_ntfs_compression = false);
 
 	inline SettingsPage s_settings_page = SettingsPage::Interface;
+	inline PostProcessingSubview s_post_processing_subview = PostProcessingSubview::Main;
+	inline std::vector<std::string> s_librashader_pass_names;
+	inline std::string s_librashader_loaded_preset;
+	inline std::string s_librashader_pending_preset;
+	inline std::string s_librashader_param_search;
+	inline std::optional<size_t> s_librashader_editing_param_index;
+	inline size_t s_librashader_page_index = 0;
+	inline u64 s_librashader_load_request_id = 0;
+	inline std::atomic<bool> s_librashader_load_pending{false};
+	inline bool s_librashader_load_success = false;
+	inline LibrashaderLoadError s_librashader_load_error = LibrashaderLoadError::None;
+#ifdef ENABLE_LIBRASHADER
+	inline std::vector<LibrashaderParam> s_librashader_params;
+#endif
 	inline std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 	inline std::unique_ptr<GameList::Entry> s_game_settings_entry;
 	inline std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;

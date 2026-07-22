@@ -4843,3 +4843,105 @@ void GSDevice12::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 		IASetIndexBuffer(config.indices, config.nindices);
 	}
 }
+
+#ifdef ENABLE_LIBRASHADER
+#define LIBRA_RUNTIME_D3D12
+#include "GS/LibrashaderParams.h"
+#include <librashader/librashader.h>
+
+bool GSDevice12::CreateLibrashaderFilterChain(const std::string& preset_path)
+{
+	libra_shader_preset_t preset = nullptr;
+	libra_error_t err = libra_preset_create(preset_path.c_str(), &preset);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D12 preset create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		return false;
+	}
+
+	filter_chain_d3d12_opt_t opts = {};
+	opts.version = LIBRASHADER_CURRENT_VERSION;
+	opts.frames_in_flight = NUM_COMMAND_LISTS;
+
+	libra_d3d12_filter_chain_t chain = nullptr;
+	err = libra_d3d12_filter_chain_create(&preset, m_device.get(), &opts, &chain);
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D12 chain create failed for '{}': {}", preset_path, GetLibrashaderError(err));
+		libra_preset_free(&preset);
+		return false;
+	}
+	if (!chain)
+	{
+		Console.ErrorFmt("librashader: D3D12 chain create failed for '{}': no error returned and no chain created", preset_path);
+		return false;
+	}
+	m_librashader_chain = chain;
+
+	return true;
+}
+
+void GSDevice12::DestroyLibrashaderFilterChain()
+{
+	if (m_librashader_chain)
+	{
+		libra_d3d12_filter_chain_t chain = static_cast<libra_d3d12_filter_chain_t>(m_librashader_chain);
+		libra_d3d12_filter_chain_free(&chain);
+		m_librashader_chain = nullptr;
+	}
+}
+
+bool GSDevice12::DoLibrashader(GSTexture* sTex, GSTexture* dTex)
+{
+	GSTexture12& src = static_cast<GSTexture12&>(*sTex);
+	GSTexture12& dst = static_cast<GSTexture12&>(*dTex);
+
+	src.TransitionToState(GSTexture12::ResourceState::PixelShaderResource);
+	dst.TransitionToState(GSTexture12::ResourceState::RenderTarget);
+
+	const libra_viewport_t vp = {0.0f, 0.0f, static_cast<u32>(dst.GetWidth()), static_cast<u32>(dst.GetHeight())};
+	frame_d3d12_opt_t frame_opts = {};
+	frame_opts.version = LIBRASHADER_CURRENT_VERSION;
+	frame_opts.frame_direction = 1;
+	frame_opts.total_subframes = 1;
+	frame_opts.current_subframe = 1;
+
+	libra_image_d3d12_t src_image = {LIBRA_D3D12_IMAGE_TYPE_RESOURCE, {src.GetResource()}};
+	libra_image_d3d12_t dst_image = {LIBRA_D3D12_IMAGE_TYPE_RESOURCE, {dst.GetResource()}};
+
+	libra_d3d12_filter_chain_t chain = static_cast<libra_d3d12_filter_chain_t>(m_librashader_chain);
+	libra_error_t err = libra_d3d12_filter_chain_frame(
+		&chain,
+		GetCommandList().list4.get(),
+		m_librashader_frame_count,
+		src_image,
+		dst_image,
+		&vp,
+		nullptr,
+		&frame_opts);
+
+	if (err)
+	{
+		Console.ErrorFmt("librashader: D3D12 frame rendering failed: {}", GetLibrashaderError(err));
+		return false;
+	}
+
+	// librashader binds its own descriptors/pipeline so all our caches lie.
+	ExecuteCommandList(false);
+	return true;
+}
+
+void GSDevice12::ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params)
+{
+	if (!m_librashader_chain)
+		return;
+	libra_d3d12_filter_chain_t chain = static_cast<libra_d3d12_filter_chain_t>(m_librashader_chain);
+	for (const auto& [name, value] : params)
+	{
+		libra_error_t err = libra_d3d12_filter_chain_set_param(&chain, name.c_str(), value);
+		if (err)
+			libra_error_free(&err);
+	}
+}
+
+#endif // ENABLE_LIBRASHADER

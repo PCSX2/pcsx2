@@ -824,14 +824,74 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 {
 	static bool s_indicator_was_visible = false;
 	static double s_indicator_fade_in_start = 0.0;
+	const double imgui_time = ImGui::GetTime();
 
-	if (!GSConfig.OsdShowGPU || !GSShaderCompileIndicator::IsVisible())
+	bool show_librashader = false;
+	std::string lib_label;
+
+#ifdef ENABLE_LIBRASHADER
+	float lib_alpha = 0.0f;
+	static u64 s_last_lib_request_id = 0;
+	static GSDevice::LibrashaderCompileState s_last_lib_state = GSDevice::LibrashaderCompileState::Idle;
+	static u64 s_lib_state_change_time = 0;
+	static std::string s_lib_preset_name;
+	static u32 s_lib_compile_time_ms = 0;
+
+	const bool has_librashader = g_gs_device && GSConfig.LibrashaderEnabled;
+	const auto lib_status = has_librashader ? g_gs_device->GetLibrashaderCompileStatus() : GSDevice::LibrashaderCompileStatus{};
+
+	if (has_librashader)
+	{
+		if (lib_status.request_id != s_last_lib_request_id || lib_status.state != s_last_lib_state)
+		{
+			s_last_lib_request_id = lib_status.request_id;
+			s_last_lib_state = lib_status.state;
+			s_lib_state_change_time = Common::Timer::GetCurrentValue();
+			s_lib_preset_name = lib_status.preset_name;
+
+			if (lib_status.state == GSDevice::LibrashaderCompileState::Ready && lib_status.started_ticks != 0)
+			{
+				const u64 duration_ticks = GetCPUTicks() - lib_status.started_ticks;
+				const u64 freq = GetTickFrequency();
+				if (freq != 0)
+				{
+					s_lib_compile_time_ms = static_cast<u32>((duration_ticks * 1000) / freq);
+				}
+				else
+				{
+					s_lib_compile_time_ms = 0;
+				}
+			}
+		}
+
+		if (lib_status.state == GSDevice::LibrashaderCompileState::Compiling)
+		{
+			show_librashader = true;
+			lib_alpha = 1.0f;
+		}
+		else if ((lib_status.state == GSDevice::LibrashaderCompileState::Ready ||
+				  lib_status.state == GSDevice::LibrashaderCompileState::Failed) &&
+				 s_last_lib_request_id != 0)
+		{
+			const u64 elapsed = Common::Timer::GetCurrentValue() - s_lib_state_change_time;
+			const u64 hold = GSShaderCompileIndicator::GetRecentCompileHold();
+			if (elapsed < hold)
+			{
+				show_librashader = true;
+				lib_alpha = 1.0f - (static_cast<float>(elapsed) / static_cast<float>(hold));
+			}
+		}
+	}
+#endif
+
+	const bool show_standard = GSShaderCompileIndicator::IsVisible();
+
+	if (!GSConfig.OsdShowGPU || (!show_librashader && !show_standard))
 	{
 		s_indicator_was_visible = false;
 		return;
 	}
 
-	const double imgui_time = ImGui::GetTime();
 	if (!s_indicator_was_visible)
 		s_indicator_fade_in_start = imgui_time;
 	s_indicator_was_visible = true;
@@ -839,60 +899,107 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 	constexpr double fade_in_seconds = 0.12;
 	const float fade_in_alpha = static_cast<float>(
 		std::min(1.0, (imgui_time - s_indicator_fade_in_start) / fade_in_seconds));
-	const float fade_out_alpha = GSShaderCompileIndicator::GetFadeAlpha();
-	const float alpha = std::clamp(fade_in_alpha * fade_out_alpha, 0.0f, 1.0f);
-	const ImU32 text_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(255.0f * alpha)));
-	const ImU32 shadow_col = IM_COL32(0, 0, 0, static_cast<int>(std::lround(100.0f * alpha)));
-	const ImU32 spinner_track_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(45.0f * alpha)));
-
-	static constexpr const char* COMPILED_ONE =
-		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shader in {1}ms");
-	static constexpr const char* COMPILED_MANY =
-		TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shaders in {1}ms");
-
-	const u32 count = GSShaderCompileIndicator::GetCount();
-	const u32 time_ms = GSShaderCompileIndicator::GetTimeMs();
-	const std::string label = (count == 1) ?
-	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_ONE), count, time_ms) :
-	                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_MANY), count, time_ms);
 
 	ImFont* const font = ImGuiManager::GetOSDFont();
 	const float font_size = ImGuiManager::GetFontSizeStandard();
 	const float baseline_y =
 		GetWindowHeight() - margin - (GSConfig.OsdShowSettings ? font_size : 0.0f);
 	const float radius = std::ceil(10.0f * scale);
-	const float cx = GetWindowWidth() - margin - radius;
-	const float cy = baseline_y - spacing - radius;
-	const ImVec2 center(cx, cy);
-
-	const ImVec2 text_size = font->CalcTextSizeA(
-		font_size, std::numeric_limits<float>::max(), -1.0f, label.c_str(), label.c_str() + label.length(), nullptr);
-	const float shadow_offset = std::ceil(scale);
-	const float text_gap = std::ceil(6.0f * scale);
-	const float text_x = cx - radius - text_gap - text_size.x;
-	const float text_y = cy - font_size * 0.5f;
-
-	ImDrawList* const dl = ImGui::GetBackgroundDrawList();
-	const float a0 = static_cast<float>(ImGui::GetTime()) * 10.0f;
-	const float a1 = a0 + IM_PI * 1.12f;
 	const float thickness = std::ceil(2.5f * scale);
+	const float stack_spacing = std::ceil(4.0f * scale);
+	ImDrawList* const dl = ImGui::GetBackgroundDrawList();
 
-	dl->AddText(font, font_size, ImVec2(text_x + shadow_offset, text_y + shadow_offset), shadow_col,
-		label.c_str(), label.c_str() + label.length());
-	dl->AddText(font, font_size, ImVec2(text_x, text_y), text_col, label.c_str(), label.c_str() + label.length());
-	if (GSConfig.OsdBoldText)
+	auto draw_indicator = [&](const std::string& label, float alpha, bool spinning, float current_baseline_y) {
+		const ImU32 text_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(255.0f * alpha)));
+		const ImU32 shadow_col = IM_COL32(0, 0, 0, static_cast<int>(std::lround(100.0f * alpha)));
+		const ImU32 spinner_track_col = IM_COL32(255, 255, 255, static_cast<int>(std::lround(45.0f * alpha)));
+
+		const float cx = GetWindowWidth() - margin - radius;
+		const float cy = current_baseline_y - spacing - radius;
+		const ImVec2 center(cx, cy);
+
+		const ImVec2 text_size = font->CalcTextSizeA(
+			font_size, std::numeric_limits<float>::max(), -1.0f, label.c_str(), label.c_str() + label.length(), nullptr);
+		const float shadow_offset = std::ceil(scale);
+		const float text_gap = std::ceil(6.0f * scale);
+		const float text_x = cx - radius - text_gap - text_size.x;
+		const float text_y = cy - font_size * 0.5f;
+
+		dl->AddText(font, font_size, ImVec2(text_x + shadow_offset, text_y + shadow_offset), shadow_col,
+			label.c_str(), label.c_str() + label.length());
+		dl->AddText(font, font_size, ImVec2(text_x, text_y), text_col, label.c_str(), label.c_str() + label.length());
+		if (GSConfig.OsdBoldText)
+		{
+			dl->AddText(font, font_size, ImVec2(text_x + 0.6f, text_y), text_col, label.c_str(),
+				label.c_str() + label.length());
+		}
+
+		dl->PathClear();
+		dl->PathArcTo(center, radius, 0.0f, 2.0f * IM_PI, 32);
+		dl->PathStroke(spinner_track_col, std::max(1.0f, thickness * 0.65f), false);
+
+		if (spinning)
+		{
+			const float a0 = static_cast<float>(ImGui::GetTime()) * 10.0f;
+			const float a1 = a0 + IM_PI * 1.12f;
+			dl->PathClear();
+			dl->PathArcTo(center, radius, a0, a1, 24);
+			dl->PathStroke(text_col, thickness, false);
+		}
+	};
+
+#ifdef ENABLE_LIBRASHADER
+	if (show_librashader)
 	{
-		dl->AddText(font, font_size, ImVec2(text_x + 0.6f, text_y), text_col, label.c_str(),
-			label.c_str() + label.length());
+		static constexpr const char* LIB_COMPILING =
+			TRANSLATE_NOOP("ImGuiOverlays", "Compiling shader preset '{0}'...");
+		static constexpr const char* LIB_COMPILED =
+			TRANSLATE_NOOP("ImGuiOverlays", "Compiled shader preset '{0}' in {1}ms");
+		static constexpr const char* LIB_FAILED =
+			TRANSLATE_NOOP("ImGuiOverlays", "Failed to compile shader preset '{0}'");
+		bool lib_spinning = true;
+
+		if (lib_status.state == GSDevice::LibrashaderCompileState::Ready ||
+			lib_status.state == GSDevice::LibrashaderCompileState::Failed)
+		{
+			lib_spinning = false;
+		}
+
+		if (lib_label.empty())
+		{
+			if (lib_status.state == GSDevice::LibrashaderCompileState::Compiling)
+				lib_label = fmt::format(TRANSLATE_FS("ImGuiOverlays", LIB_COMPILING), s_lib_preset_name);
+			else if (lib_status.state == GSDevice::LibrashaderCompileState::Ready)
+				lib_label = fmt::format(TRANSLATE_FS("ImGuiOverlays", LIB_COMPILED), s_lib_preset_name, s_lib_compile_time_ms);
+			else if (lib_status.state == GSDevice::LibrashaderCompileState::Failed)
+				lib_label = fmt::format(TRANSLATE_FS("ImGuiOverlays", LIB_FAILED), s_lib_preset_name);
+		}
+
+		const float alpha = std::clamp(fade_in_alpha * lib_alpha, 0.0f, 1.0f);
+		draw_indicator(lib_label, alpha, lib_spinning, baseline_y);
 	}
+#endif
 
-	dl->PathClear();
-	dl->PathArcTo(center, radius, 0.0f, 2.0f * IM_PI, 32);
-	dl->PathStroke(spinner_track_col, std::max(1.0f, thickness * 0.65f), false);
+	if (show_standard)
+	{
+		const float fade_out_alpha = GSShaderCompileIndicator::GetFadeAlpha();
+		const float alpha = std::clamp(fade_in_alpha * fade_out_alpha, 0.0f, 1.0f);
 
-	dl->PathClear();
-	dl->PathArcTo(center, radius, a0, a1, 24);
-	dl->PathStroke(text_col, thickness, false);
+		static constexpr const char* COMPILED_ONE =
+			TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shader in {1}ms");
+		static constexpr const char* COMPILED_MANY =
+			TRANSLATE_NOOP("ImGuiOverlays", "Compiled {0} shaders in {1}ms");
+
+		const u32 count = GSShaderCompileIndicator::GetCount();
+		const u32 time_ms = GSShaderCompileIndicator::GetTimeMs();
+		const std::string label = (count == 1) ?
+		                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_ONE), count, time_ms) :
+		                              fmt::format(TRANSLATE_FS("ImGuiOverlays", COMPILED_MANY), count, time_ms);
+
+		const float current_baseline_y = baseline_y -
+		                                 (show_librashader ? (radius * 2.0f + spacing + stack_spacing) : 0.0f);
+		draw_indicator(label, alpha, true, current_baseline_y);
+	}
 }
 
 __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spacing)
@@ -1026,6 +1133,11 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 		if (GSConfig.HWSpinCPUForReadbacks)
 			APPEND("RBSC ");
 	}
+
+	if (GSConfig.LibrashaderEnabled)
+		APPEND("LSHD ");
+	if (GSConfig.FXAA || GSConfig.ShadeBoost || GSConfig.CASMode != GSCASMode::Disabled || GSConfig.TVShader != 0)
+		APPEND("PSHD ");
 
 #undef APPEND
 
