@@ -1728,6 +1728,18 @@ public:
 	virtual void PopDebugGroup() = 0;
 	virtual void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) = 0;
 
+	/// Per-draw graphics-debugger label, compiled into every build and gated at runtime
+	/// on GSConfig.DebugLabels.
+	///
+	/// Distinct from PushDebugGroup, which is compiled out unless ENABLE_OGL_DEBUG and
+	/// additionally requires UseDebugDevice -- and therefore the validation layer, which
+	/// makes a capture useless for timing. The GL_* macro family also evaluates its
+	/// format arguments at every call site before the emitter can bail, so un-gating it
+	/// wholesale would be far too expensive for a release build. This takes a
+	/// pre-formatted string and is only reached when labelling is actually on.
+	virtual void PushDrawLabel(const std::string_view label) {}
+	virtual void PopDrawLabel() {}
+
 	GSTexture* FetchSurface(GSTexture::Usage usage, int width, int height, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 	GSTexture* FetchSurface(GSTexture::Usage usage, const GSVector2i& size, int levels, GSTexture::Format format, bool clear, bool prefer_reuse);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true, bool prefer_reuse = true);

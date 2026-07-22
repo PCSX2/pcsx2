@@ -938,6 +938,7 @@ bool Pcsx2Config::GSOptions::IsRestartOption(const char* ini_key)
 		"Renderer",
 		"Adapter",
 		"UseDebugDevice",
+		"DebugLabels",
 		"UseBlitSwapChain",
 		"DisableShaderCache",
 		"DisableFramebufferFetch",
@@ -965,6 +966,9 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 	return OpEqu(Renderer) &&
 		   OpEqu(Adapter) &&
 		   OpEqu(UseDebugDevice) &&
+		   // Selects the VK_EXT_debug_utils instance extension, which is fixed at
+		   // instance creation -- toggling it in place would silently do nothing.
+		   OpEqu(DebugLabels) &&
 		   OpEqu(UseBlitSwapChain) &&
 		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
@@ -1018,6 +1022,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(PCRTCOverscan, "pcrtc_overscan");
 	SettingsWrapBitBool(IntegerScaling);
 	SettingsWrapBitBool(UseDebugDevice);
+	SettingsWrapBitBool(DebugLabels);
 	SettingsWrapBitBool(UseBlitSwapChain);
 	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);

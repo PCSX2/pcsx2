@@ -802,6 +802,10 @@ struct Pcsx2Config
 					IntegerScaling : 1,
 					UseDebugDevice : 1,
 					UseDebugBlend : 1,
+					// Emit per-draw graphics-debugger labels describing the PS2 state.
+					// Deliberately separate from UseDebugDevice, which also installs the
+					// validation layer and so makes any capture perf-meaningless.
+					DebugLabels : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,

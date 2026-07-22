@@ -382,6 +382,12 @@ public:
 	void Move() override;
 	void Draw() override;
 
+	/// One-line PS2-level description of the draw about to be issued: primitive type,
+	/// framebuffer/depth/texture addresses and formats, blend and test state. Used for
+	/// the per-draw graphics-debugger label, so a capture names draws in PS2 terms
+	/// instead of showing an anonymous list.
+	std::string DescribeDraw() const;
+
 	void PurgeTextureCache(bool sources, bool targets, bool hash_cache) override;
 	void ReadbackTextureCache() override;
 

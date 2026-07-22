@@ -2983,6 +2983,32 @@ void GSDeviceVK::PushDebugGroup(const char* fmt, ...)
 #endif
 }
 
+void GSDeviceVK::PushDrawLabel(const std::string_view label)
+{
+	// Compiled into every build; see the base-class comment. Requires only the
+	// debug-utils entry points, which are present whenever the loader exposes the
+	// extension -- notably without the validation layer UseDebugDevice would install.
+	if (!vkCmdBeginDebugUtilsLabelEXT || !GSConfig.DebugLabels)
+		return;
+
+	const std::string buf(label);
+	const VkDebugUtilsLabelEXT vk_label = {
+		VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+		nullptr,
+		buf.c_str(),
+		{0.6f, 0.8f, 1.0f, 1.0f},
+	};
+	vkCmdBeginDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &vk_label);
+}
+
+void GSDeviceVK::PopDrawLabel()
+{
+	if (!vkCmdEndDebugUtilsLabelEXT || !GSConfig.DebugLabels)
+		return;
+
+	vkCmdEndDebugUtilsLabelEXT(GetCurrentCommandBuffer());
+}
+
 void GSDeviceVK::PopDebugGroup()
 {
 #ifdef ENABLE_OGL_DEBUG
@@ -3027,7 +3053,10 @@ void GSDeviceVK::InsertDebugMessage(DebugMessageCategory category, const char* f
 bool GSDeviceVK::CreateDeviceAndSwapChain()
 {
 	std::unique_lock lock(s_instance_mutex);
-	bool enable_debug_utils = GSConfig.UseDebugDevice;
+	// The debug-utils instance extension is what makes vkCmdBeginDebugUtilsLabelEXT
+	// resolvable, so per-draw labels need it. The validation layer stays tied to
+	// UseDebugDevice alone -- that is the part that makes a capture useless for timing.
+	bool enable_debug_utils = GSConfig.UseDebugDevice || GSConfig.DebugLabels;
 	bool enable_validation_layer = GSConfig.UseDebugDevice;
 
 	Error error;
@@ -3135,7 +3164,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	m_device_properties.limits.bufferImageGranularity =
 		std::max(m_device_properties.limits.bufferImageGranularity, static_cast<VkDeviceSize>(32));
 
-	if (enable_debug_utils)
+	// Only the messenger, which is a debug-device concern. Draw labels need the
+	// extension enabled above, not this.
+	if (GSConfig.UseDebugDevice)
 		EnableDebugUtils();
 
 	VkSurfaceKHR surface = VK_NULL_HANDLE;

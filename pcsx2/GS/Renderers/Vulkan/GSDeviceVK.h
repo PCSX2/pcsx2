@@ -653,6 +653,8 @@ public:
 
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
+	void PushDrawLabel(const std::string_view label) override;
+	void PopDrawLabel() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
 
 	// Helpers and utility draws.

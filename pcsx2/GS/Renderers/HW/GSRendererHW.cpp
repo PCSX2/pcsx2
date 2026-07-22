@@ -2766,6 +2766,63 @@ void GSRendererHW::RoundSpriteOffset()
 	}
 }
 
+namespace
+{
+	/// Closes the per-draw debugger label on every exit from Draw(), which has many
+	/// early returns.
+	struct ScopedDrawLabel
+	{
+		bool active = false;
+		~ScopedDrawLabel()
+		{
+			if (active)
+				g_gs_device->PopDrawLabel();
+		}
+	};
+} // namespace
+
+std::string GSRendererHW::DescribeDraw() const
+{
+	const GIFRegTEST& TEST = m_cached_ctx.TEST;
+	const bool textured = PRIM->TME;
+
+	std::string desc = fmt::format("Draw {} | {} x{} | FB {:05x} {} BW{}",
+		s_n, GSUtil::GetPrimName(PRIM->PRIM), m_index->tail,
+		m_cached_ctx.FRAME.Block(), GSUtil::GetPSMName(m_cached_ctx.FRAME.PSM), m_cached_ctx.FRAME.FBW);
+
+	if (m_cached_ctx.FRAME.FBMSK)
+		desc += fmt::format(" FBMSK {:08x}", m_cached_ctx.FRAME.FBMSK);
+
+	if (TEST.ZTE)
+	{
+		desc += fmt::format(" | Z {:05x} {} ZTST{}{}", m_cached_ctx.ZBUF.Block(),
+			GSUtil::GetPSMName(m_cached_ctx.ZBUF.PSM), static_cast<u32>(TEST.ZTST),
+			m_cached_ctx.ZBUF.ZMSK ? " ZMSK" : "");
+	}
+
+	if (textured)
+	{
+		desc += fmt::format(" | TEX {:05x} {} BW{} {}x{}", m_cached_ctx.TEX0.TBP0,
+			GSUtil::GetPSMName(m_cached_ctx.TEX0.PSM), m_cached_ctx.TEX0.TBW,
+			1 << m_cached_ctx.TEX0.TW, 1 << m_cached_ctx.TEX0.TH);
+	}
+
+	if (PRIM->ABE)
+	{
+		const GIFRegALPHA& ALPHA = m_context->ALPHA;
+		desc += fmt::format(" | BLEND {}{}{}{}", static_cast<u32>(ALPHA.A), static_cast<u32>(ALPHA.B),
+			static_cast<u32>(ALPHA.C), static_cast<u32>(ALPHA.D));
+	}
+
+	if (TEST.ATE)
+		desc += fmt::format(" | ATST{} AFAIL{}", static_cast<u32>(TEST.ATST), static_cast<u32>(TEST.AFAIL));
+
+	if (TEST.DATE)
+		desc += fmt::format(" | DATE{}", static_cast<u32>(TEST.DATM));
+
+	return desc;
+}
+
 void GSRendererHW::Draw()
 {
 	static u32 num_skipped_channel_shuffle_draws = 0;
@@ -2902,6 +2959,16 @@ void GSRendererHW::Draw()
 	m_full_screen_shuffle = false;
 	m_channel_shuffle_finish = false;
 	m_channel_shuffle_src_valid = GSVector4i::zero();
+
+	// Per-draw debugger label. Separate from the GL_PUSH below, which is Devel-only and
+	// requires a validation-layer device; this one is compiled into every build so a
+	// capture taken on a handheld perf build still names its draws.
+	ScopedDrawLabel draw_label;
+	if (GSConfig.DebugLabels) [[unlikely]]
+	{
+		g_gs_device->PushDrawLabel(DescribeDraw());
+		draw_label.active = true;
+	}
 
 	GL_PUSH("HW: Draw %lld (Context %u)", s_n, PRIM->CTXT);
 	GL_INS("HW: FLUSH REASON: %s%s", GetFlushReasonString(m_state_flush_reason),
