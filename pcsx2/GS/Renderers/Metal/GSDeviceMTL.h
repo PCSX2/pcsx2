@@ -27,10 +27,15 @@ using GSMTLView = UIView;
 #include <AppKit/AppKit.h>
 using GSMTLView = NSView;
 #endif
-// MetalFX spatial upscaler ships on macOS 13+ and iOS 16+. It is weak-linked
-// (see CMakeLists.txt) so the binary still loads on older OS revisions, and
-// every call site is guarded by @available plus a runtime supportsDevice: probe.
-#include <MetalFX/MetalFX.h>
+// MetalFX upscaler: macOS 13+ / iOS 16+, weak-linked on device. The simulator
+// SDK has no MetalFX headers, so PCSX2_HAS_METALFX is 0 there and every
+// MetalFX reference is compiled out; m_features.metalfx_spatial stays false.
+#if TARGET_OS_SIMULATOR
+	#define PCSX2_HAS_METALFX 0
+#else
+	#define PCSX2_HAS_METALFX 1
+	#include <MetalFX/MetalFX.h>
+#endif
 #include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
@@ -265,10 +270,12 @@ public:
 
 	// MetalFX spatial upscaler. Creating the scaler is expensive, so it's cached and
 	// only rebuilt when the input/output size or format changes (the cache key below).
-	// Available macOS 13+ / iOS 16+; weak-linked so this compiles on all targets.
+	// macOS 13+ / iOS 16+ device, weak-linked. Compiled out on the simulator.
+#if PCSX2_HAS_METALFX
 	API_AVAILABLE(macos(13.0), ios(16.0)) MRCOwned<id<MTLFXSpatialScaler>> m_mfx_spatial;
 	int m_mfx_in_w = 0, m_mfx_in_h = 0, m_mfx_out_w = 0, m_mfx_out_h = 0;
 	MTLPixelFormat m_mfx_in_fmt = MTLPixelFormatInvalid, m_mfx_out_fmt = MTLPixelFormatInvalid;
+#endif
 	std::vector<MRCOwned<id<MTLRenderPipelineState>>> m_convert_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];
@@ -416,7 +423,12 @@ public:
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
 
 	/// (Re)builds m_mfx_spatial when the src/dst size or format changes. Returns false on failure.
+	/// On simulator builds (PCSX2_HAS_METALFX=0) this is a no-op stub returning false.
+#if PCSX2_HAS_METALFX
 	API_AVAILABLE(macos(13.0), ios(16.0)) bool EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex);
+#else
+	bool EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex);
+#endif
 	bool DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex) override;
 
 	MRCOwned<id<MTLFunction>> LoadShader(NSString* name);

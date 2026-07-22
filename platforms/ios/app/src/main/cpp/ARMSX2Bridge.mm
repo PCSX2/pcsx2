@@ -14,10 +14,17 @@
 #define ARMSX2_HAS_SWIFTUI_HOST 0
 #endif
 
-// MetalFX spatial upscaler is iOS 16+ and weak-linked (see PCSX2 CMake). Both
-// headers are pulled in here so isMetalFXSupported can probe device capability.
+// MetalFX spatial upscaler is iOS 16+ device and weak-linked (see PCSX2 CMake).
+// The iOS Simulator SDK does not ship the MetalFX framework, so the import is
+// gated off when targeting the sim; isMetalFXSupported then returns NO without
+// referencing MTLFXSpatialScalerDescriptor.
 #import <Metal/Metal.h>
-#import <MetalFX/MetalFX.h>
+#if !TARGET_OS_SIMULATOR
+	#import <MetalFX/MetalFX.h>
+	#define ARMSX2_HAS_METALFX 1
+#else
+	#define ARMSX2_HAS_METALFX 0
+#endif
 
 #include "common/Darwin/DarwinMisc.h"
 #include <SDL3/SDL.h>
@@ -3515,16 +3522,21 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
 // Probes whether MetalFX Spatial upscaling is available on this device. This is
 // a standalone check that works from the main menu before any GS device exists,
 // so the settings UI can decide whether to show the Upscaler section at all. It
-// returns NO on pre-iOS-16, the simulator, and any GPU that fails the framework
-// capability probe.
+// returns NO on pre-iOS-16, the simulator (statically compiled out), and any
+// GPU that fails the framework capability probe.
 + (BOOL)isMetalFXSupported {
-    if (@available(iOS 16.0, *)) {
-        MRCOwned<id<MTLDevice>> device = MRCTransfer(MTLCreateSystemDefaultDevice());
-        if (!device)
-            return NO;
-        return [MTLFXSpatialScalerDescriptor supportsDevice:device];
-    }
-    return NO;
+#if ARMSX2_HAS_METALFX
+	if (@available(iOS 16.0, *)) {
+		MRCOwned<id<MTLDevice>> device = MRCTransfer(MTLCreateSystemDefaultDevice());
+		if (!device)
+			return NO;
+		return [MTLFXSpatialScalerDescriptor supportsDevice:device];
+	}
+	return NO;
+#else
+	// iOS Simulator build: MetalFX framework absent at compile time.
+	return NO;
+#endif
 }
 
 #pragma mark - Per-game INI getter/setter

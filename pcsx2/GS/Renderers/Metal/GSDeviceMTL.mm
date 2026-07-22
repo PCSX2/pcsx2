@@ -782,6 +782,7 @@ bool GSDeviceMTL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, con
 	return true;
 }}
 
+#if PCSX2_HAS_METALFX
 bool GSDeviceMTL::EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
 { @autoreleasepool {
 	id<MTLTexture> src = static_cast<GSTextureMTL*>(sTex)->GetTexture();
@@ -822,23 +823,39 @@ bool GSDeviceMTL::EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
 	m_mfx_in_fmt = in_fmt; m_mfx_out_fmt = out_fmt;
 	return true;
 }}
+#else
+bool GSDeviceMTL::EnsureMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
+{
+	// Statically compiled out on the iOS Simulator (PCSX2_HAS_METALFX=0).
+	(void)sTex; (void)dTex;
+	return false;
+}
+#endif
 
 bool GSDeviceMTL::DoMetalFXSpatial(GSTexture* sTex, GSTexture* dTex)
-{ @autoreleasepool {
-	if (@available(macOS 13.0, iOS 16.0, *))
-	{
-		if (!EnsureMetalFXSpatial(sTex, dTex))
-			return false;
+{
+#if PCSX2_HAS_METALFX
+	@autoreleasepool {
+		if (@available(macOS 13.0, iOS 16.0, *))
+		{
+			if (!EnsureMetalFXSpatial(sTex, dTex))
+				return false;
 
-		g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-		EndRenderPass(); // MetalFX manages its own encoder; must not be inside one.
-		[m_mfx_spatial setColorTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture()];
-		[m_mfx_spatial setOutputTexture:static_cast<GSTextureMTL*>(dTex)->GetTexture()];
-		[m_mfx_spatial encodeToCommandBuffer:GetRenderCmdBuf()];
-		return true;
+			g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+			EndRenderPass(); // MetalFX manages its own encoder; must not be inside one.
+			[m_mfx_spatial setColorTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture()];
+			[m_mfx_spatial setOutputTexture:static_cast<GSTextureMTL*>(dTex)->GetTexture()];
+			[m_mfx_spatial encodeToCommandBuffer:GetRenderCmdBuf()];
+			return true;
+		}
+		return false;
 	}
+#else
+	// Statically compiled out on the iOS Simulator (PCSX2_HAS_METALFX=0).
+	(void)sTex; (void)dTex;
 	return false;
-}}
+#endif
+}
 
 MRCOwned<id<MTLFunction>> GSDeviceMTL::LoadShader(NSString* name)
 {
@@ -1164,11 +1181,15 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_features.test_and_sample_depth = true;
 	m_features.depth_feedback = getDepthFeedback(m_dev, m_features.framebuffer_fetch);
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand;
-	// MetalFX spatial upscaler: macOS 13+ / iOS 16+. The supportsDevice: probe
-	// returns NO on the iOS Simulator and on devices whose GPU lacks the hardware,
-	// so this is safe to run unconditionally on every Apple platform.
+	// MetalFX spatial upscaler: macOS 13+ / iOS 16+ device. The supportsDevice:
+	// probe returns NO on devices whose GPU lacks the hardware. On the iOS Simulator
+	// the MetalFX framework is absent at compile time (PCSX2_HAS_METALFX=0), so the
+	// feature is statically disabled here -- m_features.metalfx_spatial keeps its
+	// default false value and the upscaler UI will report unavailable.
+#if PCSX2_HAS_METALFX
 	if (@available(macOS 13.0, iOS 16.0, *))
 		m_features.metalfx_spatial = [MTLFXSpatialScalerDescriptor supportsDevice:m_dev.dev];
+#endif
 	m_features.rov = m_dev.features.rov && !m_features.framebuffer_fetch;
 	m_max_texture_size = m_dev.features.max_texsize;
 
