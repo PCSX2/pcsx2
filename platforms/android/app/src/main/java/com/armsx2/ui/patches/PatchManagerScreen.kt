@@ -74,6 +74,7 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
                     RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
                 },
             )
+            PatchDisclaimer()
             OnlineBrowser(state, viewModel, game, Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp))
             BoxWithConstraints(Modifier.fillMaxWidth()) {
                 val compact = maxWidth < 820.dp
@@ -105,6 +106,27 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
     }
 }
 
+// Outdated cheats/patches (built for the old 1.7 core) are our #1 cause of false "it broke
+// in the new version" reports — this warning sits on both patch-screen entry points.
+@Composable
+private fun PatchDisclaimer() {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
+    ) {
+        Row(
+            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Text("⚠", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Text(str("patches.disclaimer"), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
 /**
  * Cheats/patches as a Settings-hub tab — lets users manage PNACH cheats outside a game.
  * Reuses the full PatchManager stack (per-cheat toggles + online browser); it just drops
@@ -130,6 +152,7 @@ fun PatchesSettingsTab(game: GameInfo? = null, viewModel: PatchManagerViewModel 
             RoundAction("＋", str("action.import"), { picker.launch(arrayOf("text/plain", "application/octet-stream", "*/*")) })
             RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
         }
+        PatchDisclaimer()
         OnlineBrowser(state, viewModel, game, Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp))
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val compact = maxWidth < 820.dp

@@ -12,7 +12,9 @@ import com.armsx2.FilenameParser
 import com.armsx2.GameInfo
 import com.armsx2.GamePlatform
 import com.armsx2.runtime.MainActivityRuntime
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kr.co.iefriends.pcsx2.NativeApp
 import org.json.JSONArray
@@ -23,6 +25,11 @@ class GameLibraryRepository(private val context: Context) {
     private val gameExtensions = setOf(
         "iso", "chd", "cso", "zso", "gz", "bin", "mdf", "img", "nrg", "dump", "elf",
     )
+
+    // Recent-games export runs off the launch/UI thread; exportLock serialises the file
+    // write so a quick play-then-remove can't interleave two writers on the same file.
+    private val exportScope = CoroutineScope(Dispatchers.IO)
+    private val exportLock = Any()
 
     fun cacheKey(directories: List<String>): String = directories.sorted().joinToString("|")
 
@@ -98,6 +105,63 @@ class GameLibraryRepository(private val context: Context) {
                 "recentGameUris",
                 JSONArray(current).toString()
             )
+        }
+        val snapshot = current.toList()
+        exportScope.launch { exportRecentGamesPublic(snapshot, game) }
+    }
+
+    /**
+     * Drop a single game from Recently Played without touching the library or the
+     * global "Show Recently Played" toggle. It naturally returns to the top of the
+     * list the next time it's launched (markPlayed re-adds it).
+     */
+    fun removeFromRecent(game: GameInfo) {
+        val uri = game.uri.toString()
+        val current = runCatching {
+            MainActivityRuntime.prefs.getString("recentGameUris", null)?.let(::JSONArray)?.let { array ->
+                MutableList(array.length()) { array.getString(it) }
+            }
+        }.getOrNull() ?: return
+        if (!current.remove(uri)) return
+        MainActivityRuntime.prefs.edit {
+            putString(
+                "recentGameUris",
+                JSONArray(current).toString()
+            )
+        }
+        val snapshot = current.toList()
+        exportScope.launch { exportRecentGamesPublic(snapshot) }
+    }
+
+    /**
+     * Mirrors the recently-played list to a plain `recent_games.json` under the app's data
+     * root (the shared-storage folder the user picked, next to gamesettings/ and memcards/;
+     * or the app-private externalFilesDir when none was chosen). `recentGameUris` lives in
+     * app-private SharedPreferences no other app can read, so this hands companion tools
+     * (launchers, offline RA caches) the same "recently played" data they already read from
+     * that folder. Runs on exportScope (IO) so the cache parse + write never touch the
+     * launch/UI thread; exportLock serialises the write. Feature contributed by misantronic
+     * (PR #391), reworked here to run off-thread and to also fire on removal.
+     */
+    private fun exportRecentGamesPublic(orderedUris: List<String>, justPlayed: GameInfo? = null) {
+        val root = MainActivityRuntime.systemDirPosix()
+            ?: context.getExternalFilesDir(null)?.absolutePath
+            ?: return
+        val cached = loadCached().games
+        val byUri = (if (justPlayed != null) cached + justPlayed else cached).associateBy { it.uri.toString() }
+        val array = JSONArray()
+        orderedUris.forEach { uriString ->
+            val g = byUri[uriString] ?: return@forEach
+            array.put(JSONObject().apply {
+                put("uri", g.uri.toString())
+                put("title", g.title)
+                put("serial", g.serial ?: JSONObject.NULL)
+                put("ext", g.extension)
+                put("platform", g.platform.key)
+            })
+        }
+        synchronized(exportLock) {
+            runCatching { File(root, "recent_games.json").writeText(array.toString()) }
         }
     }
 

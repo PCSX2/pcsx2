@@ -241,6 +241,15 @@ fun AppTab() {
             onChange = LibraryChromePreferences::setShowRecents,
         )
 
+        IntSliderRow(
+            label = str("app.library.opacity"),
+            value = LibraryChromePreferences.libraryOpacity.value,
+            min = 20,
+            max = 100,
+            valueFormatter = { "$it%" },
+            onChange = LibraryChromePreferences::setLibraryOpacity,
+        )
+
         ClearCacheRow()
     }
 }

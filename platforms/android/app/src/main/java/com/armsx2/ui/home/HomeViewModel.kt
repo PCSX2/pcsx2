@@ -138,6 +138,12 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         state.value = buildState(state.value)
     }
 
+    /** Drop one game from Recently Played (it returns when next launched). */
+    fun removeFromRecent(game: GameInfo) {
+        repository.removeFromRecent(game)
+        state.value = buildState(state.value)
+    }
+
     private fun buildState(base: HomeUiState): HomeUiState {
         val recents = repository.recentGames(base.allGames)
         val recentOrder = recents.mapIndexed { index, game -> game.uri.toString() to index }.toMap()

@@ -11,6 +11,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -637,7 +639,7 @@ fun HomeScreen(
     menuGame?.let { game ->
         ModalBottomSheet(onDismissRequest = { menuGame = null }) {
             Column(
-                Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 20.dp),
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
@@ -669,6 +671,14 @@ fun HomeScreen(
                     menuGame = null
                     if (!com.armsx2.HomeShortcuts.pin(context, game))
                         Toast.makeText(context, addToHomeFailed, Toast.LENGTH_LONG).show()
+                }
+                // Only offered when the game is actually in Recently Played — this drops
+                // just this one entry, unlike the library-wide "Show Recently Played" toggle.
+                if (state.recentGames.any { it.uri == game.uri }) {
+                    GameMenuAction("🕐", str("games.removeRecent")) {
+                        viewModel.removeFromRecent(game)
+                        menuGame = null
+                    }
                 }
                 val hidden = com.armsx2.HiddenGames.isHidden(game)
                 GameMenuAction(if (hidden) "◍" else "🚫", str(if (hidden) "games.unhide" else "games.hide")) {
@@ -916,7 +926,7 @@ private fun GameListCard(game: GameInfo, selected: Boolean, onClick: () -> Unit,
     Surface(
         modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onDetails),
         shape = RoundedCornerShape(15.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = LibraryChromePreferences.libraryOpacity.value / 100f),
         border = BorderStroke(
             if (selected) 2.dp else 1.dp,
             if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.42f),
