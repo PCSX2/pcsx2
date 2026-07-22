@@ -2249,7 +2249,38 @@ open class MainActivityRuntime : ComponentActivity() {
     private val backHoldHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var backHoldRunnable: Runnable? = null
 
+    // Nintendo Joy-Cons report EVERY button (d-pad, face, SL/SR) as KEYCODE_UNKNOWN —
+    // Android ships no key layout for vendor 0x057E, so the keyCode is always 0 and the
+    // buttons differ ONLY by their raw scanCode (emulog-150 confirmed: 20+ distinct presses,
+    // all code=0). Synthesise a stable, distinct keycode from the scanCode so each Joy-Con
+    // button flows through the normal keyCode capture/dispatch path — bind it once in the
+    // remap menu and it sticks. Gated to 0x057E so no other controller is affected; the
+    // 0x10000 base sits far above any real Android keycode so it can never collide.
+    private fun effectiveKeyCode(event: KeyEvent): Int {
+        if (event.keyCode == KeyEvent.KEYCODE_UNKNOWN && event.scanCode != 0 &&
+            InputDevice.getDevice(event.deviceId)?.vendorId == 0x057E) {
+            return 0x10000 + event.scanCode
+        }
+        return event.keyCode
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Joy-Con buttons all arrive as KEYCODE_UNKNOWN (no Android key layout for 0x057E,
+        // so keyCode is always 0 — emulog-150). Rewrite to a stable scanCode-derived keycode
+        // ONCE here and re-dispatch, so EVERY downstream path — bind-capture, nav, AND the
+        // in-game Compose binding lookup reached via super.dispatchKeyEvent — sees the same
+        // real, matchable key. One seam beats patching each path; gated to 0x057E inside
+        // effectiveKeyCode() so no other controller is touched. Re-entry is single (the
+        // synthetic keycode is no longer UNKNOWN, so it doesn't rewrite again).
+        val effKc = effectiveKeyCode(event)
+        if (effKc != event.keyCode) {
+            return dispatchKeyEvent(
+                KeyEvent(
+                    event.downTime, event.eventTime, event.action, effKc, event.repeatCount,
+                    event.metaState, event.deviceId, event.scanCode, event.flags, event.source,
+                ),
+            )
+        }
         val kc = event.keyCode
         if (kc != KeyEvent.KEYCODE_UNKNOWN) {
             when (event.action) {
@@ -2329,6 +2360,8 @@ open class MainActivityRuntime : ComponentActivity() {
         // below eats B (exit), A (confirm), Y, D-pad and L1/R1 before they reach
         // the binder. Normal nav resumes the moment capture ends.
         if (ControllerMappings.padCapturing.value) {
+            // The event is already scanCode-rewritten at the top (Joy-Con code=0 → synthetic),
+            // so Compose's binder and the in-game lookup both see the same real key.
             return super.dispatchKeyEvent(event)
         }
         // L1/R1 flick between settings tabs (as the old Refresh UI did). Handled here, not in
@@ -3208,9 +3241,9 @@ open class MainActivityRuntime : ComponentActivity() {
             KeyEvent.ACTION_DOWN -> "DOWN"; KeyEvent.ACTION_UP -> "UP"; else -> "?"
         }
         joyconEmit(
-            "KEY id=%d vendor=0x%04x code=%d (%s) %s repeat=%d".format(
+            "KEY id=%d vendor=0x%04x code=%d (%s) scan=%d %s repeat=%d".format(
                 event.deviceId, InputDevice.getDevice(event.deviceId)?.vendorId ?: -1,
-                event.keyCode, KeyEvent.keyCodeToString(event.keyCode), a, event.repeatCount))
+                event.keyCode, KeyEvent.keyCodeToString(event.keyCode), event.scanCode, a, event.repeatCount))
     }
 
     // True whenever a Compose frontend surface is drawn over (or instead of) the
