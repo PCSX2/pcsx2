@@ -23,6 +23,29 @@ enum OsdPreset: Int, CaseIterable {
     }
 }
 
+/// Frame Pacing presets. Mirrors the OsdPreset shape so the consolidated
+/// Settings panel and the per-game tab can drive a single picker that fans
+/// out to the underlying EmuCore/GS + SPU2/Output + Framerate keys.
+enum FramePacingPreset: Int, CaseIterable, Identifiable {
+    case optimal = 0       // ARMSX2-tuned default for fresh installs
+    case smooth = 1        // larger queues / buffers for visual stability
+    case lowLatency = 2    // tight queues + low audio latency for input feel
+    case batterySaver = 3  // 45 fps cap + larger audio buffer
+    case custom = 4        // user-tweaked; not derived from the table
+
+    var id: Int { rawValue }
+
+    var label: String {
+        switch self {
+        case .optimal: return "Optimal"
+        case .smooth: return "Smooth"
+        case .lowLatency: return "Low Latency"
+        case .batterySaver: return "Battery Saver"
+        case .custom: return "Custom"
+        }
+    }
+}
+
 enum JITScriptProtocol: String, CaseIterable, Identifiable {
     case universal
     case legacy
@@ -95,6 +118,8 @@ final class SettingsStore {
     @ObservationIgnored private var suppressINIWrites = false
     @ObservationIgnored private var isProgrammaticOsdFlagChange = false
     @ObservationIgnored private var isAutoMarkingCustom = false
+    @ObservationIgnored private var isProgrammaticFramePacingFlagChange = false
+    @ObservationIgnored private var isAutoMarkingFramePacingCustom = false
     @ObservationIgnored private var frameLimiterDisabledForFastForward = false
     @ObservationIgnored private var graphicsApplyWorkItem: DispatchWorkItem?
     @ObservationIgnored private var visualSliderDragCount = 0
@@ -109,6 +134,15 @@ final class SettingsStore {
         let workItem = DispatchWorkItem { ARMSX2Bridge.applyGraphicsSettingsNow() }
         graphicsApplyWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: workItem)
+    }
+
+    /// Used by the graphics `Setting<T>` onSet closures. Swift skips property
+    /// observers during init, so they don't fire while loading from the INI;
+    /// this no-ops while `suppressINIWrites` is true as a guard against that
+    /// ever changing.
+    func requestGraphicsApplyGuarded() {
+        guard !suppressINIWrites else { return }
+        requestGraphicsApply()
     }
 
     /// Marks the start of a visual slider drag so per-tick value changes do not each
@@ -215,7 +249,10 @@ final class SettingsStore {
         }
     }
     var frameLimiterEnabled: Bool {
-        didSet { applyFrameLimiterSettings() }
+        didSet {
+            applyFrameLimiterSettings()
+            markFramePacingCustom()
+        }
     }
     var fastForwardRuntimeEnabled = false
     // clamps to 15...120
@@ -227,6 +264,7 @@ final class SettingsStore {
                 return
             }
             applyFrameLimiterSettings()
+            markFramePacingCustom()
         }
     }
     // clamps to 1.25...10.0
@@ -270,6 +308,7 @@ final class SettingsStore {
         guard !(_audioBufferMsConfig.suppressible && suppressINIWrites) else { return }
         _audioBufferMsConfig.writer(_audioBufferMsConfig.section, _audioBufferMsConfig.key, audioBufferMs)
         _audioBufferMsConfig.onSet?(audioBufferMs)
+        markFramePacingCustom()
     }}
     let _audioOutputLatencyMsConfig = Setting<Int>(
         section: "SPU2/Output", key: "OutputLatencyMS", default: 20,
@@ -278,6 +317,7 @@ final class SettingsStore {
         guard !(_audioOutputLatencyMsConfig.suppressible && suppressINIWrites) else { return }
         _audioOutputLatencyMsConfig.writer(_audioOutputLatencyMsConfig.section, _audioOutputLatencyMsConfig.key, audioOutputLatencyMs)
         _audioOutputLatencyMsConfig.onSet?(audioOutputLatencyMs)
+        markFramePacingCustom()
     }}
     let _audioFastForwardVolumeConfig = Setting<Int>(
         section: "SPU2/Output", key: "FastForwardVolume", default: 100,
@@ -488,7 +528,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "upscale_multiplier", default: 1.0,
         suppressible: false,
         writer: ARMSX2Bridge.setINIFloat,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var upscaleMultiplier: Float = 1.0 { didSet {
         guard !(_upscaleMultiplierConfig.suppressible && suppressINIWrites) else { return }
         _upscaleMultiplierConfig.writer(_upscaleMultiplierConfig.section, _upscaleMultiplierConfig.key, upscaleMultiplier)
@@ -502,12 +542,13 @@ final class SettingsStore {
         guard !(_vsyncQueueSizeConfig.suppressible && suppressINIWrites) else { return }
         _vsyncQueueSizeConfig.writer(_vsyncQueueSizeConfig.section, _vsyncQueueSizeConfig.key, vsyncQueueSize)
         _vsyncQueueSizeConfig.onSet?(vsyncQueueSize)
+        markFramePacingCustom()
     }}
     let _textureFilteringConfig = Setting<Int>(
         section: "EmuCore/GS", key: "filter", default: 2,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var textureFiltering: Int = 2 { didSet {
         guard !(_textureFilteringConfig.suppressible && suppressINIWrites) else { return }
         _textureFilteringConfig.writer(_textureFilteringConfig.section, _textureFilteringConfig.key, textureFiltering)
@@ -526,7 +567,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "fxaa", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var fxaa: Bool = false { didSet {
         guard !(_fxaaConfig.suppressible && suppressINIWrites) else { return }
         _fxaaConfig.writer(_fxaaConfig.section, _fxaaConfig.key, fxaa)
@@ -536,7 +577,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "CASMode", default: 0,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var casMode: Int = 0 { didSet {
         guard !(_casModeConfig.suppressible && suppressINIWrites) else { return }
         _casModeConfig.writer(_casModeConfig.section, _casModeConfig.key, casMode)
@@ -546,7 +587,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "CASSharpness", default: 50,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var casSharpness: Int = 50 { didSet {
         guard !(_casSharpnessConfig.suppressible && suppressINIWrites) else { return }
         _casSharpnessConfig.writer(_casSharpnessConfig.section, _casSharpnessConfig.key, casSharpness)
@@ -556,7 +597,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "deinterlace_mode", default: 7,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var interlaceMode: Int = 7 { didSet {
         guard !(_interlaceModeConfig.suppressible && suppressINIWrites) else { return }
         _interlaceModeConfig.writer(_interlaceModeConfig.section, _interlaceModeConfig.key, interlaceMode)
@@ -566,7 +607,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "AspectRatio", default: 1,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIString(s, key: k, value: SettingsStore.aspectRatioName(for: v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var aspectRatio: Int = 1 { didSet {
         guard !(_aspectRatioConfig.suppressible && suppressINIWrites) else { return }
         _aspectRatioConfig.writer(_aspectRatioConfig.section, _aspectRatioConfig.key, aspectRatio)
@@ -594,7 +635,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "TriFilter", default: -1,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var trilinearFiltering: Int = -1 { didSet {
         guard !(_trilinearFilteringConfig.suppressible && suppressINIWrites) else { return }
         _trilinearFilteringConfig.writer(_trilinearFilteringConfig.section, _trilinearFilteringConfig.key, trilinearFiltering)
@@ -860,7 +901,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "MaxAnisotropy", default: 0,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 0...16))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var maxAnisotropy: Int = 0 { didSet {
         guard !(_maxAnisotropyConfig.suppressible && suppressINIWrites) else { return }
         _maxAnisotropyConfig.writer(_maxAnisotropyConfig.section, _maxAnisotropyConfig.key, maxAnisotropy)
@@ -879,7 +920,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "TVShader", default: 0,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 0...7))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var tvShader: Int = 0 { didSet {
         guard !(_tvShaderConfig.suppressible && suppressINIWrites) else { return }
         _tvShaderConfig.writer(_tvShaderConfig.section, _tvShaderConfig.key, tvShader)
@@ -891,7 +932,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "Upscaler", default: 0,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(v)) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var upscaler: Int = 0 { didSet {
         guard !(_upscalerConfig.suppressible && suppressINIWrites) else { return }
         _upscalerConfig.writer(_upscalerConfig.section, _upscalerConfig.key, upscaler)
@@ -924,7 +965,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "pcrtc_offsets", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var pcrtcOffsets: Bool = false { didSet {
         guard !(_pcrtcOffsetsConfig.suppressible && suppressINIWrites) else { return }
         _pcrtcOffsetsConfig.writer(_pcrtcOffsetsConfig.section, _pcrtcOffsetsConfig.key, pcrtcOffsets)
@@ -934,7 +975,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "pcrtc_overscan", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var pcrtcOverscan: Bool = false { didSet {
         guard !(_pcrtcOverscanConfig.suppressible && suppressINIWrites) else { return }
         _pcrtcOverscanConfig.writer(_pcrtcOverscanConfig.section, _pcrtcOverscanConfig.key, pcrtcOverscan)
@@ -944,7 +985,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "pcrtc_antiblur", default: true,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var pcrtcAntiBlur: Bool = true { didSet {
         guard !(_pcrtcAntiBlurConfig.suppressible && suppressINIWrites) else { return }
         _pcrtcAntiBlurConfig.writer(_pcrtcAntiBlurConfig.section, _pcrtcAntiBlurConfig.key, pcrtcAntiBlur)
@@ -954,7 +995,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "disable_interlace_offset", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var disableInterlaceOffset: Bool = false { didSet {
         guard !(_disableInterlaceOffsetConfig.suppressible && suppressINIWrites) else { return }
         _disableInterlaceOffsetConfig.writer(_disableInterlaceOffsetConfig.section, _disableInterlaceOffsetConfig.key, disableInterlaceOffset)
@@ -964,7 +1005,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "SkipDuplicateFrames", default: true,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var skipDuplicateFrames: Bool = true { didSet {
         guard !(_skipDuplicateFramesConfig.suppressible && suppressINIWrites) else { return }
         _skipDuplicateFramesConfig.writer(_skipDuplicateFramesConfig.section, _skipDuplicateFramesConfig.key, skipDuplicateFrames)
@@ -978,12 +1019,13 @@ final class SettingsStore {
         guard !(_syncToHostRefreshConfig.suppressible && suppressINIWrites) else { return }
         _syncToHostRefreshConfig.writer(_syncToHostRefreshConfig.section, _syncToHostRefreshConfig.key, syncToHostRefresh)
         _syncToHostRefreshConfig.onSet?(syncToHostRefresh)
+        markFramePacingCustom()
     }}
     let _integerScalingConfig = Setting<Bool>(
         section: "EmuCore/GS", key: "IntegerScaling", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var integerScaling: Bool = false { didSet {
         guard !(_integerScalingConfig.suppressible && suppressINIWrites) else { return }
         _integerScalingConfig.writer(_integerScalingConfig.section, _integerScalingConfig.key, integerScaling)
@@ -995,7 +1037,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "ShadeBoost", default: false,
         suppressible: false,
         writer: ARMSX2Bridge.setINIBool,
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var shadeBoost: Bool = false { didSet {
         guard !(_shadeBoostConfig.suppressible && suppressINIWrites) else { return }
         _shadeBoostConfig.writer(_shadeBoostConfig.section, _shadeBoostConfig.key, shadeBoost)
@@ -1005,7 +1047,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "ShadeBoost_Brightness", default: 50,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 1...100))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var shadeBoostBrightness: Int = 50 { didSet {
         guard !(_shadeBoostBrightnessConfig.suppressible && suppressINIWrites) else { return }
         _shadeBoostBrightnessConfig.writer(_shadeBoostBrightnessConfig.section, _shadeBoostBrightnessConfig.key, shadeBoostBrightness)
@@ -1015,7 +1057,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "ShadeBoost_Contrast", default: 50,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 1...100))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var shadeBoostContrast: Int = 50 { didSet {
         guard !(_shadeBoostContrastConfig.suppressible && suppressINIWrites) else { return }
         _shadeBoostContrastConfig.writer(_shadeBoostContrastConfig.section, _shadeBoostContrastConfig.key, shadeBoostContrast)
@@ -1025,7 +1067,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "ShadeBoost_Saturation", default: 50,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 1...100))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var shadeBoostSaturation: Int = 50 { didSet {
         guard !(_shadeBoostSaturationConfig.suppressible && suppressINIWrites) else { return }
         _shadeBoostSaturationConfig.writer(_shadeBoostSaturationConfig.section, _shadeBoostSaturationConfig.key, shadeBoostSaturation)
@@ -1035,7 +1077,7 @@ final class SettingsStore {
         section: "EmuCore/GS", key: "ShadeBoost_Gamma", default: 50,
         suppressible: false,
         writer: { s, k, v in ARMSX2Bridge.setINIInt(s, key: k, value: Int32(SettingsStore.clamped(v, to: 1...100))) },
-        onSet: { _ in SettingsStore.shared.requestGraphicsApply() })
+        onSet: { _ in SettingsStore.shared.requestGraphicsApplyGuarded() })
     var shadeBoostGamma: Int = 50 { didSet {
         guard !(_shadeBoostGammaConfig.suppressible && suppressINIWrites) else { return }
         _shadeBoostGammaConfig.writer(_shadeBoostGammaConfig.section, _shadeBoostGammaConfig.key, shadeBoostGamma)
@@ -1066,6 +1108,36 @@ final class SettingsStore {
             }
         }
     }
+    // Frame Pacing — consolidated EmuCore/GS + SPU2/Output + Framerate surface.
+    var framePacingPreset: FramePacingPreset = .optimal {
+        didSet {
+            // Only an explicit user change cascades the preset into the
+            // individual pacing keys; skip during a bulk reload so restored
+            // values are not overwritten.
+            guard !suppressINIWrites else { return }
+            ARMSX2Bridge.setINIInt("ARMSX2iOS/FramePacing", key: "Preset", value: Int32(framePacingPreset.rawValue))
+            if framePacingPreset == .custom {
+                if !isAutoMarkingFramePacingCustom {
+                    restoreCustomFramePacing()
+                }
+            } else {
+                applyFramePacingPreset(framePacingPreset)
+            }
+        }
+    }
+    // Adaptive Resolution — opt-in frame-time-driven dynamic internal
+    // resolution, off by default. The didSet writes the INI key and starts or
+    // stops the controller so its lifecycle tracks the user's toggle.
+    let _adaptiveResolutionEnabledConfig = Setting<Bool>(
+        section: "ARMSX2iOS/FramePacing", key: "DynamicResolution", default: false,
+        suppressible: false,
+        writer: { s, k, v in ARMSX2Bridge.setINIBool(s, key: k, value: v) })
+    var adaptiveResolutionEnabled: Bool = false { didSet {
+        guard !(_adaptiveResolutionEnabledConfig.suppressible && suppressINIWrites) else { return }
+        _adaptiveResolutionEnabledConfig.writer(_adaptiveResolutionEnabledConfig.section, _adaptiveResolutionEnabledConfig.key, adaptiveResolutionEnabled)
+        _adaptiveResolutionEnabledConfig.onSet?(adaptiveResolutionEnabled)
+        FrameTimeDynamicResolutionController.shared.setEnabled(adaptiveResolutionEnabled)
+    }}
     let _lastActiveOsdPresetConfig = Setting<OsdPreset>(
         section: "ARMSX2iOS/UI", key: "LastActiveOsdPreset", default: .simple,
         suppressible: false,
@@ -1551,17 +1623,20 @@ final class SettingsStore {
             UserDefaults.standard.set(backgroundDim, forKey: "ARMSX2iOSBackgroundDim")
         }
     }
-    // Per-tab custom-background toggles. The Games library always honours a set
-    // background; BIOS/Help/Settings are opt-in so a wallpaper does not suddenly
-    // appear behind a list the user never asked to decorate.
     var backgroundEnabledInBIOS: Bool = true {
-        didSet { UserDefaults.standard.set(backgroundEnabledInBIOS, forKey: "ARMSX2iOSBackgroundEnabledInBIOS") }
+        didSet {
+            UserDefaults.standard.set(backgroundEnabledInBIOS, forKey: "ARMSX2iOSBackgroundEnabledInBIOS")
+        }
     }
     var backgroundEnabledInHelp: Bool = false {
-        didSet { UserDefaults.standard.set(backgroundEnabledInHelp, forKey: "ARMSX2iOSBackgroundEnabledInHelp") }
+        didSet {
+            UserDefaults.standard.set(backgroundEnabledInHelp, forKey: "ARMSX2iOSBackgroundEnabledInHelp")
+        }
     }
     var backgroundEnabledInSettings: Bool = false {
-        didSet { UserDefaults.standard.set(backgroundEnabledInSettings, forKey: "ARMSX2iOSBackgroundEnabledInSettings") }
+        didSet {
+            UserDefaults.standard.set(backgroundEnabledInSettings, forKey: "ARMSX2iOSBackgroundEnabledInSettings")
+        }
     }
 
     var hasCustomBackground: Bool {
@@ -1580,6 +1655,11 @@ final class SettingsStore {
         // reading from INI does not also write back. Matches reload()'s pattern.
         suppressINIWrites = true
         defer { suppressINIWrites = false }
+
+        // Frame Pacing default migration. Runs before any stored property is
+        // read so the values below are authoritative. Writes the INI directly
+        // — can't touch SettingsStore.shared mid-init (swift_once deadlock).
+        Self.migrateFramePacingOptimalDefaultV1()
 
         // CPU
         eeCoreType = Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "CoreType", defaultValue: 2))
@@ -1750,6 +1830,15 @@ final class SettingsStore {
         controllerMultitapMode = Int(ARMSX2Bridge.getINIInt("ARMSX2iOS/Gamepad", key: "MultitapMode", defaultValue: 0))
         autoOpenStikDebug = ARMSX2Bridge.getINIBool("ARMSX2iOS/JIT", key: "AutoOpenStikDebug", defaultValue: false)
         jitScriptProtocol = Self.loadedJITScriptProtocol()
+        // The migration above already wrote the post-migration INI values;
+        // these reads pick them up.
+        framePacingPreset = FramePacingPreset(rawValue: Int(ARMSX2Bridge.getINIInt("ARMSX2iOS/FramePacing", key: "Preset", defaultValue: Int32(FramePacingPreset.optimal.rawValue)))) ?? .optimal
+        // Adaptive Resolution: read back so a persisted ON state at boot starts
+        // the controller. The didSet is suppressINIWrites-guarded so this
+        // reassignment does not write back; setEnabled is called explicitly
+        // below to sync the controller to the persisted value.
+        let _initialAdaptiveResolution = ARMSX2Bridge.getINIBool("ARMSX2iOS/FramePacing", key: "DynamicResolution", defaultValue: false)
+        adaptiveResolutionEnabled = _initialAdaptiveResolution
         dev9HddEnabled = ARMSX2Bridge.getINIBool("DEV9/Hdd", key: "HddEnable", defaultValue: false)
         dev9HddFile = ARMSX2Bridge.getINIString("DEV9/Hdd", key: "HddFile", defaultValue: "DEV9hdd.raw")
         dev9EthernetEnabled = ARMSX2Bridge.getINIBool("DEV9/Eth", key: "EthEnable", defaultValue: false)
@@ -1788,6 +1877,12 @@ final class SettingsStore {
         if !ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "OsdCustomSeeded", defaultValue: false) {
             snapshotCustomOsd()
             ARMSX2Bridge.setINIBool("ARMSX2iOS/UI", key: "OsdCustomSeeded", value: true)
+        }
+        // Defer starting the adaptive controller to the next run loop: setEnabled
+        // reads SettingsStore.shared.upscaleMultiplier, which would re-enter this
+        // init's swift_once and deadlock dispatch_once.
+        DispatchQueue.main.async { [self] in
+            FrameTimeDynamicResolutionController.shared.setEnabled(self.adaptiveResolutionEnabled)
         }
     }
 
@@ -1984,7 +2079,7 @@ final class SettingsStore {
         VPadSkinLibraryStore.shared.adoptLegacySelection(virtualPadSkin)
     }
 
-    private static func frameLimiterEnabled(fromNominalScalar scalar: Float) -> Bool {
+    static func frameLimiterEnabled(fromNominalScalar scalar: Float) -> Bool {
         scalar < 5.0
     }
 
@@ -2069,7 +2164,7 @@ final class SettingsStore {
         }
     }
 
-    private static func targetFPS(fromNominalScalar scalar: Float, baseFramerate: Float) -> Float {
+    static func targetFPS(fromNominalScalar scalar: Float, baseFramerate: Float) -> Float {
         guard frameLimiterEnabled(fromNominalScalar: scalar) else { return defaultTargetFPS }
         return clampedTargetFPS(sanitizedNominalScalar(scalar) * max(baseFramerate, 1.0))
     }
@@ -2097,13 +2192,19 @@ final class SettingsStore {
 
     private func applyFrameLimiterSettings() {
         guard !suppressINIWrites else { return }
-        var scalar: Float = frameLimiterEnabled ? Self.sanitizedNominalScalar(targetFPS / max(ntscFramerate, 1.0)) : 10.0
+        var scalar: Float = Self.nominalScalarForFrameLimiter(enabled: frameLimiterEnabled, targetFPS: targetFPS, baseFramerate: ntscFramerate)
         if ARMSX2Bridge.isRetroAchievementsHardcoreActive(), scalar < 1.0 {
             scalar = 1.0
         }
         NSLog("[ARMSX2 iOS Settings] Frame limiter %@ targetFPS=%.0f NominalScalar=%.3f",
               frameLimiterEnabled ? "ON" : "OFF", targetFPS, scalar)
         ARMSX2Bridge.setINIFloat("Framerate", key: "NominalScalar", value: scalar)
+    }
+
+    /// Encode the frame limiter as Framerate/NominalScalar: targetFPS/base when
+    /// on, or 10.0 to disable. Shared by the global setter and per-game save.
+    static func nominalScalarForFrameLimiter(enabled: Bool, targetFPS: Float, baseFramerate: Float) -> Float {
+        enabled ? sanitizedNominalScalar(targetFPS / max(baseFramerate, 1.0)) : 10.0
     }
 
     func setRuntimeFastForwardEnabled(_ enabled: Bool) {
@@ -2206,6 +2307,65 @@ final class SettingsStore {
         }
         isAutoMarkingCustom = false
         snapshotCustomOsd()
+    }
+
+    /// Apply a preset via the individual clamped setters. Never writes
+    /// Framerate/NominalScalar directly — frameLimiterEnabled + targetFPS go
+    /// through applyFrameLimiterSettings. Non-Framerate keys first so the
+    /// limiter flag is set before targetFPS fires applyFrameLimiterSettings.
+    func applyFramePacingPreset(_ preset: FramePacingPreset) {
+        guard preset != .custom else { return }
+        isProgrammaticFramePacingFlagChange = true
+        defer { isProgrammaticFramePacingFlagChange = false }
+        switch preset {
+        case .optimal:
+            vsyncQueueSize = 4
+            audioOutputLatencyMs = 15
+            audioBufferMs = 50
+            syncToHostRefresh = false
+            frameLimiterEnabled = true
+            targetFPS = 60
+        case .smooth:
+            vsyncQueueSize = 8
+            audioOutputLatencyMs = 20
+            audioBufferMs = 75
+            syncToHostRefresh = false
+            frameLimiterEnabled = true
+            targetFPS = 60
+        case .lowLatency:
+            vsyncQueueSize = 2
+            audioOutputLatencyMs = 10
+            audioBufferMs = 30
+            syncToHostRefresh = false
+            frameLimiterEnabled = true
+            targetFPS = 60
+        case .batterySaver:
+            vsyncQueueSize = 8
+            audioOutputLatencyMs = 30
+            audioBufferMs = 100
+            syncToHostRefresh = false
+            frameLimiterEnabled = true
+            targetFPS = 45
+        case .custom:
+            break
+        }
+    }
+
+    /// Hook for restoring individual pacing values when cycling back to
+    /// .custom. Currently a no-op; kept so the preset didSet stays symmetric
+    /// with the OSD preset handling.
+    private func restoreCustomFramePacing() {
+    }
+
+    /// Mark the preset .custom when the user edits any individual pacing
+    /// control directly.
+    private func markFramePacingCustom() {
+        guard !suppressINIWrites, !isProgrammaticFramePacingFlagChange else { return }
+        isAutoMarkingFramePacingCustom = true
+        if framePacingPreset != .custom {
+            framePacingPreset = .custom
+        }
+        isAutoMarkingFramePacingCustom = false
     }
 
     /// Reset emulator settings to ARMSX2 iOS defaults

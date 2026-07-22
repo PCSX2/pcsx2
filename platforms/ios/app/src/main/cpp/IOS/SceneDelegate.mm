@@ -220,6 +220,11 @@
         self.window.backgroundColor = [UIColor systemGroupedBackgroundColor];
         [self.window makeKeyAndVisible];
 
+        // ProMotion (120 Hz) unlock is just CADisableMinimumFrameDurationOnPhone
+        // in Info.plist. Don't pin preferredFrameRateRange via
+        // -[UIUpdateLink initWithWindowScene:]; that selector doesn't exist and
+        // crashes on cold launch.
+
 // Create game render view — SwiftUI MetalGameView (UIViewRepresentable) manages placement
         g_gameRenderView = [[ARMSX2GameView alloc] initWithFrame:CGRectZero];
         g_gameRenderView.backgroundColor = [UIColor blackColor];

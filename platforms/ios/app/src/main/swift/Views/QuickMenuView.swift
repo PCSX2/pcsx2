@@ -6,7 +6,13 @@ import SwiftUI
 /// Destinations the pause menu hands back to the host to present. (Also the associated payload of
 /// the host's overlay route state machine.)
 enum QuickMenuDestination: Equatable {
-    case perGame, speed, saveStates, cheats, retroAchievements, padLayout, resetROM
+    case perGame
+    case speed
+    case saveStates
+    case cheats
+    case retroAchievements
+    case padLayout
+    case resetROM
 }
 
 /// Native in-game pause menu: a premium opaque graphite "command deck" presented by the host as a

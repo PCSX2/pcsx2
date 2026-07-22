@@ -1557,52 +1557,6 @@ private struct SpeedControlPanel: View {
                     }
                 }
 
-                Section(settings.localized("Frame Limiter")) {
-                    Toggle(settings.localized("Enable Limiter"), isOn: Binding(
-                        get: { settings.frameLimiterEnabled },
-                        set: { enabled in
-                            settings.frameLimiterEnabled = enabled
-                            enforceHardcoreSpeedFloorIfNeeded()
-                        }
-                    ))
-
-                    if settings.frameLimiterEnabled {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text(settings.localized("FPS Target"))
-                                Spacer()
-                                Text(Self.formatFPS(settings.targetFPS))
-                                    .foregroundStyle(.secondary)
-                                    .font(.callout.monospacedDigit())
-                            }
-
-                            Slider(
-                                value: Binding(
-                                    get: { settings.targetFPS },
-                                    set: { value in
-                                        settings.targetFPS = value
-                                        enforceHardcoreSpeedFloorIfNeeded()
-                                    }
-                                ),
-                                in: SettingsStore.minTargetFPS...SettingsStore.maxTargetFPS,
-                                step: 1.0
-                            )
-
-                            HStack {
-                                quickTargetButton(30)
-                                quickTargetButton(45)
-                                quickTargetButton(60)
-                                quickTargetButton(90)
-                                quickTargetButton(120)
-                            }
-                        }
-                    } else {
-                        Text(settings.localized("Limiter is OFF. Games can run above normal speed and may draw more power."))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 if hardcoreActive {
                     Section(settings.localized("Hardcore Mode")) {
                         Text(settings.localized("Hardcore mode blocks slowdown and frame advance. Fast forward stays available; Normal Speed is locked at 100% or higher."))
@@ -1662,25 +1616,6 @@ private struct SpeedControlPanel: View {
         }
         .buttonStyle(.bordered)
         .font(.caption.monospacedDigit())
-    }
-
-    private func quickTargetButton(_ fps: Float) -> some View {
-        Button(Self.formatCompactFPS(fps)) {
-            settings.frameLimiterEnabled = true
-            settings.targetFPS = fps
-            enforceHardcoreSpeedFloorIfNeeded()
-        }
-        .disabled(hardcoreActive && fps < settings.ntscFramerate)
-        .buttonStyle(.bordered)
-        .font(.caption.monospacedDigit())
-    }
-
-    private static func formatFPS(_ value: Float) -> String {
-        String(format: "%.0f FPS", value)
-    }
-
-    private static func formatCompactFPS(_ value: Float) -> String {
-        String(format: "%.0f", value)
     }
 
     private static func formatPercent(_ scalar: Float) -> String {

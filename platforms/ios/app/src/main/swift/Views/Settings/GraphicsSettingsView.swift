@@ -176,12 +176,11 @@ struct GraphicsSettingsView: View {
                 Toggle(settings.localized("Anti-Blur"), isOn: $settings.pcrtcAntiBlur)
                 Toggle(settings.localized("Disable Interlace Offset"), isOn: $settings.disableInterlaceOffset)
                 Toggle(settings.localized("Skip Duplicate Frames"), isOn: $settings.skipDuplicateFrames)
-                Toggle(settings.localized("Sync to Host Refresh"), isOn: $settings.syncToHostRefresh)
                 Toggle(settings.localized("Integer Scaling"), isOn: $settings.integerScaling)
             } header: {
                 Text(settings.localized("Screen / PCRTC"))
             } footer: {
-                Text(settings.localized("Display output options. Most apply immediately. Sync to Host Refresh needs a restart to take effect."))
+                Text(settings.localized("Display output options. Most apply immediately."))
             }
 
             Section(settings.localized("Quality")) {
@@ -376,18 +375,6 @@ struct GraphicsSettingsView: View {
                     .disabled(!settings.dumpReplaceableTextures)
                 Toggle(settings.localized("Dump Palette Textures"), isOn: $settings.dumpPaletteTextures)
                     .disabled(!settings.dumpReplaceableTextures)
-            }
-
-            Section("VSync") {
-                Stepper("\(settings.localized("Queue Size")): \(settings.vsyncQueueSize)", value: $settings.vsyncQueueSize, in: 2...16)
-                Text(settings.localized("Higher values reduce frame drops but increase latency."))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if settings.vsyncQueueSize >= 12 {
-                    Text(settings.localized("Large queues can make controls feel delayed and may increase stutter. The default is 8."))
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
             }
 
             Section {

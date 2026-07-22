@@ -52,6 +52,7 @@ extern "C" void ARMSX2_iOSCopyDeviceStats(int* outBatteryPercent, int* outTherma
 #include "ps2/BiosTools.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
+#include "pcsx2/PerformanceMetrics.h"
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/ZipHelpers.h"
@@ -3530,7 +3531,27 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
 #else
 	// iOS Simulator build: MetalFX framework absent at compile time.
 	return NO;
-#endif
+ #endif
+ }
+
+#pragma mark - Frame-time history
+
+// Returns the 150-sample PerformanceMetrics frame-time history (read-only).
+// Each sample is boxed as an NSNumber so Swift sees `[NSNumber]`.
++ (nonnull NSArray<NSNumber *> *)frameTimeHistory {
+    const PerformanceMetrics::FrameTimeHistory& history = PerformanceMetrics::GetFrameTimeHistory();
+    NSMutableArray<NSNumber *>* result = [NSMutableArray arrayWithCapacity:history.size()];
+    for (size_t i = 0; i < history.size(); i++) {
+        [result addObject:@(history[i])];
+    }
+    return result;
+}
+
+// Current write cursor inside the ring buffer, so callers can read the most
+// recent N samples (those just before the cursor) rather than treating the
+// array as a linear window.
++ (NSUInteger)frameTimeHistoryPos {
+    return (NSUInteger)PerformanceMetrics::GetFrameTimeHistoryPos();
 }
 
 #pragma mark - Per-game INI getter/setter
@@ -3665,6 +3686,55 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
     INISettingsInterface si(ARMSX2PerGameSettingsPath(serial, crc));
     si.Load();
     si.SetBoolValue(section.UTF8String, key.UTF8String, value);
+    Error error;
+    si.Save(&error);
+    VMManager::ReloadGameSettings();
+    if (MTGS::IsOpen())
+        MTGS::ApplySettings();
+}
+
++ (float)getPerGameINIFloat:(nonnull NSString *)section key:(nonnull NSString *)key defaultValue:(float)def forISO:(nonnull NSString *)isoName {
+    std::string serial;
+    u32 crc = 0;
+    if (!ARMSX2PerGameIdentityForISO(isoName, &serial, &crc))
+        return def;
+    INISettingsInterface si(ARMSX2PerGameSettingsPath(serial, crc));
+    if (!si.Load())
+        return def;
+    return si.GetFloatValue(section.UTF8String, key.UTF8String, def);
+}
+
++ (void)setPerGameINIFloat:(nonnull NSString *)section key:(nonnull NSString *)key value:(float)value forISO:(nonnull NSString *)isoName {
+    std::string serial;
+    u32 crc = 0;
+    if (!ARMSX2PerGameIdentityForISO(isoName, &serial, &crc))
+        return;
+    INISettingsInterface si(ARMSX2PerGameSettingsPath(serial, crc));
+    si.Load();
+    si.SetFloatValue(section.UTF8String, key.UTF8String, value);
+    Error error;
+    si.Save(&error);
+}
+
++ (float)getPerGameINIFloatForCurrentGame:(nonnull NSString *)section key:(nonnull NSString *)key defaultValue:(float)def {
+    std::string serial;
+    u32 crc = 0;
+    if (!ARMSX2PerGameIdentityForCurrentGame(&serial, &crc))
+        return def;
+    INISettingsInterface si(ARMSX2PerGameSettingsPath(serial, crc));
+    if (!si.Load())
+        return def;
+    return si.GetFloatValue(section.UTF8String, key.UTF8String, def);
+}
+
++ (void)setPerGameINIFloatForCurrentGame:(nonnull NSString *)section key:(nonnull NSString *)key value:(float)value {
+    std::string serial;
+    u32 crc = 0;
+    if (!ARMSX2PerGameIdentityForCurrentGame(&serial, &crc))
+        return;
+    INISettingsInterface si(ARMSX2PerGameSettingsPath(serial, crc));
+    si.Load();
+    si.SetFloatValue(section.UTF8String, key.UTF8String, value);
     Error error;
     si.Save(&error);
     VMManager::ReloadGameSettings();
