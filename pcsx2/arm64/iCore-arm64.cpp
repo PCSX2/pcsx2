@@ -709,7 +709,21 @@ static constexpr u32 NEON_RESERVED_FPU_MAX = 8;
 static constexpr u32 NEON_RESERVED_FPU_MIN = 9;
 
 // (The callee-saved allocator range q10-q15 is declared in iCore-arm64.h —
-// NEON_CALLEE_SAVED_START/END; indices 8/9 reserved above.)
+// NEON_CALLEE_SAVED_START/END; indices 8/9 reserved above. SL-13 reserves
+// q25/q26 the same way for the COP2 clamp-constant broadcasts —
+// NEON_RESERVED_COP2_CLAMPMAX/MIN in iCore-arm64.h.)
+static bool _isReservedNEONreg(u32 i)
+{
+	return i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN ||
+	       i == NEON_RESERVED_COP2_CLAMPMAX || i == NEON_RESERVED_COP2_CLAMPMIN;
+}
+
+#ifdef PCSX2_RECOMPILER_TESTS
+bool eeTestNeonRegIsReserved(int hostreg)
+{
+	return _isReservedNEONreg(static_cast<u32>(hostreg));
+}
+#endif
 
 // Free-slot-only probe of a range: no eviction, -1 when the range is full.
 // Used by the FPR-class allocators to PREFER a call-surviving home (GE-15)
@@ -719,7 +733,7 @@ static int _getFreeArm64NEONInRangeNoEvict(u32 minreg, u32 maxreg)
 {
 	for (u32 i = minreg; i < maxreg; i++)
 	{
-		if (i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN)
+		if (_isReservedNEONreg(i))
 			continue;
 		if (!arm64neon[i].inuse)
 			return static_cast<int>(i);
@@ -735,7 +749,7 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 	// Check for free registers
 	for (u32 i = minreg; i < maxreg; i++)
 	{
-		if (i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN)
+		if (_isReservedNEONreg(i))
 			continue;
 		if (!arm64neon[i].inuse)
 			return i;
@@ -746,7 +760,7 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 	bestcount = 0xffff;
 	for (u32 i = minreg; i < maxreg; i++)
 	{
-		if (i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN)
+		if (_isReservedNEONreg(i))
 			continue;
 		pxAssert(arm64neon[i].inuse);
 		if (arm64neon[i].needed)
@@ -787,7 +801,7 @@ int _getFreeArm64NEON(u32 minreg, u32 maxreg)
 	bestcount = 0xffff;
 	for (u32 i = minreg; i < maxreg; i++)
 	{
-		if (i == NEON_RESERVED_FPU_MAX || i == NEON_RESERVED_FPU_MIN)
+		if (_isReservedNEONreg(i))
 			continue;
 		pxAssert(arm64neon[i].inuse);
 		if (arm64neon[i].needed)

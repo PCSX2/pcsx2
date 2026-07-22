@@ -5535,6 +5535,10 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MEMORY, "Enable Extended RAM (Dev Console)"),
 			FSUI_CSTR("Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively."),
 			"EmuCore/CPU", "ExtraMemory", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLUS_MINUS, "FPU Add/Sub Guard Bits"),
+			FSUI_CSTR("Emulates the EE FPU's missing add/sub guard bits for hardware-accurate results (default). A few games need it; "
+					  "disabling is a minor speedup for EE-FPU-heavy games verified correct without it. No effect in Full clamping mode."),
+			"EmuCore/CPU/Recompiler", "fpuGuardedAddSub", true);
 
 		MenuHeading(FSUI_CSTR("Vector Units"));
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_TREND_DOWN, "VU0 Rounding Mode"),

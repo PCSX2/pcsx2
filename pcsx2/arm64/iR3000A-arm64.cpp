@@ -1304,9 +1304,9 @@ static void iopRecRecompile(const u32 startpc)
 	// and triggers SIGILL. Same fix as EE rec at iR5900-arm64.cpp:1751.
 	const uptr block_fnptr = (uptr)armGetCurrentCodePointer();
 
-	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
-	if (!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc))
-		s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
+	// See the EE rec's equivalent: New() creates or re-binds, and publishes
+	// the owner for the link sites this block is about to register.
+	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), block_fnptr);
 
 	psxbranch = 0;
 

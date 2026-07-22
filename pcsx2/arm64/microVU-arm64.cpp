@@ -2103,6 +2103,16 @@ bool mVUTestProbe_VIPoolUsable(int hostreg, bool cop2mode)
 	return usable;
 }
 
+// SL-13 twin: is host NEON reg q<hostreg> in the VF allocation pool under
+// cop2mode? Macro mode must exclude q25/q26 (EE clamp-constant broadcasts).
+bool mVUTestProbe_NeonPoolUsable(int hostreg, bool cop2mode)
+{
+	microVU0.regAlloc->reset(cop2mode);
+	const bool usable = microVU0.regAlloc->isUsableNeon(hostreg);
+	microVU0.regAlloc->reset(false);
+	return usable;
+}
+
 // waitMTVU stub-shape probe: returns the emitted VU1-sync thunk entry
 // (mVU.waitMTVU, generated once by mVUgenerateDispatchers) for VU `index`.
 // mVUaddrFix branches to this thunk when VU0/COP2 touches VU1 register space
