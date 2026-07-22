@@ -29,6 +29,8 @@
 #include <mutex>
 #include <sstream>
 
+#include <inttypes.h>
+
 // Tweakables
 enum : u32
 {
