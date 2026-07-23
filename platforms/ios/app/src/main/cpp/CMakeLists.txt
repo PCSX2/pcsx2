@@ -398,15 +398,25 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 		${CMAKE_BINARY_DIR}/3rdparty/SDL3/include-revision
 	)
 
+	# Runtime resources come from the canonical bin/resources tree (shared with the
+	# desktop and Android builds), not a committed iOS copy. dx11 shaders are
+	# excluded — iOS renders with Metal and never compiles them. The mobile GameDB
+	# overlay is bundled alongside so the shared GameDatabase override loader applies
+	# the same tiler-GPU tuning at runtime (converging iOS onto the runtime-overlay
+	# model, retiring the old build-time gamedb-convert.py merge). patches.zip is the
+	# only genuine iOS-only extra still committed under assets/resources.
+	set(ARMSX2_SHARED_RESOURCES "${ARMSX2_ROOT}/bin/resources")
 	file(GLOB METAL_SHADERS "${ARMSX2_ROOT}/pcsx2/GS/Renderers/Metal/*.metal")
-	file(GLOB FONTS "${CMAKE_SOURCE_DIR}/../assets/resources/fonts/*.ttf" "${CMAKE_SOURCE_DIR}/../assets/resources/fonts/*.otf")
-	file(GLOB_RECURSE IOS_SHADER_RESOURCES "${CMAKE_SOURCE_DIR}/../assets/resources/shaders/*")
-	file(GLOB_RECURSE IOS_SOUND_RESOURCES "${CMAKE_SOURCE_DIR}/../assets/resources/sounds/*")
+	file(GLOB FONTS "${ARMSX2_SHARED_RESOURCES}/fonts/*.ttf" "${ARMSX2_SHARED_RESOURCES}/fonts/*.otf")
+	file(GLOB_RECURSE IOS_SHADER_RESOURCES "${ARMSX2_SHARED_RESOURCES}/shaders/*")
+	list(FILTER IOS_SHADER_RESOURCES EXCLUDE REGEX "/dx11/")
+	file(GLOB_RECURSE IOS_SOUND_RESOURCES "${ARMSX2_SHARED_RESOURCES}/sounds/*")
 	set(IOS_TOP_LEVEL_RESOURCES
-		"${CMAKE_SOURCE_DIR}/../assets/resources/GameIndex.yaml"
-		"${CMAKE_SOURCE_DIR}/../assets/resources/RedumpDatabase.yaml"
+		"${ARMSX2_SHARED_RESOURCES}/GameIndex.yaml"
+		"${ARMSX2_SHARED_RESOURCES}/RedumpDatabase.yaml"
+		"${ARMSX2_SHARED_RESOURCES}/game_controller_db.txt"
+		"${ARMSX2_ROOT}/bin/resources-overlay/armsx2_overrides.yaml"
 		"${CMAKE_SOURCE_DIR}/../assets/resources/patches.zip"
-		"${CMAKE_SOURCE_DIR}/../assets/resources/game_controller_db.txt"
 	)
 
 	target_sources(ARMSX2iOS PRIVATE ${METAL_SHADERS} ${FONTS} ${IOS_SHADER_RESOURCES})
@@ -423,14 +433,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
 	endforeach()
 	foreach(IOS_SHADER_RESOURCE IN LISTS IOS_SHADER_RESOURCES)
 		get_filename_component(IOS_SHADER_DIR "${IOS_SHADER_RESOURCE}" DIRECTORY)
-		file(RELATIVE_PATH IOS_SHADER_SUBDIR "${CMAKE_SOURCE_DIR}/../assets/resources" "${IOS_SHADER_DIR}")
+		file(RELATIVE_PATH IOS_SHADER_SUBDIR "${ARMSX2_SHARED_RESOURCES}" "${IOS_SHADER_DIR}")
 		set_source_files_properties("${IOS_SHADER_RESOURCE}" PROPERTIES
 			MACOSX_PACKAGE_LOCATION "Resources/${IOS_SHADER_SUBDIR}")
 	endforeach()
 	target_sources(ARMSX2iOS PRIVATE ${IOS_SOUND_RESOURCES})
 	foreach(IOS_SOUND_RESOURCE IN LISTS IOS_SOUND_RESOURCES)
 		get_filename_component(IOS_SOUND_DIR "${IOS_SOUND_RESOURCE}" DIRECTORY)
-		file(RELATIVE_PATH IOS_SOUND_SUBDIR "${CMAKE_SOURCE_DIR}/../assets/resources" "${IOS_SOUND_DIR}")
+		file(RELATIVE_PATH IOS_SOUND_SUBDIR "${ARMSX2_SHARED_RESOURCES}" "${IOS_SOUND_DIR}")
 		set_source_files_properties("${IOS_SOUND_RESOURCE}" PROPERTIES
 			MACOSX_PACKAGE_LOCATION "Resources/${IOS_SOUND_SUBDIR}")
 	endforeach()
