@@ -84,6 +84,9 @@ public:
 	/// Returns true if running on an AMD GPU.
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
+	/// Returns true if running on an Intel GPU (vendorID 0x8086).
+	__fi bool IsDeviceIntel() const { return (m_device_properties.vendorID == 0x8086u); }
+
 	/// Returns true if running on a Broadcom V3D GPU (vendorID 0x14E4) — i.e. the
 	/// Raspberry Pi's VideoCore under Mesa's V3DV, reached via the Linux arm64 build.
 	__fi bool IsDeviceBroadcom() const { return (m_device_properties.vendorID == 0x14E4u); }

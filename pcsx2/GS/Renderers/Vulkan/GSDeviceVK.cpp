@@ -3516,12 +3516,21 @@ bool GSDeviceVK::CheckFeatures()
 	m_max_framebuffer_width = m_device_properties.limits.maxFramebufferWidth;
 	m_max_framebuffer_height = m_device_properties.limits.maxFramebufferHeight;
 
+#if defined(_WIN32)
+	// ROV (fragment_shader_interlock) is only correct on immediate-mode desktop GPUs.
+	// Gate it on a positive vendor allowlist rather than blocklisting known-bad tilers:
+	// tilers order fragments per-tile, so pixel_interlock_ordered is either wrong or hangs
+	// (Adreno/turnip A6xx hangcheck, PowerVR, Apple, Broadcom). WoA Adreno fails this for free.
+	const bool rov_vendor_ok = IsDeviceNVIDIA() || IsDeviceAMD() || IsDeviceIntel();
 	m_features.rov = m_optional_extensions.vk_ext_fragment_shader_interlock &&
 	                 m_device_features.fragmentStoresAndAtomics &&
 	                 has_rov_storage_flags &&
 	                 !m_features.framebuffer_fetch &&
-	                 // Adreno/turnip hangs the GPU on pixel_interlock_ordered draws (A6xx hangcheck).
-	                 !is_adreno;
+	                 rov_vendor_ok;
+#else
+	// Android and Linux (handheld/mobile targets) are tilers — ROV is never correct here.
+	m_features.rov = false;
+#endif
 
 	return true;
 }
