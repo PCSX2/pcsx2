@@ -170,24 +170,12 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 			return InputLayout::Playstation;
 		if (mode == "nintendo")
 			return InputLayout::Nintendo;
+		if (mode == "generic")
+			return InputLayout::Generic;
 		return InputLayout::Unknown;
 	};
 
-	switch (parse_glyph_layout(glyph_mode))
-	{
-		case InputLayout::Xbox:
-			InputManager::SetGamepadIconPreference(InputLayout::Xbox);
-			break;
-		case InputLayout::Playstation:
-			InputManager::SetGamepadIconPreference(InputLayout::Playstation);
-			break;
-		case InputLayout::Nintendo:
-			InputManager::SetGamepadIconPreference(InputLayout::Nintendo);
-			break;
-		default:
-			InputManager::SetGamepadIconPreference(InputLayout::Unknown);
-			break;
-	}
+	InputManager::SetGamepadIconPreference(parse_glyph_layout(glyph_mode));
 
 	const InputLayout layout = ImGuiFullscreen::GetGamepadLayout();
 
