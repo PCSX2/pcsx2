@@ -9,9 +9,17 @@
 // default for this frontend), comes up directly into the FullscreenUI
 // game-picker.
 //
-// Display surface is acquired via Vulkan VK_KHR_display, so no Wayland/X11
-// compositor is needed. The Vulkan renderer enumerates monitors itself; this
-// frontend only reports the requested resolution back through WindowInfo.
+// Display surface is normally acquired via Vulkan VK_KHR_display, so no
+// Wayland/X11 compositor is needed — the Vulkan renderer enumerates monitors
+// itself and this frontend only reports the requested resolution back through
+// WindowInfo.
+//
+// When the frontend is instead launched inside a Wayland session (a compositor
+// owns the display, so VK_KHR_display can't take it — desktop, phone, or a
+// gamescope-style embedded compositor), we detect WAYLAND_DISPLAY at
+// window-build time, spin up an SDL3 SDL_WINDOW_VULKAN window, and hand its
+// wl_display / wl_surface to the Vulkan backend as a WindowInfo::Type::Wayland
+// surface. This path is compiled only when WAYLAND_API is enabled.
 //
 // Audio + input come from SDL3 via the existing SDLAudioStream / SDLInputSource
 // modules in the core (already linked, already non-Qt).
@@ -87,6 +95,16 @@ static std::atomic<bool> s_shutdown_requested{false};
 // display's preferred mode).
 static u32 s_requested_width = 0;
 static u32 s_requested_height = 0;
+
+// Wayland fallback window. Created lazily by BuildWindowInfo() the first time a
+// render window is requested, but only when running under a Wayland compositor
+// (WAYLAND_DISPLAY set) — on a bare kmsdrm handheld this stays null and the
+// VK_KHR_display (VulkanDirect) path is used instead. Owned by this frontend;
+// destroyed in main() after the CPU thread joins.
+#if defined(WAYLAND_API)
+static SDL_Window* s_wayland_window = nullptr;
+static bool s_wayland_probed = false;
+#endif
 
 // Pending CPU-thread callbacks queued by Host::RunOnCPUThread (FullscreenUI
 // uses this to schedule work back from the GS thread, e.g. "user picked an
@@ -301,8 +319,102 @@ void Pcsx2SDL::InstallSignalHandler()
 	std::signal(SIGHUP, &HandleSignal);
 }
 
+#if defined(WAYLAND_API)
+// True when a Wayland compositor is present. On a bare kmsdrm handheld there is
+// no WAYLAND_DISPLAY and VK_KHR_display (VulkanDirect) is the correct path, so
+// we must not create an SDL window there (doing so would also fight the ICD for
+// the DRM master).
+static bool WaylandSessionPresent()
+{
+	const char* wl = std::getenv("WAYLAND_DISPLAY");
+	return wl && *wl;
+}
+
+// Bring up an SDL3 Vulkan window on the Wayland compositor and populate `wi`
+// with its wl_display / wl_surface. Returns false (and leaves s_wayland_window
+// null) if anything fails, so the caller falls back to VulkanDirect.
+static bool BuildWaylandWindowInfo(WindowInfo& wi)
+{
+	if (!s_wayland_probed)
+	{
+		s_wayland_probed = true;
+
+		// Prefer the Wayland video driver explicitly; if SDL comes up on
+		// something else (e.g. Xwayland via x11), the handles below won't match
+		// Type::Wayland, so we bail and let VulkanDirect take over.
+		SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
+		if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+		{
+			Console.WarningFmt("Wayland fallback: SDL_INIT_VIDEO failed ({}); using VK_KHR_display.",
+				SDL_GetError());
+			return false;
+		}
+
+		const char* driver = SDL_GetCurrentVideoDriver();
+		if (!driver || std::strcmp(driver, "wayland") != 0)
+		{
+			Console.WarningFmt("Wayland fallback: SDL video driver is '{}', not wayland; using VK_KHR_display.",
+				driver ? driver : "<none>");
+			SDL_QuitSubSystem(SDL_INIT_VIDEO);
+			return false;
+		}
+
+		// Fullscreen borderless — the compositor sizes us to the output. A
+		// requested mode only seeds the initial (windowed) size; fullscreen
+		// overrides it.
+		const int win_w = s_requested_width != 0 ? static_cast<int>(s_requested_width) : 1280;
+		const int win_h = s_requested_height != 0 ? static_cast<int>(s_requested_height) : 720;
+		s_wayland_window = SDL_CreateWindow("ARMSX2", win_w, win_h,
+			SDL_WINDOW_VULKAN | SDL_WINDOW_FULLSCREEN);
+		if (!s_wayland_window)
+		{
+			Console.WarningFmt("Wayland fallback: SDL_CreateWindow failed ({}); using VK_KHR_display.",
+				SDL_GetError());
+			SDL_QuitSubSystem(SDL_INIT_VIDEO);
+			return false;
+		}
+	}
+
+	if (!s_wayland_window)
+		return false;
+
+	const SDL_PropertiesID props = SDL_GetWindowProperties(s_wayland_window);
+	void* wl_display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
+	void* wl_surface = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
+	if (!wl_display || !wl_surface)
+	{
+		Console.Warning("Wayland fallback: SDL window exposed no wl_display/wl_surface; using VK_KHR_display.");
+		return false;
+	}
+
+	int px_w = 0, px_h = 0;
+	SDL_GetWindowSizeInPixels(s_wayland_window, &px_w, &px_h);
+
+	wi.type = WindowInfo::Type::Wayland;
+	wi.display_connection = wl_display;
+	wi.window_handle = wl_surface;
+	wi.surface_handle = nullptr;
+	wi.surface_width = px_w > 0 ? static_cast<u32>(px_w) : s_requested_width;
+	wi.surface_height = px_h > 0 ? static_cast<u32>(px_h) : s_requested_height;
+	wi.surface_scale = SDL_GetWindowPixelDensity(s_wayland_window);
+	if (wi.surface_scale <= 0.0f)
+		wi.surface_scale = 1.0f;
+	return true;
+}
+#endif
+
 std::optional<WindowInfo> Pcsx2SDL::BuildWindowInfo()
 {
+#if defined(WAYLAND_API)
+	if (WaylandSessionPresent())
+	{
+		WindowInfo wl_wi;
+		if (BuildWaylandWindowInfo(wl_wi))
+			return wl_wi;
+		// Fell through: no usable Wayland surface — try VK_KHR_display below.
+	}
+#endif
+
 	WindowInfo wi;
 	wi.type = WindowInfo::Type::VulkanDirect;
 	wi.surface_width = s_requested_width;
@@ -931,6 +1043,17 @@ int main(int argc, char* argv[])
 	// inside InputManager on the CPU thread; signals are async. The main
 	// thread just waits for shutdown.
 	cpu_thread.join();
+
+#if defined(WAYLAND_API)
+	// Tear down the Wayland fallback window, if one was created. Done after the
+	// CPU/GS threads are gone so nothing is still presenting to the surface.
+	if (s_wayland_window)
+	{
+		SDL_DestroyWindow(s_wayland_window);
+		s_wayland_window = nullptr;
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+	}
+#endif
 
 	return thread_ret.load();
 }

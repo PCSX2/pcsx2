@@ -70,7 +70,7 @@
         {
             "name": "clang-handheld",
             "displayName": "Clang Handheld (SDL3 / kmsdrm)",
-            "description": "RelWithDebInfo build of the SDL3 frontend for kmsdrm-only handhelds. No Qt. GSRunner builds with a VulkanDirect platform backend (no X11/Wayland).",
+            "description": "RelWithDebInfo build of the SDL3 frontend for handhelds. No Qt. Primary display path is VK_KHR_display (VulkanDirect, kmsdrm); WAYLAND_API is on so the SDL frontend can fall back to a Wayland Vulkan surface when launched inside a compositor. Requires ECM + Wayland-Egl dev headers on the build host — pure kmsdrm targets without them can build VulkanDirect-only by overriding -DWAYLAND_API=OFF.",
             "inherits": "clang-base",
             "binaryDir": "${sourceDir}/build-handheld",
             "cacheVariables": {
@@ -82,7 +82,7 @@
                 "ENABLE_RECOMPILER_TEST_HOOKS": "OFF",
                 "USE_BACKTRACE": "OFF",
                 "X11_API": "OFF",
-                "WAYLAND_API": "OFF"
+                "WAYLAND_API": "ON"
             }
         }
     ]
