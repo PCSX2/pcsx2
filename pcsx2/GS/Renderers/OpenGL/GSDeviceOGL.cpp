@@ -995,6 +995,22 @@ bool GSDeviceOGL::CheckFeatures()
 		!m_is_gles || GLAD_GL_EXT_blend_func_extended || GLAD_GL_ARB_blend_func_extended;
 
 	m_features.framebuffer_fetch = (GLAD_GL_ARM_shader_framebuffer_fetch || GLAD_GL_EXT_shader_framebuffer_fetch);
+
+	// The Mali r44p1 blob loses the rendering context under the in-tile framebuffer-fetch blend path,
+	// exactly as it loses the Vulkan device under attachment-feedback-loop (VK_ERROR_DEVICE_LOST on
+	// effectively every game -- Mali-G615 r44p1). Mirror the Vulkan-side r44p1 gate (see GSDeviceVK.cpp)
+	// and drop this one blob to the non-fetch (copy) blend path. Narrow by driver version, not vendor,
+	// so other (working) Mali blobs keep the fast path. GL_VERSION reads e.g. "OpenGL ES 3.2 v1.r44p1-...".
+	if (m_features.framebuffer_fetch)
+	{
+		const char* gl_version = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+		if (gl_version && std::strstr(gl_version, "r44p1"))
+		{
+			Console.WriteLn("Mali r44p1: disabling framebuffer fetch (GL context-lost workaround; matches the Vulkan gate).");
+			m_features.framebuffer_fetch = false;
+		}
+	}
+
 	if (m_features.framebuffer_fetch && GSConfig.DisableFramebufferFetch)
 	{
 		Host::AddOSDMessage(

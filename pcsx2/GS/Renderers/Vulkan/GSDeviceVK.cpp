@@ -888,6 +888,19 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	// query
 	vkGetPhysicalDeviceProperties2(m_physical_device, &properties2);
 
+	// The Mali r44p1 blob mishandles the in-tile attachment-feedback-loop blend path and
+	// loses the device under it — VK_ERROR_DEVICE_LOST on every game, but ONLY on this driver
+	// (Motorola Edge 60 Pro / Mali-G615 r44p1; other Mali blobs, including other G615 units,
+	// run it fine). The extension-select comment above anticipated exactly this: "if a specific
+	// old blob regresses, narrow by driver version rather than re-blocking the whole vendor."
+	// Demote only r44p1 to the slower-but-stable per-primitive barrier path.
+	if (m_device_properties.vendorID == 0x13B5u && m_optional_extensions.vk_khr_driver_properties &&
+		std::string_view(m_device_driver_properties.driverInfo).find("r44p1") != std::string_view::npos)
+	{
+		Console.WriteLn("Mali r44p1: disabling attachment-feedback-loop blend path (DEVICE_LOST workaround).");
+		m_optional_extensions.vk_ext_attachment_feedback_loop_layout = false;
+	}
+
 	// Decide whether to bind textures via VK_KHR_push_descriptor. It's optional
 	// now — when it's absent (some Mali, e.g. Mali-G52), unusable, or known-buggy
 	// we fall back to per-frame allocated descriptor sets so Vulkan still runs.
