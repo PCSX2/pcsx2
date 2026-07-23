@@ -1302,9 +1302,6 @@ SLPM-74262:
 SLPM-74288:
   clampModes:
     vu1ClampMode: 1
-SLPM-74405:
-  gameFixes:
-  - EETimingHack
 SLPS-20015:
   clampModes:
     eeClampMode: 3
