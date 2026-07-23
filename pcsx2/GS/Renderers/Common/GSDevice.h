@@ -1655,6 +1655,11 @@ public:
 	/// Returns true if it's an OpenGL-based renderer.
 	bool UsesLowerLeftOrigin() const;
 
+	/// Texture/target pool budget. Per-GPU from the mobile GS tuning on Android, the
+	/// MAX_POOLED_*/MAX_*_AGE constants elsewhere. From sashkinbro/EmuCoreX.
+	u32 GetPoolLimit(bool texture) const;
+	u32 GetPoolMaxAge(bool texture) const;
+
 	/// Free ImGui textures before shutdown
 	void DestroyImGuiTextures();
 

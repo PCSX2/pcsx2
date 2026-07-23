@@ -1087,6 +1087,21 @@ bool GSDeviceOGL::CheckFeatures()
 	if (use_mali_profile || use_adreno_profile || use_powervr_profile)
 		m_features.prefer_new_textures = true;
 
+#if defined(__ANDROID__)
+	// Narrows the profile-driven choice above with the per-model tuning; deliberately an
+	// AND rather than an assignment, so a part whose table entry says "reuse" cannot turn
+	// preference back on for a profile that did not want it. sashkinbro/EmuCoreX.
+	m_features.prefer_new_textures &= GetMobileGSTuning().prefer_new_textures;
+	if (GetMobileGSTuning().force_partial_texture_preloading &&
+		GSConfig.TexturePreloading == TexturePreloadingLevel::Full)
+	{
+		GSConfig.TexturePreloading = TexturePreloadingLevel::Partial;
+		Console.Warning("GL: Mobile GS %s/%s profile lowered texture preloading to partial.",
+			GpuProfileDetector::RuntimeProfileToString(GetRuntimeGPUProfile()),
+			GetMobileGPUIdentity().name.c_str());
+	}
+#endif
+
 	if (use_mali_profile)
 	{
 		// Mali path prefers ARM_shader_framebuffer_fetch (gl_LastFragColorARM) because

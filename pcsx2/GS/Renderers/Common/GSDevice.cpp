@@ -693,8 +693,7 @@ GSTexture* GSDevice::FetchSurface(GSTexture::Usage usage, int width, int height,
 
 	if (!t)
 	{
-		if (pool.size() >= (GSTexture::IsTexture(usage) ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS) &&
-			fallback != pool.end())
+		if (pool.size() >= GetPoolLimit(GSTexture::IsTexture(usage)) && fallback != pool.end())
 		{
 			t = *fallback;
 			m_pool_memory_usage -= t->GetMemUsage();
@@ -759,8 +758,8 @@ void GSDevice::Recycle(GSTexture* t)
 	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
 
-	const u32 max_size = t->IsTexture() ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
-	const u32 max_age = t->IsTexture() ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+	const u32 max_size = GetPoolLimit(t->IsTexture());
+	const u32 max_age = GetPoolMaxAge(t->IsTexture());
 	while (pool.size() > max_size)
 	{
 		// Don't toss when the texture was last used in this frame.
@@ -776,6 +775,30 @@ void GSDevice::Recycle(GSTexture* t)
 	}
 }
 
+// The pool budget is per-GPU on mobile: the GPU-profile tables resolve a MobileGsTuning
+// whose pool sizes and ages are sized for the part (an Adreno 200 wants ~48 pooled, a
+// laptop-class Adreno X ~160), instead of the one-size 300 that suits a desktop GPU.
+// Ported from sashkinbro/EmuCoreX, including its __ANDROID__ scoping: off Android the
+// profile is never resolved, so the tuning would still hold its conservative default
+// (96/8/96/6) and would silently cut the desktop pool from 300 to 96.
+u32 GSDevice::GetPoolLimit(bool texture) const
+{
+#if defined(__ANDROID__)
+	return texture ? m_mobile_gs_tuning.pooled_textures : m_mobile_gs_tuning.pooled_targets;
+#else
+	return texture ? MAX_POOLED_TEXTURES : MAX_POOLED_TARGETS;
+#endif
+}
+
+u32 GSDevice::GetPoolMaxAge(bool texture) const
+{
+#if defined(__ANDROID__)
+	return texture ? m_mobile_gs_tuning.texture_age : m_mobile_gs_tuning.target_age;
+#else
+	return texture ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+#endif
+}
+
 bool GSDevice::UsesLowerLeftOrigin() const
 {
 	const RenderAPI api = GetRenderAPI();
@@ -789,7 +812,7 @@ void GSDevice::AgePool()
 	// Toss out textures when they're not too-recently used.
 	for (u32 pool_idx = 0; pool_idx < m_pool.size(); pool_idx++)
 	{
-		const u32 max_age = (pool_idx == 0) ? MAX_TEXTURE_AGE : MAX_TARGET_AGE;
+		const u32 max_age = GetPoolMaxAge(pool_idx == 0);
 		FastList<GSTexture*>& pool = m_pool[pool_idx];
 		while (!pool.empty())
 		{
