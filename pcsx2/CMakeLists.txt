@@ -1431,6 +1431,17 @@ function(pcsx2_copy_runtime_resources target)
 		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 	endforeach()
 
+	# Mobile-GPU GameDB overlay (ARM64 Linux handheld tilers). It lives OUTSIDE
+	# bin/resources/ so the GLOB above never ships it on a desktop GPU; copy it in
+	# only when explicitly enabled. It lands flat as resources/armsx2_overrides.yaml,
+	# where the GameDatabase override loader finds it (and silently skips it when
+	# it's not present, i.e. everywhere the option is off).
+	if(ENABLE_MOBILE_GAMEDB_OVERLAY)
+		pcsx2_resource(${target}
+			${CMAKE_SOURCE_DIR}/bin/resources-overlay/armsx2_overrides.yaml
+			${CMAKE_SOURCE_DIR}/bin/resources-overlay/)
+	endif()
+
 	# Add docs to resources for not-Windows, since they don't use the bin directory.
 	if(NOT WIN32)
 		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)

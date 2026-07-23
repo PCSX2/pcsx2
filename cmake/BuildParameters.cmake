@@ -182,6 +182,21 @@ else()
 endif()
 option(ENABLE_QT_DEBUGGER "Build the Qt debugger UI (requires KDDockWidgets)." ${_ENABLE_QT_DEBUGGER_DEFAULT})
 
+# Mobile-GPU GameDB overlay. bin/resources-overlay/armsx2_overrides.yaml carries
+# GS/JIT tuning that is correct on tiler GPUs (Adreno/Mali/PowerVR) but would
+# regress a desktop/immediate-mode GPU. Android and iOS pack it via their own
+# asset build; on ARM64 Linux — where nearly every target is a Qualcomm/Mali
+# handheld (Rocknix/Batocera) or a Raspberry Pi tiler — ship it too, regardless
+# of frontend (both Qt and SDL Linux builds run on handhelds). Off on
+# x86/Windows/macOS. The GameDatabase override loader reads it from
+# EmuFolders::Resources and no-ops when it is absent, so this only gates the copy.
+if(ARCH_ARM64 AND UNIX AND NOT APPLE)
+	set(_ENABLE_MOBILE_GAMEDB_OVERLAY_DEFAULT ON)
+else()
+	set(_ENABLE_MOBILE_GAMEDB_OVERLAY_DEFAULT OFF)
+endif()
+option(ENABLE_MOBILE_GAMEDB_OVERLAY "Ship the mobile-GPU GameDB overlay next to the executable (ARM64 Linux handheld tilers). Default ON for ARM64 Linux, OFF elsewhere." ${_ENABLE_MOBILE_GAMEDB_OVERLAY_DEFAULT})
+
 # Require C++20.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
