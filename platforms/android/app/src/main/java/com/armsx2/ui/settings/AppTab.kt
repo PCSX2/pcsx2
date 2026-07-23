@@ -54,6 +54,12 @@ fun AppTab() {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        // In-app GitHub-release updater. Github (sideload) flavor only: the play flavor's
+        // UpdaterEntry is a no-op stub and IN_APP_UPDATER is false, so no updater code or
+        // REQUEST_INSTALL_PACKAGES ships in the AAB (build-play-aab.sh also fails closed).
+        if (com.armsx2.BuildConfig.IN_APP_UPDATER) {
+            com.armsx2.update.UpdaterEntry()
+        }
         Surface(
             onClick = { UiNavigator.navigate(AppRoute.Language) },
             modifier = Modifier.fillMaxWidth()

@@ -1,17 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   GitHub (sideload) flavor only. The manifest merger UNIONS this onto
-  src/main/AndroidManifest.xml, adding all-files access back for the
-  sideloaded build. This file must NEVER exist for the play flavor:
-  MANAGE_EXTERNAL_STORAGE in a Play upload triggers Google's All Files
-  Access policy review/rejection. The play flavor inherits the clean
-  src/main manifest (no src/play manifest exists), so it can never pick
-  this up. STORAGE_ALL_FILES (BuildConfig) gates the runtime use of it.
+  src/main/AndroidManifest.xml, adding sideload-only capabilities. This file
+  must NEVER exist for the play flavor:
+    - MANAGE_EXTERNAL_STORAGE in a Play upload triggers Google's All Files
+      Access policy review/rejection.
+    - REQUEST_INSTALL_PACKAGES lets the in-app updater install a downloaded
+      APK; a self-updating app is a hard Play-policy violation (Play must own
+      updates), so it can never ship in the AAB.
+  The play flavor inherits the clean src/main manifest (no src/play manifest),
+  so it can never pick these up; STORAGE_ALL_FILES / IN_APP_UPDATER (BuildConfig)
+  gate the runtime use, and build-play-aab.sh asserts both permissions are
+  absent from the bundle.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+
+    <!-- In-app GitHub-release updater (github flavor only) — install the downloaded APK. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- FileProvider that hands the downloaded update APK to the package installer. Github flavor
+         only (merged into the main <application>); never present in the play build. -->
+    <application>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updateprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/update_paths" />
+        </provider>
+    </application>
 
 </manifest>

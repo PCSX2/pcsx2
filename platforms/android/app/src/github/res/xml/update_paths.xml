@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider paths for the in-app updater (github flavor only). The downloaded update APK
+     lives in externalCacheDir/updates/ and is handed to the package installer from there. -->
+<paths>
+    <external-cache-path name="updates" path="updates/" />
+</paths>

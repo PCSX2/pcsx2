@@ -162,10 +162,15 @@ android {
         create("github") {
             dimension = "store"
             buildConfigField("boolean", "STORAGE_ALL_FILES", "true")
+            // In-app GitHub-release updater. Github flavor only — Play forbids self-updating,
+            // so the real updater + REQUEST_INSTALL_PACKAGES live in src/github and this stays
+            // false for play (which uses the src/play no-op stub).
+            buildConfigField("boolean", "IN_APP_UPDATER", "true")
         }
         create("play") {
             dimension = "store"
             buildConfigField("boolean", "STORAGE_ALL_FILES", "false")
+            buildConfigField("boolean", "IN_APP_UPDATER", "false")
         }
     }
     // Merge the generated bin/resources tree in as a second assets root. Passing
