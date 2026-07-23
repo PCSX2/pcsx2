@@ -1,0 +1,1698 @@
+# ARMSX2 mobile GameDB overlay.
+#
+# Single source of truth, applied on tiler-GPU tiers only (Android, iOS, and
+# ARM64 Linux handhelds) on top of the canonical bin/resources/GameIndex.yaml.
+# Loaded through the GameDatabase override path: each field below REPLACES the
+# base entry's field wholesale (list/map fields clear-then-replace), so every
+# entry carries the complete desired block for that field.
+#
+# Carries only behavioral fields (GS hardware fixes, clamp/round modes, game
+# fixes, speed hacks, patches, memcard filters); game names/region/compat are
+# inherited from the canonical base so mobile tracks upstream metadata.
+#
+# Generated from the Android GameIndex delta vs bin plus the former runtime
+# armsx2_overrides.yaml. Regenerate via devs/bmdhacks tooling; do not bulk
+# hand-edit.
+PAPX-90522:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCAJ-20010:
+  gsHWFixes:
+    textureInsideRT: 1
+SCAJ-20048:
+  gsHWFixes:
+    alignSprite: 1
+SCAJ-20052:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCAJ-20059:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCAJ-20094:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCAJ-20104:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCAJ-20109:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCAJ-20125:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCAJ-20126:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCAJ-20141:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCAJ-20163:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SCAJ-20169:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SCAJ-20173:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCAJ-20177:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SCAJ-20194:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCAJ-20197:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SCAJ-20199:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCED-50041:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCED-51120:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCED-51406:
+  clampModes:
+    eeClampMode: 3
+SCED-52841:
+  clampModes:
+    eeClampMode: 3
+    vuClampMode: 2
+SCED-52952:
+  gsHWFixes:
+    autoFlush: 2
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SCED-53538:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCED-53733:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCES-50001:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCES-50410:
+  gsHWFixes:
+    alignSprite: 1
+    cpuSpriteRenderBW: 1
+    cpuSpriteRenderLevel: 0
+    halfPixelOffset: 5
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCES-50878:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCES-50987:
+  gsHWFixes:
+    recommendedBlendingLevel: 0
+SCES-51164:
+  clampModes:
+    eeClampMode: 3
+SCES-51463:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SCES-52156:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SCES-52412:
+  clampModes:
+    eeClampMode: 3
+    vuClampMode: 2
+SCES-52456:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCES-52460:
+  gsHWFixes:
+    autoFlush: 1
+    cpuCLUTRender: 2
+    cpuSpriteRenderBW: 1
+    cpuSpriteRenderLevel: 2
+    gpuTargetCLUT: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    limit24BitDepth: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+    textureInsideRT: 2
+SCES-52582:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCES-53202:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCES-53285:
+  gameFixes:
+  - EETimingHack
+  - FullVU0SyncHack
+SCES-54041:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCKA-20022:
+  gsHWFixes:
+    getSkipCount: GSC_PolyphonyDigitalGames
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 3
+SCKA-20037:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCKA-20040:
+  gsHWFixes:
+    autoFlush: 1
+    cpuCLUTRender: 2
+    cpuSpriteRenderBW: 1
+    cpuSpriteRenderLevel: 2
+    gpuTargetCLUT: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    limit24BitDepth: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+    textureInsideRT: 2
+SCKA-20042:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCKA-20045:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCKA-20049:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCKA-20057:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCKA-20070:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SCKA-20079:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SCKA-20081:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCKA-20089:
+  clampModes:
+    vu1ClampMode: 1
+SCKA-20090:
+  gsHWFixes:
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+SCKA-20105:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCPS-15056:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCPS-15059:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCPS-15084:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCPS-15095:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCPS-15119:
+  gsHWFixes:
+    preloadFrameData: 1
+SCPS-19301:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCPS-19302:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCPS-19309:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCPS-19317:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCPS-19318:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCPS-19319:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
+SCPS-55010:
+  gsHWFixes:
+    halfPixelOffset: 1
+    textureInsideRT: 1
+SCPS-55017:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCPS-56002:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCPS-56006:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCUS-10380:
+  gsHWFixes:
+    halfPixelOffset: 4
+    nativeScaling: 1
+    roundSprite: 2
+SCUS-97140:
+  clampModes:
+    eeClampMode: 3
+SCUS-97177:
+  gsHWFixes:
+    autoFlush: 2
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+SCUS-97201:
+  clampModes:
+    eeClampMode: 3
+SCUS-97222:
+  clampModes:
+    eeClampMode: 3
+SCUS-97268:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97322:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97323:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97328:
+  gsHWFixes:
+    autoFlush: 1
+    getSkipCount: GSC_PolyphonyDigitalGames
+    halfPixelOffset: 4
+    minimumBlendingLevel: 3
+SCUS-97329:
+  gsHWFixes:
+    autoFlush: 2
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+SCUS-97330:
+  gsHWFixes:
+    autoFlush: 1
+    cpuCLUTRender: 2
+    cpuSpriteRenderBW: 1
+    cpuSpriteRenderLevel: 2
+    gpuTargetCLUT: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    limit24BitDepth: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+    textureInsideRT: 2
+SCUS-97353:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCUS-97374:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97381:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97401:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 2
+SCUS-97411:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCUS-97412:
+  gsHWFixes:
+    autoFlush: 2
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SCUS-97413:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SCUS-97427:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 2
+SCUS-97430:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 2
+SCUS-97465:
+  gameFixes:
+  - EETimingHack
+  - FullVU0SyncHack
+SCUS-97471:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCUS-97485:
+  gameFixes:
+  - EETimingHack
+  - FullVU0SyncHack
+SCUS-97487:
+  gameFixes:
+  - EETimingHack
+  - FullVU0SyncHack
+SCUS-97504:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SCUS-97513:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 0
+SCUS-97515:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 2
+SCUS-97516:
+  gsHWFixes:
+    autoFlush: 1
+    cpuCLUTRender: 2
+    cpuSpriteRenderBW: 1
+    cpuSpriteRenderLevel: 2
+    gpuTargetCLUT: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    limit24BitDepth: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+    textureInsideRT: 2
+SCUS-97518:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+SLAJ-25073:
+  clampModes:
+    vu1ClampMode: 1
+SLAJ-25075:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLAJ-25078:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLAJ-25091:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLED-50489:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+SLED-51012:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+SLED-51975:
+  gsHWFixes:
+    PCRTCOverscan: 1
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLED-52325:
+  gsHWFixes:
+    autoFlush: 2
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+SLED-52736:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLED-53650:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLED-54312:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-50120:
+  gsHWFixes:
+    hwDownloadMode: 3
+    minimumBlendingLevel: 3
+SLES-50121:
+  gsHWFixes:
+    hwDownloadMode: 3
+    minimumBlendingLevel: 3
+SLES-50288:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+SLES-50672:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLES-50876:
+  gsHWFixes:
+    autoFlush: 1
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+    nativePaletteDraw: 1
+    nativeScaling: 2
+    textureInsideRT: 1
+SLES-51192:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51193:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51194:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51195:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51196:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51214:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51215:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51216:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51217:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51218:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51219:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLES-51286:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 2
+SLES-51287:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 2
+SLES-51548:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 2
+SLES-51553:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLES-51589:
+  gsHWFixes:
+    recommendedBlendingLevel: 0
+SLES-51967:
+  gsHWFixes:
+    PCRTCOverscan: 1
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-52047:
+  gsHWFixes:
+    halfPixelOffset: 1
+SLES-52048:
+  gsHWFixes:
+    halfPixelOffset: 1
+SLES-52153:
+  gsHWFixes:
+    autoFlush: 1
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+    nativePaletteDraw: 1
+    nativeScaling: 2
+    textureInsideRT: 1
+SLES-52187:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLES-52188:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLES-52202:
+  gsHWFixes:
+    autoFlush: 2
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+SLES-52559:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLES-52560:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLES-52561:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLES-52562:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLES-52563:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLES-52584:
+  memcardFilters:
+  - SLES-52584
+  - BEPSCD-20001sloginBE
+SLES-52725:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLES-52782:
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
+SLES-52783:
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
+SLES-52784:
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
+SLES-52888:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SLES-52909:
+  gsHWFixes:
+    mipmap: 0
+SLES-52910:
+  gsHWFixes:
+    mipmap: 0
+SLES-52911:
+  gsHWFixes:
+    mipmap: 0
+SLES-52912:
+  gsHWFixes:
+    mipmap: 0
+SLES-52940:
+  gsHWFixes:
+    halfPixelOffset: 4
+SLES-53434:
+  gsHWFixes:
+    textureInsideRT: 1
+SLES-53483:
+  gsHWFixes:
+    minimumBlendingLevel: 0
+SLES-53521:
+  gsHWFixes:
+    mergeSprite: 1
+SLES-53524:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+SLES-53525:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+SLES-53557:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLES-53558:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLES-53559:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLES-53616:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLES-53617:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLES-53618:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLES-53702:
+  clampModes:
+    vu1ClampMode: 1
+SLES-53756:
+  clampModes:
+    vu1ClampMode: 1
+SLES-53857:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLES-53886:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLES-53956:
+  speedHacks:
+    eeCycleRate: 1
+SLES-54030:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLES-54123:
+  speedHacks:
+    instantVU1: 0
+    mtvu: 0
+SLES-54161:
+  gsHWFixes:
+    texturePreloading: 0
+SLES-54169:
+  speedHacks:
+    eeCycleRate: 1
+SLES-54185:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLES-54321:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54322:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54323:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54324:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54385:
+  gsHWFixes:
+    roundSprite: 2
+    texturePreloading: 0
+SLES-54490:
+  gsHWFixes:
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+SLES-54492:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54493:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLES-54586:
+  gsHWFixes:
+    roundSprite: 2
+SLES-54644:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLES-54645:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLES-54646:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLES-54647:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLES-54648:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLES-54822:
+  gsHWFixes:
+    roundSprite: 2
+SLES-55135:
+  gsHWFixes:
+    halfPixelOffset: 4
+    nativeScaling: 1
+    roundSprite: 2
+SLES-55493:
+  speedHacks:
+    instantVU1: 0
+    mtvu: 0
+SLES-55569:
+  gsHWFixes:
+    disablePartialInvalidation: 1
+    halfPixelOffset: 2
+SLES-82018:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLES-82019:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLES-82020:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLES-82021:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLKA-25026:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLKA-25136:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLKA-25137:
+  gsHWFixes:
+    halfPixelOffset: 1
+SLKA-25196:
+  gsHWFixes:
+    autoFlush: 1
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+    nativePaletteDraw: 1
+    nativeScaling: 2
+    textureInsideRT: 1
+SLKA-25209:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLKA-25241:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLKA-25277:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SLKA-25334:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLKA-25372:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+    roundSprite: 1
+SLKA-25410:
+  clampModes:
+    vu1ClampMode: 1
+SLPM-55003:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLPM-55061:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLPM-55252:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SLPM-60216:
+  gsHWFixes:
+    alignSprite: 1
+SLPM-60250:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLPM-62241:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLPM-62513:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLPM-64528:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLPM-65082:
+  gsHWFixes:
+    halfPixelOffset: 1
+    textureInsideRT: 1
+SLPM-65089:
+  gsHWFixes:
+    halfPixelOffset: 1
+    textureInsideRT: 1
+SLPM-65234:
+  gsHWFixes:
+    textureInsideRT: 1
+SLPM-65249:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLPM-65310:
+  clampModes:
+    eeClampMode: 3
+SLPM-65471:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLPM-65479:
+  gsHWFixes:
+    halfPixelOffset: 1
+SLPM-65614:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLPM-65741:
+  gsHWFixes:
+    autoFlush: 1
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+    nativePaletteDraw: 1
+    nativeScaling: 2
+    textureInsideRT: 1
+SLPM-65766:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLPM-65791:
+  gsHWFixes:
+    halfPixelOffset: 4
+SLPM-65845:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLPM-65976:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPM-65977:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPM-66019:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+SLPM-66042:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SLPM-66051:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLPM-66159:
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
+SLPM-66213:
+  clampModes:
+    vu1ClampMode: 1
+SLPM-66232:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLPM-66271:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLPM-66354:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLPM-66419:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLPM-66473:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLPM-66550:
+  gsHWFixes:
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+SLPM-66562:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLPM-66568:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SLPM-66617:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLPM-66629:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLPM-66782:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLPM-66869:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLPM-66960:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLPM-68005:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLPM-68016:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLPM-74229:
+  clampModes:
+    vu1ClampMode: 1
+SLPM-74241:
+  gsHWFixes:
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+SLPM-74243:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLPM-74262:
+  clampModes:
+    vu1ClampMode: 1
+SLPM-74288:
+  clampModes:
+    vu1ClampMode: 1
+SLPM-74405:
+  gameFixes:
+  - EETimingHack
+SLPS-20015:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-20234:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLPS-25026:
+  gsHWFixes:
+    minimumBlendingLevel: 0
+SLPS-25100:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-25139:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLPS-25140:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLPS-25291:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLPS-25300:
+  gsHWFixes:
+    alignSprite: 1
+SLPS-25510:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-25586:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SLPS-25604:
+  gsHWFixes:
+    roundSprite: 2
+SLPS-25642:
+  gsHWFixes:
+    texturePreloading: 0
+SLPS-25908:
+  gsHWFixes:
+    halfPixelOffset: 4
+    nativeScaling: 1
+    roundSprite: 2
+SLPS-71501:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-73104:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-73209:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-73223:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLPS-73249:
+  gsHWFixes:
+    roundSprite: 2
+SLPS-73252:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SLPS-73406:
+  gsHWFixes:
+    minimumBlendingLevel: 0
+SLUS-20001:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-20035:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLUS-20174:
+  gsHWFixes:
+    hwDownloadMode: 3
+    minimumBlendingLevel: 3
+SLUS-20250:
+  gsHWFixes:
+    cpuSpriteRenderBW: 4
+SLUS-20328:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-20337:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 2
+SLUS-20417:
+  gsHWFixes:
+    halfPixelOffset: 1
+    textureInsideRT: 1
+SLUS-20576:
+  gsHWFixes:
+    halfPixelOffset: 4
+    recommendedBlendingLevel: 4
+    textureInsideRT: 1
+SLUS-20587:
+  gsHWFixes:
+    autoFlush: 1
+    cpuSpriteRenderBW: 4
+    cpuSpriteRenderLevel: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    minimumBlendingLevel: 2
+    nativePaletteDraw: 1
+    nativeScaling: 2
+    textureInsideRT: 1
+SLUS-20675:
+  gsHWFixes:
+    estimateTextureRegion: 1
+    gpuPaletteConversion: 1
+    roundSprite: 1
+    textureInsideRT: 2
+SLUS-20695:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLUS-20697:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLUS-20721:
+  gsHWFixes:
+    alignSprite: 1
+SLUS-20725:
+  clampModes:
+    eeClampMode: 2
+    vu1ClampMode: 1
+SLUS-20765:
+  gsHWFixes:
+    recommendedBlendingLevel: 0
+SLUS-20811:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLUS-20842:
+  gsHWFixes:
+    halfPixelOffset: 1
+SLUS-20851:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SLUS-20854:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    roundSprite: 2
+SLUS-20969:
+  gsHWFixes:
+    halfPixelOffset: 4
+SLUS-20983:
+  gsHWFixes:
+    mergeSprite: 1
+SLUS-20993:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SLUS-21050:
+  memcardFilters:
+  - SLUS-21050
+  - PSCD10088slogin
+SLUS-21051:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLUS-21059:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-21065:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLUS-21087:
+  gsHWFixes:
+    autoFlush: 2
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+SLUS-21106:
+  gameFixes:
+  - VUSyncHack
+  - FullVU0SyncHack
+SLUS-21134:
+  clampModes:
+    vu1ClampMode: 1
+SLUS-21160:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-21163:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 2
+    recommendedBlendingLevel: 3
+SLUS-21205:
+  speedHacks:
+    eeCycleRate: 1
+SLUS-21221:
+  gsHWFixes:
+    minimumBlendingLevel: 0
+SLUS-21247:
+  clampModes:
+    eeClampMode: 3
+    vuClampMode: 2
+SLUS-21257:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLUS-21267:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLUS-21327:
+  gsHWFixes:
+    roundSprite: 2
+    texturePreloading: 0
+SLUS-21334:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-21345:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-21346:
+  gsHWFixes:
+    alignSprite: 1
+    halfPixelOffset: 3
+    mergeSprite: 1
+    recommendedBlendingLevel: 2
+    roundSprite: 1
+    texturePreloading: 1
+SLUS-21351:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLUS-21374:
+  speedHacks:
+    instantVU1: 0
+    mtvu: 0
+SLUS-21376:
+  gsHWFixes:
+    autoFlush: 2
+    beforeDraw: OI_BurnoutGames
+    getSkipCount: GSC_BlackAndBurnoutSky
+    halfPixelOffset: 5
+    hwDownloadMode: 3
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLUS-21386:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+SLUS-21419:
+  gsHWFixes:
+    autoFlush: 1
+    halfPixelOffset: 5
+    hwDownloadMode: 2
+    nativeScaling: 2
+    recommendedBlendingLevel: 4
+SLUS-21442:
+  gsHWFixes:
+    texturePreloading: 0
+SLUS-21445:
+  gsHWFixes:
+    roundSprite: 2
+SLUS-21452:
+  gsHWFixes:
+    nativeScaling: 1
+    roundSprite: 1
+SLUS-21493:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLUS-21494:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLUS-21503:
+  gsHWFixes:
+    halfPixelOffset: 2
+    hwDownloadMode: 3
+    nativeScaling: 2
+SLUS-21564:
+  gsHWFixes:
+    roundSprite: 2
+SLUS-21785:
+  gsHWFixes:
+    halfPixelOffset: 4
+    nativeScaling: 1
+    roundSprite: 2
+SLUS-21879:
+  speedHacks:
+    instantVU1: 0
+    mtvu: 0
+SLUS-21899:
+  gsHWFixes:
+    disablePartialInvalidation: 1
+    halfPixelOffset: 2
+SLUS-28012:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-29034:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+SLUS-29073:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+SLUS-29118:
+  gsHWFixes:
+    halfPixelOffset: 5
+    nativeScaling: 1
+SLUS-29127:
+  gsHWFixes:
+    halfPixelOffset: 2
+    mipmap: 0
+    nativeScaling: 1
+SLUS-29132:
+  gsHWFixes:
+    halfPixelOffset: 4
+SLUS-29155:
+  gsHWFixes:
+    bilinearUpscale: 2
+    cpuCLUTRender: 1
+    gpuTargetCLUT: 1
+    halfPixelOffset: 5
+    nativeScaling: 2
+SLUS-29169:
+  clampModes:
+    vu1ClampMode: 1
+SLUS-29193:
+  gsHWFixes:
+    halfPixelOffset: 2
+    recommendedBlendingLevel: 3
+TCES-52456:
+  gsHWFixes:
+    autoFlush: 2
+    disablePartialInvalidation: 1
+    halfPixelOffset: 4
+    nativeScaling: 1
+    recommendedBlendingLevel: 3
+TCES-52582:
+  clampModes:
+    eeClampMode: 3
+    vu0ClampMode: 3
+    vu1ClampMode: 3
+  gsHWFixes:
+    accurateAlphaTest: 1
+    hwDownloadMode: 3
