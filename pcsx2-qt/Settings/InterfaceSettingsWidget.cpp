@@ -83,6 +83,22 @@ const char* InterfaceSettingsWidget::BACKGROUND_SCALE_NAMES[] = {
 	"tile",
 	nullptr};
 
+const char* InterfaceSettingsWidget::GLYPH_STYLE_NAMES[] = {
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Automatic"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Xbox"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "PlayStation"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Nintendo"),
+	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Generic"),
+	nullptr};
+
+const char* InterfaceSettingsWidget::GLYPH_STYLE_VALUES[] = {
+	"auto",
+	"xbox",
+	"playstation",
+	"nintendo",
+	"generic",
+	nullptr};
+
 const char* InterfaceSettingsWidget::IMAGE_FILE_FILTER = QT_TRANSLATE_NOOP("InterfaceSettingsWidget",
 	"Supported Image Types (*.bmp *.gif *.jpg *.jpeg *.png *.webp)");
 
@@ -137,6 +153,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		QtHost::GetDefaultThemeName(), "InterfaceSettingsWidget");
 	connect(m_ui.theme, &QComboBox::currentIndexChanged, [this]() { emit themeChanged(); });
 
+	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.glyphStyle, "UI", "FullscreenUIGlyphStyle", GLYPH_STYLE_NAMES, GLYPH_STYLE_VALUES, "auto", "InterfaceSettingsWidget");
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.backgroundOpacity, "UI", "GameListBackgroundOpacity", 100.0f);
 	SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.backgroundScale, "UI", "GameListBackgroundMode", BACKGROUND_SCALE_NAMES, QtUtils::ScalingMode::Fit);
 	connect(m_ui.backgroundBrowse, &QPushButton::clicked, [this]() { onSetGameListBackgroundTriggered(); });
@@ -244,6 +261,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.backgroundScale, tr("Background Image Scaling"), tr("Fit"),
 		tr("Select how to display the background image: <br><br>Fit (Preserve aspect ratio, fit to screen)"
 		   "<br>Fill (Preserve aspect ratio, fill the screen) <br>Stretch (Ignore aspect ratio) <br>Center (Centers the image without any scaling) <br>Tile (Repeat the image to fill the screen)"));
+	dialog()->registerWidgetHelp(
+		m_ui.glyphStyle, tr("Controller Glyph Style"), tr("Automatic"),
+		tr("Changes which gamepad button glyph set is used in the pause menu and Big Picture Mode."));
 
 	onRenderToSeparateWindowChanged();
 }

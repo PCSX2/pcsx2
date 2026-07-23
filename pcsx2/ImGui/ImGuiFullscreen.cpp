@@ -971,7 +971,7 @@ InputLayout ImGuiFullscreen::GetGamepadLayout()
 static InputLayout GetEffectiveGlyphLayout()
 {
 	const InputLayout preferred_layout = InputManager::GetGamepadIconPreference();
-	if (preferred_layout == InputLayout::Xbox || preferred_layout == InputLayout::Playstation || preferred_layout == InputLayout::Nintendo)
+	if (preferred_layout == InputLayout::Xbox || preferred_layout == InputLayout::Playstation || preferred_layout == InputLayout::Nintendo || preferred_layout == InputLayout::Generic)
 		return preferred_layout;
 
 	return ImGuiFullscreen::GetGamepadLayout();
@@ -982,7 +982,7 @@ ImGuiFullscreen::GamepadGlyphs ImGuiFullscreen::GetGamepadGlyphs()
 	const InputLayout layout = GetEffectiveGlyphLayout();
 	const bool xbox = (layout == InputLayout::Xbox);
 	const bool nintendo = (layout == InputLayout::Nintendo);
-	const bool unknown = (layout == InputLayout::Unknown);
+	const bool unknown = (layout == InputLayout::Unknown || layout == InputLayout::Generic);
 	return {
 		unknown ? ICON_PF_BUTTON_DOWN_A : (nintendo ? ICON_PF_BUTTON_B : (xbox ? ICON_PF_BUTTON_A : ICON_PF_BUTTON_CROSS)),
 		unknown ? ICON_PF_BUTTON_RIGHT_B : (nintendo ? ICON_PF_BUTTON_A : (xbox ? ICON_PF_BUTTON_B : ICON_PF_BUTTON_CIRCLE)),

@@ -1166,6 +1166,8 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 			type = SDL_GAMEPAD_TYPE_PS5;
 		else if (glyph_preference == InputLayout::Nintendo)
 			type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+		else if (glyph_preference == InputLayout::Generic)
+			type = SDL_GAMEPAD_TYPE_UNKNOWN;
 
 		if (key.source_subtype == InputSubclass::ControllerAxis)
 		{
@@ -1204,7 +1206,7 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
 			else if (key.data < 4)
 			{
 				SDL_GamepadButtonLabel label = SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN;
-				if (it != m_controllers.end() && it->gamepad)
+				if (glyph_preference != InputLayout::Generic && it != m_controllers.end() && it->gamepad)
 					label = SDL_GetGamepadButtonLabel(it->gamepad, static_cast<SDL_GamepadButton>(key.data));
 
 				if (label > SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN && label < std::size(s_sdl_face_button_icons))

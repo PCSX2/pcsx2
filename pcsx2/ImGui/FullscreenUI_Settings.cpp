@@ -2291,12 +2291,14 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 		FSUI_NSTR("Xbox"),
 		FSUI_NSTR("PlayStation"),
 		FSUI_NSTR("Nintendo"),
+		FSUI_NSTR("Generic"),
 	};
 	static constexpr const char* glyph_values[] = {
 		"auto",
 		"xbox",
 		"playstation",
 		"nintendo",
+		"generic",
 	};
 	size_t glyph_index = std::size(glyph_values);
 	for (size_t i = 0; i < std::size(glyph_values); i++)
