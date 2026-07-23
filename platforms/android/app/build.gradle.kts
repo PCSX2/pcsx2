@@ -37,10 +37,23 @@ if (armsx2SigningPropertiesFile.isFile && !armsx2PlaySigningReady) {
 val generateSharedResources by tasks.registering(Sync::class) {
     val repoRoot = rootProject.layout.projectDirectory.dir("../..")
     from(repoRoot.dir("bin/resources")) {
-        exclude("dx11/**")
+        // Windows-only DX11 shaders the mobile backends never compile. The path is
+        // shaders/dx11/ (relative to bin/resources), so "dx11/**" alone never matched.
+        exclude("**/dx11/**")
     }
     from(repoRoot.file("bin/resources-overlay/armsx2_overrides.yaml"))
     into(layout.buildDirectory.dir("generated/sharedResources/resources"))
+}
+
+// AGP 9.2.1 rejects a Provider in assets.srcDir (the sourceSets block below uses a concrete path),
+// so wire the dependency bmd's Provider form would have carried implicitly. The generated assets
+// dir is consumed by several AGP tasks — asset merge AND lint's model/analyze passes — so declare
+// generateSharedResources as a dependency of every one, plus the preBuild anchor. Gradle 9's strict
+// validation fails the build otherwise ("uses this output without declaring a dependency").
+tasks.matching { t ->
+    t.name == "preBuild" || t.name.endsWith("Assets") || t.name.contains("Lint")
+}.configureEach {
+    dependsOn(generateSharedResources)
 }
 
 android {
@@ -160,7 +173,10 @@ android {
     // depend on generateSharedResources, so the tree is materialized before it is
     // packaged. destinationDir is .../resources; its parent is the assets root.
     sourceSets.named("main") {
-        assets.srcDir(generateSharedResources.map { it.destinationDir.parentFile })
+        // Concrete File — AGP 9.2.1's SourceSet API rejects Provider instances (bmd's
+        // `generateSharedResources.map { }` form throws "cannot add Provider instances"). The
+        // task dependency that materialises this tree is wired via tasks.matching above.
+        assets.srcDir(layout.buildDirectory.dir("generated/sharedResources").get().asFile)
     }
 
     compileOptions {
