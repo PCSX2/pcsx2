@@ -105,6 +105,21 @@ fun HotkeysTab(@Suppress("UNUSED_PARAMETER") state: MutableState<Settings>) {
             }
             SettingsDivider()
         }
+        // #384: the Android system Back button / gesture opens the in-game menu (like Nether/Eden).
+        // For devices where Back is hijacked (e.g. Assistant), bind any button to the "Menu / Pause"
+        // hotkey above instead. Controller Circle is unaffected.
+        val backOpensMenu = remember {
+            mutableStateOf(MainActivityRuntime.prefs.getBoolean("input.backOpensMenu", true))
+        }
+        ToggleRow(
+            str("hotkeys.backOpensMenu.label"),
+            backOpensMenu.value,
+            description = str("hotkeys.backOpensMenu.description"),
+        ) { v ->
+            backOpensMenu.value = v
+            MainActivityRuntime.prefs.edit { putBoolean("input.backOpensMenu", v) }
+        }
+        SettingsDivider()
         // Closing a game opened from a frontend (ES-DE etc.) returns to that
         // frontend instead of the ARMSX2 library.
         val exitToLauncher = remember {

@@ -2,6 +2,7 @@ package com.armsx2.ui.achievements
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.defaultMinSize
@@ -187,6 +188,19 @@ private fun AchievementAccount(
                     onRight = { if (!state.notifications) viewModel.setOption("notifications", true) },
                 ),
             )
+            // How long an unlock toast lingers (seconds). Only meaningful while unlock toasts are on,
+            // so it slides in under the toggle like the sound-volume row does.
+            if (state.notifications) {
+                com.armsx2.ui.settings.IntSliderRow(
+                    label = str("ra.options.notifDuration"),
+                    value = state.notificationsDuration,
+                    min = 3,
+                    max = 30,
+                    description = str("ra.options.notifDuration.desc"),
+                    valueFormatter = { "${it}s" },
+                    onChange = { viewModel.setOptionInt("notificationsDuration", it) },
+                )
+            }
             SettingSwitchRow(
                 title = str("ra.options.leaderboardNotifications"),
                 description = str("ra.options.leaderboardNotifications.desc"),
@@ -199,6 +213,28 @@ private fun AchievementAccount(
                     onRight = { if (!state.leaderboardNotifications) viewModel.setOption("leaderboardNotifications", true) },
                 ),
             )
+            if (state.leaderboardNotifications) {
+                com.armsx2.ui.settings.IntSliderRow(
+                    label = str("ra.options.lbDuration"),
+                    value = state.leaderboardsDuration,
+                    min = 3,
+                    max = 30,
+                    description = str("ra.options.lbDuration.desc"),
+                    valueFormatter = { "${it}s" },
+                    onChange = { viewModel.setOptionInt("leaderboardsDuration", it) },
+                )
+            }
+            // Where unlock/leaderboard toasts appear on screen (native OsdOverlayPos). Shown whenever
+            // either notification type is on.
+            if (state.notifications || state.leaderboardNotifications) {
+                PositionGridPicker(
+                    label = str("ra.options.notifLocation"),
+                    idPrefix = "ra.notifPos",
+                    current = state.notificationPosition,
+                    values = OSD_OVERLAY_POS_VALUES,
+                    onSelect = { viewModel.setOptionInt("notificationPosition", it) },
+                )
+            }
             SettingSwitchRow(
                 title = str("ra.options.inGameIndicators"),
                 description = str("ra.options.inGameIndicators.desc"),
@@ -223,6 +259,17 @@ private fun AchievementAccount(
                     onRight = { if (!state.lbOverlays) viewModel.setOption("lbOverlays", true) },
                 ),
             )
+            // Where challenge indicators / leaderboard trackers sit (native AchievementOverlayPosition).
+            // Shown whenever either indicator type is on.
+            if (state.overlays || state.lbOverlays) {
+                PositionGridPicker(
+                    label = str("ra.options.indicatorLocation"),
+                    idPrefix = "ra.indicatorPos",
+                    current = state.overlayPosition,
+                    values = ACH_OVERLAY_POS_VALUES,
+                    onSelect = { viewModel.setOptionInt("overlayPosition", it) },
+                )
+            }
             SettingSwitchRow(
                 title = str("ra.options.soundEffects"),
                 description = str("ra.options.soundEffects.desc"),
@@ -339,11 +386,23 @@ private fun AchievementList(state: AchievementsUiState, modifier: Modifier) {
     var selectedSubset by rememberSaveable(state.subsets.joinToString { it.id.toString() }) {
         mutableStateOf(state.subsets.firstOrNull()?.id ?: 0)
     }
-    val shown = if (hasSubsets) state.items.filter { it.subsetId == selectedSubset } else state.items
+    // Unlocked/locked filter (DuckStation-style). Applied within the selected subset; survives the
+    // 3s poll. The pill counts come from the subset-scoped list so they track what's actually shown.
+    var filter by rememberSaveable { mutableStateOf(AchFilter.ALL) }
+    val bySubset = if (hasSubsets) state.items.filter { it.subsetId == selectedSubset } else state.items
+    val shown = when (filter) {
+        AchFilter.ALL -> bySubset
+        AchFilter.UNLOCKED -> bySubset.filter { it.unlocked }
+        AchFilter.LOCKED -> bySubset.filter { !it.unlocked }
+    }
     Column(modifier) {
         SectionTitle(str("scope.game"), shown.size.toString())
         if (hasSubsets) {
             SubsetTabs(state.subsets, selectedSubset, onSelect = { selectedSubset = it })
+            Spacer(Modifier.height(10.dp))
+        }
+        if (bySubset.isNotEmpty()) {
+            AchievementFilterTabs(filter, bySubset, onSelect = { filter = it })
             Spacer(Modifier.height(10.dp))
         }
         if (shown.isEmpty()) {
@@ -377,6 +436,103 @@ private fun SubsetTabs(subsets: List<Subset>, selectedId: Int, onSelect: (Int) -
                     text = sub.title.ifBlank { str("ra.subset.base") },
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+// OsdOverlayPos int values in 3x3 grid order (None=0 skipped): TopLeft=1 .. BottomRight=9.
+private val OSD_OVERLAY_POS_VALUES = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
+// AchievementOverlayPosition int values in 3x3 grid order: TopLeft=0 .. BottomRight=8.
+private val ACH_OVERLAY_POS_VALUES = listOf(0, 1, 2, 3, 4, 5, 6, 7, 8)
+
+/** A compact 3x3 position picker matching on-screen placement. `values` are the native enum ints in
+ *  row-major grid order (TL,TC,TR, CL,C,CR, BL,BC,BR); the two RA position enums use different int
+ *  bases, so each caller passes its own list. A dot sits in the cell's screen position so the choice
+ *  reads at a glance. Fully controller-navigable — each cell is controllerFocusable. */
+@Composable
+private fun PositionGridPicker(
+    label: String,
+    idPrefix: String,
+    current: Int,
+    values: List<Int>,
+    onSelect: (Int) -> Unit,
+) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(label, style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(6.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            for (row in 0..2) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (col in 0..2) {
+                        val idx = row * 3 + col
+                        val v = values[idx]
+                        val sel = v == current
+                        val dotAlign = when (row) {
+                            0 -> when (col) { 0 -> Alignment.TopStart; 1 -> Alignment.TopCenter; else -> Alignment.TopEnd }
+                            1 -> when (col) { 0 -> Alignment.CenterStart; 1 -> Alignment.Center; else -> Alignment.CenterEnd }
+                            else -> when (col) { 0 -> Alignment.BottomStart; 1 -> Alignment.BottomCenter; else -> Alignment.BottomEnd }
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                            border = BorderStroke(1.dp, if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
+                            modifier = Modifier
+                                .size(width = 46.dp, height = 32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onSelect(v) }
+                                .controllerFocusable("$idPrefix.$idx", onConfirm = { onSelect(v) }),
+                        ) {
+                            Box(Modifier.fillMaxSize().padding(5.dp), contentAlignment = dotAlign) {
+                                Box(
+                                    Modifier
+                                        .size(7.dp)
+                                        .clip(CircleShape)
+                                        .background(if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private enum class AchFilter { ALL, UNLOCKED, LOCKED }
+
+/** All / Unlocked / Locked pills over the achievement list. Same pill styling and controller
+ *  focus wiring as SubsetTabs; each pill shows its count so progress is visible at a glance. */
+@Composable
+private fun AchievementFilterTabs(selected: AchFilter, items: List<AchievementItem>, onSelect: (AchFilter) -> Unit) {
+    val unlocked = items.count { it.unlocked }
+    val tabs = listOf(
+        Triple(AchFilter.ALL, str("ra.filter.all"), items.size),
+        Triple(AchFilter.UNLOCKED, str("ra.filter.unlocked"), unlocked),
+        Triple(AchFilter.LOCKED, str("ra.filter.locked"), items.size - unlocked),
+    )
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        tabs.forEach { (mode, label, count) ->
+            val sel = mode == selected
+            Surface(
+                shape = RoundedCornerShape(999.dp),
+                color = if (sel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (sel) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .clickable { onSelect(mode) }
+                    .controllerFocusable("ra.filter.${mode.name}", onConfirm = { onSelect(mode) }),
+            ) {
+                Text(
+                    text = "$label  $count",
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                    fontWeight = if (sel) FontWeight.Bold else FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

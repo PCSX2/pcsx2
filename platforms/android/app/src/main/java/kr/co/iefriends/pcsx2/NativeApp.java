@@ -233,6 +233,8 @@ public class NativeApp {
 	 *  {@link #getAchievementsJSON}. */
 	public static native void setAchievementsOption(String key, boolean enabled);
 
+	public static native void setAchievementsOptionInt(String key, int value);
+
 	// Custom achievement-unlock sound. `path` is an app-private absolute file the
 	// MediaPlayer can read; an empty string clears it back to the bundled default.
 	public static native void setAchievementsUnlockSound(String path);

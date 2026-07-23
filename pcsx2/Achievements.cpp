@@ -541,6 +541,22 @@ std::string Achievements::GetAchievementsAsJSON()
 	out += ",\"unofficialTestMode\":";
 	out += Host::GetBaseBoolSettingValue("Achievements", "UnofficialTestMode", false) ? "true" : "false";
 
+	// Notification/leaderboard durations (seconds) and the two overlay positions. Positions are
+	// stored as the enum's integer value (SettingsWrapIntEnumEx -> EntryBitfield): NotificationPosition
+	// is an OsdOverlayPos (None=0, TopLeft=1..BottomRight=9) and OverlayPosition an
+	// AchievementOverlayPosition (TopLeft=0..BottomRight=8). The Android RA panel exposes these as
+	// sliders + a 3x3 position grid and writes them back via setAchievementsOptionInt.
+	out += ",\"notificationsDuration\":";
+	out += std::to_string(Host::GetBaseIntSettingValue("Achievements", "NotificationsDuration", 5));
+	out += ",\"leaderboardsDuration\":";
+	out += std::to_string(Host::GetBaseIntSettingValue("Achievements", "LeaderboardsDuration", 10));
+	out += ",\"notificationPosition\":";
+	out += std::to_string(Host::GetBaseIntSettingValue("Achievements", "NotificationPosition",
+		static_cast<int>(OsdOverlayPos::TopLeft)));
+	out += ",\"overlayPosition\":";
+	out += std::to_string(Host::GetBaseIntSettingValue("Achievements", "OverlayPosition",
+		static_cast<int>(AchievementOverlayPosition::BottomRight)));
+
 	out += ",\"items\":[";
 
 	if (active && s_client)

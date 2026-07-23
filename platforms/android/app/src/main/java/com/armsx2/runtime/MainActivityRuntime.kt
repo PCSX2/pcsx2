@@ -1780,7 +1780,20 @@ open class MainActivityRuntime : ComponentActivity() {
         // controller "B"/"Circle" buttons that the OS maps to KEYCODE_BACK
         // (Xbox/DualShock default) from killing the app.
         onBackPressedDispatcher.addCallback(this) {
-            // intentionally empty — pure stay-alive sentinel
+            // #384: the system Back button / gesture opens the in-game menu (Nether/Eden-style) when
+            // a game is running and neither the overlay nor the library is already up. Controller
+            // B/Circle never reach here — dispatchKeyEvent maps + consumes them as the PS2 Circle
+            // button first — so this fires only for the actual system back. Toggle in Hotkeys
+            // (input.backOpensMenu, default on). When off / on the library / with the overlay already
+            // up, it stays a pure stay-alive no-op so the system never falls through to finish().
+            val inGame = eState.value == EmuState.RUNNING || eState.value == EmuState.PAUSED
+            if (inGame &&
+                !WindowImpl.overlayVisible.value &&
+                !WindowImpl.showLibrary.value &&
+                prefs.getBoolean("input.backOpensMenu", true)
+            ) {
+                com.armsx2.ui.InGameOverlay.open()
+            }
         }
         prefs = applicationContext.getSharedPreferences("ARMSX2", MODE_PRIVATE)
         com.armsx2.i18n.I18n.init(applicationContext)

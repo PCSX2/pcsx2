@@ -72,9 +72,13 @@ import com.armsx2.ui.InGameOverlay
 import com.armsx2.ui.WindowImpl
 import kotlinx.coroutines.delay
 import kr.co.iefriends.pcsx2.NativeApp
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntOffset
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /** Root entry point. Place this in the same fillMaxSize() container as
  *  the AndroidView surface. Renders nothing when the VM isn't running
@@ -273,6 +277,26 @@ fun TouchControlsOverlay() {
             )
         }
 
+        // Snap-grid overlay: faint square grid the widgets' centres snap to, so the user can see
+        // the crosses they're aiming for. Composed after the dim backdrop and before the widget
+        // loop, so it sits above the dim but below every draggable widget.
+        if (edit && TouchControls.gridSnap.value) {
+            val gpx = widthPx / GRID_COLS
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                val line = Color.White.copy(alpha = 0.13f)
+                var gx = 0f
+                while (gx <= size.width) {
+                    drawLine(line, Offset(gx, 0f), Offset(gx, size.height), strokeWidth = 1f)
+                    gx += gpx
+                }
+                var gy = 0f
+                while (gy <= size.height) {
+                    drawLine(line, Offset(0f, gy), Offset(size.width, gy), strokeWidth = 1f)
+                    gy += gpx
+                }
+            }
+        }
+
         val faceMulti = !edit && TouchControls.faceMultiTouch.value
         if (!faceMulti) {
             if (unifiedPressed.isNotEmpty()) unifiedPressed = emptySet()
@@ -304,8 +328,17 @@ fun TouchControlsOverlay() {
             // the loop, so it stays draggable/resizable like every other widget.
             if (cfg.id == TouchButtonId.PAUSE && !edit) continue
             val size = cfg.sizeDp.dp
-            val cx = w * cfg.xFrac
-            val cy = h * cfg.yFrac
+            // Grid snap (editor only): render the centre anchor on the nearest cross so it visibly
+            // clicks into place while dragging. The underlying cfg.xFrac keeps the raw free-drag
+            // value (snapping only the displayed fraction avoids fighting the transform-gesture
+            // delta accumulation, which would make the widget feel stuck); the committed layout is
+            // snapped on finger-up in editGestures.
+            val snapping = edit && TouchControls.gridSnap.value
+            val gridPx = if (snapping) widthPx / GRID_COLS else 0f
+            val xFrac = if (snapping) snapFracToGrid(cfg.xFrac, widthPx, gridPx) else cfg.xFrac
+            val yFrac = if (snapping) snapFracToGrid(cfg.yFrac, heightPx, gridPx) else cfg.yFrac
+            val cx = w * xFrac
+            val cy = h * yFrac
             val left = cx - size / 2
             val top = cy - size / 2
             Box(
@@ -338,11 +371,29 @@ fun TouchControlsOverlay() {
         }
 
         if (edit) {
-            EditToolbar(
-                modifier = Modifier
+            // The editor panel is draggable + pinch-resizable (grip handle at its top) so it can be
+            // moved off the buttons being edited. Offset is applied on the outer Box (real px); resize
+            // scales LocalDensity for the panel subtree, which keeps layout AND touch targets correct
+            // (a graphicsLayer / Modifier.scale would move the visuals but leave the hit-boxes behind).
+            val outerDensity = LocalDensity.current
+            val isLandscape = widthPx > heightPx
+            val dxState = TouchControls.editorPanelDx(isLandscape)
+            val dyState = TouchControls.editorPanelDy(isLandscape)
+            val panelScale = TouchControls.editorPanelScale(isLandscape).floatValue
+            Box(
+                Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 12.dp),
-            )
+                    .padding(top = 12.dp)
+                    .offset {
+                        IntOffset(dxState.floatValue.roundToInt(), dyState.floatValue.roundToInt())
+                    },
+            ) {
+                CompositionLocalProvider(
+                    LocalDensity provides Density(outerDensity.density * panelScale, outerDensity.fontScale),
+                ) {
+                    EditToolbar()
+                }
+            }
         }
 
         if (TouchControls.profileDialogOpen.value) {
@@ -1408,7 +1459,24 @@ private fun Modifier.pressGestures(
 private fun Modifier.editGestures(cfg: TouchButtonCfg): Modifier =
     pointerInput(cfg.id, "press") {
         detectTapGestures(
-            onPress = { TouchControls.selectedButton.value = cfg.id },
+            onPress = {
+                TouchControls.selectedButton.value = cfg.id
+                // Snap-to-grid commits on release: the transform handler below free-drags the raw
+                // fraction (smooth), then on finger-up the centre anchor is rounded to the nearest
+                // grid cross and persisted so the saved layout stays aligned. Read id, not the
+                // stale captured cfg (see the note above about the frozen pointerInput key).
+                val released = tryAwaitRelease()
+                val overlay = OverlayDims.last
+                if (released && TouchControls.gridSnap.value && overlay != null) {
+                    val gridPx = overlay.widthPx / GRID_COLS
+                    TouchControls.updateButton(cfg.id) { c ->
+                        c.copy(
+                            xFrac = snapFracToGrid(c.xFrac, overlay.widthPx, gridPx),
+                            yFrac = snapFracToGrid(c.yFrac, overlay.heightPx, gridPx),
+                        )
+                    }
+                }
+            },
         )
     }.pointerInput(cfg.id) {
         detectTransformGestures(panZoomLock = false) { _, pan, zoom, _ ->
@@ -1425,6 +1493,19 @@ private fun Modifier.editGestures(cfg: TouchButtonCfg): Modifier =
 private object OverlayDims {
     @Volatile var last: Dims? = null
     data class Dims(val widthPx: Float, val heightPx: Float)
+}
+
+/** Editor snap-to-grid: the overlay width is divided into this many columns; rows use the same
+ *  pixel pitch so cells are square and a widget's centre anchor lands on a grid cross. */
+private const val GRID_COLS = 24f
+
+/** Round a centre-anchor fraction to the nearest grid line. Works in pixel space so both axes
+ *  share one square pitch, then converts back to a fraction (clamped to the same 0.02..0.98 the
+ *  drag handler uses so a snapped widget can never leave the screen). */
+private fun snapFracToGrid(frac: Float, dimPx: Float, gridPx: Float): Float {
+    if (gridPx <= 0f || dimPx <= 0f) return frac
+    val snappedPx = (frac * dimPx / gridPx).roundToInt() * gridPx
+    return (snappedPx / dimPx).coerceIn(0.02f, 0.98f)
 }
 
 /* -------------------------------------------------------------------- */
@@ -1470,6 +1551,60 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        // Grip row: drag the centre grip to MOVE the panel off the buttons, tap −/＋ to RESIZE it,
+        // double-tap the grip to snap back to default. Pinch-on-grip also resizes, but the strip is
+        // thin so a two-finger pinch rarely lands on it -- the −/＋ buttons are the reliable path.
+        // Pan is raw px (matches the outer Box offset); scale drives the panel's LocalDensity.
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PanelSizeButton("－") {
+                val ls = OverlayDims.last?.let { it.widthPx > it.heightPx } ?: true
+                TouchControls.editorPanelScale(ls).floatValue =
+                    (TouchControls.editorPanelScale(ls).floatValue - 0.1f).coerceIn(0.6f, 1.35f)
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(26.dp)
+                    .pointerInput(Unit) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            val dims = OverlayDims.last
+                            val ls = (dims?.widthPx ?: 1f) > (dims?.heightPx ?: 0f)
+                            val maxX = (dims?.widthPx ?: 2400f) * 0.42f
+                            val maxY = (dims?.heightPx ?: 1080f) * 0.78f
+                            TouchControls.editorPanelDx(ls).floatValue =
+                                (TouchControls.editorPanelDx(ls).floatValue + pan.x).coerceIn(-maxX, maxX)
+                            TouchControls.editorPanelDy(ls).floatValue =
+                                (TouchControls.editorPanelDy(ls).floatValue + pan.y).coerceIn(0f, maxY)
+                            TouchControls.editorPanelScale(ls).floatValue =
+                                (TouchControls.editorPanelScale(ls).floatValue * zoom).coerceIn(0.6f, 1.35f)
+                        }
+                    }
+                    .pointerInput(Unit) {
+                        detectTapGestures(onDoubleTap = {
+                            val ls = OverlayDims.last?.let { it.widthPx > it.heightPx } ?: true
+                            TouchControls.resetEditorPanel(ls)
+                        })
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .width(44.dp)
+                        .height(5.dp)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(Color(0x99FFFFFF)),
+                )
+            }
+            PanelSizeButton("＋") {
+                val ls = OverlayDims.last?.let { it.widthPx > it.heightPx } ?: true
+                TouchControls.editorPanelScale(ls).floatValue =
+                    (TouchControls.editorPanelScale(ls).floatValue + 0.1f).coerceIn(0.6f, 1.35f)
+            }
+        }
         // Scope hint: with no game running the editor edits the GLOBAL Default
         // layout (per-game layouts need a running disc).
         Text(
@@ -1511,6 +1646,10 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
             }
             ToolbarChip(if (TouchControls.floatingStick.value) str("touch.editor.floatingStickOn") else str("touch.editor.floatingStickOff")) {
                 TouchControls.setFloatingStick(!TouchControls.floatingStick.value)
+            }
+            // Snap-to-grid: aligns dragged widgets to a square grid so buttons line up cleanly.
+            ToolbarChip(if (TouchControls.gridSnap.value) str("touch.editor.gridOn") else str("touch.editor.gridOff")) {
+                TouchControls.setGridSnap(!TouchControls.gridSnap.value)
             }
         }
         // Opacity slider — controls the live HUD alpha so the user sees
@@ -1648,6 +1787,21 @@ private fun ToolbarChip(label: String, onClick: () -> Unit) {
             .padding(horizontal = 10.dp, vertical = 6.dp),
     ) {
         Text(label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/** Compact −/＋ button that resizes the editor panel (steps editorPanelScale). */
+@Composable
+private fun PanelSizeButton(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFF1F1F2C))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
 }
 

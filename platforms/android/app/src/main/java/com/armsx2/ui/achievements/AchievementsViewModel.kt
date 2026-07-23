@@ -52,6 +52,14 @@ data class AchievementsUiState(
     val overlays: Boolean = true,
     val lbOverlays: Boolean = true,
     val soundEffects: Boolean = true,
+    // Notification durations (seconds, clamped 3..30 natively) and the two overlay positions,
+    // stored as the native enum's int value. NotificationPosition is an OsdOverlayPos (TopLeft=1..
+    // BottomRight=9); OverlayPosition an AchievementOverlayPosition (TopLeft=0..BottomRight=8).
+    // Written via setAchievementsOptionInt.
+    val notificationsDuration: Int = 5,
+    val leaderboardsDuration: Int = 10,
+    val notificationPosition: Int = 1,
+    val overlayPosition: Int = 8,
     // Achievement modes (default off). Encore = re-notify already-unlocked achievements;
     // Spectator = treat all as locked, send nothing to the server; Unofficial = list
     // unpromoted test sets (unlocks aren't saved). Native rc_client already supports them.
@@ -148,6 +156,20 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
+    /** Integer-valued options: notification/leaderboard durations and the two overlay positions.
+     *  Persisted + live-applied natively; the local state is updated optimistically so the slider
+     *  / position grid tracks the change immediately (the 3s poll would otherwise lag it). */
+    fun setOptionInt(key: String, value: Int) {
+        NativeApp.setAchievementsOptionInt(key, value)
+        state.value = when (key) {
+            "notificationsDuration" -> state.value.copy(notificationsDuration = value)
+            "leaderboardsDuration" -> state.value.copy(leaderboardsDuration = value)
+            "notificationPosition" -> state.value.copy(notificationPosition = value)
+            "overlayPosition" -> state.value.copy(overlayPosition = value)
+            else -> state.value
+        }
+    }
+
     fun dismissError() {
         state.value = state.value.copy(error = null)
     }
@@ -173,6 +195,10 @@ class AchievementsViewModel(application: Application) : AndroidViewModel(applica
             overlays = root.optBoolean("overlays", true),
             lbOverlays = root.optBoolean("lbOverlays", true),
             soundEffects = root.optBoolean("soundEffects", true),
+            notificationsDuration = root.optInt("notificationsDuration", 5),
+            leaderboardsDuration = root.optInt("leaderboardsDuration", 10),
+            notificationPosition = root.optInt("notificationPosition", 1),
+            overlayPosition = root.optInt("overlayPosition", 8),
             encoreMode = root.optBoolean("encoreMode", false),
             spectatorMode = root.optBoolean("spectatorMode", false),
             unofficialTestMode = root.optBoolean("unofficialTestMode", false),

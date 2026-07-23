@@ -657,6 +657,30 @@ Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsOption(JNIEnv *env, jclass c
         VMManager::ApplySettings();
 }
 
+// Integer-valued [Achievements] options: notification/leaderboard durations (seconds) and the two
+// overlay positions (stored as the enum's int value, see GetAchievementsAsJSON). Same persist +
+// live-apply path as the bool setter above. Clamping is enforced natively in
+// AchievementsOptions::LoadSave (durations to 3..30), so out-of-range values are harmless.
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setAchievementsOptionInt(JNIEnv *env, jclass clazz,
+                                                              jstring p_key, jint value) {
+    const std::string key = GetJavaString(env, p_key);
+    const char* ini_key = nullptr;
+    if (key == "notificationsDuration") ini_key = "NotificationsDuration";
+    else if (key == "leaderboardsDuration") ini_key = "LeaderboardsDuration";
+    else if (key == "notificationPosition") ini_key = "NotificationPosition";
+    else if (key == "overlayPosition") ini_key = "OverlayPosition";
+    if (!ini_key)
+        return;
+
+    Host::SetBaseIntSettingValue("Achievements", ini_key, static_cast<int>(value));
+    if (s_settings_interface && s_settings_interface->IsDirty())
+        s_settings_interface->Save();
+    if (VMManager::HasValidVM())
+        VMManager::ApplySettings();
+}
+
 // Custom achievement-unlock sound. Writes the [Achievements] UnlockSoundName path
 // (an app-private absolute file the MediaPlayer reads on unlock) and enables the
 // specific-sound path. An empty path clears it, so PlayAchievementSound falls back

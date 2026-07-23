@@ -57,6 +57,7 @@ object TouchControls {
     private const val KEY_MULTI_RADIUS = "touch.multiRadius"
     private const val KEY_DPAD_SPACING = "touch.dpadSpacing"
     private const val KEY_FLOATING_STICK = "touch.floatingStick"
+    private const val KEY_GRID_SNAP = "touch.gridSnap"
     private const val KEY_VIS_MODE = "touch.visibilityMode"
     // One-shot 2.4.7 defaults migration for EXISTING users (saved prefs/layouts
     // predate the default changes, so the new defaults wouldn't otherwise apply).
@@ -179,6 +180,34 @@ object TouchControls {
     // easier to grab without looking. Snaps back to rest on release. Global; persisted
     // under KEY_FLOATING_STICK.
     val floatingStick = mutableStateOf(false)
+
+    // Editor-only: while ON, dragging a widget in edit mode snaps its centre anchor to the
+    // nearest cross of a square grid (see GRID_COLS in TouchControlsOverlay). Lets the user
+    // align buttons precisely instead of eyeballing them "slightly off from one another".
+    // Global; persisted under KEY_GRID_SNAP.
+    val gridSnap = mutableStateOf(false)
+
+    // Editor panel (EditToolbar) placement — SESSION ONLY, and PER-ORIENTATION. Portrait and
+    // landscape keep SEPARATE placements (like the touch layout itself): the panel lives at very
+    // different screen coordinates in each, so a portrait offset applied in landscape would shove it
+    // off-screen. Lets the user drag the settings panel out of the way and resize it so it stops
+    // covering the buttons. Not persisted: raw-px offsets don't survive a resolution change.
+    private val editorPanelDxP = mutableFloatStateOf(0f)
+    private val editorPanelDyP = mutableFloatStateOf(0f)
+    private val editorPanelScaleP = mutableFloatStateOf(1f)
+    private val editorPanelDxL = mutableFloatStateOf(0f)
+    private val editorPanelDyL = mutableFloatStateOf(0f)
+    private val editorPanelScaleL = mutableFloatStateOf(1f)
+
+    fun editorPanelDx(landscape: Boolean) = if (landscape) editorPanelDxL else editorPanelDxP
+    fun editorPanelDy(landscape: Boolean) = if (landscape) editorPanelDyL else editorPanelDyP
+    fun editorPanelScale(landscape: Boolean) = if (landscape) editorPanelScaleL else editorPanelScaleP
+
+    fun resetEditorPanel(landscape: Boolean) {
+        editorPanelDx(landscape).floatValue = 0f
+        editorPanelDy(landscape).floatValue = 0f
+        editorPanelScale(landscape).floatValue = 1f
+    }
 
     /** Held-state for the DS2 pressure-sensitivity modifier. While true, the
      *  pressure-capable buttons report ~50% pressure (PCSX2's
@@ -451,6 +480,7 @@ object TouchControls {
         multiTouchRadius.floatValue = MainActivityRuntime.prefs.getFloat(KEY_MULTI_RADIUS, 0.62f).coerceIn(0.50f, 0.95f)
         dpadSpacing.floatValue = MainActivityRuntime.prefs.getFloat(KEY_DPAD_SPACING, 0.0f).coerceIn(0.0f, 0.35f)
         floatingStick.value = MainActivityRuntime.prefs.getBoolean(KEY_FLOATING_STICK, false)
+        gridSnap.value = MainActivityRuntime.prefs.getBoolean(KEY_GRID_SNAP, false)
         visibilityMode.intValue = MainActivityRuntime.prefs.getInt(KEY_VIS_MODE, 11).coerceIn(0, 11)
         if (visibilityMode.intValue == 0) visible.value = false
         // #357: show/hide became tap-to-reveal (inverted). Seed the new pref from the old one so
@@ -540,6 +570,7 @@ object TouchControls {
                 .putFloat(KEY_MULTI_RADIUS, multiTouchRadius.floatValue)
                 .putFloat(KEY_DPAD_SPACING, dpadSpacing.floatValue)
                 .putBoolean(KEY_FLOATING_STICK, floatingStick.value)
+                .putBoolean(KEY_GRID_SNAP, gridSnap.value)
                 .putInt(KEY_VIS_MODE, visibilityMode.intValue)
                 .putBoolean(KEY_PAUSE_TAP_REVEAL, pauseTapToReveal.value)
         }
@@ -875,6 +906,11 @@ object TouchControls {
 
     fun setFloatingStick(enabled: Boolean) {
         floatingStick.value = enabled
+        persist()
+    }
+
+    fun setGridSnap(enabled: Boolean) {
+        gridSnap.value = enabled
         persist()
     }
 
