@@ -69,8 +69,8 @@ static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
 	"D-Pad Down", // XINPUT_GAMEPAD_DPAD_DOWN
 	"D-Pad Left", // XINPUT_GAMEPAD_DPAD_LEFT
 	"D-Pad Right", // XINPUT_GAMEPAD_DPAD_RIGHT
-	"Start", // XINPUT_GAMEPAD_START
-	"Back", // XINPUT_GAMEPAD_BACK
+	"Menu", // XINPUT_GAMEPAD_START
+	"View", // XINPUT_GAMEPAD_BACK
 	"Left Stick", // XINPUT_GAMEPAD_LEFT_THUMB
 	"Right Stick", // XINPUT_GAMEPAD_RIGHT_THUMB
 	"Left Shoulder", // XINPUT_GAMEPAD_LEFT_SHOULDER
@@ -79,7 +79,7 @@ static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
 	"B", // XINPUT_GAMEPAD_B
 	"X", // XINPUT_GAMEPAD_X
 	"Y", // XINPUT_GAMEPAD_Y
-	"Guide", // XINPUT_GAMEPAD_GUIDE
+	"Xbox", // XINPUT_GAMEPAD_GUIDE
 };
 
 static const u16 s_button_masks[XInputSource::NUM_BUTTONS] = {
