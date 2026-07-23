@@ -88,10 +88,18 @@ void vs_main()
 	#if HAS_CLIP_CONTROL
 		gl_Position.z = float(z) * exp_min32;
 	#else
-		gl_Position.z = (float(z) * exp_min32) * 2.0f - 1.0f;
+		// GLES doesn't support ARB_clip_control, so remap [0,1] to [-1,1].
+		gl_Position.z = min(float(z) * exp2(-23.0f), 2.0f) - 1.0f;
 	#endif
 
 	gl_Position.w = 1.0f;
+
+#if GPU_PROFILE_MALI
+	// Mali HW bug (PPSSPP EQUAL_WZ_CORRUPTS_DEPTH): a draw where clip-space z == w
+	// corrupts the depth buffer after the perspective divide. Nudge z off w by a
+	// negligible amount. No-op on any non-Mali GPU (the define is 0 there).
+	if (gl_Position.z == gl_Position.w) gl_Position.z *= 0.999999f;
+#endif
 
 	texture_coord();
 
@@ -171,7 +179,8 @@ ProcessedVertex load_vertex(uint index)
 	#if HAS_CLIP_CONTROL
 		vtx.p.z = float(z) * exp_min32;
 	#else
-		vtx.p.z = (float(z) * exp_min32) * 2.0f - 1.0f;
+		// GLES doesn't support ARB_clip_control, so remap [0,1] to [-1,1].
+		vtx.p.z = min(float(z) * exp2(-23.0f), 2.0f) - 1.0f;
 	#endif
 
 	vtx.p.w = 1.0f;
@@ -455,11 +464,20 @@ void main()
 		VSout.inv_cov = is_near_corner ? 0.0f : 1.0f; // Full coverage at near corner, otherwise none.
 	
 		VSout.interior = 0;
+
+		#if !VS_IIP
+			// Get the provoking vertex color (last vertex in GL)
+			vtx.c = i0 == 2 ? vtx.c : (i1 == 2 ? other.c : opposite.c);
+		#endif
 	}
 
 #endif
 
 	gl_Position = vtx.p;
+#if GPU_PROFILE_MALI
+	// Mali EQUAL_WZ_CORRUPTS_DEPTH nudge (VS_EXPAND path); see vs_main above.
+	if (gl_Position.z == gl_Position.w) gl_Position.z *= 0.999999f;
+#endif
 	VSout.t_float = vtx.t_float;
 	VSout.t_int = vtx.t_int;
 	VSout.c = vtx.c;

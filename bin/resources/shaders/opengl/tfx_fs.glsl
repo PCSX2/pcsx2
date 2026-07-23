@@ -3,6 +3,13 @@
 
 //#version 420 // Keep it for text editor detection
 
+// When dual source blending is unavailable (GLES without GL_EXT_blend_func_extended),
+// treat the second color output as disabled so no 'index' layout qualifiers are emitted.
+#if defined(DISABLE_DUAL_SOURCE) && !PS_NO_COLOR1
+#undef PS_NO_COLOR1
+#define PS_NO_COLOR1 1
+#endif
+
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
@@ -23,6 +30,21 @@
 #define AFAIL_RGB_ONLY 3
 #define AFAIL_RGB_ONLY_DSB 4
 #define AFAIL_RGB_ONLY_SW_Z 5
+#endif
+
+// ARM Mali GLSL compilers miscompile a bitwise AND between two integer vectors
+// when an operand is non-constant (the result collapses to the constant operand,
+// dropping the mask). Scalarize per component on Mali so the compiler never sees
+// a runtime vector & vector; the result is identical on conformant GPUs, so the
+// non-Mali arm keeps the plain vector AND. (cf. Dolphin BUG_BROKEN_VECTOR_BITWISE_AND)
+#if GPU_PROFILE_MALI
+	#define IAND3(v, m) ivec3((v).x & (m).x, (v).y & (m).y, (v).z & (m).z)
+	#define UAND2(v, m) uvec2((v).x & (m).x, (v).y & (m).y)
+	#define UAND4(v, m) uvec4((v).x & (m).x, (v).y & (m).y, (v).z & (m).z, (v).w & (m).w)
+#else
+	#define IAND3(v, m) ((v) & (m))
+	#define UAND2(v, m) ((v) & (m))
+	#define UAND4(v, m) ((v) & (m))
 #endif
 
 #ifndef PS_ATST_NONE
@@ -125,12 +147,23 @@ in SHADER
 	// Basically the only scenario where this'll happen is RGBA masked and DATE is active.
 	#undef PS_NO_COLOR
 	#define PS_NO_COLOR 0
-	#if defined(GL_EXT_shader_framebuffer_fetch)
-		#undef TARGET_0_QUALIFIER
-		#define TARGET_0_QUALIFIER inout
-		#define LAST_FRAG_COLOR o_col0
-	#elif defined(GL_ARM_shader_framebuffer_fetch)
-		#define LAST_FRAG_COLOR gl_LastFragColorARM
+	// Mali devices use ARM_shader_framebuffer_fetch even when the EXT extension is
+	// also advertised — the EXT inout path is broken on every Mali driver tested
+	// and only `gl_LastFragColorARM` reads back the live tile pixel correctly.
+	// Selection is driven by GPU_PROFILE_MALI (emitted from the C++ side after
+	// the runtime profile is resolved).
+	#if GPU_PROFILE_MALI
+		#if HAS_ARM_SHADER_FRAMEBUFFER_FETCH
+			#define LAST_FRAG_COLOR gl_LastFragColorARM
+		#endif
+	#else
+		#if HAS_EXT_SHADER_FRAMEBUFFER_FETCH || HAS_EXT_SHADER_PIXEL_LOCAL_STORAGE
+			#undef TARGET_0_QUALIFIER
+			#define TARGET_0_QUALIFIER inout
+			#define LAST_FRAG_COLOR o_col0
+		#elif HAS_ARM_SHADER_FRAMEBUFFER_FETCH
+			#define LAST_FRAG_COLOR gl_LastFragColorARM
+		#endif
 	#endif
 #endif
 
@@ -168,7 +201,9 @@ layout(binding = 3) uniform sampler2D img_prim_min;
 // Depth feedback mode 1 binds depth buffer directly as a texture.
 // Depth feedback mode 2 (depth as color) can use FB fetch for the feedback,
 // in which case we don't need to explicitly bind depth as a texture.
-#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
+// HAS_ARM_DEPTH_FETCH reads prior depth from gl_LastFragDepthARM (coherent,
+// tile-local) — no sampler needed, so skip the binding entirely.
+#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH && !HAS_ARM_DEPTH_FETCH
 layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
@@ -191,6 +226,10 @@ float sample_from_depth()
 {
 #if !SW_DEPTH
 	return 0.0f;
+#elif HAS_ARM_DEPTH_FETCH
+	// Coherent tile-local read of the current depth attachment — no sampler,
+	// no second fetch output, so it links on Adreno and doesn't read stale depth.
+	return gl_LastFragDepthARM;
 #elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
 	return o_col1;
 #else
@@ -229,7 +268,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 	// And https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_filter_anisotropic.txt
 	// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/ 
-	vec2 sz = textureSize(TextureSampler, 0);
+	vec2 sz = vec2(textureSize(TextureSampler, 0));
 	vec2 dX = dFdx(uv) * sz;
 	vec2 dY = dFdy(uv) * sz;
 
@@ -246,7 +285,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	if (!(d_zero || d_par || d_per || d_inf_nan))
 	{
 		float A = dX.y * dX.y + dY.y * dY.y;
-		float B = -2 * (dX.x * dX.y + dY.x * dY.y);
+		float B = -2.0f * (dX.x * dX.y + dY.x * dY.y);
 		float C = dX.x * dX.x + dY.x * dY.x;
 		float F = f * f;
 
@@ -305,7 +344,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	{
 		vec2 aniso_line_dir = is_major_x ? dX : dY;
 
-		aniso_ratio = min(length_major / length_minor, PS_ANISOTROPIC_FILTERING);
+		aniso_ratio = min(length_major / length_minor, float(PS_ANISOTROPIC_FILTERING));
 		length_lod = length_major / aniso_ratio;
 
 		// clamp to top Lod
@@ -332,7 +371,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	{
 		vec4 num = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		vec2 segment = (2.0f * aniso_line) / aniso_ratio;
-		for (int i = 0; i < aniso_ratio; i++)
+		for (float i = 0.0f; i < aniso_ratio; i += 1.0f)
 		{
 			vec2 d = -aniso_line + (0.5f + i) * segment;	
 			vec2 uv_sample = uv + d;
@@ -411,7 +450,7 @@ vec4 clamp_wrap_uv(vec4 uv)
 	// textures. Fixes Xenosaga's hair issue.
 	uv = fract(uv);
 	#endif
-	uv_out = vec4((uvec4(uv * tex_size) & floatBitsToUint(MinMax.xyxy)) | floatBitsToUint(MinMax.zwzw)) / tex_size;
+	uv_out = vec4(UAND4(uvec4(uv * tex_size), floatBitsToUint(MinMax.xyxy)) | floatBitsToUint(MinMax.zwzw)) / tex_size;
 #endif
 
 #else // PS_WMS != PS_WMT
@@ -429,7 +468,7 @@ vec4 clamp_wrap_uv(vec4 uv)
 	#if PS_FST == 0
 		uv.xz = fract(uv.xz);
 	#endif
-	uv_out.xz = vec2((uvec2(uv.xz * tex_size.xx) & floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
+	uv_out.xz = vec2(UAND2(uvec2(uv.xz * tex_size.xx), floatBitsToUint(MinMax.xx)) | floatBitsToUint(MinMax.zz)) / tex_size.xx;
 
 #endif
 
@@ -446,7 +485,7 @@ vec4 clamp_wrap_uv(vec4 uv)
 	#if PS_FST == 0
 		uv.yw = fract(uv.yw);
 	#endif
-	uv_out.yw = vec2((uvec2(uv.yw * tex_size.yy) & floatBitsToUint(MinMax.yy)) | floatBitsToUint(MinMax.ww)) / tex_size.yy;
+	uv_out.yw = vec2(UAND2(uvec2(uv.yw * tex_size.yy), floatBitsToUint(MinMax.yy)) | floatBitsToUint(MinMax.ww)) / tex_size.yy;
 #endif
 
 #endif
@@ -522,7 +561,11 @@ mat4 sample_4p(uvec4 u)
 
 uint fetch_raw_depth()
 {
+#if HAS_CLIP_CONTROL
 	float multiplier = exp2(32.0f);
+#else
+	float multiplier = exp2(24.0f);
+#endif
 
 #if PS_TEX_IS_FB == 1
 	return uint(sample_from_rt().r * multiplier);
@@ -628,13 +671,21 @@ vec4 sample_depth(vec2 st)
 #elif PS_DEPTH_FMT == 1
 	// Based on ps_convert_depth32_rgba8 of convert
 	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
+#if HAS_CLIP_CONTROL
 	uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#else
+	uint d = uint(fetch_c(uv).r * exp2(24.0f));
+#endif
 	t = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 
 #elif PS_DEPTH_FMT == 2
 	// Based on ps_convert_depth16_rgb5a1 of convert
 	// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+#if HAS_CLIP_CONTROL
 	uint d = uint(fetch_c(uv).r * exp2(32.0f));
+#else
+	uint d = uint(fetch_c(uv).r * exp2(24.0f));
+#endif
 	t = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
 
 #elif PS_DEPTH_FMT == 3
@@ -783,7 +834,7 @@ vec4 sample_color(vec2 st)
 		c[i].a = ( (PS_AEM == 0) || any(bvec3(c[i].rgb))  ) ? TA.x : 0.0f;
 		//c[i].a = ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #elif (PS_AEM_FMT == FMT_16)
-		c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(ivec3(c[i].rgb * 255.0f) & ivec3(0xF8))) ) ? TA.x : 0.0f;
+		c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || any(bvec3(IAND3(ivec3(c[i].rgb * 255.0f), ivec3(0xF8)))) ) ? TA.x : 0.0f;
 		//c[i].a = c[i].a >= 0.5 ? TA.y : ( (PS_AEM == 0) || (sum > 0.0f) ) ? TA.x : 0.0f;
 #endif
 	}
@@ -918,7 +969,7 @@ vec4 ps_color()
 			T.a = float(denorm_c_before.g & 0x80u);
 		#endif
 
-		T.a = ((T.a >= 127.5f) ? TA.y : ((PS_AEM == 0 || any(bvec3(ivec3(T.rgb) & ivec3(0xF8)))) ? TA.x : 0.0f)) * 255.0f;
+		T.a = ((T.a >= 127.5f) ? TA.y : ((PS_AEM == 0 || any(bvec3(IAND3(ivec3(T.rgb), ivec3(0xF8))))) ? TA.x : 0.0f)) * 255.0f;
 	#endif
 
 	vec4 C = tfx(T, PSin.c);
@@ -937,7 +988,7 @@ void ps_fbmask(inout vec4 C)
 	#else
 		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
 	#endif
-	C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
+	C = vec4(UAND4(uvec4(C), ~FbMask) | UAND4(uvec4(RT), FbMask));
 #endif
 }
 
@@ -995,13 +1046,13 @@ void ps_color_clamp_wrap(inout vec3 C)
 	// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 #if PS_DST_FMT == FMT_16 && PS_DITHER < 3 && (PS_BLEND_MIX == 0 || PS_DITHER)
 	// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
-	C = vec3(ivec3(C) & ivec3(0xF8));
+	C = vec3(IAND3(ivec3(C), ivec3(0xF8)));
 #elif PS_COLCLIP == 1 || PS_COLCLIP_HW == 1
-	C = vec3(ivec3(C) & ivec3(0xFF));
+	C = vec3(IAND3(ivec3(C), ivec3(0xFF)));
 #endif
 
 #elif PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0
-	C = vec3(ivec3(C) & ivec3(0xF8));
+	C = vec3(IAND3(ivec3(C), ivec3(0xF8)));
 #endif
 }
 
@@ -1193,7 +1244,9 @@ void ps_main()
 	float input_z = gl_FragCoord.z;
 
 	// Must floor before depth testing.
-#if PS_ZFLOOR
+	// Only valid with clip control (ZERO_TO_ONE depth range); on GLES without clip
+	// control gl_FragCoord.z is shifted/scaled and the floor gives wrong results.
+#if PS_ZFLOOR && HAS_CLIP_CONTROL
 	input_z = floor(input_z * exp2(32.0f)) * exp2(-32.0f);
 #endif
 
@@ -1415,7 +1468,7 @@ void ps_main()
 #endif
 
 // Writing back depth
-#if ZWRITE
+#if ZWRITE && (HAS_CLIP_CONTROL || PS_ZCLAMP || SW_DEPTH)
 	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
 		// Depth as color write. For depth as color feedback we write to both
 		// color copy and real depth to avoid having to copy back to real depth.

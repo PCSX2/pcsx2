@@ -264,7 +264,7 @@ vec3 Bloom(vec2 pos)
 	vec3 e = Horz5(pos, 2.0);
 
 	float wa = BloomScan(pos,-2.0);
-	float wb = BloomScan(pos,-1.0);
+	float wb = BloomScan(pos,-1.0); 
 	float wc = BloomScan(pos, 0.0);
 	float wd = BloomScan(pos, 1.0);
 	float we = BloomScan(pos, 2.0);
@@ -417,7 +417,7 @@ void ps_4x_rgss()
 	color += sample_c(v_tex + vec2(-s,-l) * dxy).rgb;
 	color += sample_c(v_tex + vec2(-l, s) * dxy).rgb;
 
-	o_col0 = vec4(color * 0.25,1);
+	o_col0 = vec4(color * 0.25, 1.0);
 }
 #endif
 
@@ -427,11 +427,11 @@ void ps_automagical_supersampling()
 	vec2 ratio = (u_source_size / u_target_size) * 0.5;
 	vec2 steps = floor(ratio);
 	vec3 col = sample_c(v_tex).rgb;
-	float div = 1;
+	float div = 1.0;
 
-	for (float y = 0; y < steps.y; y++)
+	for (float y = 0.0; y < steps.y; y++)
 	{
-		for (float x = 0; x < steps.x; x++)
+		for (float x = 0.0; x < steps.x; x++)
 		{
 			vec2 offset = vec2(x,y) - ratio * 0.5;
 			col += sample_c(v_tex + offset * u_rcp_source_resolution * 2.0).rgb;
@@ -439,7 +439,7 @@ void ps_automagical_supersampling()
 		}
 	}
 
-	o_col0 = vec4(col / div, 1);
+	o_col0 = vec4(col / div, 1.0);
 }
 #endif
 

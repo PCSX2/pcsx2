@@ -67,6 +67,12 @@ void main()
 	gl_Position.z *= exp2(-32.0f);		// integer->float depth
 	gl_Position.y = -gl_Position.y;
 
+#if GPU_PROFILE_MALI
+	// Mali HW bug (PPSSPP EQUAL_WZ_CORRUPTS_DEPTH): clip-space z == w corrupts the
+	// depth buffer after the perspective divide. Nudge z off w. No-op off Mali.
+	if (gl_Position.z == gl_Position.w) gl_Position.z *= 0.999999f;
+#endif
+
 	#if VS_TME
 		vec2 uv = a_uv - TextureOffset;
 		vec2 st = a_st - TextureOffset;
@@ -311,7 +317,11 @@ void main()
 
 	bool is_bottom = (vid & 2u) != 0u;
 	bool is_right = (vid & 1u) != 0u;
+#if VS_PROVOKING_VERTEX_LAST
 	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
+#else
+	uint vid_other = is_bottom ? vid_base + 1 : vid_base - 1;
+#endif
 
 	vtx = load_vertex(vid_base);
 	ProcessedVertex other = load_vertex(vid_other);
@@ -450,11 +460,20 @@ void main()
 		vsOut.inv_cov = is_near_corner ? 0.0f : 1.0f; // Full coverage at near corner, otherwise none.
 	
 		vsOut.interior = 0;
+
+		#if !VS_IIP
+			// Get the provoking vertex color (last vertex in VK)
+			vtx.c = i0 == 2 ? vtx.c : (i1 == 2 ? other.c : opposite.c);
+		#endif
 	}
 
 #endif
 
 	gl_Position = vtx.p;
+#if GPU_PROFILE_MALI
+	// Mali EQUAL_WZ_CORRUPTS_DEPTH nudge (VS_EXPAND path); see the direct path above.
+	if (gl_Position.z == gl_Position.w) gl_Position.z *= 0.999999f;
+#endif
 	vsOut.t = vtx.t;
 	vsOut.ti = vtx.ti;
 	vsOut.c = vtx.c;
@@ -698,7 +717,9 @@ layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
 #if ZWRITE && !PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
-layout(depth_less) out float gl_FragDepth;
+// depth_less would allow conservative early-Z, but floor(z*2^32)*2^-32 can exceed z
+// due to float32 rounding, violating the depth_less contract and silently culling geometry.
+out float gl_FragDepth;
 #endif
 
 #if NEEDS_TEX

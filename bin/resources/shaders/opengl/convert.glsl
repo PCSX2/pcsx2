@@ -25,6 +25,30 @@ void vs_main()
 
 #ifdef FRAGMENT_SHADER
 
+// Adreno's GLSL ES preprocessor errors on undefined identifiers in #if
+// expressions (desktop treats them as 0). The PrimID DATE-init programs are
+// compiled WITHOUT the per-ShaderConvert macro block (see GSDeviceOGL's
+// ps_primid_image_init loop), so every macro in the OUTPUT chain below needs
+// an explicit default.
+#ifndef HAS_INTEGER_OUTPUT
+#define HAS_INTEGER_OUTPUT 0
+#endif
+#ifndef HAS_DEPTH_OUTPUT
+#define HAS_DEPTH_OUTPUT 0
+#endif
+#ifndef HAS_FLOAT32_OUTPUT
+#define HAS_FLOAT32_OUTPUT 0
+#endif
+#ifndef HAS_STENCIL_OUTPUT
+#define HAS_STENCIL_OUTPUT 0
+#endif
+#ifndef HAS_FLOAT32_INPUT
+#define HAS_FLOAT32_INPUT 0
+#endif
+#ifndef HAS_BILN
+#define HAS_BILN 0
+#endif
+
 in vec4 PSin_p;
 in vec2 PSin_t;
 in vec4 PSin_c;
@@ -35,7 +59,11 @@ layout(binding = 0) uniform sampler2D TextureSampler;
 	layout(location = 0) out uint o_col0;
 	#define OUTPUT o_col0
 #elif HAS_DEPTH_OUTPUT
+	// gl_FragDepth must not be redeclared on GLES ("reserved built-in name"
+	// compile error on Adreno/Mali) — it's available as a built-in there.
+	#ifndef GL_ES
 	out float gl_FragDepth;
+	#endif
 	#define OUTPUT gl_FragDepth
 #elif HAS_FLOAT32_OUTPUT
 	layout(location = 0) out float o_col0;
@@ -166,7 +194,7 @@ void ps_downsample_copy()
 	for (int yoff = 0; yoff < DownsampleFactor; yoff++)
 	{
 		for (int xoff = 0; xoff < DownsampleFactor; xoff++)
-			result += texelFetch(TextureSampler, coord + ivec2(xoff * StepMultiplier, yoff * StepMultiplier), 0);
+			result += texelFetch(TextureSampler, coord + ivec2(float(xoff) * StepMultiplier, float(yoff) * StepMultiplier), 0);
 	}
 	o_col0 = result / Weight;
 }
@@ -291,7 +319,7 @@ void ps_convert_rgb5a1_8i()
 	// 1: 16 R5G2
 	// 2: 16 G2B5A1
 	// 3: 16 G2B5A1
-
+	
 	uvec2 pos = uvec2(gl_FragCoord.xy);
 
 	// Collapse separate R G B A areas into their base pixel
@@ -299,7 +327,7 @@ void ps_convert_rgb5a1_8i()
 	uvec2 subcolumn = (pos & uvec2(0u, 1u));
 	column.x -= (column.x / 128u) * 64u;
 	column.y += (column.y / 32u) * 32u;
-
+	
 	// Deal with swizzling differences
 	if ((PSM & 0x8u) != 0u) // PSMCT16S
 	{
@@ -308,18 +336,18 @@ void ps_convert_rgb5a1_8i()
 			column.y += 32u; // 4 columns high times 4 to get bottom 4 blocks
 			column.x &= ~32u;
 		}
-
+		
 		if ((pos.x & 64u) != 0u)
 		{
 			column.x -= 32u;
 		}
-
+		
 		if (((pos.x & 16u) != 0u) != ((pos.y & 16u) != 0u))
 		{
-			column.x ^= 16u;
+			column.x ^= 16u; 
 			column.y ^= 8u;
 		}
-
+		
 		if ((PSM & 0x30u) != 0u) // PSMZ16S - Untested but hopefully ok if anything uses it.
 		{
 			column.x ^= 32u;
@@ -333,20 +361,20 @@ void ps_convert_rgb5a1_8i()
 			column.y -= 16u;
 			column.x += 32u;
 		}
-
+		
 		if ((pos.x & 96u) != 0u)
 		{
 			uint multi = (pos.x & 96u) / 32u;
 			column.y += 16u * multi; // 4 columns high times 4 to get bottom 4 blocks
 			column.x -= (pos.x & 96u);
 		}
-
+		
 		if (((pos.x & 16u) != 0u) != ((pos.y & 16u) != 0u))
 		{
-			column.x ^= 16u;
+			column.x ^= 16u; 
 			column.y ^= 8u;
 		}
-
+		
 		if ((PSM & 0x30u) != 0u) // PSMZ16 - Untested but hopefully ok if anything uses it.
 		{
 			column.x ^= 32u;
@@ -354,7 +382,7 @@ void ps_convert_rgb5a1_8i()
 		}
 	}
 	uvec2 coord = column | subcolumn;
-
+	
 	// Compensate for potentially differing page pitch.
 	uvec2 block_xy = coord / uvec2(64u, 64u);
 	uint block_num = (block_xy.y * (DBW / 128u)) + block_xy.x;
@@ -373,7 +401,7 @@ void ps_convert_rgb5a1_8i()
 		coord *= uvec2(ScaleFactor);
 
 	vec4 pixel = texelFetch(TextureSampler, ivec2(coord), 0);
-
+	
 	uvec4 denorm_c = uvec4(pixel * 255.5f);
 	if ((pos.y & 2u) == 0u)
 	{
