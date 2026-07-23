@@ -79,7 +79,7 @@ static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
 	"B", // XINPUT_GAMEPAD_B
 	"X", // XINPUT_GAMEPAD_X
 	"Y", // XINPUT_GAMEPAD_Y
-	"Guide", // XINPUT_GAMEPAD_GUIDE
+	"Xbox", // XINPUT_GAMEPAD_GUIDE
 };
 
 static const u16 s_button_masks[XInputSource::NUM_BUTTONS] = {
