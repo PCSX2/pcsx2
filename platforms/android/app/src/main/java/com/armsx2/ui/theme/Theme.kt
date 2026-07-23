@@ -148,6 +148,115 @@ object LibraryChromePreferences {
     }
 }
 
+/** Custom color for the animated library "wave" background — the procedural XMB gradient drawn
+ *  by [com.armsx2.ui.home.XmbGlView]. The theme accent ([ThemePreferences.customColor]) only
+ *  colors the UI chrome; this colors the backdrop itself. The user picks the vivid gradient stop
+ *  (what fills most of the frame); the deep near-black top stop is derived from it so the gradient
+ *  keeps its XMB depth. The white wave ribbon is left untinted.
+ *
+ *  Threading: the wave renders on XmbGlView's OWN EGL thread, not Compose's — so the shader-facing
+ *  values are held as @Volatile float triplets it can read every frame without touching Compose
+ *  state cross-thread. [color] backs the settings picker; [glTop]/[glBottom] feed the shader
+ *  (null = fall back to XmbGlView's built-in constants). 0 = not customized, default untouched. */
+object LibraryBackgroundColorPreferences {
+    private const val Key = "ui.library.bgColor"
+
+    /** The built-in wave color (matches XmbGlView.BG_BOT), shown in the picker when unset. */
+    const val DefaultDisplayColor: Int = 0xFF2E75F5.toInt()
+
+    /** Quick-pick palette for the settings swatches (XMB-flavored); the RGB sliders stay for custom
+     *  colors. First entry is the built-in default. */
+    val PRESETS: List<Int> = listOf(
+        0xFF2E75F5.toInt(), // royal blue (default)
+        0xFF00B4D8.toInt(), // aqua
+        0xFF19C37D.toInt(), // green
+        0xFF16A085.toInt(), // teal
+        0xFF9B59B6.toInt(), // purple
+        0xFFE84393.toInt(), // magenta
+        0xFFE74C3C.toInt(), // red
+        0xFFF39C12.toInt(), // orange
+        0xFFF1C40F.toInt(), // gold
+        0xFFAF601A.toInt(), // bronze
+        0xFF95A5A6.toInt(), // silver
+        0xFF34495E.toInt(), // slate
+    )
+
+    /** Packed ARGB for the settings UI. 0 = not customized (use the built-in default). */
+    val color = mutableStateOf(0)
+
+    /** GL-thread gradient stops (linear 0..1 RGB); null = use XmbGlView's own BG_TOP/BG_BOT. */
+    @Volatile var glTop: FloatArray? = null
+        private set
+    @Volatile var glBottom: FloatArray? = null
+        private set
+
+    /** When on, the wave cycles the hue wheel continuously (RGB-peripheral style), overriding the
+     *  fixed color. XmbGlView reads [rgbCycleGl] straight from its GL thread. */
+    private const val RgbKey = "ui.library.bgRgb"
+    val rgbCycle = mutableStateOf(false)
+    @Volatile var rgbCycleGl = false
+        private set
+
+    fun load() {
+        val stored = MainActivityRuntime.prefs.getInt(Key, 0)
+        color.value = stored
+        apply(stored)
+        val rgb = MainActivityRuntime.prefs.getBoolean(RgbKey, false)
+        rgbCycle.value = rgb
+        rgbCycleGl = rgb
+    }
+
+    /** Set the wave color (packed ARGB; alpha forced opaque). Applies live on the next GL frame. */
+    fun set(argb: Int) {
+        val v = if (argb == 0) 0 else (argb or (0xFF shl 24))
+        color.value = v
+        MainActivityRuntime.prefs.edit { putInt(Key, v) }
+        apply(v)
+    }
+
+    /** Revert to the built-in default wave color. */
+    fun reset() {
+        color.value = 0
+        MainActivityRuntime.prefs.edit { remove(Key) }
+        apply(0)
+    }
+
+    /** Toggle the continuous RGB hue-cycle (matches the theme's RGB mode). Applies on the next frame. */
+    fun setRgbCycle(on: Boolean) {
+        rgbCycle.value = on
+        rgbCycleGl = on
+        MainActivityRuntime.prefs.edit { putBoolean(RgbKey, on) }
+    }
+
+    private fun apply(argb: Int) {
+        if (argb == 0) { glTop = null; glBottom = null; return }
+        val r = ((argb shr 16) and 0xFF) / 255f
+        val g = ((argb shr 8) and 0xFF) / 255f
+        val b = (argb and 0xFF) / 255f
+        glBottom = floatArrayOf(r, g, b)
+        // 0.20 keeps roughly the built-in blue's top/bottom ratio: a deep, near-black anchor.
+        glTop = floatArrayOf(r * 0.20f, g * 0.20f, b * 0.20f)
+    }
+}
+
+/** Rotation for the launcher/library UI only, kept separate from the per-game renderer rotation
+ *  (Settings.orientation) — AetherSX2-style split. Values match the renderer's 0/1/2/3 -> ActivityInfo
+ *  mapping in MainActivityRuntime.applyEmulationOrientation: 0=Device(default), 1=Landscape, 2=Portrait,
+ *  3=Auto-Rotate. Uses its own pref key (NOT the legacy "ui.orientation" migration key). */
+object LauncherOrientationPreferences {
+    private const val Key = "ui.launcherOrientation"
+
+    val mode = mutableStateOf(0)  // 0 = Device (system default) — preserves prior behavior
+
+    fun load() { mode.value = MainActivityRuntime.prefs.getInt(Key, 0).coerceIn(0, 3) }
+
+    fun set(value: Int) {
+        val v = value.coerceIn(0, 3)
+        mode.value = v
+        MainActivityRuntime.prefs.edit { putInt(Key, v) }
+    }
+}
+
 private val NightScheme = darkColorScheme(
     primary = ArmsBlueBright,
     onPrimary = Color(0xFF07101F),

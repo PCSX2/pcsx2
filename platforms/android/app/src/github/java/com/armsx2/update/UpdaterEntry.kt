@@ -38,13 +38,17 @@ import com.armsx2.i18n.str
 import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.common.GlassPanel
 import com.armsx2.ui.common.SettingSwitchRow
+import com.armsx2.ui.settings.controllerFocusable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Calendar
+import java.util.TimeZone
 
 /**
  * In-app updater — GitHub sideload flavor ONLY. Renders a "Check for updates" panel in the About
@@ -59,6 +63,7 @@ import java.net.URL
  */
 
 private const val LATEST_URL = "https://api.github.com/repos/ARMSX2/ARMSX2/releases/latest"
+private const val RELEASES_URL = "https://api.github.com/repos/ARMSX2/ARMSX2/releases?per_page=20"
 private const val NIGHTLY_VC_THRESHOLD = 1_000_000  // stable VCs are ~1300; nightly = Unix seconds.
 
 private sealed interface UpdateState {
@@ -116,14 +121,22 @@ fun UpdaterEntry() {
                 else -> {}
             }
             Spacer(Modifier.height(8.dp))
+            // Extracted so the controller's confirm and the touch onClick share one action, and
+            // the button joins the nav registry ("update.check") — the whole updater section was
+            // touch-only before.
+            val runCheck: () -> Unit = {
+                scope.launch {
+                    state = UpdateState.Checking
+                    state = checkForUpdate(
+                        MainActivityRuntime.prefs.getBoolean("update.includeNightly", false),
+                        checkFailedPrefix,
+                    )
+                }
+            }
             Button(
                 enabled = state !is UpdateState.Checking && state !is UpdateState.Downloading,
-                onClick = {
-                    scope.launch {
-                        state = UpdateState.Checking
-                        state = checkForUpdate(checkFailedPrefix)
-                    }
-                },
+                onClick = runCheck,
+                modifier = Modifier.controllerFocusable("update.check", onConfirm = runCheck),
             ) { Text(str("update.check")) }
 
             // Opt-in: silently check GitHub for a newer release on every app launch (default off).
@@ -137,6 +150,20 @@ fun UpdaterEntry() {
                 onCheckedChange = {
                     checkOnLaunch = it
                     MainActivityRuntime.prefs.edit().putBoolean("update.checkOnLaunch", it).apply()
+                },
+            )
+
+            // Opt-in: also consider nightly (pre-release) builds when checking (default off).
+            var includeNightly by remember {
+                mutableStateOf(MainActivityRuntime.prefs.getBoolean("update.includeNightly", false))
+            }
+            SettingSwitchRow(
+                title = str("update.includeNightly"),
+                description = str("update.includeNightly.desc"),
+                checked = includeNightly,
+                onCheckedChange = {
+                    includeNightly = it
+                    MainActivityRuntime.prefs.edit().putBoolean("update.includeNightly", it).apply()
                 },
             )
         }
@@ -188,7 +215,10 @@ fun AutoUpdateGate() {
 
     LaunchedEffect(Unit) {
         if (MainActivityRuntime.prefs.getBoolean("update.checkOnLaunch", false)) {
-            val result = checkForUpdate(checkFailedPrefix)
+            val result = checkForUpdate(
+                MainActivityRuntime.prefs.getBoolean("update.includeNightly", false),
+                checkFailedPrefix,
+            )
             if (result is UpdateState.Available) state = result  // stay silent on up-to-date / errors
         }
     }
@@ -239,27 +269,66 @@ fun AutoUpdateGate() {
     }
 }
 
-private suspend fun checkForUpdate(checkFailedPrefix: String): UpdateState = withContext(Dispatchers.IO) {
-    // Nightly builds are always ahead of any stable release — never prompt them.
-    if (BuildConfig.VERSION_CODE > NIGHTLY_VC_THRESHOLD) return@withContext UpdateState.UpToDate
+private suspend fun checkForUpdate(includeNightly: Boolean, checkFailedPrefix: String): UpdateState = withContext(Dispatchers.IO) {
     try {
-        val obj = JSONObject(httpGet(LATEST_URL))
-        val tag = obj.getString("tag_name")
-        val notes = obj.optString("body", "")
-        val assets = obj.getJSONArray("assets")
-        var apkUrl = ""
-        for (i in 0 until assets.length()) {
-            val a = assets.getJSONObject(i)
-            if (a.getString("name").endsWith(".apk", ignoreCase = true)) {
-                apkUrl = a.getString("browser_download_url"); break
-            }
+        if (!includeNightly) {
+            // Stable channel. A nightly build (VC = Unix seconds) is always ahead of any stable, so
+            // never prompt it — and never offer it a stable (that would be a versionCode downgrade).
+            if (BuildConfig.VERSION_CODE > NIGHTLY_VC_THRESHOLD) return@withContext UpdateState.UpToDate
+            val obj = JSONObject(httpGet(LATEST_URL))
+            val apkUrl = firstApkAsset(obj) ?: return@withContext UpdateState.UpToDate
+            val tag = obj.getString("tag_name")
+            return@withContext if (isNewer(tag, BuildConfig.VERSION_NAME))
+                UpdateState.Available(tag, obj.optString("body", ""), apkUrl)
+            else UpdateState.UpToDate
         }
-        if (apkUrl.isNotEmpty() && isNewer(tag, BuildConfig.VERSION_NAME))
-            UpdateState.Available(tag, notes, apkUrl)
-        else UpdateState.UpToDate
+
+        // Nightly channel: GitHub returns releases newest-first, so offer the first genuinely-newer
+        // one that has an APK. Nightlies are pre-releases tagged nightly-YYYYMMDD; stables are vX.Y.Z.
+        // Compare nightlies by day (the installed nightly's build day comes from its VC = Unix seconds);
+        // compare stables by version name. A nightly install is never offered a stable — that's a
+        // versionCode downgrade the system installer rejects anyway (reinstall stable manually).
+        val arr = JSONArray(httpGet(RELEASES_URL))
+        val installedIsNightly = BuildConfig.VERSION_CODE > NIGHTLY_VC_THRESHOLD
+        val installedDay = if (installedIsNightly) epochSecToYyyymmdd(BuildConfig.VERSION_CODE.toLong()) else 0
+        for (i in 0 until arr.length()) {
+            val rel = arr.getJSONObject(i)
+            if (rel.optBoolean("draft", false)) continue
+            val apkUrl = firstApkAsset(rel) ?: continue
+            val tag = rel.getString("tag_name")
+            val isNightlyRel = rel.optBoolean("prerelease", false) || tag.startsWith("nightly-", ignoreCase = true)
+            val newer = if (isNightlyRel) {
+                nightlyTagDay(tag) > installedDay  // stable install => installedDay 0 => any nightly is newer
+            } else {
+                !installedIsNightly && isNewer(tag, BuildConfig.VERSION_NAME)
+            }
+            if (newer) return@withContext UpdateState.Available(tag, rel.optString("body", ""), apkUrl)
+        }
+        UpdateState.UpToDate
     } catch (e: Exception) {
         UpdateState.Error("$checkFailedPrefix: ${e.message}")
     }
+}
+
+/** First `.apk` asset download URL in a release JSON object, or null if it has none. */
+private fun firstApkAsset(release: JSONObject): String? {
+    val assets = release.optJSONArray("assets") ?: return null
+    for (i in 0 until assets.length()) {
+        val a = assets.getJSONObject(i)
+        if (a.getString("name").endsWith(".apk", ignoreCase = true))
+            return a.getString("browser_download_url")
+    }
+    return null
+}
+
+/** "nightly-YYYYMMDD" -> YYYYMMDD as an int (0 if the tag isn't a dated nightly). */
+private fun nightlyTagDay(tag: String): Int =
+    Regex("nightly-(\\d{8})", RegexOption.IGNORE_CASE).find(tag)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+
+/** Unix-epoch seconds (a nightly build's versionCode) -> UTC YYYYMMDD int, matching the nightly tag. */
+private fun epochSecToYyyymmdd(epochSec: Long): Int {
+    val c = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = epochSec * 1000L }
+    return c.get(Calendar.YEAR) * 10000 + (c.get(Calendar.MONTH) + 1) * 100 + c.get(Calendar.DAY_OF_MONTH)
 }
 
 /** Semantic-version compare of the release tag vs the installed versionName. Non-numeric suffixes

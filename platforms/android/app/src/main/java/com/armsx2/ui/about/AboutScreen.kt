@@ -150,6 +150,13 @@ fun AboutScreen(onBack: () -> Unit, viewModel: AboutViewModel = viewModel()) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                     )
+                    // Bundled menu sound effects — also CC0, credited voluntarily.
+                    Text(
+                        str("app.credits.sfx"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    )
                 }
             }
         }

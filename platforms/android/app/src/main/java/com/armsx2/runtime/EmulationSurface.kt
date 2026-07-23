@@ -61,25 +61,41 @@ class EmulationSurface(context: Context) : SurfaceView(context), SurfaceHolder.C
     }
 
     fun applyOutputScale() {
-        val multiplier = MainActivityRuntime.prefs.getInt("ui.hwScaler", 0)
         if (viewWidth <= 0 || viewHeight <= 0) return
-        if (multiplier <= 0) {
+        val multiplier = MainActivityRuntime.prefs.getInt("ui.hwScaler", 0)
+
+        // Base output resolution: an explicit "WxH" override when set (fixes wrong panel detection,
+        // e.g. a 1920x1080 panel mis-reported as 1920x1200 which squishes 16:9 games — issue #398),
+        // otherwise the SurfaceView's laid-out size.
+        val override = parseResOverride(MainActivityRuntime.prefs.getString("ui.screenResOverride", null))
+        val baseW = override?.first ?: viewWidth
+        val baseH = override?.second ?: viewHeight
+
+        // hwScaler (if > 0) downscales the short side to 448*multiplier for weak GPUs, applied to
+        // whatever base we picked above.
+        val shortSide = minOf(baseW, baseH)
+        val targetShortSide = if (multiplier > 0) 448 * multiplier else shortSide
+        val scale = if (targetShortSide in 1 until shortSide) targetShortSide.toFloat() / shortSide else 1f
+
+        // With no override and no downscale, let the surface track the layout (native panel size) —
+        // the original behavior. Otherwise pin an explicit buffer size and let the compositor scale.
+        if (override == null && scale == 1f) {
             holder.setSizeFromLayout()
             return
         }
-
-        val shortSide = minOf(viewWidth, viewHeight)
-        val targetShortSide = 448 * multiplier
-        if (targetShortSide >= shortSide) {
-            holder.setSizeFromLayout()
-            return
-        }
-
-        val scale = targetShortSide.toFloat() / shortSide
         holder.setFixedSize(
-            (viewWidth * scale).toInt().coerceAtLeast(1),
-            (viewHeight * scale).toInt().coerceAtLeast(1),
+            (baseW * scale).toInt().coerceAtLeast(1),
+            (baseH * scale).toInt().coerceAtLeast(1),
         )
+    }
+
+    /** Parse a "WIDTHxHEIGHT" override pref (e.g. "1920x1080") to a size, or null for "auto"/unset/bad. */
+    private fun parseResOverride(value: String?): Pair<Int, Int>? {
+        if (value.isNullOrBlank() || value == "auto") return null
+        val m = Regex("^\\s*(\\d{2,5})\\s*[xX]\\s*(\\d{2,5})\\s*$").find(value) ?: return null
+        val w = m.groupValues[1].toIntOrNull() ?: return null
+        val h = m.groupValues[2].toIntOrNull() ?: return null
+        return if (w in 64..8192 && h in 64..8192) Pair(w, h) else null
     }
 
     private fun currentDisplayRefreshHz(): Float = runCatching {

@@ -133,8 +133,20 @@ class XmbGlView(context: Context) : TextureView(context), TextureView.SurfaceTex
             // background gradient (full-screen quad)
             GLES30.glUseProgram(bgProg)
             GLES30.glBindVertexArray(bgVao)
-            GLES30.glUniform3f(GLES30.glGetUniformLocation(bgProg, "uColorStart"), BG_TOP[0], BG_TOP[1], BG_TOP[2])
-            GLES30.glUniform3f(GLES30.glGetUniformLocation(bgProg, "uColorEnd"), BG_BOT[0], BG_BOT[1], BG_BOT[2])
+            // Gradient stops: a continuous RGB hue-cycle when enabled (peripheral style, a 14s wheel
+            // to match the theme's RGB mode); else the user-picked wave color when set (read off the
+            // pref's @Volatile fields from this GL thread); else the built-in constants.
+            val top: FloatArray
+            val bot: FloatArray
+            if (com.armsx2.ui.theme.LibraryBackgroundColorPreferences.rgbCycleGl) {
+                bot = hsvToRgb(((timeSec / RGB_CYCLE_SEC) % 1f) * 360f, 0.92f, 0.98f)
+                top = floatArrayOf(bot[0] * 0.20f, bot[1] * 0.20f, bot[2] * 0.20f)
+            } else {
+                top = com.armsx2.ui.theme.LibraryBackgroundColorPreferences.glTop ?: BG_TOP
+                bot = com.armsx2.ui.theme.LibraryBackgroundColorPreferences.glBottom ?: BG_BOT
+            }
+            GLES30.glUniform3f(GLES30.glGetUniformLocation(bgProg, "uColorStart"), top[0], top[1], top[2])
+            GLES30.glUniform3f(GLES30.glGetUniformLocation(bgProg, "uColorEnd"), bot[0], bot[1], bot[2])
             GLES30.glUniform2f(GLES30.glGetUniformLocation(bgProg, "uDir"), 0f, 1f)
             GLES30.glUniform1f(GLES30.glGetUniformLocation(bgProg, "uTMin"), 0f)
             GLES30.glUniform1f(GLES30.glGetUniformLocation(bgProg, "uTSpan"), 1f)
@@ -354,6 +366,25 @@ class XmbGlView(context: Context) : TextureView(context), TextureView.SurfaceTex
         // vivid bright royal blue. Tuned by eye against the reference on the RP6 panel.
         private val BG_TOP = floatArrayOf(0.02f, 0.07f, 0.20f)
         private val BG_BOT = floatArrayOf(0.18f, 0.46f, 0.96f)
+        // Continuous RGB hue-cycle ("RGB" background mode): full wheel in this many seconds, matching
+        // the theme's 14s RGB cycle.
+        private const val RGB_CYCLE_SEC = 14f
+        /** HSV (h in 0..360, s/v in 0..1) -> RGB 0..1 for the gradient uniforms. */
+        private fun hsvToRgb(h: Float, s: Float, v: Float): FloatArray {
+            val c = v * s
+            val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+            val m = v - c
+            val r: Float; val g: Float; val b: Float
+            when {
+                h < 60f -> { r = c; g = x; b = 0f }
+                h < 120f -> { r = x; g = c; b = 0f }
+                h < 180f -> { r = 0f; g = c; b = x }
+                h < 240f -> { r = 0f; g = x; b = c }
+                h < 300f -> { r = x; g = 0f; b = c }
+                else -> { r = c; g = 0f; b = x }
+            }
+            return floatArrayOf(r + m, g + m, b + m)
+        }
         private const val FLOW_SPEED = 0.18f
         private const val TENSION = 0.12f
         private const val DAMPING = 0.0001f

@@ -34,6 +34,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun selectCategory(category: SettingsCategory) {
+        // Nav tick when flipping to a different settings tab (controller bumpers, tap, or search jump).
+        if (category != uiState.value.category) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
         uiState.value = uiState.value.copy(category = category)
     }
 

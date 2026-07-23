@@ -279,6 +279,18 @@ class MemoryCardViewModel(application: Application) : AndroidViewModel(applicati
         refresh()
     }
 
+    /** Copy a (file) memory card out to a user-chosen SAF location for backup / moving to another
+     *  device. Folder cards aren't a single file, so the UI only offers Export for file cards. */
+    fun export(src: File, uri: Uri) {
+        val ok = runCatching {
+            getApplication<Application>().contentResolver.openOutputStream(uri)?.use { out ->
+                src.inputStream().use { it.copyTo(out) }
+            } ?: error("Unable to open destination.")
+        }.isSuccess
+        state.value = if (ok) state.value.copy(message = "Exported ${src.name}.")
+                      else state.value.copy(error = "Export failed for ${src.name}.")
+    }
+
     fun dismissMessage() {
         state.value = state.value.copy(error = null, message = null)
     }

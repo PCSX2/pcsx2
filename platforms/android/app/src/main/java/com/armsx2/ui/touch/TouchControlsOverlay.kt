@@ -321,8 +321,16 @@ fun TouchControlsOverlay() {
                 onPressedChange = { unifiedPressed = it },
             )
         }
+        // Full-half invisible analog sticks: an invisible layer owning each screen half, composed
+        // z-BELOW the visual widgets so a finger starting on a button drives the button, not a stick.
+        if (!edit && TouchControls.fullHalfSticks.value) {
+            FullHalfStickLayer(layout = layout, widthPx = widthPx, heightPx = heightPx)
+        }
         for (cfg in layout.buttons) {
             if (!cfg.enabled && !edit) continue
+            // With full-half sticks on, the invisible half-screen layer owns the analogs — hide the
+            // normal L/R stick widgets during play (edit mode still shows them so they stay editable).
+            if (!edit && TouchControls.fullHalfSticks.value && cfg.id.kind == TouchButtonId.Kind.STICK) continue
             // Drawn above during play (outside the auto-hide / "Never" gate) so it can't be
             // hidden away; skip it here or it would render twice. Edit mode still gets it from
             // the loop, so it stays draggable/resizable like every other widget.
@@ -944,10 +952,10 @@ private fun MacroWidget(cfg: TouchButtonCfg, edit: Boolean) {
     }
 }
 
-/** On-screen Save-State / Load-State button. Edit mode renders an outlined
- *  "SAVE"/"LOAD" box; in play mode a tap opens the pause overlay's slot picker so the
- *  user chooses which slot to save to / load from (the physical SAVE_STATE/LOAD_STATE
- *  hotkeys remain quick-to-current-slot). Opt-in (disabled in the default layout). */
+/** On-screen Save-State / Load-State button. Edit mode renders an outlined "SAVE"/"LOAD" box;
+ *  in play mode a quick TAP saves/loads the current slot directly (no menu — native shows an OSD
+ *  confirmation), and a LONG-PRESS opens the slot picker to choose a slot. Opt-in (disabled in the
+ *  default layout). */
 @Composable
 private fun StateActionWidget(cfg: TouchButtonCfg, edit: Boolean) {
     val label = if (cfg.id == TouchButtonId.SAVE_STATE) str("touch.stateAction.save") else str("touch.stateAction.load")
@@ -967,10 +975,18 @@ private fun StateActionWidget(cfg: TouchButtonCfg, edit: Boolean) {
                 .clip(CircleShape)
                 .background(Color.Black.copy(alpha = 0.30f * opacity))
                 .pointerInput(cfg.id) {
-                    detectTapGestures(onTap = {
-                        if (cfg.id == TouchButtonId.SAVE_STATE) InGameOverlay.openSaveStatePicker()
-                        else InGameOverlay.openLoadStatePicker()
-                    })
+                    detectTapGestures(
+                        // Quick TAP = save/load the current slot directly (native shows an OSD
+                        // confirmation). LONG-PRESS = open the slot picker to choose a slot.
+                        onTap = {
+                            if (cfg.id == TouchButtonId.SAVE_STATE) MainActivityRuntime.instance?.saveState()
+                            else MainActivityRuntime.instance?.loadState()
+                        },
+                        onLongPress = {
+                            if (cfg.id == TouchButtonId.SAVE_STATE) InGameOverlay.openSaveStatePicker()
+                            else InGameOverlay.openLoadStatePicker()
+                        },
+                    )
                 },
             contentAlignment = Alignment.Center,
         ) {
@@ -1357,6 +1373,93 @@ private fun releaseStick(codes: StickCodes, last: StickEmit) {
 }
 
 /* -------------------------------------------------------------------- */
+/*  Full-half invisible analog sticks (RPCSX-style)                      */
+/* -------------------------------------------------------------------- */
+
+/** Per-finger state for [FullHalfStickLayer]: which half it owns, its floating origin, last emit. */
+private class HalfStickTrack(val leftHalf: Boolean, val origin: Offset) {
+    var last: StickEmit = StickEmit()
+}
+
+/** Invisible full-screen layer: the LEFT half drives the left analog, the RIGHT half the right one.
+ *  Each finger is tracked independently (both halves work simultaneously) and drives its stick from
+ *  its touch-down point (floating origin). A DOWN that a widget above already consumed, or that lands
+ *  on an enabled button, is ignored — so every on-screen button keeps working. Composed z-below the
+ *  widgets and renders nothing. */
+@Composable
+private fun FullHalfStickLayer(layout: TouchLayout, widthPx: Float, heightPx: Float) {
+    if (widthPx <= 0f || heightPx <= 0f) return
+    val density = LocalDensity.current
+    // Foreign regions: every enabled non-stick widget (D-pad, face, shoulders, menu, L3/R3, Pause,
+    // FF, macro, state, pressure). A finger starting on one of these drives the button, not a stick.
+    val foreignBounds = layout.buttons
+        .filter { it.enabled && it.id.kind != TouchButtonId.Kind.STICK }
+        .map { cfg ->
+            val sizePx = with(density) { cfg.sizeDp.dp.toPx() }
+            val cx = widthPx * cfg.xFrac
+            val cy = heightPx * cfg.yFrac
+            UnifiedRect(cx - sizePx / 2f, cy - sizePx / 2f, cx + sizePx / 2f, cy + sizePx / 2f)
+        }
+    val leftCodes = StickCodes(xPos = 111, xNeg = 113, yPos = 112, yNeg = 110)
+    val rightCodes = StickCodes(xPos = 121, xNeg = 123, yPos = 122, yNeg = 120)
+    // Deflection radius from the floating origin: a comfortable thumb reach gives full tilt.
+    val capPx = with(density) { 100.dp.toPx() }
+    val dims = widthPx to heightPx
+
+    Box(
+        modifier = Modifier.fillMaxSize().pointerInput(foreignBounds, dims) {
+            fun inForeign(pos: Offset) = foreignBounds.any {
+                pos.x >= it.left && pos.x <= it.right && pos.y >= it.top && pos.y <= it.bottom
+            }
+            fun codesFor(leftHalf: Boolean) = if (leftHalf) leftCodes else rightCodes
+            awaitPointerEventScope {
+                val tracks = mutableMapOf<androidx.compose.ui.input.pointer.PointerId, HalfStickTrack>()
+                try {
+                    while (true) {
+                        val ev = awaitPointerEvent()
+                        for (ch in ev.changes) {
+                            if (ch.changedToDown()) {
+                                // Claim this finger for a stick unless a widget above took the DOWN or
+                                // it landed on a button. Which screen half decides which stick.
+                                if (!ch.isConsumed && !inForeign(ch.position)) {
+                                    tracks[ch.id] = HalfStickTrack(ch.position.x < widthPx / 2f, ch.position)
+                                }
+                            }
+                            if (!ch.pressed) {
+                                tracks.remove(ch.id)?.let { t ->
+                                    if (t.last.any()) releaseStick(codesFor(t.leftHalf), t.last)
+                                }
+                                continue
+                            }
+                            val t = tracks[ch.id] ?: continue
+                            val leftStick = t.leftHalf
+                            val dx = ch.position.x - t.origin.x
+                            val dy = ch.position.y - t.origin.y
+                            val r = hypot(dx, dy)
+                            val scale = if (r > capPx) capPx / r else 1f
+                            var nx = ((dx * scale) / capPx).coerceIn(-1f, 1f)
+                            var ny = ((dy * scale) / capPx).coerceIn(-1f, 1f)
+                            if (ControllerMappings.stickSwapXY(leftStick)) { val tmp = nx; nx = ny; ny = tmp }
+                            if (ControllerMappings.stickInvertX(leftStick)) nx = -nx
+                            if (ControllerMappings.stickInvertY(leftStick)) ny = -ny
+                            val emit = computeStickEmit(nx, ny, leftStick)
+                            if (emit != t.last) {
+                                applyStickDiff(codesFor(leftStick), t.last, emit)
+                                t.last = emit
+                            }
+                        }
+                    }
+                } finally {
+                    // Zero every held axis on cancel/dispose so nothing sticks on.
+                    tracks.values.forEach { t -> if (t.last.any()) releaseStick(codesFor(t.leftHalf), t.last) }
+                    tracks.clear()
+                }
+            }
+        },
+    )
+}
+
+/* -------------------------------------------------------------------- */
 /*  Gesture helpers                                                      */
 /* -------------------------------------------------------------------- */
 
@@ -1646,6 +1749,9 @@ private fun EditToolbar(modifier: Modifier = Modifier) {
             }
             ToolbarChip(if (TouchControls.floatingStick.value) str("touch.editor.floatingStickOn") else str("touch.editor.floatingStickOff")) {
                 TouchControls.setFloatingStick(!TouchControls.floatingStick.value)
+            }
+            ToolbarChip(if (TouchControls.fullHalfSticks.value) str("touch.editor.fullHalfSticksOn") else str("touch.editor.fullHalfSticksOff")) {
+                TouchControls.setFullHalfSticks(!TouchControls.fullHalfSticks.value)
             }
             // Snap-to-grid: aligns dragged widgets to a square grid so buttons line up cleanly.
             ToolbarChip(if (TouchControls.gridSnap.value) str("touch.editor.gridOn") else str("touch.editor.gridOff")) {

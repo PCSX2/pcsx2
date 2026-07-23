@@ -78,6 +78,7 @@ import com.armsx2.ui.common.GameCoverArt
 import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.touch.TouchControls
 import com.armsx2.ui.theme.Danger
+import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -1080,6 +1081,12 @@ private fun InGameAchievementRow(item: AchievementItem) {
                 }
             }
             Spacer(Modifier.width(8.dp))
+            // Flag missables in-game — the actionable warning while you're actually playing.
+            // Progression/Win badges are left to the full achievements screen to avoid clutter here.
+            if (item.type == 1) {
+                StatusChip(str("ra.typeChip.missable"), Color(0xFFF5A623))
+                Spacer(Modifier.width(8.dp))
+            }
             Text(
                 "${item.points}",
                 style = MaterialTheme.typography.labelMedium,

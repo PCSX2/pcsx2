@@ -43,6 +43,25 @@ object PadRouter {
         pad2Enabled = false
     }
 
+    /** Release the slot a now-departed device held, so a re-enumerated controller re-claims from the
+     *  top. Called on device removal: AYANEO handhelds power-cycle the built-in pad on sleep/wake and
+     *  it comes back with a NEW deviceId — the stale id otherwise keeps owning Player 1's slot, and
+     *  the woken pad claims slot 1 (an un-armed PS2 port 2), so gameplay input goes nowhere (#394). */
+    fun forgetDevice(deviceId: Int) {
+        if (deviceId < 0) return
+        for (i in slots.indices) if (slots[i] == deviceId) slots[i] = -1
+    }
+
+    /** Free every slot whose claimed device is no longer connected. Called on resume / focus regain
+     *  as a backstop for [forgetDevice] when the remove event landed while we were paused.
+     *  [activeDeviceIds] is `InputDevice.getDeviceIds()`. */
+    fun pruneStale(activeDeviceIds: IntArray) {
+        for (i in slots.indices) {
+            val id = slots[i]
+            if (id >= 0 && id !in activeDeviceIds) slots[i] = -1
+        }
+    }
+
     /** True once a second controller has joined this session (P2 main is live). */
     fun coopActive(): Boolean = slots[1] != -1
 

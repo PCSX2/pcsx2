@@ -316,39 +316,41 @@ fun StatusChip(text: String, color: Color = MaterialTheme.colorScheme.primary) {
     }
 }
 
+/** Tappable search bar — deliberately NOT an editable TextField, so it never summons the Android
+ *  system IME. Tapping it (or the controller's A on the Search zone) opens the app's own D-pad +
+ *  touch keyboard (LibraryKeyboard), which owns and edits the query. Shows the current query, or
+ *  the placeholder when empty; mirrors the old field's look (rounded, leading ⌕, selected border). */
 @Composable
 fun SearchField(
     value: String,
-    onValueChange: (String) -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "",
-    focusRequester: FocusRequester? = null,
     selected: Boolean = false,
 ) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .height(56.dp)
-            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
-            .then(
-                if (selected) {
-                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(18.dp))
-                } else {
-                    Modifier
-                },
-            ),
-        singleLine = true,
-        placeholder = { Text(placeholder) },
-        leadingIcon = { Text("⌕", fontSize = 21.sp, fontWeight = FontWeight.Bold) },
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(18.dp),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
-    )
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("⌕", fontSize = 21.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = value.ifEmpty { placeholder },
+                color = if (value.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant
+                else MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
 }
 
 @Composable

@@ -25,6 +25,10 @@ data class AchievementItem(
     val subsetId: Int = 0,
     // ACTIVE CHALLENGE (RA "primed") — a can-do-right-now challenge; sorted to the top.
     val primed: Boolean = false,
+    // RA achievement type (rc_client): 0 = Standard, 1 = Missable, 2 = Progression, 3 = Win.
+    // Drives the type badge on each row — the "Missable" pill was lost in the 2026-07 UI
+    // rebuild (b970da7e) when this field was dropped from the model; native still emits it.
+    val type: Int = 0,
 )
 
 /** An RA subset (base set or a bonus subset) for the achievements tab selector. */
@@ -304,6 +308,7 @@ fun parseAchievementItems(json: String): List<AchievementItem> {
                     iconUrl = item.optString("iconUrl", item.optString("badgeUrl")),
                     subsetId = item.optInt("subsetId"),
                     primed = item.optBoolean("primed"),
+                    type = item.optInt("type"),
                 ),
             )
         }

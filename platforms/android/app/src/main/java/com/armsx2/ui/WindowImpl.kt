@@ -183,6 +183,10 @@ object WindowImpl {
                 // reachable from any screen, and placing it AFTER the shader editor keeps it
                 // above the one other full-screen layer that opens it.
                 com.armsx2.ui.home.LibraryKeyboard.Overlay(this)
+
+                // Transient top-left "Welcome Back!" banner (and any future brief note) — hosted
+                // here for the same reason as the keyboard: reachable above every surface.
+                com.armsx2.ui.WelcomeBannerOverlay(this)
             }
         }
     }

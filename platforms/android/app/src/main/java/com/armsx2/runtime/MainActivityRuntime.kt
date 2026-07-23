@@ -1722,8 +1722,13 @@ open class MainActivityRuntime : ComponentActivity() {
      *  game boot (applyRendererPrefs) and on exit-to-library — currentGame decides the tier:
      *  a running game gets its per-game rotation, the library/menus get the global one. */
     fun applyEmulationOrientation() {
-        val resolved = com.armsx2.config.ConfigStore.resolveForGame(currentGame.value?.settingsKey)
-        requestedOrientation = when (resolved.orientation) {
+        // A running game uses its per-game renderer rotation; the launcher/library uses its own
+        // app-level rotation (AetherSX2-style split). Both share the 0/1/2/3 mapping below.
+        val orientation = if (currentGame.value != null)
+            com.armsx2.config.ConfigStore.resolveForGame(currentGame.value?.settingsKey).orientation
+        else
+            com.armsx2.ui.theme.LauncherOrientationPreferences.mode.value
+        requestedOrientation = when (orientation) {
             1 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             2 -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             3 -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
@@ -1811,7 +1816,10 @@ open class MainActivityRuntime : ComponentActivity() {
         com.armsx2.ui.theme.BootLogoPreferences.load()
         com.armsx2.ui.theme.ToolbarPositionPreferences.load()
         com.armsx2.ui.theme.LibraryChromePreferences.load()
+        com.armsx2.ui.theme.LauncherOrientationPreferences.load()
+        com.armsx2.ui.theme.LibraryBackgroundColorPreferences.load()
         com.armsx2.LibraryMusic.load()
+        com.armsx2.MenuSfx.load(applicationContext)
         com.armsx2.ControllerSkinStore.load(applicationContext)
         startAutosaveIntervalJob()
         // Restore the saved rumble master toggle into the native gate (NativeApp.onPadRumble).
@@ -1823,6 +1831,11 @@ open class MainActivityRuntime : ComponentActivity() {
         // Seed the pad-router's multitap gate before any in-game input is dispatched, so
         // slot routing (2 vs 8 slots) is correct from the first controller event.
         com.armsx2.input.PadRouter.multitapEnabled = ControllerMappings.multitapEnabled()
+        // #394: watch for controller unplug / re-enumeration so a departed pad frees its slot (see
+        // inputDeviceListener). Registered until onDestroy so a sleep/wake remove is caught even
+        // while the activity is paused.
+        getSystemService(android.hardware.input.InputManager::class.java)
+            ?.registerInputDeviceListener(inputDeviceListener, null)
         setupComplete.value = prefs.getBoolean("setupComplete", false)
         systemDir.value = prefs.getString("systemDir", null)
         bios.value = prefs.getString("bios", null)
@@ -2037,10 +2050,17 @@ open class MainActivityRuntime : ComponentActivity() {
                         // been launched and exited. Retrying rides out the handover while
                         // still leaving a genuinely-playing app (Spotify, a podcast) alone
                         // once the attempts run out.
-                        repeat(6) {
+                        // Poll for up to ~12s. On game EXIT the emulator's OWN Oboe/SPU2 stream can
+                        // take several seconds to fully release; start() politely defers while
+                        // AudioManager still reports audio active (so it never stomps Spotify/a
+                        // podcast), so 6×700ms (~4.2s) wasn't long enough for that teardown and the
+                        // music stayed silent until the user toggled it off/on. A longer, finer poll
+                        // rides out the handover; a genuinely-playing third-party app just runs the
+                        // poll out and is left alone.
+                        repeat(24) {
                             com.armsx2.LibraryMusic.start(this@MainActivityRuntime)
                             if (com.armsx2.LibraryMusic.isPlaying()) return@LaunchedEffect
-                            kotlinx.coroutines.delay(700)
+                            kotlinx.coroutines.delay(500)
                         }
                     } else {
                         com.armsx2.LibraryMusic.stop(this@MainActivityRuntime)
@@ -3068,8 +3088,11 @@ open class MainActivityRuntime : ComponentActivity() {
                 MotionEvent.AXIS_X, MotionEvent.AXIS_Y,
                 aXPos = 111, aXNeg = 113, aYPos = 112, aYNeg = 110, // L right/left, down/up
                 leftStick = true, port = port)
+            // Right-stick axes resolved per-device (Joy-Con RX/RY; RZ-as-trigger pads → RX/RY) — was
+            // hard-coded Z/RZ, which read an RZ trigger as stick-Y on AYANEO Xbox-mode pads (#394).
+            val rsAxes = rightStickAxes(ev.deviceId)
             dispatchStick(ev, ControllerMappings.rightStickMode(port),
-                MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ,
+                rsAxes.first, rsAxes.second,
                 aXPos = 121, aXNeg = 123, aYPos = 122, aYNeg = 120, // R right/left, down/up
                 leftStick = false, port = port)
             // Fire any ARMSX2 hotkey bound (Hotkeys tab) to a stick DIRECTION — lets an
@@ -3092,7 +3115,7 @@ open class MainActivityRuntime : ComponentActivity() {
             sendTrigger(ev, MotionEvent.AXIS_LTRIGGER, MotionEvent.AXIS_BRAKE,
                 KeyEvent.KEYCODE_BUTTON_L2, port)
             sendTrigger(ev, MotionEvent.AXIS_RTRIGGER, MotionEvent.AXIS_GAS,
-                KeyEvent.KEYCODE_BUTTON_R2, port)
+                KeyEvent.KEYCODE_BUTTON_R2, port, axisC = rightTriggerExtraAxis(ev.deviceId))
             // Physical STICK DIRECTIONS bound to a PS2 control via the "(send)"
             // rows — e.g. R-Stick Down bound to send Square. The analog "(send)"
             // targets contribute to the merge layer like every other writer.
@@ -3164,14 +3187,30 @@ open class MainActivityRuntime : ComponentActivity() {
         val dev = runCatching { InputDevice.getDevice(deviceId) }.getOrNull()
         fun has(axis: Int) = dev?.getMotionRange(axis) != null
         val hasRxRy = has(MotionEvent.AXIS_RX) || has(MotionEvent.AXIS_RY)
+        // AXIS_RZ that idles at 0 (range min >= 0) is a TRIGGER, not a stick — some pads (AYANEO
+        // handhelds in Xbox mode) put the right trigger on RZ. A real right-stick-Y spans -1..1, so
+        // this never reclassifies a standard pad's stick.
+        val rz = dev?.getMotionRange(MotionEvent.AXIS_RZ)
+        val rzIsTrigger = rz != null && rz.min >= 0f
         when {
             // Joy-Cons expose RX/RY for the right stick; prefer it even if Z/RZ also exist.
             dev?.vendorId == 0x057E && hasRxRy -> MotionEvent.AXIS_RX to MotionEvent.AXIS_RY
+            // RZ is really a trigger — the right stick can't live on it; use RX/RY when present.
+            rzIsTrigger && hasRxRy -> MotionEvent.AXIS_RX to MotionEvent.AXIS_RY
             // Any pad with no Z/RZ at all but with RX/RY: that IS its right stick.
             !has(MotionEvent.AXIS_Z) && !has(MotionEvent.AXIS_RZ) && hasRxRy ->
                 MotionEvent.AXIS_RX to MotionEvent.AXIS_RY
             else -> MotionEvent.AXIS_Z to MotionEvent.AXIS_RZ
         }
+    }
+
+    // Extra RT axis for pads that report the right trigger on AXIS_RZ (AYANEO Xbox mode) instead of
+    // RTRIGGER/GAS. Only when RZ is a 0..1 range (a real stick-Y is -1..1), so standard pads are
+    // untouched. -1 = no such axis. Cached — InputDevice.getDevice is a binder call.
+    private val rightTriggerAxisCache = HashMap<Int, Int>()
+    private fun rightTriggerExtraAxis(deviceId: Int): Int = rightTriggerAxisCache.getOrPut(deviceId) {
+        val rz = runCatching { InputDevice.getDevice(deviceId)?.getMotionRange(MotionEvent.AXIS_RZ) }.getOrNull()
+        if (rz != null && rz.min >= 0f) MotionEvent.AXIS_RZ else -1
     }
 
     private var lastStickProbeMs = 0L
@@ -3285,6 +3324,7 @@ open class MainActivityRuntime : ComponentActivity() {
     // library sub-route (Settings/Bios/... reached inside the in-game library) >
     // the library overlay itself > a root sub-route > (root Home) open the drawer.
     private fun handleFrontendBack() {
+        com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.BACK)
         val nav = com.armsx2.navigation.UiNavigator
         val onHome = nav.route.value == com.armsx2.navigation.AppRoute.Home
         when {
@@ -4129,7 +4169,7 @@ open class MainActivityRuntime : ComponentActivity() {
         apply(19, up)    // D-pad up
     }
 
-    private fun sendTrigger(event: MotionEvent, axisA: Int, axisB: Int, code: Int, port: Int) {
+    private fun sendTrigger(event: MotionEvent, axisA: Int, axisB: Int, code: Int, port: Int, axisC: Int = -1) {
         // Pads report L2/R2 on AXIS_*TRIGGER or on AXIS_BRAKE/GAS — take the higher of
         // the two, clamping negatives (some non-Xbox pads idle an unused trigger axis at
         // -1). Then apply the SMALL trigger deadzone and re-normalize the remaining range
@@ -4141,7 +4181,10 @@ open class MainActivityRuntime : ComponentActivity() {
         // Resolve the physical trigger keycode to its mapped PS2 target — null = cleared,
         // so the trigger is disabled; otherwise drive the resolved (possibly remapped) code.
         val target = ControllerMappings.targetForPhysical(code, port) ?: return
-        val raw = maxOf(event.getAxisValue(axisA), event.getAxisValue(axisB)).coerceIn(0f, 1f)
+        val raw = maxOf(
+            maxOf(event.getAxisValue(axisA), event.getAxisValue(axisB)),
+            if (axisC >= 0) event.getAxisValue(axisC) else 0f,
+        ).coerceIn(0f, 1f)
         val out = if (raw <= TRIGGER_DEAD) 0f else (raw - TRIGGER_DEAD) / (1f - TRIGGER_DEAD)
         if (target in 110..123) {
             // Trigger bound to a PS2 STICK direction ("(send)" rows): contribute the
@@ -4153,7 +4196,30 @@ open class MainActivityRuntime : ComponentActivity() {
         }
     }
 
+    /** Set in onPause when the screen goes off (a real sleep), consumed in onResume so the sleep
+     *  chime is paired with a wake chime + a brief "Welcome Back!" — never on a plain background. */
+    private var wasAsleep = false
+
+    /** Frees a pad's slot in PadRouter when its controller is unplugged / power-cycled, so a
+     *  re-enumerated device (a NEW deviceId after AYANEO sleep/wake) re-claims Player 1 instead of
+     *  the stale dead id owning it and shunting gameplay to an un-armed pad (#394). Registered in
+     *  onCreate and kept alive across pause so the wake-time remove/add is caught. */
+    private val inputDeviceListener = object : android.hardware.input.InputManager.InputDeviceListener {
+        override fun onInputDeviceAdded(deviceId: Int) {}
+        override fun onInputDeviceChanged(deviceId: Int) {}
+        override fun onInputDeviceRemoved(deviceId: Int) {
+            com.armsx2.input.PadRouter.forgetDevice(deviceId)
+        }
+    }
+
     override fun onPause() {
+        // DS-lid-style chime when the SCREEN is going off (device sleeping) — gated on isInteractive
+        // so a plain background (home / recents, screen still on) stays silent. Fires before we pause
+        // audio below so the blip is heard as the device sleeps.
+        if ((getSystemService(android.content.Context.POWER_SERVICE) as? android.os.PowerManager)?.isInteractive == false) {
+            wasAsleep = true
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SLEEP)
+        }
         com.armsx2.navigation.UiNavigator.drawerOpen.value = false
         // Leaving the app (home / recents / slide-out) while a game is running:
         // open the pause OVERLAY instead of a silent pause. A bare pause left
@@ -4180,9 +4246,27 @@ open class MainActivityRuntime : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Only resumes if the setting is on and no VM is running — LibraryMusic gates
-        // both itself, so this stays a plain "we're visible again" signal.
-        com.armsx2.LibraryMusic.resume()
+        // Woke from a real sleep (paired with the onPause sleep chime): play the wake chime + a brief
+        // top-left "Welcome Back!". A plain background return never set wasAsleep, so this only fires
+        // after an actual screen-off sleep.
+        if (wasAsleep) {
+            wasAsleep = false
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.WAKE)
+            if (prefs.getBoolean("ui.hotkeyToasts", true))
+                com.armsx2.ui.WelcomeBanner.show(com.armsx2.i18n.I18n.get("app.welcomeBack"))
+        }
+        // #394 backstop: a controller that slept and woke returns with a NEW deviceId, so drop any
+        // pad slot whose device is no longer connected — the re-enumerated pad then re-claims Player 1
+        // rather than the dead id silently owning it. (inputDeviceListener catches the live remove;
+        // this covers a remove that landed while we were paused / was never delivered.)
+        com.armsx2.input.PadRouter.pruneStale(android.view.InputDevice.getDeviceIds())
+        // Returning to the foreground: call start(), not resume(). A PERMANENT audio-focus
+        // loss (another media app took over — YouTube, iiSU) releases our player entirely,
+        // and resume() only un-pauses an existing player, so the music stayed dead until a
+        // full app restart (#398-adjacent report). start() rebuilds a released player — and
+        // still just un-pauses a merely-paused one — while its own guards keep it a no-op
+        // when the setting is off, a VM is running, or that other app is still playing.
+        com.armsx2.LibraryMusic.start(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -4192,6 +4276,8 @@ open class MainActivityRuntime : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        getSystemService(android.hardware.input.InputManager::class.java)
+            ?.unregisterInputDeviceListener(inputDeviceListener)
         // On a CONFIGURATION-driven recreate (e.g. Samsung DeX moving the activity to
         // an external display, density/uiMode change) Android destroys+recreates us.
         // Do NOT tear down the native VM or hard-kill the process then — that races the

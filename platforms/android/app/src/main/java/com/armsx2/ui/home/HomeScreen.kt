@@ -143,20 +143,16 @@ fun HomeScreen(
     val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { picked ->
         picked?.let { LibraryBackground.set(context, it) }
     }
-    // Controller access to the search field: A on the Search zone focuses it + opens the
-    // soft keyboard. (Registered with the controller once the library has loaded, since
-    // the field only exists then.)
-    val searchFocus = remember { FocusRequester() }
-    val keyboard = LocalSoftwareKeyboardController.current
+    // Search: both the controller (A on the Search zone) AND a touch tap open the app's own D-pad +
+    // touch keyboard (LibraryKeyboard). The search bar is no longer an editable TextField, so the
+    // Android system IME never appears. (Registered once the library has loaded.)
     val showSearch = LibraryChromePreferences.showSearch.value
     val showRecents = LibraryChromePreferences.showRecents.value
+    val searchPlaceholder = str("games.search.placeholder")
     LaunchedEffect(state.initialized, showSearch) {
         if (!showSearch && viewModel.state.value.query.isNotEmpty()) viewModel.setQuery("")
         HomeInputController.setSearchAction(state.initialized && showSearch) {
-            // Controller path: open our own D-pad-navigable keyboard (the system IME
-            // can't be driven by a D-pad). Touch still uses the system keyboard by
-            // tapping the field directly.
-            LibraryKeyboard.open(viewModel.state.value.query, viewModel::setQuery)
+            LibraryKeyboard.open(viewModel.state.value.query, viewModel::setQuery, searchPlaceholder)
         }
     }
     LaunchedEffect(directories, nativeReady) { viewModel.load(directories, nativeReady) }
@@ -448,10 +444,9 @@ fun HomeScreen(
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         SearchField(
                             value = state.query,
-                            onValueChange = viewModel::setQuery,
-                            placeholder = str("games.search.placeholder"),
+                            onClick = { LibraryKeyboard.open(viewModel.state.value.query, viewModel::setQuery, searchPlaceholder) },
+                            placeholder = searchPlaceholder,
                             modifier = Modifier.fillMaxWidth(),
-                            focusRequester = searchFocus,
                             selected = HomeInputController.zone.value == HomeZone.Search,
                         )
                     }
@@ -1149,6 +1144,12 @@ object HomeInputController {
     fun move(dx: Int, dy: Int): Boolean {
         val viewModel = owner ?: return false
         userNavigated = true
+        // Snapshot the highlight so we blip the nav sound only when it actually moves (not when a
+        // press runs into an edge).
+        val beforeZone = zone.value
+        val beforeToolbar = toolbarIndex.intValue
+        val beforeRecent = recentIndex.intValue
+        val beforeSel = viewModel.state.value.selectedIndex
         when (zone.value) {
             HomeZone.Toolbar -> when {
                 // Toolbar at top: Down descends into the chrome/grid. At bottom: Up
@@ -1200,11 +1201,15 @@ object HomeInputController {
                 }
             }
         }
+        if (zone.value != beforeZone || toolbarIndex.intValue != beforeToolbar ||
+            recentIndex.intValue != beforeRecent || viewModel.state.value.selectedIndex != beforeSel
+        ) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
         return true
     }
 
     fun confirm(): Boolean {
         val viewModel = owner ?: return false
+        com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SELECT)
         when (zone.value) {
             HomeZone.Toolbar -> toolbarActions.getOrNull(toolbarIndex.intValue)?.invoke()
             HomeZone.Search -> searchConfirm?.invoke()
@@ -1230,6 +1235,7 @@ object HomeInputController {
     }
 
     fun back(): Boolean {
+        com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.BACK)
         // B in the Recents / Toolbar zone drops back to the grid; on the grid it
         // opens the nav drawer.
         if (zone.value != HomeZone.Grid) {

@@ -59,6 +59,12 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
     // this there was no way to import one at all, and zipping it produced a "card.zip.ps2"
     // that read as unformatted.
     val folderImporter = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri -> uri?.let(viewModel::importFolder) }
+    // Export a (file) card out to a user-chosen location — backup, or move to another device.
+    var exportPending by remember { mutableStateOf<MemoryCardItem?>(null) }
+    val exporter = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        val src = exportPending; exportPending = null
+        if (uri != null && src != null) viewModel.export(src.file, uri)
+    }
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     ArmsBackdrop {
@@ -100,6 +106,7 @@ fun MemoryCardScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Memo
                         onSlot2 = { if (serial != null) viewModel.assignToGame(serial, 2, item) else viewModel.assign(2, item) },
                         onClearSlot1 = serial?.let { s -> { viewModel.clearGameCard(s, 1) } },
                         onClearSlot2 = serial?.let { s -> { viewModel.clearGameCard(s, 2) } },
+                        onExport = item.takeIf { !it.file.isDirectory }?.let { card -> { exportPending = card; exporter.launch(card.file.name) } },
                         onDelete = { deleteTarget = item },
                     )
                 }
@@ -143,6 +150,7 @@ private fun MemoryCardRow(
     onSlot2: () -> Unit,
     onClearSlot1: (() -> Unit)?,
     onClearSlot2: (() -> Unit)?,
+    onExport: (() -> Unit)?,
     onDelete: () -> Unit,
 ) {
     Surface(
@@ -178,6 +186,10 @@ private fun MemoryCardRow(
                 if (perGame && slot2Active && onClearSlot2 != null) {
                     Spacer(Modifier.width(7.dp))
                     TextButton(onClick = onClearSlot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.slot2.global", onConfirm = onClearSlot2)) { Text(str("memcard.useGlobal")) }
+                }
+                if (onExport != null) {
+                    Spacer(Modifier.width(7.dp))
+                    TextButton(onClick = onExport, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.export", onConfirm = onExport)) { Text(str("action.export")) }
                 }
                 Spacer(Modifier.width(7.dp))
                 TextButton(onClick = onDelete, enabled = !item.slot1 && !item.slot2, modifier = Modifier.controllerFocusable("memcard.${item.file.name}.delete", onConfirm = onDelete)) { Text(str("action.delete")) }

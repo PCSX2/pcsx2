@@ -79,11 +79,14 @@ object LibraryKeyboard {
     fun close() { visible.value = false }
 
     fun move(dx: Int, dy: Int) {
+        val br = row.intValue; val bc = col.intValue
         if (dy != 0) {
             row.intValue = (row.intValue + dy).coerceIn(0, rows.size - 1)
         }
         // Clamp the column into the (possibly shorter) target row after any move.
         col.intValue = (col.intValue + dx).coerceIn(0, rows[row.intValue].size - 1)
+        if (row.intValue != br || col.intValue != bc)
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
     }
 
     /** Press the currently-highlighted key. */
@@ -93,6 +96,8 @@ object LibraryKeyboard {
     }
 
     fun pressKey(key: String) {
+        // A tick per key (touch or controller); Done gets the confirm blip.
+        com.armsx2.MenuSfx.play(if (key == DONE) com.armsx2.MenuSfx.Event.SELECT else com.armsx2.MenuSfx.Event.NAV)
         if (key == SHIFT) { shifted.value = !shifted.value; return }
         val next = when (key) {
             SPACE -> text.value + " "

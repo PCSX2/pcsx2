@@ -45,8 +45,13 @@ object UiNavigator {
     val drawerOpen = mutableStateOf(false)
 
     fun navigate(destination: AppRoute) {
+        val changed = route.value != destination
         route.value = destination
         drawerOpen.value = false
+        // "Entering a settings menu / sub-screen" blip — but not for just returning Home.
+        if (changed && destination != AppRoute.Home) {
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SUBMENU)
+        }
     }
 
     fun home() = navigate(AppRoute.Home)

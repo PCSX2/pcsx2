@@ -99,6 +99,28 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 },
             )
         }
+        SettingsDivider()
+        // ---- Screen resolution override (#398) ------------------------------
+        // Forces the game's OUTPUT surface to a fixed 16:9 resolution instead of the
+        // detected panel size — fixes 16:10 / mis-detected panels (e.g. reported 1920x1200
+        // on a 1080p screen) that squish 16:9 games and widescreen patches. Global pref,
+        // live-applied to the output surface; composes with the HW scaler above.
+        run {
+            val res = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getString("ui.screenResOverride", "auto") ?: "auto") }
+            val presets = listOf("auto", "2560x1440", "1920x1080", "1280x720")
+            SegmentedRow(
+                label = str("perf.screenRes.label"),
+                options = listOf(str("perf.screenRes.auto"), "1440p", "1080p", "720p"),
+                selectedIndex = presets.indexOf(res.value).let { if (it >= 0) it else 0 },
+                description = str("perf.screenRes.description"),
+                onChange = { idx ->
+                    val v = presets[idx]
+                    res.value = v
+                    com.armsx2.runtime.MainActivityRuntime.prefs.edit { putString("ui.screenResOverride", v) }
+                    com.armsx2.runtime.MainActivityRuntime.surface.value?.applyOutputScale()
+                },
+            )
+        }
         // ---- Sustained Performance (#128) ---------------------------------------
         // Asks Android to hold a steady, thermally-sustainable clock instead of
         // boost-then-throttle. Better for long sessions on handhelds, but it CAPS the

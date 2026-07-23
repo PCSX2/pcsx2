@@ -259,6 +259,7 @@ internal object SettingsControllerNav {
         }
         selectedId.value = ids[next]
         selectedIndex.intValue = next
+        if (next != cur) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
         return true
     }
 
@@ -333,6 +334,7 @@ internal object SettingsControllerNav {
         if (target == null) return false
         selectedId.value = target
         selectedIndex.intValue = orderedIds().indexOf(target)
+        com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
         return true
     }
 
@@ -347,7 +349,13 @@ internal object SettingsControllerNav {
 
     fun confirm(): Boolean {
         val item = selectedItem() ?: return false
+        val before = com.armsx2.MenuSfx.lastPlayedAt()
         item.onConfirm?.invoke() ?: return false
+        // If the invoked action was SILENT (didn't already toggle/navigate/etc.), add a generic
+        // select blip. This covers custom controls — RetroAchievements, memory-card, texture-pack,
+        // BIOS-location, patches/cheats — that route through the nav registry but aren't one of the
+        // self-sounding standard widgets. Anything that made its own sound is left alone (no double).
+        if (com.armsx2.MenuSfx.lastPlayedAt() == before) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SELECT)
         return true
     }
 
@@ -551,16 +559,23 @@ fun ToggleRow(
     description: String? = null,
     onChange: (Boolean) -> Unit,
 ) {
+    // Menu SFX: a distinct on/off blip on every flip. Touch, the switch, and the controller's
+    // confirm/left/right all route through this, so one wrapper covers every input path; the
+    // left/right guards below keep it silent when nothing actually changes.
+    val emit: (Boolean) -> Unit = {
+        com.armsx2.MenuSfx.play(if (it) com.armsx2.MenuSfx.Event.TOGGLE_ON else com.armsx2.MenuSfx.Event.TOGGLE_OFF)
+        onChange(it)
+    }
     Surface(
-        onClick = { onChange(!value) },
+        onClick = { emit(!value) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
             .controllerFocusable(
                 controllerId = "toggle:$label",
-                onConfirm = { onChange(!value) },
-                onLeft = { if (value) onChange(false) },
-                onRight = { if (!value) onChange(true) },
+                onConfirm = { emit(!value) },
+                onLeft = { if (value) emit(false) },
+                onRight = { if (!value) emit(true) },
             ),
         shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
@@ -594,7 +609,7 @@ fun ToggleRow(
                 }
             }
             Spacer(Modifier.width(12.dp))
-            Switch(checked = value, onCheckedChange = onChange)
+            Switch(checked = value, onCheckedChange = emit)
         }
     }
 }
@@ -627,15 +642,20 @@ fun IntSliderRow(
     // DISTINCT registry ids — otherwise one overwrites the other and the controller
     // skips right over it.
     val sliderId = "slider:$label:${androidx.compose.runtime.currentCompositeKeyHash}"
+    // Menu SFX: a soft tick as the value changes (throttled in MenuSfx so a touch drag ticks
+    // instead of buzzing) and the reset blip on Reset. Both cover touch and controller — the
+    // DiscreteSlider drag / reset chip and the controller's left/right/confirm route through here.
+    val onChangeSfx: (Int) -> Unit = { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SLIDER); onChange(it) }
+    val onResetSfx: (() -> Unit)? = onReset?.let { r -> { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.RESET); r() } }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
             .controllerFocusable(
                 controllerId = sliderId,
-                onConfirm = onReset,
-                onLeft = { onChange((value - 1).coerceAtLeast(min)) },
-                onRight = { onChange((value + 1).coerceAtMost(max)) },
+                onConfirm = onResetSfx,
+                onLeft = { onChangeSfx((value - 1).coerceAtLeast(min)) },
+                onRight = { onChangeSfx((value + 1).coerceAtMost(max)) },
             ),
         shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
@@ -680,7 +700,7 @@ fun IntSliderRow(
                     // this through the slider's confirm, so a second focus stop per
                     // modified parameter would only pad the D-pad walk.
                     Surface(
-                        onClick = onReset,
+                        onClick = onResetSfx ?: onReset,
                         shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
                     ) {
@@ -699,7 +719,7 @@ fun IntSliderRow(
                 value = value,
                 min = min,
                 max = max,
-                onChange = onChange,
+                onChange = onChangeSfx,
             )
         }
     }
@@ -917,6 +937,9 @@ fun SegmentedRow(
     description: String? = null,
     onChange: (Int) -> Unit,
 ) {
+    // Menu SFX: a select blip when the chosen option changes — covers the chip tap and the
+    // controller's confirm/left/right, which all route through onChange.
+    val emit: (Int) -> Unit = { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.SELECT); onChange(it) }
     Box(
         Modifier
             .fillMaxWidth()
@@ -928,15 +951,15 @@ fun SegmentedRow(
                 controllerId = "segmented:$label",
                 onConfirm = {
                     if (options.isNotEmpty())
-                        onChange((selectedIndex + 1).floorMod(options.size))
+                        emit((selectedIndex + 1).floorMod(options.size))
                 },
                 onLeft = {
                     if (options.isNotEmpty())
-                        onChange((selectedIndex - 1).coerceAtLeast(0))
+                        emit((selectedIndex - 1).coerceAtLeast(0))
                 },
                 onRight = {
                     if (options.isNotEmpty())
-                        onChange((selectedIndex + 1).coerceAtMost(options.lastIndex))
+                        emit((selectedIndex + 1).coerceAtMost(options.lastIndex))
                 },
             )
             .padding(vertical = 14.dp),
@@ -979,7 +1002,7 @@ fun SegmentedRow(
                                 if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.55f),
                                 RoundedCornerShape(12.dp),
                             )
-                            .clickable { onChange(idx) }
+                            .clickable { emit(idx) }
                             .padding(horizontal = 13.dp, vertical = 8.dp),
                     ) {
                         Text(

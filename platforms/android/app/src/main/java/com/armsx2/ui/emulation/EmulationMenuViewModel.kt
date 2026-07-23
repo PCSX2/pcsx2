@@ -84,6 +84,8 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun selectTab(tab: EmulationMenuTab) {
+        // Nav tick when flipping to a different in-game menu tab (bumpers via cycleTab, or a tap).
+        if (tab != state.value.tab) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
         state.value = state.value.copy(tab = tab, selectedAction = 0)
     }
 
@@ -95,9 +97,10 @@ class EmulationMenuViewModel(application: Application) : AndroidViewModel(applic
 
     fun moveSelection(delta: Int) {
         val max = actionCount(state.value.tab) - 1
-        state.value = state.value.copy(
-            selectedAction = (state.value.selectedAction + delta).coerceIn(0, max.coerceAtLeast(0)),
-        )
+        val before = state.value.selectedAction
+        val next = (before + delta).coerceIn(0, max.coerceAtLeast(0))
+        if (next != before) com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.NAV)
+        state.value = state.value.copy(selectedAction = next)
     }
 
     fun selectAction(index: Int) {

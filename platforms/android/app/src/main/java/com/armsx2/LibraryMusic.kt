@@ -214,7 +214,10 @@ object LibraryMusic {
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                if (player?.isPlaying == true) { pausedForFocus = true; pause() }
+                // Arm self-resume on GAIN whenever we own an enabled player — not only when
+                // it's live right now. onPause() may have paused it just before this fires, and
+                // keying on isPlaying then left the flag false so GAIN never resumed the duck.
+                if (player != null && enabled.value) { pausedForFocus = true; pause() }
             }
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if (pausedForFocus) { pausedForFocus = false; resume() }

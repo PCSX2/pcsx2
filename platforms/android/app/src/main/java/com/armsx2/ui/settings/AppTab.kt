@@ -41,7 +41,13 @@ import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.theme.BootLogoPreferences
 import com.armsx2.ui.theme.ThemeMode
 import com.armsx2.ui.theme.ThemePreferences
+import com.armsx2.ui.theme.LauncherOrientationPreferences
 import com.armsx2.ui.theme.ToolbarPositionPreferences
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.graphics.Brush
+import com.armsx2.ui.theme.LibraryBackgroundColorPreferences
 import com.armsx2.ui.theme.LibraryChromePreferences
 import java.io.File
 
@@ -166,6 +172,128 @@ fun AppTab() {
             }
         }
 
+        // Library background (wave) color. Separate from the theme accent above — that only tints
+        // the UI chrome; this recolors the animated backdrop itself, with the white waves riding
+        // over it. Unset = the built-in blue. Live: XmbGlView's GL thread reads the new color on
+        // its next frame (~33ms), so the backdrop updates as the sliders move.
+        Column(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
+            Text(str("app.bgColor"), style = MaterialTheme.typography.titleMedium)
+            Text(
+                str("app.bgColor.desc"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            // Continuous RGB hue-cycle — same idea as the theme's RGB mode. While on, the fixed
+            // color (presets + sliders) doesn't apply, so it's hidden.
+            ToggleRow(
+                label = str("app.bgColor.rgb"),
+                value = LibraryBackgroundColorPreferences.rgbCycle.value,
+                description = str("app.bgColor.rgb.desc"),
+                onChange = { LibraryBackgroundColorPreferences.setRgbCycle(it) },
+            )
+            if (!LibraryBackgroundColorPreferences.rgbCycle.value) {
+            val customized = LibraryBackgroundColorPreferences.color.value != 0
+            val argb = if (customized) LibraryBackgroundColorPreferences.color.value
+                       else LibraryBackgroundColorPreferences.DefaultDisplayColor
+            val r = android.graphics.Color.red(argb)
+            val g = android.graphics.Color.green(argb)
+            val b = android.graphics.Color.blue(argb)
+            // Custom-slider mode: open when a non-preset colour is active, or the user taps "Custom".
+            val customOpen = remember {
+                mutableStateOf(customized && LibraryBackgroundColorPreferences.PRESETS.none { it == argb })
+            }
+            // Quick-pick presets (XMB palette) + a "Custom" chip that reveals the RGB sliders — the
+            // same shape as the theme colour picker. The active swatch (or Custom) is ringed.
+            Spacer(Modifier.height(9.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                LibraryBackgroundColorPreferences.PRESETS.forEach { preset ->
+                    val selected = !customOpen.value && preset == argb
+                    val pick = { customOpen.value = false; LibraryBackgroundColorPreferences.set(preset) }
+                    Surface(
+                        onClick = pick,
+                        modifier = Modifier.size(34.dp)
+                            .controllerFocusable("app.bgColor.preset.$preset", RoundedCornerShape(9.dp), onConfirm = pick),
+                        shape = RoundedCornerShape(9.dp),
+                        color = Color(preset),
+                        border = BorderStroke(
+                            if (selected) 3.dp else 1.dp,
+                            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                        ),
+                    ) {}
+                }
+                val pickCustom = {
+                    customOpen.value = true
+                    if (!customized) LibraryBackgroundColorPreferences.set(LibraryBackgroundColorPreferences.DefaultDisplayColor)
+                }
+                FilterChip(
+                    selected = customOpen.value,
+                    onClick = pickCustom,
+                    label = { Text(str("app.theme.custom")) },
+                    shape = RoundedCornerShape(9.dp),
+                    modifier = Modifier.controllerFocusable("app.bgColor.custom", RoundedCornerShape(9.dp), onConfirm = pickCustom),
+                )
+            }
+            // Preview + RGB sliders only in Custom mode (mirrors the theme colour picker).
+            if (customOpen.value) {
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        modifier = Modifier.size(width = 66.dp, height = 34.dp),
+                        shape = RoundedCornerShape(9.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    ) {
+                        Box(
+                            Modifier.fillMaxSize().background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color(r * 0.20f / 255f, g * 0.20f / 255f, b * 0.20f / 255f, 1f),
+                                        Color(argb),
+                                    )
+                                )
+                            )
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        String.format("#%06X", 0xFFFFFF and argb),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                listOf(
+                    Triple("app.theme.custom.r", 16, r),
+                    Triple("app.theme.custom.g", 8, g),
+                    Triple("app.theme.custom.b", 0, b),
+                ).forEach { (labelKey, shift, value) ->
+                    IntSliderRow(
+                        label = str(labelKey),
+                        value = value,
+                        min = 0,
+                        max = 255,
+                        onChange = { channel ->
+                            val cleared = argb and (0xFF shl shift).inv()
+                            LibraryBackgroundColorPreferences.set(cleared or (channel shl shift) or (0xFF shl 24))
+                        },
+                    )
+                }
+            }
+            if (customized) {
+                Spacer(Modifier.height(4.dp))
+                val reset = {
+                    customOpen.value = false
+                    LibraryBackgroundColorPreferences.reset()
+                }
+                OutlinedButton(
+                    onClick = reset,
+                    modifier = Modifier.controllerFocusable("app.bgColor.reset", onConfirm = reset),
+                ) { Text(str("action.reset")) }
+            }
+            }
+        }
+
         ToggleRow(
             label = str("app.bootLogo"),
             value = BootLogoPreferences.enabled.value,
@@ -226,11 +354,91 @@ fun AppTab() {
             }
         }
 
+        // Menu sound effects. User-provided like the custom track above — the app ships no sounds;
+        // the user imports a folder of named clips (select/back/menu/toggle_on/toggle_off/reset/
+        // slider). Opt-in (off by default) since there are no bundled defaults to fall back on.
+        ToggleRow(
+            label = str("app.menuSfx"),
+            value = com.armsx2.MenuSfx.enabled.value,
+            description = str("app.menuSfx.desc"),
+            onChange = { com.armsx2.MenuSfx.set(appContext, it) },
+        )
+        if (com.armsx2.MenuSfx.enabled.value) {
+            IntSliderRow(
+                label = str("app.menuSfx.volume"),
+                value = com.armsx2.MenuSfx.volumePercent.value,
+                min = 0,
+                max = 100,
+                valueFormatter = { "$it%" },
+                onChange = { com.armsx2.MenuSfx.setVolume(it) },
+            )
+            val sfxPicker = rememberLauncherForActivityResult(
+                ActivityResultContracts.OpenDocumentTree()
+            ) { uri ->
+                if (uri != null) {
+                    val n = com.armsx2.MenuSfx.importFromTree(appContext, uri)
+                    Toast.makeText(
+                        appContext,
+                        if (n > 0) I18n.get("app.menuSfx.imported").format(n)
+                        else I18n.get("app.menuSfx.importNone"),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+            val pack = com.armsx2.MenuSfx.packName.value
+            Text(
+                if (pack != null) str("app.menuSfx.current").format(pack) else str("app.menuSfx.none"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+            )
+            Text(
+                str("app.menuSfx.hint"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+            )
+            Row(
+                Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val pick = { sfxPicker.launch(null) }
+                OutlinedButton(
+                    onClick = pick,
+                    modifier = Modifier.controllerFocusable("app.menuSfx.choose", onConfirm = pick),
+                ) { Text(str("app.menuSfx.choose")) }
+                if (pack != null) {
+                    val clear = { com.armsx2.MenuSfx.clear(appContext) }
+                    OutlinedButton(
+                        onClick = clear,
+                        modifier = Modifier.controllerFocusable("app.menuSfx.reset", onConfirm = clear),
+                    ) { Text(str("app.menuSfx.reset")) }
+                }
+            }
+        }
+
         SegmentedRow(
             label = str("app.toolbarPosition"),
             options = listOf(str("app.toolbarPosition.top"), str("app.toolbarPosition.bottom")),
             selectedIndex = if (ToolbarPositionPreferences.atBottom.value) 1 else 0,
             onChange = { ToolbarPositionPreferences.set(it == 1) },
+        )
+
+        // Launcher/library rotation — independent of the per-game renderer rotation (Renderer tab).
+        SegmentedRow(
+            label = str("app.launcherRotation"),
+            options = listOf(
+                str("app.launcherRotation.device"),
+                str("app.launcherRotation.landscape"),
+                str("app.launcherRotation.portrait"),
+                str("app.launcherRotation.auto"),
+            ),
+            selectedIndex = LauncherOrientationPreferences.mode.value.coerceIn(0, 3),
+            description = str("app.launcherRotation.desc"),
+            onChange = {
+                LauncherOrientationPreferences.set(it)
+                MainActivityRuntime.instance?.applyEmulationOrientation()  // live-apply (no game running)
+            },
         )
 
         ToggleRow(

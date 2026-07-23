@@ -57,6 +57,7 @@ object TouchControls {
     private const val KEY_MULTI_RADIUS = "touch.multiRadius"
     private const val KEY_DPAD_SPACING = "touch.dpadSpacing"
     private const val KEY_FLOATING_STICK = "touch.floatingStick"
+    private const val KEY_FULL_HALF_STICKS = "touch.fullHalfSticks"
     private const val KEY_GRID_SNAP = "touch.gridSnap"
     private const val KEY_VIS_MODE = "touch.visibilityMode"
     // One-shot 2.4.7 defaults migration for EXISTING users (saved prefs/layouts
@@ -180,6 +181,12 @@ object TouchControls {
     // easier to grab without looking. Snaps back to rest on release. Global; persisted
     // under KEY_FLOATING_STICK.
     val floatingStick = mutableStateOf(false)
+
+    // Full-half invisible analog sticks (RPCSX-style): the entire LEFT half of the screen acts as
+    // the left stick and the RIGHT half as the right stick, with nothing drawn — each finger drives
+    // its stick from wherever it touches down (floating origin). The normal L/R stick widgets are
+    // hidden while this is on. Global; persisted under KEY_FULL_HALF_STICKS.
+    val fullHalfSticks = mutableStateOf(false)
 
     // Editor-only: while ON, dragging a widget in edit mode snaps its centre anchor to the
     // nearest cross of a square grid (see GRID_COLS in TouchControlsOverlay). Lets the user
@@ -480,6 +487,7 @@ object TouchControls {
         multiTouchRadius.floatValue = MainActivityRuntime.prefs.getFloat(KEY_MULTI_RADIUS, 0.62f).coerceIn(0.50f, 0.95f)
         dpadSpacing.floatValue = MainActivityRuntime.prefs.getFloat(KEY_DPAD_SPACING, 0.0f).coerceIn(0.0f, 0.35f)
         floatingStick.value = MainActivityRuntime.prefs.getBoolean(KEY_FLOATING_STICK, false)
+        fullHalfSticks.value = MainActivityRuntime.prefs.getBoolean(KEY_FULL_HALF_STICKS, false)
         gridSnap.value = MainActivityRuntime.prefs.getBoolean(KEY_GRID_SNAP, false)
         visibilityMode.intValue = MainActivityRuntime.prefs.getInt(KEY_VIS_MODE, 11).coerceIn(0, 11)
         if (visibilityMode.intValue == 0) visible.value = false
@@ -570,6 +578,7 @@ object TouchControls {
                 .putFloat(KEY_MULTI_RADIUS, multiTouchRadius.floatValue)
                 .putFloat(KEY_DPAD_SPACING, dpadSpacing.floatValue)
                 .putBoolean(KEY_FLOATING_STICK, floatingStick.value)
+                .putBoolean(KEY_FULL_HALF_STICKS, fullHalfSticks.value)
                 .putBoolean(KEY_GRID_SNAP, gridSnap.value)
                 .putInt(KEY_VIS_MODE, visibilityMode.intValue)
                 .putBoolean(KEY_PAUSE_TAP_REVEAL, pauseTapToReveal.value)
@@ -906,6 +915,11 @@ object TouchControls {
 
     fun setFloatingStick(enabled: Boolean) {
         floatingStick.value = enabled
+        persist()
+    }
+
+    fun setFullHalfSticks(enabled: Boolean) {
+        fullHalfSticks.value = enabled
         persist()
     }
 

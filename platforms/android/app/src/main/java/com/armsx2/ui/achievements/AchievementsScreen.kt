@@ -64,6 +64,7 @@ import com.armsx2.ui.common.SettingSwitchRow
 import com.armsx2.ui.common.StatusChip
 import com.armsx2.ui.settings.controllerFocusable
 import com.armsx2.ui.theme.Danger
+import androidx.compose.ui.graphics.Color
 import com.armsx2.ui.theme.Success
 import kotlinx.coroutines.delay
 
@@ -394,6 +395,7 @@ private fun AchievementList(state: AchievementsUiState, modifier: Modifier) {
         AchFilter.ALL -> bySubset
         AchFilter.UNLOCKED -> bySubset.filter { it.unlocked }
         AchFilter.LOCKED -> bySubset.filter { !it.unlocked }
+        AchFilter.MISSABLE -> bySubset.filter { it.type == 1 }
     }
     Column(modifier) {
         SectionTitle(str("scope.game"), shown.size.toString())
@@ -502,18 +504,22 @@ private fun PositionGridPicker(
     }
 }
 
-private enum class AchFilter { ALL, UNLOCKED, LOCKED }
+private enum class AchFilter { ALL, UNLOCKED, LOCKED, MISSABLE }
 
 /** All / Unlocked / Locked pills over the achievement list. Same pill styling and controller
  *  focus wiring as SubsetTabs; each pill shows its count so progress is visible at a glance. */
 @Composable
 private fun AchievementFilterTabs(selected: AchFilter, items: List<AchievementItem>, onSelect: (AchFilter) -> Unit) {
     val unlocked = items.count { it.unlocked }
-    val tabs = listOf(
-        Triple(AchFilter.ALL, str("ra.filter.all"), items.size),
-        Triple(AchFilter.UNLOCKED, str("ra.filter.unlocked"), unlocked),
-        Triple(AchFilter.LOCKED, str("ra.filter.locked"), items.size - unlocked),
-    )
+    val missable = items.count { it.type == 1 }
+    val tabs = buildList {
+        add(Triple(AchFilter.ALL, str("ra.filter.all"), items.size))
+        add(Triple(AchFilter.UNLOCKED, str("ra.filter.unlocked"), unlocked))
+        add(Triple(AchFilter.LOCKED, str("ra.filter.locked"), items.size - unlocked))
+        // Only surface the Missable filter when the set actually has missables (like RA's site),
+        // so games with none don't get a noisy always-empty tab.
+        if (missable > 0) add(Triple(AchFilter.MISSABLE, str("ra.filter.missable"), missable))
+    }
     Row(
         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -625,7 +631,16 @@ private fun AchievementRow(item: AchievementItem) {
                 Text(item.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (item.progress.isNotBlank()) Text(item.progress, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
-            StatusChip("${item.points} pts", if (item.unlocked) Success else MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                // Type badge beside the points — restores the "Missable"/Progression/Win pill lost
+                // in the 2026-07 UI rebuild (b970da7e). Standard (type 0) shows no badge.
+                when (item.type) {
+                    1 -> StatusChip(str("ra.typeChip.missable"), Color(0xFFF5A623))
+                    2 -> StatusChip(str("ra.typeChip.progression"), MaterialTheme.colorScheme.primary)
+                    3 -> StatusChip(str("ra.typeChip.win"), Color(0xFFF5C451))
+                }
+                StatusChip("${item.points} pts", if (item.unlocked) Success else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

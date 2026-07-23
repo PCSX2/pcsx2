@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.armsx2.i18n.str
+import com.armsx2.ui.settings.controllerFocusable
 
 @Composable
 fun SettingSwitchRow(
@@ -40,9 +41,22 @@ fun SettingSwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Match ToggleRow: menu SFX on every flip, and a "toggle:$title" nav id so the controller can
+    // reach the row (the updater switches were touch-only before) and settings-search can jump to it.
+    val emit: (Boolean) -> Unit = {
+        com.armsx2.MenuSfx.play(if (it) com.armsx2.MenuSfx.Event.TOGGLE_ON else com.armsx2.MenuSfx.Event.TOGGLE_OFF)
+        onCheckedChange(it)
+    }
     Surface(
-        onClick = { onCheckedChange(!checked) },
-        modifier = modifier.fillMaxWidth(),
+        onClick = { emit(!checked) },
+        modifier = modifier.fillMaxWidth()
+            .controllerFocusable(
+                controllerId = "toggle:$title",
+                shape = RoundedCornerShape(22.dp),
+                onConfirm = { emit(!checked) },
+                onLeft = { if (checked) emit(false) },
+                onRight = { if (!checked) emit(true) },
+            ),
         shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.42f)),
@@ -59,7 +73,7 @@ fun SettingSwitchRow(
                 Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.width(16.dp))
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
+            Switch(checked = checked, onCheckedChange = emit)
         }
     }
 }
