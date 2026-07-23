@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.armsx2.BuildConfig
 import com.armsx2.i18n.str
+import com.armsx2.runtime.MainActivityRuntime
 import com.armsx2.ui.common.GlassPanel
+import com.armsx2.ui.common.SettingSwitchRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -122,6 +125,20 @@ fun UpdaterEntry() {
                     }
                 },
             ) { Text(str("update.check")) }
+
+            // Opt-in: silently check GitHub for a newer release on every app launch (default off).
+            var checkOnLaunch by remember {
+                mutableStateOf(MainActivityRuntime.prefs.getBoolean("update.checkOnLaunch", false))
+            }
+            SettingSwitchRow(
+                title = str("update.checkOnLaunch"),
+                description = str("update.checkOnLaunch.desc"),
+                checked = checkOnLaunch,
+                onCheckedChange = {
+                    checkOnLaunch = it
+                    MainActivityRuntime.prefs.edit().putBoolean("update.checkOnLaunch", it).apply()
+                },
+            )
         }
     }
 
@@ -151,6 +168,72 @@ fun UpdaterEntry() {
             },
             dismissButton = {
                 TextButton(onClick = { state = UpdateState.Idle }) { Text(str("action.cancel")) }
+            },
+        )
+    }
+}
+
+/**
+ * Boot-time auto-check (github flavor only). Mounted once at the app root; when the "check on
+ * launch" toggle is on, it runs a single silent GitHub check on start and pops the update prompt
+ * ONLY if a newer release exists — no "up to date" popup, no noise on every boot. Reuses the exact
+ * check/download/install path as the manual button. Nightly-safe via checkForUpdate's VC guard.
+ */
+@Composable
+fun AutoUpdateGate() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var state by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
+    val checkFailedPrefix = str("update.checkFailed")
+
+    LaunchedEffect(Unit) {
+        if (MainActivityRuntime.prefs.getBoolean("update.checkOnLaunch", false)) {
+            val result = checkForUpdate(checkFailedPrefix)
+            if (result is UpdateState.Available) state = result  // stay silent on up-to-date / errors
+        }
+    }
+
+    val s = state
+    if (s is UpdateState.Available || s is UpdateState.Downloading) {
+        val avail = s as? UpdateState.Available
+        AlertDialog(
+            onDismissRequest = { if (state !is UpdateState.Downloading) state = UpdateState.Idle },
+            title = {
+                Text(
+                    if (state is UpdateState.Downloading) str("update.downloading")
+                    else "${str("update.available")}  ${avail?.version.orEmpty()}",
+                )
+            },
+            text = {
+                when (val cur = state) {
+                    is UpdateState.Available -> Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
+                        Text(cur.notes.ifBlank { str("update.notesUnavailable") }, style = MaterialTheme.typography.bodySmall)
+                    }
+                    is UpdateState.Downloading -> Column {
+                        Text("${cur.pct}%", style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(6.dp))
+                        LinearProgressIndicator(progress = { cur.pct / 100f }, modifier = Modifier.fillMaxWidth())
+                    }
+                    else -> {}
+                }
+            },
+            confirmButton = {
+                if (avail != null) {
+                    TextButton(onClick = {
+                        scope.launch {
+                            try {
+                                downloadAndInstall(context, avail) { pct -> state = UpdateState.Downloading(pct) }
+                            } finally {
+                                state = UpdateState.Idle
+                            }
+                        }
+                    }) { Text(str("update.install")) }
+                }
+            },
+            dismissButton = {
+                if (state is UpdateState.Available) {
+                    TextButton(onClick = { state = UpdateState.Idle }) { Text(str("update.later")) }
+                }
             },
         )
     }

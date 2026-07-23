@@ -1957,6 +1957,12 @@ open class MainActivityRuntime : ComponentActivity() {
             androidx.compose.runtime.SideEffect {
                 applySystemBarTheme(darkTheme = darkTheme, showSystemBars = showSystemBars)
             }
+            // Auto-update-on-launch (github sideload flavor only, opt-in via the App-tab toggle,
+            // default off). Renders nothing unless a newer GitHub release is found on boot, then
+            // pops the update prompt. Play flavor's AutoUpdateGate is a no-op stub.
+            if (com.armsx2.BuildConfig.IN_APP_UPDATER) {
+                com.armsx2.update.AutoUpdateGate()
+            }
             // First-time setup deferral: when the wizard finishes and
             // setupComplete flips to true, kick off the heavy emucore
             // init now that `MainActivityRuntime.systemDir` reflects the user's pick.

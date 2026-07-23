@@ -13,3 +13,9 @@ import androidx.compose.runtime.Composable
 fun UpdaterEntry() {
     // intentionally empty
 }
+
+/** Play-flavor no-op stub of the boot-time auto-update check (real one in src/github). */
+@Composable
+fun AutoUpdateGate() {
+    // intentionally empty
+}
