@@ -628,11 +628,11 @@ SLED-54312:
     recommendedBlendingLevel: 3
 SLES-50120:
   gsHWFixes:
-    hwDownloadMode: 3
+    hwDownloadMode: 4
     minimumBlendingLevel: 3
 SLES-50121:
   gsHWFixes:
-    hwDownloadMode: 3
+    hwDownloadMode: 4
     minimumBlendingLevel: 3
 SLES-50288:
   gsHWFixes:
@@ -1398,7 +1398,7 @@ SLUS-20035:
     textureInsideRT: 2
 SLUS-20174:
   gsHWFixes:
-    hwDownloadMode: 3
+    hwDownloadMode: 4
     minimumBlendingLevel: 3
 SLUS-20250:
   gsHWFixes:
