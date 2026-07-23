@@ -26,6 +26,23 @@ if (armsx2SigningPropertiesFile.isFile && !armsx2PlaySigningReady) {
     throw GradleException("armsx2_keystore.properties is missing one or more required signing keys.")
 }
 
+// Runtime resources (GameDB, shaders, fonts, icons) have a single canonical copy
+// at <repo>/bin/resources — the same tree the desktop/Linux build ships via
+// pcsx2_copy_runtime_resources. Rather than commit a third drifting copy under
+// src/main/assets, generate the APK's assets/resources from it at build time:
+// sync bin/resources (minus the Windows-only dx11 shaders the mobile backends
+// never compile) plus the canonical mobile GameDB overlay into a generated
+// assets root. Genuine Android-only extras (patches.zip, the Noto color emoji
+// font) stay committed under src/main/assets/resources and AGP merges the roots.
+val generateSharedResources by tasks.registering(Sync::class) {
+    val repoRoot = rootProject.layout.projectDirectory.dir("../..")
+    from(repoRoot.dir("bin/resources")) {
+        exclude("dx11/**")
+    }
+    from(repoRoot.file("bin/resources-overlay/armsx2_overrides.yaml"))
+    into(layout.buildDirectory.dir("generated/sharedResources/resources"))
+}
+
 android {
     namespace = "com.armsx2"
     compileSdk = 37
@@ -138,6 +155,14 @@ android {
             buildConfigField("boolean", "STORAGE_ALL_FILES", "false")
         }
     }
+    // Merge the generated bin/resources tree in as a second assets root. Passing
+    // the task's output provider (not a bare path) makes AGP's asset-merge tasks
+    // depend on generateSharedResources, so the tree is materialized before it is
+    // packaged. destinationDir is .../resources; its parent is the assets root.
+    sourceSets.named("main") {
+        assets.srcDir(generateSharedResources.map { it.destinationDir.parentFile })
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
