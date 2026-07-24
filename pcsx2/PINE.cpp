@@ -314,15 +314,27 @@ namespace PINEServer
 		std::string device_name, driver_info;
 		if (MTGS::IsOpen())
 		{
-			MTGS::RunOnGSThread([&gs_memory, &device_name, &driver_info]() {
-				GSgetMemoryStats(gs_memory);
-				if (g_gs_device)
-				{
-					device_name = g_gs_device->GetName();
-					driver_info = g_gs_device->GetDriverInfo();
-				}
-			});
-			MTGS::WaitGS(false);
+			// The MTGS ring is single-producer: m_WritePos is owned by the EE/CPU
+			// thread, so only it may push packets. RunOnGSThread pushes a packet, and
+			// WaitGS drains the ring -- calling them from the PINE thread makes a second
+			// producer that races the EE thread's own ring writes, desyncing the
+			// pending-packet count. That lost-wakeup-deadlocks the EE thread (parked in
+			// WaitGS waiting for empty) against the GS thread (asleep in WaitForWork on
+			// no work). Marshal onto the CPU thread first -- the legitimate producer --
+			// and block until the GS-owned sample has been gathered.
+			Host::RunOnCPUThread(
+				[&gs_memory, &device_name, &driver_info]() {
+					MTGS::RunOnGSThread([&gs_memory, &device_name, &driver_info]() {
+						GSgetMemoryStats(gs_memory);
+						if (g_gs_device)
+						{
+							device_name = g_gs_device->GetName();
+							driver_info = g_gs_device->GetDriverInfo();
+						}
+					});
+					MTGS::WaitGS(false);
+				},
+				true);
 		}
 		// Newlines and quotes would break the JSON; GetDriverInfo() is multi-line on Vulkan.
 		const auto sanitize = [](std::string& s) {
