@@ -52,7 +52,8 @@ enum class InputLayout : u8
 	Unknown,
 	Xbox,
 	Playstation,
-	Nintendo
+	Nintendo,
+	Generic
 };
 
 enum class InputModifier : u32
