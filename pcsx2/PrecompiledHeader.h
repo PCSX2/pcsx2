@@ -15,6 +15,7 @@
 // Include the STL that's actually handy.
 
 #include <algorithm>
+#include <charconv>
 #include <cinttypes>	// Printf format
 #include <condition_variable>
 #include <climits>
@@ -22,11 +23,14 @@
 #include <cstdio>		// stdio.h under c++
 #include <cstdlib>
 #include <cmath>
+#include <iomanip>
 #include <list>
+#include <locale>
 #include <memory>
 #include <mutex>
 #include <functional>
 #include <optional>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>
@@ -46,3 +50,8 @@
 #if !defined(__GNUC__) || defined(__clang__)
 #include "fmt/format.h"
 #endif
+
+// StringUtil.h is included by the vast majority of translation units and is very
+// stable, so parse it once here instead of in every TU. It also pulls in the
+// heavy <sstream>/<iomanip>/<locale>/<charconv> stream stack.
+#include "common/StringUtil.h"
