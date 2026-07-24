@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Common.h"
+#include "Config.h"
 
 #include <cmath>
 
@@ -99,6 +100,14 @@ __fi u32 fp_min(u32 a, u32 b)
 	return ((s32)a < 0 && (s32)b < 0) ? std::max<s32>(a, b) : std::min<s32>(a, b);
 }
 
+/*	The EE fpu doesn't follow IEEE-754 and uses a value larger than FLT_MAX
+	The lower clamp modes still clamp to FLT_MAX to stay inside the VU's range.
+*/
+static u32 fpuDivideByZeroMax()
+{
+	return CHECK_FPU_FULL ? 0x7FFFFFFF : posFmax;
+}
+
 /*	Checks if Divide by Zero will occur. (z/y = x)
 	cFlagsToSet1 = Flags to set if (z != 0)
 	cFlagsToSet2 = Flags to set if (z == 0)
@@ -108,7 +117,7 @@ bool checkDivideByZero(u32& xReg, u32 yDivisorReg, u32 zDividendReg, u32 cFlagsT
 
 	if ( (yDivisorReg & 0x7F800000) == 0 ) {
 		_ContVal_ |= ( (zDividendReg & 0x7F800000) == 0 ) ? cFlagsToSet2 : cFlagsToSet1;
-		xReg = ( (yDivisorReg ^ zDividendReg) & 0x80000000 ) | posFmax;
+		xReg = ( (yDivisorReg ^ zDividendReg) & 0x80000000 ) | fpuDivideByZeroMax();
 		return true;
 	}
 
@@ -342,7 +351,7 @@ void RSQRT_S() {
 
 	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
 		_ContVal_ |= FPUflagD | FPUflagSD;
-		_FdValUl_ = ( _FtValUl_ & 0x80000000 ) | posFmax;
+		_FdValUl_ = ( _FtValUl_ & 0x80000000 ) | fpuDivideByZeroMax();
 		return;
 	}
 	else if ( _FtValUl_ & 0x80000000 ) { // Ft is negative
