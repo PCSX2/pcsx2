@@ -5384,16 +5384,8 @@ void GSRendererHW::HandleFlatShadedVertices()
 		return;
 
 	// De-index the vertices using the copy buffer
-	while (vtx_buff.maxcount < idx_buff.tail)
-		GrowVertexBuffer();
-
-	for (int i = static_cast<int>(idx_buff.tail) - 1; i >= 0; i--)
-	{
-		vtx_buff.buff_copy[i] = vtx_buff.buff[idx_buff.buff[i]];
-		idx_buff.buff[i] = static_cast<u16>(i);
-	}
-	std::swap(vtx_buff.buff, vtx_buff.buff_copy);
-	vtx_buff.head = vtx_buff.next = vtx_buff.tail = idx_buff.tail;
+	if (!DeindexVertices()) [[unlikely]]
+		return;
 
 	// Make all vertices the same color to simplify handling in expand shaders.
 	for (u32 i = 0; i < idx_buff.tail; i += n)
@@ -9501,6 +9493,19 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 		GSVector4i::loadh(texsize).rintersect(ComputeBoundingBoxTex(texsize, tmm.coverage, tex_region, texscale));
 
 	m_conf.scissor = (date_options.enabled && !date_options.barrier) ? m_conf.drawarea : scissor;
+
+	// Round UV handling.
+	if (GetUpscaleMultiplier() == 1.0f && m_conf.ps.tfx != TFX_NONE && !m_channel_shuffle && !m_texture_shuffle)
+	{
+		if (GetVertexUVRoundingInfo())
+		{
+			GL_INS("HW: Doing shader UV rounding.%s", PRIM->FST ? "" : " Converting ST to UV (pre-divide Q).");
+			m_conf.ps.round_uv = m_vt.IsRealLinear() ? GSHWDrawConfig::PS_ROUND_UV::LINEAR : GSHWDrawConfig::PS_ROUND_UV::NEAREST;
+			m_conf.vs.round_uv = true;
+			m_conf.ps.fst = true;
+			m_conf.vs.fst = true;
+		}
+	}
 
 	HandleFlatShadedVertices();
 
