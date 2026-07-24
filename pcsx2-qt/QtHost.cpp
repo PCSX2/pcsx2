@@ -1267,7 +1267,7 @@ void Host::RunOnGSThread(std::function<void()> function)
 
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
-	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache));
+	QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache), Q_ARG(bool, true));
 }
 
 void Host::CancelGameListRefresh()
