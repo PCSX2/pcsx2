@@ -791,14 +791,19 @@ GSTexture* GSDevice::CreateShaderWriteTarget(const GSVector2i& size, GSTexture::
 	return FetchSurface(GSTexture::ShaderWriteTarget, size.x, size.y, 1, format, clear, prefer_reuse);
 }
 
+GSTexture::Usage GSDevice::GetDepthStencilUsage() const
+{
+	return m_features.depth_feedback ? GSTexture::FeedbackDepth : GSTexture::DepthStencil;
+}
+
 GSTexture* GSDevice::CreateDepthStencil(int w, int h, bool clear, bool prefer_reuse)
 {
-	return FetchSurface(GSTexture::DepthStencil, w, h, 1, GSTexture::Format::DepthStencil, clear, prefer_reuse);
+	return FetchSurface(GetDepthStencilUsage(), w, h, 1, GSTexture::Format::DepthStencil, clear, prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateDepthStencil(const GSVector2i& size, bool clear, bool prefer_reuse)
 {
-	return FetchSurface(GSTexture::DepthStencil, size.x, size.y, 1, GSTexture::Format::DepthStencil, clear, prefer_reuse);
+	return FetchSurface(GetDepthStencilUsage(), size.x, size.y, 1, GSTexture::Format::DepthStencil, clear, prefer_reuse);
 }
 
 GSTexture* GSDevice::CreateTexture(int w, int h, int mipmap_levels, GSTexture::Format format, bool prefer_reuse)
