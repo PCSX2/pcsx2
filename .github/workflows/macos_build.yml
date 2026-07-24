@@ -164,6 +164,12 @@ jobs:
         working-directory: build
         run: make -j$(getconf _NPROCESSORS_ONLN) unittests
 
+      - name: Clean Caches
+        run: |
+          ccache -s
+          ccache --evict-older-than 1d
+          ccache -s
+
       - name: Prepare Build Artifacts
         run: |
           mv build/pcsx2*/PCSX2.app PCSX2.app
