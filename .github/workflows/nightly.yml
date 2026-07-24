@@ -8,9 +8,7 @@
 # Platform coverage mirrors build-all.yml's guardrail:
 #   * PC arm64 Qt GUI  -> macOS / Linux (4K+16K) / Windows   (blocking for release)
 #   * Android APK       -> sideloadable, debug-key-signed     (non-blocking, attach-if-present)
-#   * iOS               -> NOT yet: the current CI job is only a simulator
-#                          compile-check. Wire platforms/ios/scripts/build-ios-ipa.sh
-#                          (unsigned device .ipa) here once the iphoneos build is green.
+#   * iOS               -> unsigned .ipa, sideloadable       (non-blocking, attach-if-present)
 name: Nightly
 
 on:
@@ -94,7 +92,7 @@ jobs:
           {
             echo "Automated nightly build for community testing (unsigned)."
             echo
-            echo "Platforms: macOS arm64, Linux arm64 (4K and 16K pages), Windows arm64, Android (sideloadable APK). iOS is not included yet."
+            echo "Platforms: macOS arm64, Linux arm64 (4K and 16K pages), Windows arm64, Android (sideloadable APK), iOS (.ipa)."
             echo
             echo "## What's new"
             if [ -s changes.txt ]; then cat changes.txt; else echo "- No notable changes since the last nightly."; fi
@@ -234,10 +232,29 @@ jobs:
           path: platforms/android/app/build/outputs/apk/nightly/*.apk
           if-no-files-found: warn
 
+  # ---- iOS IPA (non-blocking; attached if it builds) ----------------------
+  ios:
+    name: iOS IPA (unsigned)
+    needs: gate
+    if: ${{ needs.gate.outputs.proceed == 'true' }}
+    continue-on-error: true
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build unsigned IPA
+        run: ./platforms/ios/scripts/build-ios-ipa.sh
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: armsx2-ios-arm64
+          path: platforms/ios/build-ios-xcode/ARMSX2-iOS-unsigned.ipa
+          if-no-files-found: warn
+
   # ---- publish: gather artifacts -> dated pre-release --------------------
   publish:
     name: Publish nightly release
-    needs: [gate, pc-macos-arm64, pc-linux-arm64, pc-windows-arm64, android]
+    needs: [gate, pc-macos-arm64, pc-linux-arm64, pc-windows-arm64, android, ios]
     # Run as long as the PC guardrail passed, even if Android failed (its APK is
     # then simply absent). `!cancelled()` disables the implicit "all needs must
     # succeed" gate so we can require only the PC jobs explicitly.
@@ -258,8 +275,8 @@ jobs:
       - name: Collect release assets
         run: |
           mkdir -p out
-          # Single-file assets: macOS .tar.xz, Linux .AppImage, Android .apk
-          find dl -type f \( -name '*.tar.xz' -o -name '*.AppImage' -o -name '*.apk' \) -exec cp {} out/ \;
+          # Single-file assets: macOS .tar.xz, Linux .AppImage, Android .apk, iOS .ipa
+          find dl -type f \( -name '*.tar.xz' -o -name '*.AppImage' -o -name '*.apk' -o -name '*.ipa' \) -exec cp {} out/ \;
           # Windows artifacts are a bin/ tree -> zip each one up
           for d in dl/*windows*/; do
             [ -d "$d" ] || continue
