@@ -171,6 +171,8 @@
  "fixes.opt.upper": "上部",
  "fixes.optimalFramePacing.desc": "以零排队帧运行 GS 线程，获得最紧凑的帧调度和最低输入延迟（与 PCSX2 一致）。若较弱设备用小帧队列更平滑，可关闭。",
  "fixes.optimalFramePacing.label": "最佳帧调度",
+ "perf.lowLatencyMode.label": "低延迟模式",
+ "perf.lowLatencyMode.description": "使用零帧 GS 队列，并请求与游戏帧率匹配的高刷新率显示模式，降低实体手柄到画面的延迟。推荐中高端掌机开启；如果较弱设备出现不流畅，请关闭。",
  "fixes.overrideTextureBarriers.desc": "强制开/关渲染器的纹理屏障支持。推荐 Auto。",
  "fixes.overrideTextureBarriers.label": "覆盖纹理屏障",
  "fixes.preloadFrameData.desc": "在绘制前上传上一帧数据。修复部分效果。",

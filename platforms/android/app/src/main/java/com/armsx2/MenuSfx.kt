@@ -39,8 +39,8 @@ object MenuSfx {
 
     /** UI events a sound binds to. [fileName] is the base name to use when importing a custom pack
      *  (case- and extension-insensitive); [defaultRes] is the bundled fallback clip. */
-    enum class Event(val fileName: String, val defaultRes: Int) {
-        NAV("nav", R.raw.sfx_cursor),            // controller moves the selection highlight
+    enum class Event(val fileName: String, val defaultRes: Int, val altRes: Int = 0) {
+        NAV("nav", R.raw.sfx_nav_a, R.raw.sfx_nav_b), // alternates two soft ticks as the highlight moves
         SELECT("select", R.raw.sfx_select),      // confirm / launch a game
         SUBMENU("submenu", R.raw.sfx_submenu),   // open a settings menu / sub-screen
         MENU_OPEN("menu", R.raw.sfx_menu),       // open the in-game pause menu
@@ -48,9 +48,11 @@ object MenuSfx {
         TOGGLE_ON("toggle_on", R.raw.sfx_toggle_on),
         TOGGLE_OFF("toggle_off", R.raw.sfx_toggle_off),
         RESET("reset", R.raw.sfx_reset),
-        SLIDER("slider", R.raw.sfx_cursor),      // shares the cursor tick with NAV
+        SLIDER("slider", R.raw.sfx_nav_a, R.raw.sfx_nav_b), // shares the alternating nav ticks
         SLEEP("sleep", R.raw.sfx_sleep),         // DS-lid-style chime when the device sleeps
         WAKE("wake", R.raw.sfx_wake),            // chime when waking back to the app
+        POPUP_OPEN("popup_open", R.raw.sfx_popup_open),   // a dialog/popup appears (hardcore confirm, info)
+        POPUP_CLOSE("popup_close", R.raw.sfx_popup_close), // ...and dismisses
     }
 
     /** On by default — the bundled sounds give the launcher its "personality" out of the box. */
@@ -64,6 +66,10 @@ object MenuSfx {
     private var pool: SoundPool? = null
     /** event -> loaded SoundPool sample id. */
     private val sampleIds = HashMap<Event, Int>()
+    /** Second sample for events with an [Event.altRes] (NAV/SLIDER): [play] alternates between
+     *  this and the primary so a fast walk/drag varies the tick instead of machine-gunning one. */
+    private val altSampleIds = HashMap<Event, Int>()
+    private var navAlt = false
     /** Per-event last-play time, to throttle rapid emitters (a slider drag fires onChange many
      *  times/second — without this it buzzes instead of ticking). */
     private val lastPlayMs = HashMap<Event, Long>()
@@ -144,12 +150,17 @@ object MenuSfx {
     fun play(event: Event) {
         if (!enabled.value) return
         val p = pool ?: return
-        val id = sampleIds[event] ?: return
         val now = SystemClock.uptimeMillis()
         // NAV and SLIDER fire on every highlight move / value step — a longer floor keeps a fast
         // D-pad walk or drag ticking pleasantly instead of buzzing.
         val minGap = if (event == Event.SLIDER || event == Event.NAV) 45L else 18L
         if (now - (lastPlayMs[event] ?: 0L) < minGap) return
+        // Alternate the two loaded ticks for events that have a second sample (NAV/SLIDER); flip
+        // only when we actually play (post-throttle) so the alternation follows audible ticks.
+        val id = if (altSampleIds.containsKey(event)) {
+            navAlt = !navAlt
+            (if (navAlt) altSampleIds[event] else sampleIds[event]) ?: return
+        } else (sampleIds[event] ?: return)
         lastPlayMs[event] = now
         lastPlayedMs = now
         val g = gain()
@@ -179,6 +190,9 @@ object MenuSfx {
                 val id = if (custom.length() > 0L) sp.load(custom.absolutePath, 1)
                          else sp.load(context, ev.defaultRes, 1)
                 if (id != 0) sampleIds[ev] = id
+                // Second (alternating) sample: bundled-only. A custom "nav" import overrides the
+                // primary tick and alternates against this bundled hover tick.
+                if (ev.altRes != 0) sp.load(context, ev.altRes, 1).let { if (it != 0) altSampleIds[ev] = it }
             }.onFailure { Log.w(TAG, "load failed for ${ev.fileName}", it) }
         }
         pool = sp
@@ -186,6 +200,7 @@ object MenuSfx {
 
     private fun releasePool() {
         sampleIds.clear()
+        altSampleIds.clear()
         lastPlayMs.clear()
         pool?.let { runCatching { it.release() } }
         pool = null

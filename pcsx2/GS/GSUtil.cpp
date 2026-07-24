@@ -282,6 +282,12 @@ u32 GSUtil::GetChannelMask(u32 spsm, u32 fbmsk)
 	return mask;
 }
 
+#if defined(__ANDROID__)
+// Set by the Android app from the GL_RENDERER string (NativeApp.setPreferVulkan): true steers the
+// Auto renderer resolution to Vulkan HW on Adreno; false keeps OpenGL HW (Mali/Xclipse/others).
+bool g_gs_android_prefer_vk = false;
+#endif
+
 GSRendererType GSUtil::GetPreferredRenderer()
 {
 	// Memorize the value, so we don't keep re-querying it.
@@ -298,13 +304,13 @@ GSRendererType GSUtil::GetPreferredRenderer()
 		// Use D3D device info to select renderer.
 		preferred_renderer = D3D::GetPreferredRenderer();
 #elif defined(__ANDROID__)
-		// Android: prefer OpenGL HW. Vulkan's suitability probe is fragile
-		// across the wide spread of mobile driver stacks, and falling through
-		// to SW for alpha-heavy games (FFX battles, smoke effects) is far
-		// worse than running OGL HW even on devices where Vulkan would also
-		// have worked. Users can still pick Vulkan or SW explicitly via the
-		// renderer setting; this only steers the Auto resolution.
-#if defined(ENABLE_OPENGL)
+		// Android: Auto resolves to Vulkan HW on Adreno (the tile-memory framebuffer-fetch fast
+		// path), OpenGL HW elsewhere (Mali runs GL_ARM_shader_framebuffer_fetch; Xclipse has no
+		// working VK fbfetch). The app sets g_gs_android_prefer_vk from the GL_RENDERER string
+		// before the GS starts. This only steers Auto — an explicit Vulkan/OpenGL/SW pick still wins.
+#if defined(ENABLE_VULKAN) && defined(ENABLE_OPENGL)
+		preferred_renderer = g_gs_android_prefer_vk ? GSRendererType::VK : GSRendererType::OGL;
+#elif defined(ENABLE_OPENGL)
 		preferred_renderer = GSRendererType::OGL;
 #elif defined(ENABLE_VULKAN)
 		preferred_renderer = GSRendererType::VK;

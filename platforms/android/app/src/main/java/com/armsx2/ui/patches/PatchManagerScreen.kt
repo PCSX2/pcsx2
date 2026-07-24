@@ -97,6 +97,10 @@ fun PatchManagerScreen(onBack: () -> Unit, game: GameInfo? = null, viewModel: Pa
         }
     }
     (state.error ?: state.message)?.let { message ->
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_OPEN)
+            onDispose { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_CLOSE) }
+        }
         AlertDialog(
             onDismissRequest = viewModel::dismissMessage,
             title = { Text(if (state.error == null) str("action.ok") else str("patches.dialog.patchesAndCheats")) },
@@ -174,6 +178,10 @@ fun PatchesSettingsTab(game: GameInfo? = null, viewModel: PatchManagerViewModel 
         }
     }
     (state.error ?: state.message)?.let { message ->
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_OPEN)
+            onDispose { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_CLOSE) }
+        }
         AlertDialog(
             onDismissRequest = viewModel::dismissMessage,
             title = { Text(if (state.error == null) str("action.ok") else str("patches.dialog.patchesAndCheats")) },

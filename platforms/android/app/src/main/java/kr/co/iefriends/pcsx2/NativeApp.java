@@ -132,6 +132,11 @@ public class NativeApp {
 	/** Real state of the diagnostic flag (the UI toggle must not keep its own copy). */
 	public static native boolean isEeDiffVerify();
 
+	// ADPF (PerformanceHintManager): hint the OS to clock the EE/GS threads' cores up toward
+	// the frame deadline instead of the DVFS governor under-clocking emulation. Applies live;
+	// no-op below API 33. Persisted app-side (pref "ui.adpf") and re-applied at startup.
+	public static native void setAdpfEnabled(boolean enabled);
+
 	/**
 	 * Push one EmuCore setting into the base settings layer. Mirrors
 	 * pcsx2-qt's Settings save flow — Host::SetBase*SettingValue sticks
@@ -182,6 +187,8 @@ public class NativeApp {
 	public static native String getGameSerial();
 	public static native String getGameCRC();
 	public static native float getFPS();
+	/** Current game's nominal emulated refresh (~59.94 NTSC / 50 PAL), or 0 without a VM. */
+	public static native float getNominalFrameRate();
 
 	/** Build version string from BuildVersion::GitRev — formatted as
 	 *  "GitTagHi.GitTagMid.GitTagLo.ARMSX2Build-SNAPSHOT". Used by the
@@ -624,6 +631,8 @@ public class NativeApp {
 	public static native void renderOpenGL();
 	public static native void renderVulkan();
 	public static native void renderAuto();
+	// When true, the Auto renderer resolves to Vulkan HW instead of OpenGL (set for Adreno devices).
+	public static native void setPreferVulkan(boolean enabled);
 	public static native void renderPreloading(int value);
 
 	/** Flip texture dumping on/off live (PCSX2's ToggleTextureDumping hotkey).

@@ -44,6 +44,23 @@ fun PerformanceTab(state: MutableState<Settings>) {
         modifier = Modifier
             .fillMaxWidth(),
     ) {
+        // Prominent latency preset: zero queued GS frames keeps the emulated CPU
+        // from running ahead of presentation, and the Surface requests a matching
+        // high-refresh display mode. Settings scope is supplied by InGameOverlay,
+        // so the same switch naturally supports Global and Game overrides. Off
+        // restores the small, smoother queue and Android's automatic refresh policy.
+        ToggleRow(
+            label = str("perf.lowLatencyMode.label"),
+            value = s.vsyncQueueSize == 0,
+            description = str("perf.lowLatencyMode.description"),
+        ) { enabled ->
+            apply(s.copy(vsyncQueueSize = if (enabled) 0 else 2))
+            // Apply the scoped Surface frame-rate vote immediately while the
+            // paused in-game overlay is open.
+            com.armsx2.runtime.MainActivityRuntime.surface.value
+                ?.applyFrameRatePreference()
+        }
+        SettingsDivider()
         // Speedhack profile presets. Equality against s.copy(...) means the
         // segment auto-reflects "Custom" once the user tweaks any speedhack below.
         run {
@@ -148,6 +165,26 @@ fun PerformanceTab(state: MutableState<Settings>) {
                                 ?.window?.setSustainedPerformanceMode(on)
                         }
                     }
+                },
+            )
+        }
+        // ---- CPU clock hint (ADPF) ---------------------------------------------
+        // PerformanceHintManager: reports the per-frame CPU work to the OS scheduler so it can
+        // raise the EE/GS/MTVU threads' CPU frequency toward the frame deadline, countering the
+        // DVFS governor under-clocking emulation's bursty load. EXPERIMENTAL, default OFF.
+        // No-op below API 33. Applied at launch (MainActivityRuntime) + live here.
+        run {
+            val adpf = remember { androidx.compose.runtime.mutableStateOf(com.armsx2.runtime.MainActivityRuntime.prefs.getBoolean("ui.adpf", false)) }
+            SegmentedRow(
+                label = str("perf.adpf.label"),
+                options = listOf(str("common.off"), str("common.on")),
+                selectedIndex = if (adpf.value) 1 else 0,
+                description = str("perf.adpf.description"),
+                onChange = {
+                    val on = it == 1
+                    adpf.value = on
+                    com.armsx2.runtime.MainActivityRuntime.prefs.edit { putBoolean("ui.adpf", on) }
+                    runCatching { kr.co.iefriends.pcsx2.NativeApp.setAdpfEnabled(on) }
                 },
             )
         }

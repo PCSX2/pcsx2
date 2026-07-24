@@ -177,6 +177,35 @@ object ConfigStore {
         writeBackupMirror()
     }
 
+    /**
+     * Persist capability-aware defaults only when this is genuinely a fresh install.
+     *
+     * Call after [reconcileReusedFolder]: a reused data directory gets first chance to
+     * restore its prior global settings, while an empty install starts with the
+     * zero-frame GS queue on capable devices. Low-end devices retain the smoother
+     * two-frame queue. Once persisted, this never changes an existing user's choice.
+     */
+    fun seedFreshInstallDefaults(context: android.content.Context) {
+        if (MainActivityRuntime.prefs.getString(KEY_GLOBAL, null) != null) return
+        val queueSize = if (com.armsx2.DeviceTier.isLowEnd(context)) 2 else 0
+        saveGlobal(Settings(vsyncQueueSize = queueSize))
+    }
+
+    private const val KEY_LOWLATENCY_MIGRATED = "config.migrated.lowLatencyDefault"
+    /**
+     * One-time flip of EXISTING capable installs to Low Latency (zero-frame GS queue), matching the
+     * fresh-install default seeded above. Flagged so it runs exactly once — a user who later turns it
+     * off keeps that choice. Low-end devices keep the smoother two-frame queue.
+     */
+    fun migrateLowLatencyDefault(context: android.content.Context) {
+        if (MainActivityRuntime.prefs.getBoolean(KEY_LOWLATENCY_MIGRATED, false)) return
+        MainActivityRuntime.prefs.edit().putBoolean(KEY_LOWLATENCY_MIGRATED, true).apply()
+        // Fresh installs are handled by seedFreshInstallDefaults; only touch an existing global save.
+        if (MainActivityRuntime.prefs.getString(KEY_GLOBAL, null) == null || com.armsx2.DeviceTier.isLowEnd(context)) return
+        val g = loadGlobal()
+        if (g.vsyncQueueSize != 0) saveGlobal(g.copy(vsyncQueueSize = 0))
+    }
+
     /** Load the sparse per-game override blob, or null if there are none. */
     fun loadOverrides(serial: String): JSONObject? {
         val raw = MainActivityRuntime.prefs.getString(keyForGame(serial), null) ?: return null

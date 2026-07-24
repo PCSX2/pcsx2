@@ -505,6 +505,11 @@ void Vulkan::GraphicsPipelineBuilder::AddBlendFlags(u32 flags)
 	m_blend_state.flags |= flags;
 }
 
+void Vulkan::GraphicsPipelineBuilder::AddDepthStencilFlags(u32 flags)
+{
+	m_depth_state.flags |= flags;
+}
+
 void Vulkan::GraphicsPipelineBuilder::SetBlendFlags(u32 flags)
 {
 	m_blend_state.flags = flags;

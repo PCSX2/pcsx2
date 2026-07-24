@@ -1133,6 +1133,10 @@ private fun InfoHint(title: String, message: String) {
         Text("i", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
     if (open) {
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_OPEN)
+            onDispose { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_CLOSE) }
+        }
         AlertDialog(
             onDismissRequest = { open = false },
             title = { Text(title) },

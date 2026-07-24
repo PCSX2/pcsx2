@@ -333,6 +333,7 @@ object TouchControls {
         val wanted = codes.toSet()
         val csv = macroAssignableTargets.map { it.code }.filter { it in wanted }.joinToString(",")
         MainActivityRuntime.prefs.edit { putString(KEY_MACRO_PREFIX + id.name, csv) }
+        invalidateRuntimeMacroCache()
         macroBindTick.intValue++
     }
 
@@ -347,6 +348,7 @@ object TouchControls {
 
     fun setMacroPhysicalCode(id: TouchButtonId, keycode: Int) {
         MainActivityRuntime.prefs.edit { putInt(KEY_MACRO_PHYS_PREFIX + id.name, keycode)}
+        invalidateRuntimeMacroCache()
         macroBindTick.intValue++
     }
 
@@ -436,12 +438,35 @@ object TouchControls {
 
     /** The macro a physical [keycode] triggers — only if it's bound AND has buttons
      *  configured. Checked in the gameplay key path (Main) before normal pad routing. */
+    @Volatile private var runtimeMacroMap: Map<Int, TouchButtonId>? = null
+
+    fun invalidateRuntimeMacroCache() {
+        runtimeMacroMap = null
+    }
+
+    private fun runtimeMacroMap(): Map<Int, TouchButtonId> =
+        runtimeMacroMap ?: synchronized(this) {
+            runtimeMacroMap ?: buildMap {
+                listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4)
+                    .forEach { id ->
+                        val physical = macroPhysicalCode(id)
+                        if (physical != KeyEvent.KEYCODE_UNKNOWN &&
+                            macroCodes(id).isNotEmpty() &&
+                            !containsKey(physical)
+                        ) {
+                            put(physical, id)
+                        }
+                    }
+            }.also { runtimeMacroMap = it }
+        }
+
+    fun warmRuntimeMacroCache() {
+        runtimeMacroMap()
+    }
+
     fun macroForPhysicalCode(keycode: Int): TouchButtonId? {
         if (keycode == KeyEvent.KEYCODE_UNKNOWN) return null
-        for (id in listOf(TouchButtonId.MACRO1, TouchButtonId.MACRO2, TouchButtonId.MACRO3, TouchButtonId.MACRO4)) {
-            if (macroPhysicalCode(id) == keycode && macroCodes(id).isNotEmpty()) return id
-        }
-        return null
+        return runtimeMacroMap()[keycode]
     }
 
     /** Set true once load() has run — used to avoid clobbering disk state

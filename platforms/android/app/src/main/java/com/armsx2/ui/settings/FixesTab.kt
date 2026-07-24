@@ -170,15 +170,6 @@ fun FixesTab(state: MutableState<Settings>) {
             description = str("fixes.dithering.desc"),
             onChange = { apply(s.copy(dithering = it)) },
         )
-        SettingsDivider()
-        // PCSX2's "Optimal Frame Pacing" checkbox = force the GS-thread frame queue to 0.
-        // On -> tightest pacing + lowest input latency; Off -> the default small queue (2),
-        // which is smoother on weaker devices at the cost of a little lag.
-        ToggleRow(
-            str("fixes.optimalFramePacing.label"),
-            s.vsyncQueueSize == 0,
-            description = str("fixes.optimalFramePacing.desc"),
-        ) { apply(s.copy(vsyncQueueSize = if (it) 0 else 2)) }
         }
 
         CollapsibleSection(str("fixes.section.upscaling")) {

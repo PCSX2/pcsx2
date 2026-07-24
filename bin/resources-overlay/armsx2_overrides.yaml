@@ -13,6 +13,19 @@
 # Generated from the Android GameIndex delta vs bin plus the former runtime
 # armsx2_overrides.yaml. Regenerate via devs/bmdhacks tooling; do not bulk
 # hand-edit.
+# Delta Force: Black Hawk Down — GameDB fixes (PR #401, XDarkFallenX)
+SLUS-21124:
+  gameFixes:
+    - InstantDMAHack
+    - BlitInternalFPSHack
+  gsHWFixes:
+    hwDownloadMode: 3
+SLES-53299:
+  gameFixes:
+    - InstantDMAHack
+    - BlitInternalFPSHack
+  gsHWFixes:
+    hwDownloadMode: 3
 PAPX-90522:
   clampModes:
     eeClampMode: 3

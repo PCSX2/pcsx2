@@ -230,6 +230,19 @@ Java_kr_co_iefriends_pcsx2_NativeApp_setEeDiffVerify(JNIEnv*, jclass, jboolean e
         Cpu->Reset();
 }
 
+// ADPF (PerformanceHintManager): hint the OS scheduler to raise the EE/GS/MTVU threads' CPU
+// frequency toward the frame deadline instead of the DVFS governor under-clocking emulation's
+// bursty load. Basic API-33 path — CPU scheduling only, no explicit GPU timing. Applies live;
+// no-op below API 33 (symbols dlsym'd from libandroid.so). This only records the user's request:
+// whether a session actually exists is logged from PerformanceMetrics when a game runs.
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setAdpfEnabled(JNIEnv*, jclass, jboolean enabled) {
+    PerformanceMetrics::AdpfSetEnabled(enabled == JNI_TRUE);
+    Console.WriteLnFmt("ADPF hint {} by user (session state logged separately when a game runs)",
+        enabled == JNI_TRUE ? "requested" : "disabled");
+}
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_emulog(JNIEnv *env, jclass, jstring p_msg) {
@@ -780,6 +793,12 @@ extern "C"
 JNIEXPORT jfloat JNICALL
 Java_kr_co_iefriends_pcsx2_NativeApp_getFPS(JNIEnv *env, jclass clazz) {
     return (jfloat)PerformanceMetrics::GetFPS();
+}
+
+extern "C"
+JNIEXPORT jfloat JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_getNominalFrameRate(JNIEnv*, jclass) {
+    return VMManager::HasValidVM() ? static_cast<jfloat>(VMManager::GetFrameRate()) : 0.0f;
 }
 
 extern "C"
@@ -1853,6 +1872,16 @@ Java_kr_co_iefriends_pcsx2_NativeApp_renderOpenGL(JNIEnv *env, jclass clazz) {
         // by renderSoftware.
         MTGS::SetSoftwareRendering(false, EmuConfig.GS.InterlaceMode, false);
     }
+}
+
+// Android renderer Auto steering: g_gs_android_prefer_vk (GSUtil.cpp) makes GetPreferredRenderer's
+// Auto resolution pick Vulkan HW on Adreno instead of OpenGL. The app sets it from GL_RENDERER
+// before the GS starts — a plain global (no settings interface), so it's safe to set at startup.
+extern bool g_gs_android_prefer_vk;
+extern "C"
+JNIEXPORT void JNICALL
+Java_kr_co_iefriends_pcsx2_NativeApp_setPreferVulkan(JNIEnv*, jclass, jboolean enabled) {
+    g_gs_android_prefer_vk = (enabled == JNI_TRUE);
 }
 
 extern "C"

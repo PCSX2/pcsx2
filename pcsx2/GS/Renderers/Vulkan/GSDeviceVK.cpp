@@ -730,6 +730,21 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 	{
 		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
+
+		// Tile-native ordered DEPTH feedback ("mobile ROV"): the depth aspect of ROAA is an
+		// OPTIONAL sub-feature — a driver may expose the extension and color access yet not
+		// depth. The full feature reconcile (ProcessDeviceExtensions) runs only AFTER
+		// vkCreateDevice, too late to gate this, and requesting an unsupported feature fails
+		// device creation with VK_ERROR_FEATURE_NOT_PRESENT. So probe the depth bit up-front
+		// and only request it when the device actually advertises it.
+		VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT roaa_probe = {
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
+		VkPhysicalDeviceFeatures2 roaa_probe2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, &roaa_probe};
+		vkGetPhysicalDeviceFeatures2(m_physical_device, &roaa_probe2);
+		m_optional_extensions.vk_ext_roaa_depth = (roaa_probe.rasterizationOrderDepthAttachmentAccess == VK_TRUE);
+		if (m_optional_extensions.vk_ext_roaa_depth)
+			rasterization_order_access_feature.rasterizationOrderDepthAttachmentAccess = VK_TRUE;
+
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
 	}
 	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
@@ -869,6 +884,9 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
+	// Depth ROAA is meaningless (and its subpass/pipeline flags invalid) without the color
+	// extension being usable; keep them consistent after the post-create reconcile.
+	m_optional_extensions.vk_ext_roaa_depth &= m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
 		(attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
 
@@ -897,6 +915,10 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	if (m_device_properties.vendorID == 0x13B5u && m_optional_extensions.vk_khr_driver_properties &&
 		std::string_view(m_device_driver_properties.driverInfo).find("r44p1") != std::string_view::npos)
 	{
+		// NOTE: this layout disable alone did NOT stop the DEVICE_LOST — the per-primitive barrier /
+		// fbfetch path it falls back to lowers to the same faulting in-tile silicon. The real fix
+		// forces r44p1 onto the RT-copy blend path by ALSO disabling texture_barrier; see the matching
+		// "Mali r44p1:" block where m_features.texture_barrier is resolved.
 		Console.WriteLn("Mali r44p1: disabling attachment-feedback-loop blend path (DEVICE_LOST workaround).");
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout = false;
 	}
@@ -1976,10 +1998,17 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 		num_attachments++;
 	}
 
-	const VkSubpassDescriptionFlags subpass_flags =
+	VkSubpassDescriptionFlags subpass_flags =
 		(key.color_feedback_loop && m_optional_extensions.vk_ext_rasterization_order_attachment_access) ?
 			VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT :
 			0;
+	// Mobile ordered depth feedback: on the framebuffer_fetch path the depth self-dependency above
+	// is skipped, so declare ordered depth access here to make the in-tile subpassLoad of depth
+	// coherent (mirror of the colour flag). Gated on depth_feedback (HWROV) so it never fires when
+	// the toggle is off; the pipeline built for this pass sets the matching depth-stencil flag.
+	if (key.depth_sampling && m_features.depth_feedback && m_features.framebuffer_fetch &&
+		m_optional_extensions.vk_ext_roaa_depth)
+		subpass_flags |= VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_EXT;
 	const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, num_subpass_inputs,
 		num_subpass_inputs ? input_reference.data() : nullptr, color_reference_ptr ? 1u : 0u,
 		color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};
@@ -3331,6 +3360,21 @@ bool GSDeviceVK::CheckFeatures()
 		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 		m_features.texture_barrier = true;
 	}
+	// Mali r44p1: the attachment-feedback-loop-layout disable in CreateDevice only swapped the
+	// RT-as-texture LAYOUT/descriptor — it never removed the in-tile RT self-read itself, so Maximum
+	// blending kept sampling the colour attachment IN-TILE (fbfetch/ROAA subpassLoad OR the
+	// texture-barrier feedback loop; both lower to the same faulting tile-feedback silicon) and the
+	// device kept dying (VK_ERROR_DEVICE_LOST at vkWaitForFences, Rogue Galaxy). Force texture_barrier
+	// off so accurate blending routes through the RT-COPY path (draw_rt_clone) instead — the
+	// "fbfetch needs barriers" line below (framebuffer_fetch &= texture_barrier) then also turns
+	// fbfetch off, so the RT is only ever read from a SEPARATE copy, never in-tile. Slower but stable,
+	// and strictly r44p1-only (no other GPU, not even other Mali-G615 units, is touched).
+	if (is_mali_vk && m_optional_extensions.vk_khr_driver_properties &&
+		std::string_view(m_device_driver_properties.driverInfo).find("r44p1") != std::string_view::npos)
+	{
+		Console.WriteLn("Mali r44p1: forcing RT-copy blend path (texture_barrier off) — in-tile self-read faults.");
+		m_features.texture_barrier = false;
+	}
 	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
 
@@ -3443,13 +3487,24 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
-	// Same class of issue as framebuffer_fetch above: the upstream-sync SW-Z
-	// depth feedback (depth bound as input attachment + shader depth test/write)
-	// is untested on the Android mobile GPUs and the pre-sync core never used it.
-	// Force it off on Android so the renderer takes the well-tested avoid/copy
-	// fallbacks (same as D3D11); desktop keeps canonical feedback-loop behavior.
+	// Mobile tile-native ordered depth feedback ("mobile ROV"), opt-in via HWROV. Reads the
+	// depth buffer in-tile (subpassLoad on a depth input attachment) instead of copying it to a
+	// colour RT (BeginDSAsRT), so SW-Z / DATE / alpha-test / AA1 depth passes fuse in-pass rather
+	// than round-tripping. It needs an ordered in-tile depth read: ROAA on the depth aspect on the
+	// framebuffer_fetch path (Mali-default / opt-in Adreno), or the render-pass self-dependency on
+	// the texture_barrier path. Gated behind HWROV so toggle-off is byte-for-byte the well-tested
+	// avoid/copy fallback (same as D3D11). Mali r44p1 excludes itself: texture_barrier is forced
+	// off for it above, so framebuffer_fetch is off and the ordered read is unavailable.
+	// Read at device init, so the depth half applies on game restart (HWROV's colour half is live).
+	// Desktop keeps canonical feedback-loop behaviour.
 #if defined(__ANDROID__)
-	m_features.depth_feedback = false;
+	const bool depth_feedback_ordered =
+		m_features.framebuffer_fetch ? m_optional_extensions.vk_ext_roaa_depth : m_features.texture_barrier;
+	m_features.depth_feedback = GSConfig.HWROV && m_features.feedback_loops() && depth_feedback_ordered;
+	Console.WriteLn("Mobile depth feedback (ROV): %s [HWROV=%s fbfetch=%s roaa_depth=%s texbarrier=%s]",
+		m_features.depth_feedback ? "ENABLED" : "disabled", GSConfig.HWROV ? "on" : "off",
+		m_features.framebuffer_fetch ? "yes" : "no", m_optional_extensions.vk_ext_roaa_depth ? "yes" : "no",
+		m_features.texture_barrier ? "yes" : "no");
 #else
 	m_features.depth_feedback = m_features.feedback_loops();
 #endif
@@ -6195,6 +6250,14 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	// and rast-order draws.
 	if (m_features.framebuffer_fetch && p.IsRTFeedbackLoop())
 		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
+
+	// Mobile ordered depth feedback: the render pass declares ordered depth access (subpass flag
+	// above) whenever depth is sampled on the fbfetch path with the toggle on — the pipeline bound
+	// in that pass must carry the matching depth-stencil rasterization-order flag or it is invalid.
+	// Condition mirrors the subpass flag exactly (key.depth_sampling == p.IsTestingAndSamplingDepth()).
+	if (m_features.depth_feedback && m_features.framebuffer_fetch && p.IsTestingAndSamplingDepth() &&
+		m_optional_extensions.vk_ext_roaa_depth)
+		gpb.AddDepthStencilFlags(VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_EXT);
 
 	VkPipeline pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true));
 	if (pipeline)

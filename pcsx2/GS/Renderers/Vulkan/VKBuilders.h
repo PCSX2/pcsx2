@@ -124,6 +124,7 @@ namespace Vulkan
 			                                                   VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
 		void AddBlendFlags(u32 flags);
 		void SetBlendFlags(u32 flags);
+		void AddDepthStencilFlags(u32 flags);
 		void ClearBlendAttachments();
 
 		void SetBlendConstants(float r, float g, float b, float a);

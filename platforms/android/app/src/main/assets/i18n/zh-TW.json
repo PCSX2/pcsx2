@@ -171,6 +171,8 @@
  "fixes.opt.upper": "較高",
  "fixes.optimalFramePacing.desc": "以零排隊影格執行 GS 執行緒，取得最緊湊的影格節奏與最低輸入延遲 (符合 PCSX2)。若較弱裝置搭配小影格佇列更順暢，請關閉。",
  "fixes.optimalFramePacing.label": "最佳影格節奏",
+ "perf.lowLatencyMode.label": "低延遲模式",
+ "perf.lowLatencyMode.description": "使用零影格 GS 佇列，並要求與遊戲影格率匹配的高更新率顯示模式，降低實體控制器到畫面的延遲。建議中高階掌機開啟；若較弱裝置變得不順暢，請關閉。",
  "fixes.overrideTextureBarriers.desc": "強制開／關渲染器的 texture-barrier 支援。建議使用 Auto。",
  "fixes.overrideTextureBarriers.label": "覆寫 Texture Barriers",
  "fixes.preloadFrameData.desc": "在繪製前上傳前一影格的資料。修正部分效果。",

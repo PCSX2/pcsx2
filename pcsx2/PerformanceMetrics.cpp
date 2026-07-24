@@ -16,6 +16,16 @@
 #include "MTVU.h"
 #include "VMManager.h"
 
+#if defined(__ANDROID__)
+#include <algorithm>
+#include <cstdint>
+#include <mutex>
+#include <string>
+#include <dlfcn.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
+
 static const float UPDATE_INTERVAL = 0.5f;
 
 static float s_fps = 0.0f;
@@ -54,6 +64,103 @@ static u64 s_last_gs_time = 0;
 static u64 s_last_vu_time = 0;
 static u64 s_last_capture_time = 0;
 static u64 s_last_ticks = 0;
+
+#if defined(__ANDROID__)
+// ---- Android ADPF (PerformanceHintManager) ---------------------------------
+// Tells the OS "these threads produce a frame every N ns, clock them to hit it."
+// PS2 emulation is bursty and latency-sensitive, so Android's DVFS governor
+// routinely under-clocks the CPU/GPU under it; ADPF is the purpose-built fix.
+// Symbols are resolved at runtime from libandroid.so so the app still loads on
+// pre-API-33 devices (there the session is never created — everything no-ops).
+struct AdpfApi
+{
+	void* (*getManager)() = nullptr;
+	void* (*createSession)(void*, const int32_t*, size_t, int64_t) = nullptr;
+	int (*updateTarget)(void*, int64_t) = nullptr;
+	int (*reportActual)(void*, int64_t) = nullptr;
+	void (*closeSession)(void*) = nullptr;
+	bool tried = false;
+
+	bool Available()
+	{
+		if (!tried)
+		{
+			tried = true;
+			if (void* lib = dlopen("libandroid.so", RTLD_NOW | RTLD_LOCAL))
+			{
+				getManager = reinterpret_cast<decltype(getManager)>(dlsym(lib, "APerformanceHint_getManager"));
+				createSession = reinterpret_cast<decltype(createSession)>(dlsym(lib, "APerformanceHint_createSession"));
+				updateTarget = reinterpret_cast<decltype(updateTarget)>(dlsym(lib, "APerformanceHint_updateTargetWorkDuration"));
+				reportActual = reinterpret_cast<decltype(reportActual)>(dlsym(lib, "APerformanceHint_reportActualWorkDuration"));
+				closeSession = reinterpret_cast<decltype(closeSession)>(dlsym(lib, "APerformanceHint_closeSession"));
+			}
+		}
+		return getManager && createSession && updateTarget && reportActual && closeSession;
+	}
+};
+
+static std::mutex s_adpf_mutex;
+static AdpfApi s_adpf;
+static std::vector<int32_t> s_adpf_tids;
+static void* s_adpf_manager = nullptr;
+static void* s_adpf_session = nullptr;
+static bool s_adpf_enabled = false; // experimental, opt-in
+static bool s_adpf_create_failed = false;
+static bool s_adpf_report_warned = false;
+static bool s_adpf_paused = false; // reporting suspended (unlimited/vsync/interrupted), edge-logged
+static int64_t s_adpf_target_ns = 0;
+static Common::Timer::Value s_adpf_work_start = 0; // start of the current active-work period (0 = none)
+
+// The frame deadline in ns: emulated refresh scaled by the limiter's target speed, so turbo /
+// slow-motion move the deadline correctly. Returns 0 when there is no finite deadline (Unlimited,
+// GetTargetSpeed()==0), so the caller pauses ADPF rather than feeding a bogus/inf target.
+static int64_t AdpfTargetNs()
+{
+	const double fps = VMManager::GetFrameRate() * static_cast<double>(VMManager::GetTargetSpeed());
+	return (fps > 1.0) ? static_cast<int64_t>(1.0e9 / fps) : 0;
+}
+
+// Must hold s_adpf_mutex. Creates the session once a perf thread has registered and a finite
+// deadline exists, and LOGS the real outcome — so "ACTIVE" means a session genuinely exists,
+// not merely that the user flipped the toggle.
+static void AdpfEnsureSession()
+{
+	if (s_adpf_session || s_adpf_create_failed || !s_adpf_enabled || s_adpf_tids.empty())
+		return;
+	if (!s_adpf.Available())
+	{
+		s_adpf_create_failed = true; // pre-API-33 / no libandroid; stop retrying
+		Console.WriteLn("ADPF: PerformanceHintManager symbols unavailable (needs Android 13+) — clock hint inactive.");
+		return;
+	}
+	if (!s_adpf_manager)
+		s_adpf_manager = s_adpf.getManager();
+	if (!s_adpf_manager)
+	{
+		s_adpf_create_failed = true;
+		Console.WriteLn("ADPF: getManager() returned null — clock hint inactive.");
+		return;
+	}
+	const int64_t target = AdpfTargetNs();
+	if (target <= 0)
+		return; // no finite deadline yet (Unlimited / VM not paced); retry once one exists
+	s_adpf_session = s_adpf.createSession(s_adpf_manager, s_adpf_tids.data(), s_adpf_tids.size(), target);
+	if (!s_adpf_session)
+	{
+		s_adpf_create_failed = true;
+		Console.Warning("ADPF: createSession() over %zu threads failed — clock hint inactive.", s_adpf_tids.size());
+		return;
+	}
+	s_adpf_target_ns = target;
+	s_adpf_report_warned = false;
+	s_adpf_paused = false;
+	std::string tid_list;
+	for (size_t i = 0; i < s_adpf_tids.size(); i++)
+		tid_list += (i ? "," : "") + std::to_string(s_adpf_tids[i]);
+	Console.WriteLn("ADPF: session ACTIVE over %zu threads [tids %s], deadline %.2f ms.", s_adpf_tids.size(),
+		tid_list.c_str(), static_cast<double>(target) / 1.0e6);
+}
+#endif // __ANDROID__
 
 static double s_cpu_thread_usage = 0.0f;
 static double s_cpu_thread_time = 0.0f;
@@ -288,6 +395,127 @@ void PerformanceMetrics::SetCPUThread(Threading::ThreadHandle thread)
 {
 	s_last_cpu_time = thread ? thread.GetCPUTime() : 0;
 	s_cpu_thread_handle = std::move(thread);
+}
+
+void PerformanceMetrics::AdpfRegisterCallingThread()
+{
+#if defined(__ANDROID__)
+	const int32_t tid = static_cast<int32_t>(syscall(SYS_gettid));
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	if (std::find(s_adpf_tids.begin(), s_adpf_tids.end(), tid) != s_adpf_tids.end())
+		return;
+	s_adpf_tids.push_back(tid);
+	// The session's thread list is fixed at creation, so a newly-registered thread
+	// means the current session is missing it — drop it and let the next frame
+	// recreate it over the full set.
+	if (s_adpf_session)
+	{
+		s_adpf.closeSession(s_adpf_session);
+		s_adpf_session = nullptr;
+	}
+	s_adpf_create_failed = false;
+#endif
+}
+
+void PerformanceMetrics::AdpfSetEnabled(bool enabled)
+{
+#if defined(__ANDROID__)
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	if (s_adpf_enabled == enabled)
+		return;
+	s_adpf_enabled = enabled;
+	if (!enabled && s_adpf_session)
+	{
+		s_adpf.closeSession(s_adpf_session);
+		s_adpf_session = nullptr;
+	}
+	if (enabled)
+		s_adpf_create_failed = false; // allow the next frame to recreate
+#else
+	(void)enabled;
+#endif
+}
+
+void PerformanceMetrics::AdpfShutdown()
+{
+#if defined(__ANDROID__)
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	if (s_adpf_session)
+	{
+		s_adpf.closeSession(s_adpf_session);
+		s_adpf_session = nullptr;
+	}
+	s_adpf_tids.clear();
+	s_adpf_create_failed = false;
+	s_adpf_work_start = 0;
+#endif
+}
+
+void PerformanceMetrics::AdpfOnFrameWorkComplete()
+{
+#if defined(__ANDROID__)
+	// Sampled at Throttle() entry — the instant the frame's active CPU work finished, before the
+	// limiter sleep — so (now - work_start) excludes the deliberate limiter sleep. It is NOT pure
+	// CPU compute: the EE can still block behind a full MTGS queue that is itself stalled on
+	// presentation, so some present-wait can leak in. Acceptable for a first experiment, and a far
+	// better approximation of ADPF's "last workload cycle" than the present interval.
+	const Common::Timer::Value now = Common::Timer::GetCurrentValue();
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	if (!s_adpf_enabled)
+		return;
+	AdpfEnsureSession();
+	if (!s_adpf_session || s_adpf_work_start == 0)
+		return;
+	const int64_t target = AdpfTargetNs();
+	if (target > 0 && target != s_adpf_target_ns)
+	{
+		s_adpf.updateTarget(s_adpf_session, target);
+		s_adpf_target_ns = target;
+	}
+	const int64_t work_ns = static_cast<int64_t>(Common::Timer::ConvertValueToSeconds(now - s_adpf_work_start) * 1.0e9);
+	// Drop absurd outliers (savestate load, renderer recreation, debugger stall): a period several
+	// times the deadline is not a real frame and would spam a spurious max-frequency demand.
+	if (work_ns <= 0 || (s_adpf_target_ns > 0 && work_ns > s_adpf_target_ns * 4))
+		return;
+	if (s_adpf_paused)
+	{
+		Console.WriteLn("ADPF: reporting resumed.");
+		s_adpf_paused = false;
+	}
+	const int ret = s_adpf.reportActual(s_adpf_session, work_ns);
+	if (ret != 0 && !s_adpf_report_warned)
+	{
+		s_adpf_report_warned = true;
+		Console.Warning("ADPF: reportActualWorkDuration returned %d — driver is ignoring the hint.", ret);
+	}
+#endif
+}
+
+void PerformanceMetrics::AdpfBeginFrameWork()
+{
+#if defined(__ANDROID__)
+	// Opens a work period at the post-sleep instant (Throttle exit), so the deliberate limiter
+	// sleep is excluded from the next reported duration.
+	const Common::Timer::Value now = Common::Timer::GetCurrentValue();
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	s_adpf_work_start = now;
+#endif
+}
+
+void PerformanceMetrics::AdpfPauseFrameWork()
+{
+#if defined(__ANDROID__)
+	// Not frame-limiting (unlimited / host-vsync / interrupted) — invalidate the period so no
+	// wall-time-with-wait duration is reported, and edge-log so a tester never sees "ACTIVE" while
+	// nothing is actually being submitted.
+	std::lock_guard<std::mutex> lock(s_adpf_mutex);
+	if (s_adpf_session && !s_adpf_paused)
+	{
+		Console.WriteLn("ADPF: reporting paused (unlimited / host-vsync / interrupted) — no durations submitted.");
+		s_adpf_paused = true;
+	}
+	s_adpf_work_start = 0;
+#endif
 }
 
 void PerformanceMetrics::SetGSSWThreadCount(u32 count)

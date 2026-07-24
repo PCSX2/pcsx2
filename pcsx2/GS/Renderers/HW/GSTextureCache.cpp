@@ -15,6 +15,8 @@
 #include "common/HashCombine.h"
 #include "common/SmallString.h"
 
+#include <atomic>
+
 #include "fmt/format.h"
 
 #include <cinttypes>
@@ -430,7 +432,14 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				// The width is mismatched to the page.
 				if (!is_invalidation && GSConfig.UserHacks_TextureInsideRt < GSTextureInRtMode::MergeTargets)
 				{
-					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSRendererHW::GetInstance()->s_n);
+					// Rate-limited: on render-target churn this fires thousands of times/second (Rogue Galaxy:
+						// 5000+ per session) and a synchronous log per hit is itself a cost that drowns the log.
+						// Lock-free geometric backoff — atomic, not a plain static, since the TC can be reached
+						// off the GS back thread under pipelined GS. Each emitted line carries the running total.
+						static std::atomic<u64> s_uneven_hits{0};
+						const u64 uneven_n = s_uneven_hits.fetch_add(1, std::memory_order_relaxed) + 1;
+						if ((uneven_n & (uneven_n - 1)) == 0)
+							DevCon.Warning("Uneven pages mess up (#%llu) sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", uneven_n, sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSRendererHW::GetInstance()->s_n);
 					return GSVector4i::zero();
 				}
 
@@ -573,7 +582,11 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				// Results won't be square, if it's not invalidation, it's a texture, which is problematic to translate, so let's not (FIFA 2005).
 				if (!is_invalidation)
 				{
-					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d", sbp, tbp, src_pgw, dst_pgw);
+					// Rate-limited (see the sibling site above): lock-free geometric backoff.
+					static std::atomic<u64> s_uneven_hits2{0};
+					const u64 n = s_uneven_hits2.fetch_add(1, std::memory_order_relaxed) + 1;
+					if ((n & (n - 1)) == 0)
+						DevCon.Warning("Uneven pages mess up (#%llu) sbp %x dbp %x spgw %d dpgw %d", n, sbp, tbp, src_pgw, dst_pgw);
 					return GSVector4i::zero();
 				}
 

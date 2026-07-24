@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Gif_Unit.h"
 #include "MTVU.h"
+#include "PerformanceMetrics.h"
 #include "VMManager.h"
 #include "Vif_Dynarec.h"
 
@@ -128,6 +129,7 @@ void VU_Thread::Reset()
 void VU_Thread::ExecuteRingBuffer()
 {
 	Threading::SetNameOfCurrentThread("MTVU");
+	PerformanceMetrics::AdpfRegisterCallingThread(); // ADPF: MTVU is often the limiting CPU thread (Android)
 
 	for (;;)
 	{

@@ -147,3 +147,7 @@ CMakeSettings.json
 
 # Achievement sounds are shipped assets, not build output — keep them tracked
 !platforms/android/app/src/main/assets/resources/sounds/**/*.wav
+
+# RetroAchievements client User-Agent secret — the real pinned version is injected
+# from this header at build time and must NEVER be committed (spoofing prevention).
+ra_ua_secret.h

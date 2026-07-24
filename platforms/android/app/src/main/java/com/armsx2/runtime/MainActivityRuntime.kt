@@ -40,10 +40,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.nativeKeyCode
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -591,6 +587,9 @@ open class MainActivityRuntime : ComponentActivity() {
             // serial-less ELF/homebrew) so ELF per-game settings survive a reboot
             // instead of falling back to global (issue #253).
             var resolved = com.armsx2.config.ConfigStore.resolveForGame(currentGame.value?.settingsKey)
+            // Build immutable input maps before the VM starts so the first ABXY
+            // edge never pays SharedPreferences parsing on the UI thread.
+            ControllerMappings.warmRuntimeCaches()
             // Per-game memory cards (NetherSX2-style): when the global toggle is
             // on, point Slot 1 at a serial-named card (the core auto-creates +
             // formats it at boot) — but ONLY for games still on the factory-default
@@ -1515,6 +1514,20 @@ open class MainActivityRuntime : ComponentActivity() {
         // settings from the in-folder mirror, or seed from the folder's old PCSX2-Android.ini,
         // BEFORE the core loads/rewrites it. No-op (guarded) for anyone already on the new UI.
         runCatching { com.armsx2.config.ConfigStore.reconcileReusedFolder() }
+        // A genuinely empty install gets capability-aware frame-queue defaults only
+        // after reused-folder recovery had its chance. Capable handhelds start in
+        // low-latency mode (queue 0); low-end devices retain the smoother queue 2.
+        runCatching { com.armsx2.config.ConfigStore.seedFreshInstallDefaults(applicationContext) }
+        // One-time: existing capable devices also get the Low Latency default (matches fresh installs).
+        runCatching { com.armsx2.config.ConfigStore.migrateLowLatencyDefault(applicationContext) }
+        // Steer the renderer's Auto resolution to Vulkan HW on Adreno (tile-memory framebuffer-fetch
+        // fast path); Mali/others stay on OpenGL. Sets a native flag GSUtil::GetPreferredRenderer reads
+        // before the GS starts, so an explicit GL/SW pick still wins. Re-asserted each launch.
+        runCatching {
+            kr.co.iefriends.pcsx2.NativeApp.setPreferVulkan(
+                com.armsx2.GpuInfo.rendererName()?.contains("Adreno", ignoreCase = true) == true
+            )
+        }
 
         // Default resources — shaders, GameIndex, fonts, fullscreenui,
         // patches.zip, controller DB. assetCopyRoot resolves to the
@@ -1801,6 +1814,7 @@ open class MainActivityRuntime : ComponentActivity() {
             }
         }
         prefs = applicationContext.getSharedPreferences("ARMSX2", MODE_PRIVATE)
+        ControllerMappings.installRuntimeCacheInvalidation()
         com.armsx2.i18n.I18n.init(applicationContext)
         applyEmulationOrientation()
         com.armsx2.CoverArtStyle.load()
@@ -1914,6 +1928,10 @@ open class MainActivityRuntime : ComponentActivity() {
             prefs.getBoolean("ui.sustainedPerf", false)) {
             runCatching { window.setSustainedPerformanceMode(true) }
         }
+
+        // ADPF CPU clock hint (experimental, default OFF): re-assert the saved state to native
+        // before any game runs. Referencing NativeApp also loads the native lib (static init).
+        runCatching { kr.co.iefriends.pcsx2.NativeApp.setAdpfEnabled(prefs.getBoolean("ui.adpf", false)) }
 
         // Defer asset copy + emucore init until setup is complete. On the
         // first-ever run, `systemDir` isn't picked yet at onCreate time —
@@ -2078,13 +2096,24 @@ open class MainActivityRuntime : ComponentActivity() {
                 androidx.compose.runtime.LaunchedEffect(currentGame.value?.settingsKey) {
                     instance?.applyEmulationOrientation()
                 }
+                // Keep Android's high-refresh vote scoped to an active VM. PAUSED
+                // remains active because the in-game overlay is also where users
+                // toggle Low Latency Mode; clearing/re-requesting on every overlay
+                // open would cause needless display-mode churn.
+                androidx.compose.runtime.LaunchedEffect(
+                    eState.value, currentGame.value?.settingsKey, surface.value
+                ) {
+                    val gameActive =
+                        eState.value == EmuState.RUNNING || eState.value == EmuState.PAUSED
+                    surface.value?.setGameActive(gameActive)
+                }
                 WindowImpl.Window {
                     if (surface.value != null) {
-                        // Pull Compose focus onto the surface as soon as it's
-                        // composed AND whenever a game starts running. Without
-                        // this the AndroidView starts un-focused, so onKeyEvent
-                        // silently drops gamepad input until the user taps the
-                        // screen / presses A to grant focus by hand.
+                        // Keep focus on the SurfaceView while gameplay is active.
+                        // Activity-level key dispatch no longer depends on Compose
+                        // focus, but the surface still needs focus for IME/pointer
+                        // interoperability and to keep frontend focus transitions
+                        // deterministic.
                         //
                         // Keying only on surface.value (which is created once at
                         // onCreate and never reassigned) meant focus was grabbed
@@ -2194,48 +2223,6 @@ open class MainActivityRuntime : ComponentActivity() {
                                         }
                                     },
                                 )
-                            }
-                            .onKeyEvent { event ->
-                                if (eState.value != EmuState.RUNNING)
-                                    return@onKeyEvent false
-                                // Note: the physical menu button is handled in
-                                // MainActivityRuntime.dispatchKeyEvent (so it can catch BACK /
-                                // back-paddle keys); it never reaches here.
-                                // Local co-op: route by the originating device — first
-                                // controller = P1 (port 0), next = P2 (port 1) — and
-                                // resolve the bind against THAT player's mapping.
-                                val port = com.armsx2.input.PadRouter.portForDevice(event.nativeKeyEvent.deviceId)
-                                // Physical-controller macro: a bound button fires the
-                                // macro's whole button set at once (down on press, up on
-                                // release), reusing the macro slots the on-screen M1-M4
-                                // buttons use. Checked before normal pad routing so a
-                                // macro overrides that button's regular mapping.
-                                val macro = com.armsx2.ui.touch.TouchControls.macroForPhysicalCode(event.key.nativeKeyCode)
-                                if (macro != null) {
-                                    // Through fireMacro so a macro with a Frequency set
-                                    // TOGGLES its button set while held (turbo) instead of
-                                    // just holding it. Keyed per port, so P1 and P2 can
-                                    // hold the same macro without cancelling each other.
-                                    com.armsx2.ui.touch.TouchControls.fireMacro(
-                                        macro, "pad$port", event.type == KeyEventType.KeyDown,
-                                    ) { code, pressed ->
-                                        sendKeyAction(
-                                            if (pressed) KeyEventType.KeyDown else KeyEventType.KeyUp,
-                                            code, port,
-                                        )
-                                    }
-                                    return@onKeyEvent true
-                                }
-                                val target = ControllerMappings.targetForPhysical(event.key.nativeKeyCode, port)
-                                    ?: return@onKeyEvent false
-                                // Turbo/rapid-fire: while the physical button is held, the
-                                // PS2 button auto-presses at ~15 Hz (see handleTurbo).
-                                if (ControllerMappings.isTurboTarget(target, port)) {
-                                    handleTurbo(event.key.nativeKeyCode, event.type, target, port)
-                                    return@onKeyEvent true
-                                }
-                                sendKeyAction(event.type, target, port)
-                                true
                             })
                     }
 
@@ -2428,10 +2415,8 @@ open class MainActivityRuntime : ComponentActivity() {
             // If the user bound BACK to a hotkey (e.g. Menu), that binding WINS — do
             // not hijack it for hold-to-exit. (Regression fix: hold-back consumed
             // BACK before the hotkey dispatch below, killing a BACK-bound Menu key.)
-            val backBoundToHotkey = ControllerMappings.SysHotkey.values().any {
-                ControllerMappings.hotkeyCode(it) == KeyEvent.KEYCODE_BACK ||
-                    ControllerMappings.hotkeyModCode(it) == KeyEvent.KEYCODE_BACK
-            }
+            val backBoundToHotkey =
+                ControllerMappings.isHotkeyKeyOrModifier(KeyEvent.KEYCODE_BACK)
             val inGame = eState.value == EmuState.RUNNING &&
                 !WindowImpl.overlayVisible.value && !WindowImpl.showLibrary.value
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0)
@@ -2473,9 +2458,7 @@ open class MainActivityRuntime : ComponentActivity() {
         // Single-button binding only (combos keep their normal hotkey behaviour).
         run {
             val pm = ControllerMappings.SysHotkey.PRESSURE_MOD
-            val pmKey = ControllerMappings.hotkeyCode(pm)
-            if (pmKey != KeyEvent.KEYCODE_UNKNOWN && kc == pmKey &&
-                ControllerMappings.hotkeyModCode(pm) == KeyEvent.KEYCODE_UNKNOWN) {
+            if (ControllerMappings.matchesSingleHotkey(pm, kc)) {
                 when (event.action) {
                     KeyEvent.ACTION_DOWN -> com.armsx2.ui.touch.TouchControls.pressureModifierHeld.value = true
                     KeyEvent.ACTION_UP -> com.armsx2.ui.touch.TouchControls.pressureModifierHeld.value = false
@@ -2889,7 +2872,46 @@ open class MainActivityRuntime : ComponentActivity() {
                 null -> {}
             }
         }
+        // Gameplay buttons take the shortest path after every higher-priority
+        // frontend/capture/hotkey owner has declined them. This avoids routing
+        // ABXY through View -> Compose -> onKeyEvent before the JNI pad write.
+        if (dispatchGameplayKey(event)) return true
         return super.dispatchKeyEvent(event)
+    }
+
+    /** Route one gameplay key edge directly from Activity dispatch to the native pad. */
+    private fun dispatchGameplayKey(event: KeyEvent): Boolean {
+        if (eState.value != EmuState.RUNNING || controllerDrivesFrontend()) return false
+        val type = when (event.action) {
+            KeyEvent.ACTION_DOWN -> KeyEventType.KeyDown
+            KeyEvent.ACTION_UP -> KeyEventType.KeyUp
+            else -> return false
+        }
+        val physicalCode = event.keyCode
+        if (physicalCode == KeyEvent.KEYCODE_UNKNOWN) return false
+
+        // Local co-op routing and macro precedence exactly match the old Compose
+        // onKeyEvent path; only the dispatch layer has changed.
+        val port = com.armsx2.input.PadRouter.portForDevice(event.deviceId)
+        com.armsx2.ui.touch.TouchControls.macroForPhysicalCode(physicalCode)?.let { macro ->
+            com.armsx2.ui.touch.TouchControls.fireMacro(
+                macro, "pad$port", type == KeyEventType.KeyDown,
+            ) { code, pressed ->
+                sendKeyAction(
+                    if (pressed) KeyEventType.KeyDown else KeyEventType.KeyUp,
+                    code, port,
+                )
+            }
+            return true
+        }
+
+        val target = ControllerMappings.targetForPhysical(physicalCode, port) ?: return false
+        if (ControllerMappings.isTurboTarget(target, port)) {
+            handleTurbo(physicalCode, type, target, port)
+        } else {
+            sendKeyAction(type, target, port)
+        }
+        return true
     }
 
     /** #254: forward a hardware keyboard KeyEvent to the emulated USB keyboard.
@@ -3107,7 +3129,7 @@ open class MainActivityRuntime : ComponentActivity() {
             dispatchDpadCombined(ev, port)
             // Analog triggers (L2/R2). Xbox / DualShock / most modern pads
             // report these as 0..1 motion-axis values, not Key.ButtonL2/R2
-            // key events, so the onKeyEvent path above never sees them.
+            // key events, so the direct key path never sees them.
             // AXIS_LTRIGGER/RTRIGGER is the modern path; some controllers
             // (older Moga, certain BT mappings) report via AXIS_BRAKE/GAS
             // instead — take the max so we handle whichever the device
@@ -3232,12 +3254,14 @@ open class MainActivityRuntime : ComponentActivity() {
     // Dumps EXACTLY what a physical controller emits so a reporter can capture
     // (adb logcat -s ARMSX2_JOYCON) what e.g. a Nintendo Joy-Con d-pad actually
     // sends on their Android build — the unknown that blocks the real remap fix.
-    // Pure logging, zero behaviour change. Default-ON for this diagnostic build;
-    // silence with prefs "debug.joyconLog"=false (no UI needed). Full device info
+    // Pure logging, zero behaviour change. Release builds never enable this path.
+    // Debug builds default OFF and can opt in with prefs "debug.joyconLog"=true.
+    // Full device info
     // is logged once per deviceId; the per-event axis dump is throttled + non-zero.
     private val joyconLoggedDevices = HashSet<Int>()
     private var lastJoyconMotionLogMs = 0L
-    private fun joyconLogEnabled(): Boolean = prefs.getBoolean("debug.joyconLog", true)
+    private fun joyconLogEnabled(): Boolean =
+        BuildConfig.DEBUG && prefs.getBoolean("debug.joyconLog", false)
 
     /** Emit a diagnostic line to BOTH logcat (adb `-s ARMSX2_JOYCON`) AND the emulog (in-app
      *  Save Log — so a handheld tester with no PC can capture it). NativeApp.emulog no-ops

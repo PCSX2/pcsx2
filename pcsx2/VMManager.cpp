@@ -382,6 +382,7 @@ bool VMManager::Internal::CPUThreadInitialize()
 {
 	Threading::SetNameOfCurrentThread("CPU Thread");
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle::GetForCallingThread());
+	PerformanceMetrics::AdpfRegisterCallingThread(); // ADPF: hint the EE thread's core (Android)
 
 	// On Win32, we have a bunch of things which use COM (e.g. SDL, XAudio2, etc).
 	// We need to initialize COM first, before anything else does, because otherwise they might
@@ -460,6 +461,7 @@ void VMManager::Internal::CPUThreadShutdown()
 	WaitForSaveStateFlush();
 
 	PerformanceMetrics::SetCPUThread(Threading::ThreadHandle());
+	PerformanceMetrics::AdpfShutdown(); // ADPF: close the hint session on VM shutdown (Android)
 
 	USBshutdown();
 
@@ -2334,7 +2336,18 @@ void VMManager::ResetFrameLimiter()
 void VMManager::Internal::Throttle()
 {
 	if (s_target_speed == 0.0f || s_use_vsync_for_timing)
+	{
+		// Not frame-limiting this frame (unlimited / host-vsync pacing): invalidate the ADPF work
+		// period so no wall-time-with-wait duration is submitted.
+		PerformanceMetrics::AdpfPauseFrameWork();
 		return;
+	}
+
+	// ADPF: report the active-work period that just ended (before the limiter sleep below), then
+	// re-open a new period AFTER the sleep. The ScopedGuard fires on EVERY exit past here —
+	// including the missed-frame early return — so measurement survives the can't-hit-target case.
+	PerformanceMetrics::AdpfOnFrameWorkComplete();
+	ScopedGuard adpf_begin_next_work([]() { PerformanceMetrics::AdpfBeginFrameWork(); });
 
 	const u64 uExpectedEnd =
 		s_limiter_frame_start +

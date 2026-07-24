@@ -1,5 +1,6 @@
 package com.armsx2.input
 
+import android.content.SharedPreferences
 import android.view.KeyEvent
 import androidx.compose.runtime.mutableStateOf
 import com.armsx2.runtime.MainActivityRuntime
@@ -230,10 +231,12 @@ object ControllerMappings {
     // longer sends digital d-pad presses in-game. Same Global/per-game scope as the
     // axis corrections above (it appears on the same per-game Pad screen).
     private const val KEY_DPAD_AS_LSTICK = "pad.dpadAsLeftStick"
-    fun dpadAsLeftStick(): Boolean = resolveBoolean(KEY_DPAD_AS_LSTICK, false) // runtime (per-game aware)
+    fun dpadAsLeftStick(): Boolean = runtimeBindings().dpadAsLeftStick // runtime (per-game aware)
     fun dpadAsLeftStickScope(serial: String?): Boolean = scopedBoolean(KEY_DPAD_AS_LSTICK, serial, false)
-    fun setDpadAsLeftStick(on: Boolean, serial: String? = null) =
+    fun setDpadAsLeftStick(on: Boolean, serial: String? = null) {
         MainActivityRuntime.prefs.edit { putBoolean(scopedKey(KEY_DPAD_AS_LSTICK, serial), on) }
+        invalidateRuntimeCaches()
+    }
 
     // ---- Analog stick response shaping (physical sticks → PS2 analog) ----
     // Sensitivity = a linear output scale. Acceleration = an exponential response
@@ -572,6 +575,7 @@ object ControllerMappings {
                 ), physicalKeyCode
             )
         }
+        invalidateRuntimeCaches()
     }
 
     /** Unbind a pad button: store KEYCODE_UNKNOWN — the same "unbound" sentinel the
@@ -581,6 +585,7 @@ object ControllerMappings {
      *  [serial], unbinds the button for that game only (per-game override). */
     fun clearAction(action: Action, player: Int = 0, serial: String? = null) {
         MainActivityRuntime.prefs.edit().putInt(scopedKey(playerPrefix(player) + KEY_PREFIX + action.id, serial), KeyEvent.KEYCODE_UNKNOWN).apply()
+        invalidateRuntimeCaches()
     }
 
     /** Reset button binds for [player]. serial=null clears the GLOBAL binds; a
@@ -589,6 +594,7 @@ object ControllerMappings {
         val edit = MainActivityRuntime.prefs.edit()
         actions.forEach { edit.remove(scopedKey(playerPrefix(player) + KEY_PREFIX + it.id, serial)) }
         edit.apply()
+        invalidateRuntimeCaches()
     }
 
     /** Clear ALL per-game controller overrides for [serial] / [player] — button
@@ -604,6 +610,7 @@ object ControllerMappings {
             for (dir in StickDir.values())
                 edit.remove(gameKey(serial, customKey(left, dir, player)))
         edit.apply()
+        invalidateRuntimeCaches()
         stickBindTick.value++
     }
 
@@ -668,6 +675,7 @@ object ControllerMappings {
             }
         }
         edit.apply()
+        invalidateRuntimeCaches()
         stickBindTick.value++
     }
 
@@ -799,7 +807,7 @@ object ControllerMappings {
         // Unbound actions store KEYCODE_UNKNOWN; never let a stray UNKNOWN event match
         // one (it would otherwise map to the first unbound action's PS2 button).
         if (physicalKeyCode == KeyEvent.KEYCODE_UNKNOWN) return null
-        return actions.firstOrNull { physicalFor(it, player) == physicalKeyCode }?.targetKeyCode
+        return runtimeBindings().targets[if (player == P2) P2 else P1][physicalKeyCode]
     }
 
     // ---- Turbo / rapid-fire (per PS2 button, per player) -------------------
@@ -811,13 +819,14 @@ object ControllerMappings {
     private fun turboKey(action: Action, player: Int) = playerPrefix(player) + TURBO_PREFIX + action.id
     fun isTurboAction(action: Action, player: Int = 0): Boolean =
         MainActivityRuntime.prefs.getBoolean(turboKey(action, player), false)
-    fun setTurboAction(action: Action, player: Int, on: Boolean) =
+    fun setTurboAction(action: Action, player: Int, on: Boolean) {
         MainActivityRuntime.prefs.edit { putBoolean(turboKey(action, player), on) }
+        invalidateRuntimeCaches()
+    }
 
     /** True when a physical button's PS2 target [targetKeyCode] is turbo-flagged. */
     fun isTurboTarget(targetKeyCode: Int, player: Int = 0): Boolean {
-        val action = actions.firstOrNull { it.targetKeyCode == targetKeyCode } ?: return false
-        return isTurboAction(action, player)
+        return targetKeyCode in runtimeBindings().turboTargets[if (player == P2) P2 else P1]
     }
 
     // ---- System hotkeys (menu / quick save / quick load) -----------------
@@ -873,6 +882,105 @@ object ControllerMappings {
     // pressed) under prefKey + MOD_SUFFIX. UNKNOWN modifier = single-button.
     private const val MOD_SUFFIX = ".mod"
 
+    private data class RuntimeHotkey(
+        val action: SysHotkey,
+        val keyCode: Int,
+        val modifierCode: Int,
+    )
+
+    /**
+     * Immutable snapshot used by the gameplay input path. Building it may read
+     * SharedPreferences, but key/motion events only perform map/set lookups.
+     * Slot 1 has P2 mappings; every other unified slot intentionally reuses P1.
+     */
+    private data class RuntimeBindings(
+        val serial: String?,
+        val targets: Array<Map<Int, Int>>,
+        val turboTargets: Array<Set<Int>>,
+        val hotkeys: List<RuntimeHotkey>,
+        val dpadAsLeftStick: Boolean,
+    )
+
+    @Volatile private var runtimeBindingsCache: RuntimeBindings? = null
+    private var runtimeCacheListener: SharedPreferences.OnSharedPreferenceChangeListener? = null
+
+    private fun buildRuntimeBindings(serial: String?): RuntimeBindings {
+        val targets = Array(2) { player ->
+            buildMap {
+                // Preserve actions.firstOrNull semantics when duplicate physical
+                // bindings exist: the first action in display order wins.
+                actions.forEach { action ->
+                    val physical = physicalFor(action, player)
+                    if (physical != KeyEvent.KEYCODE_UNKNOWN && !containsKey(physical))
+                        put(physical, action.targetKeyCode)
+                }
+            }
+        }
+        val turboTargets = Array(2) { player ->
+            actions.asSequence()
+                .filter { isTurboAction(it, player) }
+                .map { it.targetKeyCode }
+                .toSet()
+        }
+        val hotkeys = SysHotkey.values().map { action ->
+            RuntimeHotkey(action, hotkeyCode(action), hotkeyModCode(action))
+        }
+        return RuntimeBindings(
+            serial,
+            targets,
+            turboTargets,
+            hotkeys,
+            resolveBoolean(KEY_DPAD_AS_LSTICK, false),
+        )
+    }
+
+    private fun runtimeBindings(): RuntimeBindings {
+        val serial = runtimeSerial()
+        runtimeBindingsCache?.takeIf { it.serial == serial }?.let { return it }
+        return synchronized(this) {
+            runtimeBindingsCache?.takeIf { it.serial == serial }
+                ?: buildRuntimeBindings(serial).also { runtimeBindingsCache = it }
+        }
+    }
+
+    fun invalidateRuntimeCaches() {
+        runtimeBindingsCache = null
+    }
+
+    /** Build the snapshot before gameplay so the first button press does no preference I/O. */
+    fun warmRuntimeCaches() {
+        runtimeBindings()
+        com.armsx2.ui.touch.TouchControls.warmRuntimeMacroCache()
+    }
+
+    /**
+     * Register once after MainActivityRuntime.prefs is initialized. Only binding
+     * keys invalidate the snapshot, so unrelated preferences such as play-time
+     * counters do not force rebuilds during gameplay.
+     */
+    fun installRuntimeCacheInvalidation() {
+        if (runtimeCacheListener != null) return
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            val changedKey = key ?: ""
+            val padMappingChanged =
+                changedKey.startsWith("pad.map.") ||
+                    changedKey.startsWith("p2.pad.map.") ||
+                    (changedKey.startsWith("game.") && changedKey.contains(".pad.map.")) ||
+                    changedKey.startsWith("pad.turbo.") ||
+                    changedKey.startsWith("p2.pad.turbo.") ||
+                    changedKey == KEY_DPAD_AS_LSTICK ||
+                    (changedKey.startsWith("game.") && changedKey.endsWith(".$KEY_DPAD_AS_LSTICK"))
+            val hotkeyChanged = SysHotkey.values().any {
+                changedKey == it.prefKey || changedKey == it.prefKey + MOD_SUFFIX
+            }
+            if (padMappingChanged || hotkeyChanged) invalidateRuntimeCaches()
+            if (changedKey.startsWith("touch.macro."))
+                com.armsx2.ui.touch.TouchControls.invalidateRuntimeMacroCache()
+        }
+        runtimeCacheListener = listener
+        MainActivityRuntime.prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
     fun hotkeyCode(h: SysHotkey): Int =
         MainActivityRuntime.prefs.getInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
 
@@ -886,6 +994,7 @@ object ControllerMappings {
             putInt(h.prefKey, physicalKeyCode)
                 .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
         }
+        invalidateRuntimeCaches()
     }
 
     /** Bind a two-button combo: [modCode] held + [keyCode] pressed. */
@@ -894,6 +1003,7 @@ object ControllerMappings {
             putInt(h.prefKey, keyCode)
                 .putInt(h.prefKey + MOD_SUFFIX, modCode)
         }
+        invalidateRuntimeCaches()
     }
 
     fun clearHotkey(h: SysHotkey) {
@@ -901,6 +1011,7 @@ object ControllerMappings {
             putInt(h.prefKey, KeyEvent.KEYCODE_UNKNOWN)
                 .putInt(h.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
         }
+        invalidateRuntimeCaches()
     }
 
     /** Clear ALL system hotkey bindings (the global "Reset to defaults"). Bumps
@@ -912,6 +1023,7 @@ object ControllerMappings {
                     .putInt(it.prefKey + MOD_SUFFIX, KeyEvent.KEYCODE_UNKNOWN)
             }
         }
+        invalidateRuntimeCaches()
         hotkeyBindTick.value++
     }
 
@@ -927,9 +1039,9 @@ object ControllerMappings {
     /** Single-button match (combos excluded). Used by the frontend MENU shortcut. */
     fun hotkeyFor(physicalKeyCode: Int): SysHotkey? {
         if (physicalKeyCode == KeyEvent.KEYCODE_UNKNOWN) return null
-        return SysHotkey.values().firstOrNull {
-            hotkeyCode(it) == physicalKeyCode && hotkeyModCode(it) == KeyEvent.KEYCODE_UNKNOWN
-        }
+        return runtimeBindings().hotkeys.firstOrNull {
+            it.keyCode == physicalKeyCode && it.modifierCode == KeyEvent.KEYCODE_UNKNOWN
+        }?.action
     }
 
     /** Combo-aware match for the just-pressed [keyCode] given the set of
@@ -938,15 +1050,30 @@ object ControllerMappings {
      *  instead of a bare-R1 binding while Select is held. */
     fun matchHotkey(keyCode: Int, heldKeys: Set<Int>): SysHotkey? {
         if (keyCode == KeyEvent.KEYCODE_UNKNOWN) return null
-        SysHotkey.values().firstOrNull {
-            hotkeyCode(it) == keyCode &&
-                hotkeyModCode(it) != KeyEvent.KEYCODE_UNKNOWN &&
-                heldKeys.contains(hotkeyModCode(it))
-        }?.let { return it }
-        return SysHotkey.values().firstOrNull {
-            hotkeyCode(it) == keyCode && hotkeyModCode(it) == KeyEvent.KEYCODE_UNKNOWN
-        }
+        val bindings = runtimeBindings().hotkeys
+        bindings.firstOrNull {
+            it.keyCode == keyCode &&
+                it.modifierCode != KeyEvent.KEYCODE_UNKNOWN &&
+                heldKeys.contains(it.modifierCode)
+        }?.let { return it.action }
+        return bindings.firstOrNull {
+            it.keyCode == keyCode && it.modifierCode == KeyEvent.KEYCODE_UNKNOWN
+        }?.action
     }
+
+    /** True when [keyCode] participates in any hotkey as its main or modifier key. */
+    fun isHotkeyKeyOrModifier(keyCode: Int): Boolean =
+        keyCode != KeyEvent.KEYCODE_UNKNOWN &&
+            runtimeBindings().hotkeys.any {
+                it.keyCode == keyCode || it.modifierCode == keyCode
+            }
+
+    fun matchesSingleHotkey(action: SysHotkey, keyCode: Int): Boolean =
+        runtimeBindings().hotkeys.any {
+            it.action == action &&
+                it.keyCode == keyCode &&
+                it.modifierCode == KeyEvent.KEYCODE_UNKNOWN
+        }
 
     // True while the Pad tab is waiting for a button to bind. MainActivityRuntime.dispatchKeyEvent
     // checks this and lets EVERY key fall through to Compose's onPreviewKeyEvent so

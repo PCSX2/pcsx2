@@ -7,6 +7,7 @@
 #include "MTVU.h"
 #include "Host.h"
 #include "IconsFontAwesome.h"
+#include "PerformanceMetrics.h"
 #include "VMManager.h"
 
 #include "common/FPControl.h"
@@ -144,6 +145,7 @@ void MTGS::ShutdownThread()
 void MTGS::ThreadEntryPoint()
 {
 	Threading::SetNameOfCurrentThread("GS");
+	PerformanceMetrics::AdpfRegisterCallingThread(); // ADPF: hint the GS thread's core (Android)
 
 	// GS can hit SMC write traps when executing InitAndReadFIFO
 	// As racey as it sounds, it should be safe, since InitAndReadFIFO is requested and immediately waited for,

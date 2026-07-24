@@ -115,6 +115,10 @@ fun EmulationMenuScreen(viewModel: EmulationMenuViewModel = viewModel()) {
     BackHandler(onBack = closeMenu)
 
     state.pendingHardcore?.let { enabling ->
+        androidx.compose.runtime.DisposableEffect(Unit) {
+            com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_OPEN)
+            onDispose { com.armsx2.MenuSfx.play(com.armsx2.MenuSfx.Event.POPUP_CLOSE) }
+        }
         AlertDialog(
             onDismissRequest = viewModel::cancelToggleHardcore,
             title = { Text(str(if (enabling) "ra.hardcore.enable.title" else "ra.hardcore.disable.title")) },
