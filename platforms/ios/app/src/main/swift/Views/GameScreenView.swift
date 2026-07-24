@@ -122,6 +122,10 @@ struct GameScreenView: View {
     // from SDL/core. Started when the menu is hidden during gameplay, stopped on restore.
     @State private var menuRestorePollTimer: Timer?
     @State private var lastControllerInputActive = false
+    // Orientation, read from the body GeometryReader. The overlay containers
+    // (pause menu, per-game settings) aren't re-measured on rotation, so we
+    // key them on this to force a fresh layout on a flip.
+    @State private var screenIsLandscape = true
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -261,7 +265,14 @@ struct GameScreenView: View {
             }
             .preference(key: GameScreenSizePreferenceKey.self, value: geo.size)
         }
-        .onPreferenceChange(GameScreenSizePreferenceKey.self) { _ in
+        .onPreferenceChange(GameScreenSizePreferenceKey.self) { size in
+            // The body GeometryReader is re-measured on rotation; the overlay
+            // subtrees aren't, so track orientation here and .id() the overlay
+            // containers off it to rebuild them with the new size.
+            let landscape = size.width > size.height
+            if screenIsLandscape != landscape {
+                screenIsLandscape = landscape
+            }
             syncFullscreenStateFromWindow()
         }
         .sheet(isPresented: childPresentedBinding(.saveStates)) {
@@ -315,10 +326,15 @@ struct GameScreenView: View {
                 GameOverlayContainer(safeAreaInsets: displaySafeAreaEdgeInsets, frameMode: .landscapePanel) { _ in
                     runtimePerGameSettingsContent
                 }
+                .id(screenIsLandscape)
             }
         }
         .overlay {
+            // Rebuild the overlay on a flip so its GeometryReader re-measures;
+            // otherwise the pause menu keeps the stale landscape size and squishes.
+            // Instant swap (no overlayRoute change, no animation).
             pauseMenuOverlay
+                .id(screenIsLandscape)
         }
         .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: overlayRoute)
         .alert(settings.localized("Reset ROM?"), isPresented: childPresentedBinding(.resetROM)) {
