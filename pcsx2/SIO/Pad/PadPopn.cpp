@@ -410,6 +410,10 @@ void PadPopn::SetAxisScale(float deadzone, float scale)
 {
 }
 
+void PadPopn::SetDiagonalScaleCorrection(bool enabled)
+{
+}
+
 float PadPopn::GetVibrationScale(u32 motor) const
 {
 	return 0;
