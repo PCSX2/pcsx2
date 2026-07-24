@@ -3,11 +3,21 @@
 
 import SwiftUI
 
+struct EmulationOnlyPresentation: Equatable {
+    var showsVirtualControls = false
+    var showsQuickMenu = false
+    var padLayoutSnapshot: PadLayoutSnapshot?
+    var padSkinDescriptor: VPadSkinDescriptor?
+
+    static let minimal = EmulationOnlyPresentation()
+}
+
 @Observable
 final class AppState: @unchecked Sendable {
     static let shared = AppState()
     static let systemChromeNeedsUpdateNotification = Notification.Name("ARMSX2iOSSystemChromeNeedsUpdate")
     static let releaseMenuBackgroundResourcesNotification = Notification.Name("ARMSX2iOSReleaseMenuBackgroundResources")
+    static let emulationOnlyStartupReadyNotification = Notification.Name("ARMSX2iOSEmulationOnlyStartupReady")
 
     enum Screen {
         case menu
@@ -17,6 +27,9 @@ final class AppState: @unchecked Sendable {
     var currentScreen: Screen = .menu
     var selectedTab: Int = 0
     var runningGameName: String? = nil
+    var isEmulationOnlyMode: Bool = false
+    var emulationOnlyPresentation = EmulationOnlyPresentation.minimal
+    private(set) var emulationOnlyStartupReady: Bool = false
     var hideStatusBar: Bool = false {
         didSet {
             if oldValue != hideStatusBar {
@@ -36,6 +49,7 @@ final class AppState: @unchecked Sendable {
     @ObservationIgnored private var shutdownObserver: NSObjectProtocol?
 
     @ObservationIgnored private var autoBootObserver: NSObjectProtocol?
+    @ObservationIgnored private var emulationOnlyStartupReadyObserver: NSObjectProtocol?
 
     private init() {
         shutdownObserver = NotificationCenter.default.addObserver(
@@ -43,6 +57,9 @@ final class AppState: @unchecked Sendable {
             object: nil, queue: .main
         ) { [weak self] _ in
             self?.runningGameName = nil
+            self?.isEmulationOnlyMode = false
+            self?.emulationOnlyPresentation = .minimal
+            self?.emulationOnlyStartupReady = false
             if let action = self?.pendingBootAction {
                 self?.pendingBootAction = nil
                 action()
@@ -57,13 +74,26 @@ final class AppState: @unchecked Sendable {
             forName: NSNotification.Name("ARMSX2iOSAutoBootDidStart"),
             object: nil, queue: .main
         ) { [weak self] _ in
+            self?.isEmulationOnlyMode = false
+            self?.emulationOnlyPresentation = .minimal
+            self?.emulationOnlyStartupReady = false
             self?.releaseMenuBackgroundResourcesForGameplay()
             self?.runningGameName = "AutoBoot"
             self?.currentScreen = .playing
         }
+
+        emulationOnlyStartupReadyObserver = NotificationCenter.default.addObserver(
+            forName: Self.emulationOnlyStartupReadyNotification,
+            object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.emulationOnlyStartupReady = true
+        }
     }
 
     func bootGame(isoName: String) {
+        isEmulationOnlyMode = false
+        emulationOnlyPresentation = .minimal
+        emulationOnlyStartupReady = false
         releaseMenuBackgroundResourcesForGameplay()
         Task { @MainActor in
             StikDebugLauncher.autoOpenIfNeeded(reason: "game boot")
@@ -78,6 +108,9 @@ final class AppState: @unchecked Sendable {
     }
 
     func bootBIOSOnly() {
+        isEmulationOnlyMode = false
+        emulationOnlyPresentation = .minimal
+        emulationOnlyStartupReady = false
         releaseMenuBackgroundResourcesForGameplay()
         Task { @MainActor in
             StikDebugLauncher.autoOpenIfNeeded(reason: "BIOS boot")
@@ -95,6 +128,8 @@ final class AppState: @unchecked Sendable {
         if ARMSX2Bridge.isVMRunning() {
             ARMSX2Bridge.setVMPaused(true)
         }
+        isEmulationOnlyMode = false
+        emulationOnlyPresentation = .minimal
         currentScreen = .menu
         // [P44-2] Restore opaque background on hosting controller
         NotificationCenter.default.post(name: NSNotification.Name("ARMSX2iOSReturnToMenu"), object: nil)
@@ -102,6 +137,8 @@ final class AppState: @unchecked Sendable {
 
     func returnToGame() {
         if runningGameName != nil {
+            isEmulationOnlyMode = false
+            emulationOnlyPresentation = .minimal
             releaseMenuBackgroundResourcesForGameplay()
             // [P44-2] Clear background so Metal surface shows through
             NotificationCenter.default.post(name: NSNotification.Name("ARMSX2iOSEnterGameScreen"), object: nil)
@@ -132,6 +169,14 @@ final class AppState: @unchecked Sendable {
         } else {
             shutdownAndBoot(isoName: runningGameName)
         }
+    }
+
+    /// Permanently removes the in-game SwiftUI controls and menus for the current VM session.
+    /// A VM shutdown or a new boot resets this flag and restores the normal gameplay UI.
+    func enterEmulationOnlyMode(presentation: EmulationOnlyPresentation) {
+        guard case .playing = currentScreen, emulationOnlyStartupReady else { return }
+        emulationOnlyPresentation = presentation
+        isEmulationOnlyMode = true
     }
 
     private func releaseMenuBackgroundResourcesForGameplay() {

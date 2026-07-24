@@ -107,8 +107,12 @@ struct HelpView: View {
     @State private var selectedTopic: HelpTopic? = .item(section: 0, item: 0)
 #endif
 
+    private var backgroundConfigured: Bool {
+        settings.hasCustomBackground && settings.backgroundEnabledInHelp
+    }
+
     private var backgroundActive: Bool {
-        settings.hasCustomBackground && settings.backgroundEnabledInHelp && menuTabIsActive
+        backgroundConfigured && menuTabIsActive
     }
 
     var body: some View {
@@ -146,9 +150,10 @@ struct HelpView: View {
 #else
         NavigationStack {
             ZStack {
-                if backgroundActive {
-                    MenuBackgroundLayer()
+                if backgroundConfigured {
+                    MenuBackgroundLayer(isActive: menuTabIsActive)
                 }
+
                 List {
                     ForEach(helpData) { section in
                         Section {

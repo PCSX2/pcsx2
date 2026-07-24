@@ -16,16 +16,21 @@ struct BIOSListView: View {
     @State private var existingBIOSImportFileNames: [String] = []
     @Environment(\.menuTabIsActive) private var menuTabIsActive
 
+    private var backgroundConfigured: Bool {
+        settings.hasCustomBackground && settings.backgroundEnabledInBIOS
+    }
+
     private var backgroundActive: Bool {
-        settings.hasCustomBackground && settings.backgroundEnabledInBIOS && menuTabIsActive
+        backgroundConfigured && menuTabIsActive
     }
 
     var body: some View {
         NavigationStack {
             ZStack {
-                if backgroundActive {
-                    MenuBackgroundLayer()
+                if backgroundConfigured {
+                    MenuBackgroundLayer(isActive: menuTabIsActive)
                 }
+
                 Group {
                     if bioses.isEmpty {
                         emptyState
@@ -108,6 +113,9 @@ struct BIOSListView: View {
             }
         }
         .onAppear { loadBIOSes() }
+        .onReceive(NotificationCenter.default.publisher(for: InitialContentBootstrap.didChangeNotification)) { _ in
+            loadBIOSes()
+        }
     }
 
     private func presentMenuPanel(_ name: String, _ action: @escaping () -> Void) {

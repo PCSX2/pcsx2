@@ -64,6 +64,7 @@ final class FrameTimeDynamicResolutionController {
     @ObservationIgnored private var lastWrittenValue: Float = 1.0
     @ObservationIgnored private var lastWriteAt: Date = .distantPast
     @ObservationIgnored private var pollTimer: Timer?
+    @ObservationIgnored private var suspendedForEmulationOnlyMode = false
 
     private init() {}
 
@@ -72,7 +73,12 @@ final class FrameTimeDynamicResolutionController {
     /// Called from `SettingsStore.adaptiveResolutionEnabled.didSet` on toggle,
     /// and after init once the persisted value has been read back. Idempotent.
     func setEnabled(_ newValue: Bool) {
-        guard newValue != enabled else { return }
+        guard newValue != enabled else {
+            if enabled && !suspendedForEmulationOnlyMode {
+                startTimer()
+            }
+            return
+        }
         enabled = newValue
         if enabled {
             // Capture the user's current UpscaleMultiplier as the max clamp.
@@ -85,9 +91,29 @@ final class FrameTimeDynamicResolutionController {
             // of forcing a 500 ms wait after toggling.
             lastChangeAt = .distantPast
             lastWriteAt = .distantPast
-            startTimer()
+            if !suspendedForEmulationOnlyMode {
+                startTimer()
+            }
         } else {
             stopTimer()
+        }
+    }
+
+    /// Stops the optional 500 ms frame-history poll without changing the
+    /// persisted Dynamic Resolution preference or the emulator's essential
+    /// frame limiter/audio-video timing.
+    func suspendForEmulationOnlyMode() {
+        suspendedForEmulationOnlyMode = true
+        stopTimer()
+    }
+
+    /// A new full gameplay presentation owns the optional monitor again.
+    /// Idempotent, so normal sessions pay no extra timer or observer cost.
+    func resumeAfterEmulationOnlyMode() {
+        guard suspendedForEmulationOnlyMode else { return }
+        suspendedForEmulationOnlyMode = false
+        if enabled {
+            startTimer()
         }
     }
 

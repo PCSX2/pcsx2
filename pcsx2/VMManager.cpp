@@ -81,6 +81,10 @@
 #include "common/Darwin/DarwinMisc.h"
 #endif
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+extern "C" void ARMSX2_PostEmulationOnlyStartupReady(void);
+#endif
+
 namespace VMManager
 {
 	static void SetDefaultLoggingSettings(SettingsInterface& si);
@@ -160,8 +164,19 @@ static bool s_log_block_system_console = false;
 static bool s_log_force_file_log = false;
 
 static std::atomic<VMState> s_state{VMState::Shutdown};
+static std::atomic_bool s_emulation_only_mode{false};
+static std::atomic<u32> s_emulation_only_release_flags{VMManager::EMULATION_ONLY_RELEASE_ALL};
+static std::atomic_bool s_boot_patches_applied{false};
+static std::atomic_bool s_texture_replacement_startup_complete{false};
+static std::atomic_bool s_emulation_only_startup_notification_posted{false};
 static bool s_cpu_implementation_changed = false;
 static Threading::ThreadHandle s_vm_thread_handle;
+
+static bool ArePatchesDisabledByEmulationOnlyMode()
+{
+	return s_emulation_only_mode.load(std::memory_order_acquire) &&
+		(s_emulation_only_release_flags.load(std::memory_order_acquire) & VMManager::EMULATION_ONLY_RELEASE_PATCHES) != 0;
+}
 
 static std::deque<std::thread> s_save_state_threads;
 static std::mutex s_save_state_threads_mutex;
@@ -814,6 +829,8 @@ void VMManager::ApplySettings()
 	if (vtlb_FastmemAreaUnavailable() && EmuConfig.Cpu.Recompiler.EnableFastmem)
 		EmuConfig.Cpu.Recompiler.EnableFastmem = false;
 	CheckForConfigChanges(old_config);
+	if (s_emulation_only_mode.load(std::memory_order_acquire))
+		ReleaseNonEssentialRuntimeResources(s_emulation_only_release_flags.load(std::memory_order_acquire));
 }
 
 void VMManager::ApplyCoreSettings()
@@ -845,6 +862,8 @@ void VMManager::ApplyCoreSettings()
 	}
 
 	CheckForConfigChanges(old_config);
+	if (s_emulation_only_mode.load(std::memory_order_acquire))
+		ReleaseNonEssentialRuntimeResources(s_emulation_only_release_flags.load(std::memory_order_acquire));
 }
 
 bool VMManager::ReloadGameSettings()
@@ -924,7 +943,8 @@ void VMManager::Internal::UpdateEmuFolders()
 
 	if (VMManager::HasValidVM())
 	{
-		if (EmuFolders::Cheats != old_cheats_directory || EmuFolders::Patches != old_patches_directory)
+		if ((EmuFolders::Cheats != old_cheats_directory || EmuFolders::Patches != old_patches_directory) &&
+			!ArePatchesDisabledByEmulationOnlyMode())
 			Patch::ReloadPatches(s_disc_serial, s_current_crc, true, false, true, true);
 
 		if (EmuFolders::MemoryCards != old_memcards_directory)
@@ -1196,7 +1216,10 @@ void VMManager::UpdateDiscDetails(bool booting)
 	ApplySettings();
 
 	// Patches are game-dependent, thus should get applied after game settings ia loaded.
-	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
+	if (!ArePatchesDisabledByEmulationOnlyMode())
+	{
+		Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, true, false, false);
+	}
 
 	ReportGameChangeToHost();
 	if (MTGS::IsOpen())
@@ -1233,7 +1256,8 @@ void VMManager::HandleELFChange(bool verbose_patches_if_changed)
 	Achievements::GameChanged(s_disc_crc, crc_to_report);
 
 	Console.WriteLn(Color_StrongOrange, fmt::format("ELF changed, active CRC {:08X} ({})", crc_to_report, s_elf_path));
-	Patch::ReloadPatches(s_disc_serial, crc_to_report, false, false, false, verbose_patches_if_changed);
+	if (!ArePatchesDisabledByEmulationOnlyMode())
+		Patch::ReloadPatches(s_disc_serial, crc_to_report, false, false, false, verbose_patches_if_changed);
 	ApplyCoreSettings();
 }
 
@@ -1396,6 +1420,12 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 		Error::SetString(error, TRANSLATE_STR("VMManager", "The virtual machine is already running."));
 		return VMBootResult::StartupFailure;
 	}
+
+	s_emulation_only_mode.store(false, std::memory_order_release);
+	s_emulation_only_release_flags.store(EMULATION_ONLY_RELEASE_ALL, std::memory_order_release);
+	s_boot_patches_applied.store(false, std::memory_order_release);
+	s_texture_replacement_startup_complete.store(false, std::memory_order_release);
+	s_emulation_only_startup_notification_posted.store(false, std::memory_order_release);
 
 	// cancel any game list scanning, we need to use CDVD!
 	// TODO: we can get rid of this once, we make CDVD not use globals...
@@ -2950,7 +2980,8 @@ void VMManager::Internal::ELFLoadingOnCPUThread(std::string elf_path)
 	// Remove patches, if we're changing games, we don't want to be applying the patch for the old game while it's loading.
 	if (!was_running_bios)
 	{
-		Patch::ReloadPatches(s_disc_serial, 0, false, false, false, true);
+		if (!ArePatchesDisabledByEmulationOnlyMode())
+			Patch::ReloadPatches(s_disc_serial, 0, false, false, false, true);
 		ApplyCoreSettings();
 	}
 }
@@ -2975,6 +3006,7 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 	HandleELFChange(true);
 
 	Patch::ApplyBootPatches();
+	NotifyBootPatchesApplied();
 
 	// If the config changes at this point, it's a reset, so the game doesn't currently know about the memcard
 	// so there's no need to leave the eject running.
@@ -3228,7 +3260,7 @@ void VMManager::CheckForConfigChanges(const Pcsx2Config& old_config)
 
 void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
-	if (!HasValidVM())
+	if (!HasValidVM() || ArePatchesDisabledByEmulationOnlyMode())
 		return;
 
 	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, reload_files, reload_enabled_list, verbose, verbose_if_changed);
@@ -3236,6 +3268,112 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 	// Might change widescreen mode.
 	if (Patch::ReloadPatchAffectingOptions())
 		ApplyCoreSettings();
+}
+
+bool VMManager::IsEmulationOnlyMode()
+{
+	return s_emulation_only_mode.load(std::memory_order_acquire);
+}
+
+static void TryPostEmulationOnlyStartupReady()
+{
+	if (!s_boot_patches_applied.load(std::memory_order_acquire) ||
+		!s_texture_replacement_startup_complete.load(std::memory_order_acquire))
+	{
+		return;
+	}
+
+	bool expected = false;
+	if (!s_emulation_only_startup_notification_posted.compare_exchange_strong(
+			expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
+	{
+		return;
+	}
+
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+	ARMSX2_PostEmulationOnlyStartupReady();
+#endif
+}
+
+void VMManager::NotifyBootPatchesApplied()
+{
+	s_boot_patches_applied.store(true, std::memory_order_release);
+	TryPostEmulationOnlyStartupReady();
+}
+
+void VMManager::NotifyTextureReplacementStartupComplete()
+{
+	s_texture_replacement_startup_complete.store(true, std::memory_order_release);
+	TryPostEmulationOnlyStartupReady();
+}
+
+void VMManager::ReleaseNonEssentialRuntimeResources(u32 release_flags)
+{
+	if (!HasValidVM())
+		return;
+
+	release_flags &= EMULATION_ONLY_RELEASE_ALL;
+	s_emulation_only_release_flags.store(release_flags, std::memory_order_release);
+	s_emulation_only_mode.store(true, std::memory_order_release);
+
+	// These are runtime copies. Persistent user settings are intentionally unchanged and
+	// LoadSettings() restores them for the next VM session.
+	if (release_flags & EMULATION_ONLY_RELEASE_PINE)
+		EmuConfig.EnablePINE = false;
+	if (release_flags & EMULATION_ONLY_RELEASE_DISCORD_PRESENCE)
+		EmuConfig.EnableDiscordPresence = false;
+	if (release_flags & EMULATION_ONLY_RELEASE_ACHIEVEMENTS)
+		EmuConfig.Achievements.Enabled = false;
+	if (release_flags & EMULATION_ONLY_RELEASE_PATCHES)
+	{
+		EmuConfig.EnablePatches = false;
+		EmuConfig.EnableCheats = false;
+		EmuConfig.EnableWideScreenPatches = false;
+		EmuConfig.EnableNoInterlacingPatches = false;
+	}
+
+	if (release_flags & EMULATION_ONLY_RELEASE_PINE)
+		PINEServer::Deinitialize();
+	if (release_flags & EMULATION_ONLY_RELEASE_DISCORD_PRESENCE)
+		ShutdownDiscordPresence();
+	if (release_flags & EMULATION_ONLY_RELEASE_ACHIEVEMENTS)
+		Achievements::Shutdown(false);
+
+	if ((release_flags & EMULATION_ONLY_RELEASE_INPUT_RECORDING) && g_InputRecording.isActive())
+		g_InputRecording.stop();
+
+	if (release_flags & EMULATION_ONLY_RELEASE_PATCHES)
+		Patch::UnloadPatches();
+
+	if (release_flags & EMULATION_ONLY_RELEASE_OSD)
+	{
+		Host::ClearOSDMessages();
+
+		// Disable every live OSD feed without persisting the user's selected preset.
+		GSConfig.OsdMessagesPos = OsdOverlayPos::None;
+		GSConfig.OsdPerformancePos = OsdOverlayPos::None;
+		GSConfig.OsdShowSpeed = false;
+		GSConfig.OsdShowFPS = false;
+		GSConfig.OsdShowVPS = false;
+		GSConfig.OsdShowResolution = false;
+		GSConfig.OsdShowGSStats = false;
+		GSConfig.OsdShowCPU = false;
+		GSConfig.OsdShowGPU = false;
+		GSConfig.OsdShowGPUDebug = false;
+		GSConfig.OsdShowGPUStats = false;
+		GSConfig.OsdShowIndicators = false;
+		GSConfig.OsdShowFrameTimes = false;
+		GSConfig.OsdShowHardwareInfo = false;
+		GSConfig.OsdShowVersion = false;
+		GSConfig.OsdShowSettings = false;
+		GSConfig.OsdshowPatches = false;
+		GSConfig.OsdShowInputs = false;
+		GSConfig.OsdShowVideoCapture = false;
+		GSConfig.OsdShowInputRec = false;
+		GSConfig.OsdShowTextureReplacements = false;
+	}
+
+	Console.WriteLn("Emulation-only mode: released optional runtime services and overlays.");
 }
 
 void VMManager::EnforceAchievementsChallengeModeSettings()

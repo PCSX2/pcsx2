@@ -18,7 +18,9 @@ struct AppearanceSettingsView: View {
     @State private var showPrimaryPicker = false
     @State private var showLandscapePicker = false
     @State private var isAppearanceVisible = false
+    @State private var ownsExclusiveBackgroundPreview = false
     @Environment(\.menuTabIsActive) private var menuTabIsActive
+    @Environment(\.menuBackgroundHost) private var menuBackgroundHost
 
     var body: some View {
         Form {
@@ -131,11 +133,19 @@ struct AppearanceSettingsView: View {
             .presentationDetents([.large])
         }
         .onAppear {
+            if !ownsExclusiveBackgroundPreview {
+                menuBackgroundHost?.beginExclusivePreview()
+                ownsExclusiveBackgroundPreview = true
+            }
             isAppearanceVisible = true
             dynamicPreferences = settings.dynamicAppearancePreferences
         }
         .onDisappear {
             isAppearanceVisible = false
+            if ownsExclusiveBackgroundPreview {
+                menuBackgroundHost?.endExclusivePreview()
+                ownsExclusiveBackgroundPreview = false
+            }
         }
     }
 

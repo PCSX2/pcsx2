@@ -353,6 +353,43 @@ final class VPadSkinLibraryStore: @unchecked Sendable {
         )
     }
 
+    @discardableResult
+    func importSkinArchive(
+        from sourceURL: URL,
+        layoutPresets: PadLayoutPresetStore
+    ) throws -> VPadSkinImportResult {
+        let accessGranted = sourceURL.startAccessingSecurityScopedResource()
+        defer {
+            if accessGranted {
+                sourceURL.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let stagingDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ARMSX2SkinImport-\(UUID().uuidString)", isDirectory: true)
+        let archiveDirectory = stagingDirectory.appendingPathComponent("Package", isDirectory: true)
+        try FileManager.default.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: stagingDirectory)
+        }
+
+        let isV2Package = SkinManifestImporter.shouldTreatAsV2(
+            manifestData: ARMSX2Bridge.peekSkinManifestData(at: sourceURL)
+        )
+        let extracted = isV2Package
+            ? ARMSX2Bridge.extractSkinPackageArchive(at: sourceURL, to: archiveDirectory)
+            : ARMSX2Bridge.extractControllerSkinArchive(at: sourceURL, to: archiveDirectory)
+        guard !extracted.isEmpty else {
+            throw VPadSkinLibraryStoreError.noUsableSkinImages
+        }
+
+        return try importSkin(
+            from: archiveDirectory,
+            originalImportName: sourceURL.lastPathComponent,
+            layoutPresets: layoutPresets
+        )
+    }
+
     private func importV2ManifestSkin(from sourceURL: URL, originalImportName: String?) -> SkinManifestImporter.V2ImportDecision {
         switch SkinManifestImporter.detectPackage(sourceURL: sourceURL) {
         case .legacy:

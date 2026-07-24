@@ -74,6 +74,7 @@ final class PatchStore: @unchecked Sendable {
     private var currentSerial = ""
     private var currentCRC = ""
     private var currentTitle = ""
+    private var presentationGeneration: UInt64 = 0
 
     var patchDatabaseURLTemplates: [String] {
         get {
@@ -128,6 +129,25 @@ final class PatchStore: @unchecked Sendable {
     }
 
     private init() {}
+
+    /// Invalidates presentation work and discards manager-only metadata. Installed files and
+    /// persisted preferences remain untouched; the native runtime separately unloads patches.
+    func releasePresentationResources() {
+        presentationGeneration &+= 1
+        isoName = ""
+        launchContext = .library
+        identityState = .libraryAwaitingFirstLaunch
+        hasGameIdentity = false
+        canManageInstalledFiles = false
+        installed.removeAll(keepingCapacity: false)
+        lastMessage = nil
+        lastMessageKind = .information
+        showMessage = false
+        isDownloading = false
+        currentSerial = ""
+        currentCRC = ""
+        currentTitle = ""
+    }
 
     // MARK: - Identity
 
@@ -594,6 +614,7 @@ final class PatchStore: @unchecked Sendable {
     // MARK: - Database download
 
     func downloadFromDatabase(forISO iso: String, asCheat: Bool) async {
+        let requestGeneration = presentationGeneration
         let crc = iso == isoName ? currentCRC : Self.formattedCRC(ARMSX2Bridge.gameSettings(forISO: iso)["crc"] as? String)
         guard !crc.isEmpty else {
             applyFeedback(identityState.guidance ?? "Database matching is unavailable for this game.", kind: .information)
@@ -612,13 +633,18 @@ final class PatchStore: @unchecked Sendable {
         let title = iso == isoName ? currentTitle : (ARMSX2Bridge.gameMetadata(forISO: iso)["title"] ?? iso)
 
         isDownloading = true
-        defer { isDownloading = false }
+        defer {
+            if requestGeneration == presentationGeneration {
+                isDownloading = false
+            }
+        }
 
         var succeededSources: [String] = []
         var notFoundCount = 0
         var firstError: String?
 
         for template in templates {
+            guard !Task.isCancelled, requestGeneration == presentationGeneration else { return }
             guard let url = resolvedDatabaseURL(template: template, serial: serial, crc: crc, title: title) else {
                 continue
             }
@@ -629,6 +655,7 @@ final class PatchStore: @unchecked Sendable {
                 request.timeoutInterval = 10
                 request.cachePolicy = .reloadIgnoringLocalCacheData
                 let (data, response) = try await URLSession.shared.data(for: request)
+                guard !Task.isCancelled, requestGeneration == presentationGeneration else { return }
                 guard let http = response as? HTTPURLResponse else {
                     if firstError == nil { firstError = "Could not download from \(sourceName)." }
                     continue
@@ -653,6 +680,7 @@ final class PatchStore: @unchecked Sendable {
                     if firstError == nil { firstError = "The file from \(sourceName) was not a valid patch." }
                     continue
                 }
+                guard !Task.isCancelled, requestGeneration == presentationGeneration else { return }
                 let outcome = writePatch(
                     text: text,
                     forISO: iso,
@@ -667,9 +695,12 @@ final class PatchStore: @unchecked Sendable {
                     if firstError == nil { firstError = "\(sourceName): \(outcome.message)" }
                 }
             } catch {
+                guard !Task.isCancelled, requestGeneration == presentationGeneration else { return }
                 if firstError == nil { firstError = "Could not reach \(sourceName). Check your connection or URL." }
             }
         }
+
+        guard !Task.isCancelled, requestGeneration == presentationGeneration else { return }
 
         let kindWord = asCheat ? "Cheat" : "Patch"
         if !succeededSources.isEmpty {

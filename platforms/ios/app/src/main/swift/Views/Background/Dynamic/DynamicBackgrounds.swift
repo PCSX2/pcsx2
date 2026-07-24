@@ -1318,7 +1318,7 @@ enum PlayStation2MenuGeometry {
 
 struct PlayStation2MenuBackground: View {
   let theme: DynamicBackgroundTheme
-  @State private var cameraStartDate = Date()
+  @Environment(\.menuBackgroundSessionStart) private var cameraStartDate
 
   var body: some View {
     let framesPerSecond = max(
@@ -3197,8 +3197,26 @@ private struct XMBParticleUniforms {
   var waveFollowing: SIMD4<Float>
 }
 
+private struct XMBSessionRandomNumberGenerator: RandomNumberGenerator {
+  private var state: UInt64
+
+  init(seed: UInt64) {
+    state = seed == 0 ? 0x9e37_79b9_7f4a_7c15 : seed
+  }
+
+  mutating func next() -> UInt64 {
+    state ^= state >> 12
+    state ^= state << 25
+    state ^= state >> 27
+    return state &* 0x2545_f491_4f6c_dd1d
+  }
+}
+
 private final class PlayStation3XMBMartMetalRenderer: NSObject, MTKViewDelegate {
   private let renderMode: PlayStation3XMBMartRenderMode
+  private let sessionStartTime: TimeInterval
+  private let particleTimeOffset: TimeInterval
+  private let particleSeed: UInt64
   private let commandQueue: MTLCommandQueue
   private let backgroundPipeline: MTLRenderPipelineState
   private let wavePipeline: MTLRenderPipelineState
@@ -3227,11 +3245,14 @@ private final class PlayStation3XMBMartMetalRenderer: NSObject, MTKViewDelegate 
       * PlayStation3XMBMartSplinePipeline.textureHeight
   )
   private var splineTime: TimeInterval = 0
-  private var particleTime = Double.random(in: 0..<1000)
-  private var previousFrameTime: CFTimeInterval?
+  private var particleTime: TimeInterval = 0
 
   @MainActor
-  init?(view: MTKView, renderMode: PlayStation3XMBMartRenderMode) {
+  init?(
+    view: MTKView,
+    renderMode: PlayStation3XMBMartRenderMode,
+    sessionStartTime: TimeInterval
+  ) {
     guard let device = view.device,
       let commandQueue = device.makeCommandQueue(),
       let library = PlayStation3XMBByMartShaderLibrary.makeLibrary(device: device),
@@ -3313,6 +3334,16 @@ private final class PlayStation3XMBMartMetalRenderer: NSObject, MTKViewDelegate 
     }
 
     self.renderMode = renderMode
+    self.sessionStartTime = sessionStartTime
+    self.particleTimeOffset =
+      sessionStartTime.truncatingRemainder(dividingBy: 1000)
+    let renderModeSalt: UInt64 =
+      switch renderMode {
+      case .fullBackground: 0x1465_0fb0_739d_0383
+      case .foregroundOnly: 0x9e37_79b9_7f4a_7c15
+      case .particlesOnly: 0xd1b5_4a32_d192_ed03
+      }
+    self.particleSeed = sessionStartTime.bitPattern ^ renderModeSalt
     self.commandQueue = commandQueue
     self.backgroundPipeline = backgroundPipeline
     self.wavePipeline = wavePipeline
@@ -3353,13 +3384,9 @@ private final class PlayStation3XMBMartMetalRenderer: NSObject, MTKViewDelegate 
   func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
 
   func draw(in view: MTKView) {
-    let frameTime = CACurrentMediaTime()
-    if let previousFrameTime {
-      let delta = max(0, frameTime - previousFrameTime)
-      splineTime += delta
-      particleTime += delta
-    }
-    previousFrameTime = frameTime
+    let elapsed = max(0, CFAbsoluteTimeGetCurrent() - sessionStartTime)
+    splineTime = elapsed
+    particleTime = particleTimeOffset + elapsed
 
     if let theme {
       let paletteTime = CFAbsoluteTimeGetCurrent()
@@ -3587,7 +3614,9 @@ private final class PlayStation3XMBMartMetalRenderer: NSObject, MTKViewDelegate 
   }
 
   private func rebuildParticles(device: MTLDevice, count: Int) {
-    var generator = SystemRandomNumberGenerator()
+    var generator = XMBSessionRandomNumberGenerator(
+      seed: particleSeed ^ UInt64(count)
+    )
     let seeds = (0..<count).map { _ in
       SIMD3<Float>(
         Float.random(in: 0..<1, using: &generator),
@@ -3714,11 +3743,12 @@ struct PlayStation3XMBMartParticleControls {
 struct PlayStation3XMBMartMetalSurface: UIViewRepresentable {
   let settings: PlayStation3XMBSettings
   let theme: DynamicBackgroundTheme
+  let sessionStartTime: TimeInterval
   var renderMode: PlayStation3XMBMartRenderMode = .fullBackground
   var particleControls = PlayStation3XMBMartParticleControls()
 
   func makeCoordinator() -> Coordinator {
-    Coordinator(renderMode: renderMode)
+    Coordinator(renderMode: renderMode, sessionStartTime: sessionStartTime)
   }
 
   func makeUIView(context: Context) -> MTKView {
@@ -3768,16 +3798,25 @@ struct PlayStation3XMBMartMetalSurface: UIViewRepresentable {
   final class Coordinator {
     fileprivate var renderer: PlayStation3XMBMartMetalRenderer?
     private let renderMode: PlayStation3XMBMartRenderMode
+    private let sessionStartTime: TimeInterval
     private var retainsShaderLibrary = false
 
-    init(renderMode: PlayStation3XMBMartRenderMode) {
+    init(
+      renderMode: PlayStation3XMBMartRenderMode,
+      sessionStartTime: TimeInterval
+    ) {
       self.renderMode = renderMode
+      self.sessionStartTime = sessionStartTime
     }
 
     @MainActor
     func attach(to view: MTKView) {
       guard renderer == nil else { return }
-      guard let renderer = PlayStation3XMBMartMetalRenderer(view: view, renderMode: renderMode) else {
+      guard let renderer = PlayStation3XMBMartMetalRenderer(
+        view: view,
+        renderMode: renderMode,
+        sessionStartTime: sessionStartTime
+      ) else {
         PlayStation3XMBByMartShaderLibrary.releaseIfUnused()
         return
       }
@@ -3805,6 +3844,7 @@ struct PlayStation3XMBMartMetalSurface: UIViewRepresentable {
 // Native SwiftUI adaptation of Mart's MIT-licensed PlayStation 3 XMB recreation.
 struct PlayStation3XMBByMartBackground: View {
   let theme: DynamicBackgroundTheme
+  @Environment(\.menuBackgroundSessionStart) private var menuBackgroundSessionStart
 
   @ViewBuilder
   var body: some View {
@@ -3815,6 +3855,7 @@ struct PlayStation3XMBByMartBackground: View {
         PlayStation3XMBMartMetalSurface(
           settings: settings,
           theme: theme,
+          sessionStartTime: menuBackgroundSessionStart.timeIntervalSinceReferenceDate,
           renderMode: .foregroundOnly
         )
       }
@@ -3823,7 +3864,8 @@ struct PlayStation3XMBByMartBackground: View {
     } else {
       PlayStation3XMBMartMetalSurface(
         settings: settings,
-        theme: theme
+        theme: theme,
+        sessionStartTime: menuBackgroundSessionStart.timeIntervalSinceReferenceDate
       )
       .ignoresSafeArea()
       .accessibilityHidden(true)

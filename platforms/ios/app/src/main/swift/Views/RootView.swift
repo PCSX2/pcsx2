@@ -8,10 +8,19 @@ private struct MenuTabIsActiveEnvironmentKey: EnvironmentKey {
     static let defaultValue = true
 }
 
+private struct MenuBackgroundSessionStartEnvironmentKey: EnvironmentKey {
+    static let defaultValue = Date()
+}
+
 extension EnvironmentValues {
     var menuTabIsActive: Bool {
         get { self[MenuTabIsActiveEnvironmentKey.self] }
         set { self[MenuTabIsActiveEnvironmentKey.self] = newValue }
+    }
+
+    var menuBackgroundSessionStart: Date {
+        get { self[MenuBackgroundSessionStartEnvironmentKey.self] }
+        set { self[MenuBackgroundSessionStartEnvironmentKey.self] = newValue }
     }
 }
 
@@ -29,7 +38,12 @@ struct RootView: View {
                     .ignoresSafeArea()
                 MenuTabView()
             case .playing:
-                GameScreenView()
+                if appState.isEmulationOnlyMode &&
+                    !appState.emulationOnlyPresentation.showsQuickMenu {
+                    EmulationOnlyGameView()
+                } else {
+                    GameScreenView()
+                }
             }
 
             if showBootSplash {
@@ -61,101 +75,127 @@ struct RootView: View {
 }
 
 struct MenuTabView: View {
-    @State private var appState = AppState.shared
     @State private var settings = SettingsStore.shared
     @State private var selectedTab = 0
+    @StateObject private var backgroundHost = PersistentMenuBackgroundHost()
 
     private var biosBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInBIOS }
     private var helpBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInHelp }
     private var settingsBackgroundActive: Bool { settings.hasCustomBackground && settings.backgroundEnabledInSettings }
 
-    var body: some View {
-#if targetEnvironment(macCatalyst)
-        VStack(spacing: 0) {
-            CatalystMenuTabBar(selectedTab: $selectedTab)
-                .padding(.top, 8)
-                .padding(.bottom, 8)
+    private var selectedTabShowsBackground: Bool {
+        switch selectedTab {
+        case 0:
+            return settings.hasCustomBackground
+        case 1:
+            return biosBackgroundActive
+        case 2:
+            return helpBackgroundActive
+        default:
+            return settingsBackgroundActive
+        }
+    }
 
-            Group {
-                switch selectedTab {
-                case 0:
-                    GameListView()
-                case 1:
-                    BIOSListView()
-                case 2:
-                    HelpView()
-                default:
-                    SettingsRootView()
+    var body: some View {
+        Group {
+#if targetEnvironment(macCatalyst)
+            VStack(spacing: 0) {
+                CatalystMenuTabBar(selectedTab: $selectedTab)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
+
+                Group {
+                    switch selectedTab {
+                    case 0:
+                        GameListView()
+                    case 1:
+                        BIOSListView()
+                    case 2:
+                        HelpView()
+                    default:
+                        SettingsRootView()
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .tint(.blue)
+            .tint(.blue)
 #else
-        TabView(selection: $selectedTab) {
-            // Games tab is NOT wrapped in SafeAreaProtectedMenuTabContent — it
-            // renders its own edge-to-edge custom wallpaper (BackgroundContainerView)
-            // inside its NavigationStack ZStack, which must not be clipped by the
-            // safe-area padding that the other tabs use.
-            GameListView()
-                .environment(\.menuTabIsActive, selectedTab == 0)
-                .tabItem {
-                    Label(settings.localized("Games"), systemImage: "gamecontroller")
-                }
-                .tag(0)
+            TabView(selection: $selectedTab) {
+                // Games tab is NOT wrapped in SafeAreaProtectedMenuTabContent — it
+                // renders its own edge-to-edge custom wallpaper (BackgroundContainerView)
+                // inside its NavigationStack ZStack, which must not be clipped by the
+                // safe-area padding that the other tabs use.
+                GameListView()
+                    .environment(\.menuTabIsActive, selectedTab == 0)
+                    .tabItem {
+                        Label(settings.localized("Games"), systemImage: "gamecontroller")
+                    }
+                    .tag(0)
 
-            // When a tab's background is active it owns its edge-to-edge MenuBackgroundLayer
-            // inside its own NavigationStack (matching GameListView), so it must NOT be wrapped
-            // in SafeAreaProtectedMenuTabContent — the padding would clip the wallpaper.
-            Group {
-                if biosBackgroundActive {
-                    BIOSListView()
-                } else {
-                    SafeAreaProtectedMenuTabContent { BIOSListView() }
+                // When a tab's background is active it owns its edge-to-edge MenuBackgroundLayer
+                // inside its own NavigationStack (matching GameListView), so it must NOT be wrapped
+                // in SafeAreaProtectedMenuTabContent — the padding would clip the wallpaper.
+                Group {
+                    if biosBackgroundActive {
+                        BIOSListView()
+                    } else {
+                        SafeAreaProtectedMenuTabContent { BIOSListView() }
+                    }
                 }
-            }
                 .environment(\.menuTabIsActive, selectedTab == 1)
                 .tabItem {
                     Label(settings.localized("BIOS"), systemImage: "cpu")
                 }
                 .tag(1)
 
-            Group {
-                if helpBackgroundActive {
-                    HelpView()
-                } else {
-                    SafeAreaProtectedMenuTabContent { HelpView() }
+                Group {
+                    if helpBackgroundActive {
+                        HelpView()
+                    } else {
+                        SafeAreaProtectedMenuTabContent { HelpView() }
+                    }
                 }
-            }
                 .environment(\.menuTabIsActive, selectedTab == 2)
                 .tabItem {
                     Label(settings.localized("Help"), systemImage: "questionmark.circle")
                 }
                 .tag(2)
 
-            Group {
-                if settingsBackgroundActive {
-                    NavigationStack {
-                        SettingsRootView()
-                    }
-                } else {
-                    SafeAreaProtectedMenuTabContent {
+                Group {
+                    if settingsBackgroundActive {
                         NavigationStack {
                             SettingsRootView()
                         }
+                    } else {
+                        SafeAreaProtectedMenuTabContent {
+                            NavigationStack {
+                                SettingsRootView()
+                            }
+                        }
                     }
                 }
+                .environment(\.menuTabIsActive, selectedTab == 3)
+                .tabItem {
+                    Label(settings.localized("Settings"), systemImage: "gearshape")
+                }
+                .tag(3)
             }
-            .environment(\.menuTabIsActive, selectedTab == 3)
-            .tabItem {
-                Label(settings.localized("Settings"), systemImage: "gearshape")
-            }
-            .tag(3)
-        }
-        .tint(.blue)
-        .modifier(PreventTabBarCollapseModifier())
+            .tint(.blue)
+            .modifier(PreventTabBarCollapseModifier())
 #endif
+        }
+        .environment(\.menuBackgroundHost, backgroundHost)
+        .environment(\.menuBackgroundSessionStart, backgroundHost.sessionStart)
+        .onAppear {
+            backgroundHost.setSelectedTabAllowsBackground(selectedTabShowsBackground)
+        }
+        .onChange(of: selectedTabShowsBackground) { _, showsBackground in
+            backgroundHost.setSelectedTabAllowsBackground(showsBackground)
+        }
+        .onDisappear {
+            backgroundHost.release()
+        }
     }
 }
 

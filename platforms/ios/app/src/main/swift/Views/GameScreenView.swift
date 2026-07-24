@@ -8,6 +8,16 @@ import GameController
 private let runtimeMenuStateChangedNotification = Notification.Name("ARMSX2iOSRuntimeMenuStateChanged")
 private let retroAchievementsToastNotification = Notification.Name("ARMSX2RetroAchievementsNotification")
 
+private enum EmulationOnlyNativeReleaseFlag {
+    // Keep these bit positions synchronized with VMManager.h.
+    static let patches: UInt = 1 << 0
+    static let discordPresence: UInt = 1 << 1
+    static let pine: UInt = 1 << 2
+    static let achievements: UInt = 1 << 3
+    static let inputRecording: UInt = 1 << 4
+    static let osd: UInt = 1 << 5
+}
+
 private struct RetroAchievementsToast: Equatable {
     let title: String
     let message: String
@@ -81,13 +91,119 @@ private enum OverlayRoute: Equatable {
     case pausedPresenting(QuickMenuDestination)
 }
 
+/// Gameplay presentation used after Emulation-Only Mode finishes startup cleanup.
+/// With every release switch enabled, this keeps only the existing Metal surface.
+struct EmulationOnlyGameView: View {
+    @State private var appState = AppState.shared
+    @State private var dynamicSettings = DynamicThumbstickSettings.shared
+    @State private var touchActionSession = VirtualPadTouchActionSession()
+
+    @ViewBuilder
+    var body: some View {
+        if appState.emulationOnlyPresentation == .minimal {
+            MetalGameView()
+                .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Game display")
+                .accessibilityAddTraits(.isImage)
+                .persistentSystemOverlays(.hidden)
+                .onAppear(perform: preparePresentation)
+                .onDisappear(perform: releasePresentation)
+        } else {
+            retainedGameplayView
+                .persistentSystemOverlays(.hidden)
+                .onAppear(perform: preparePresentation)
+                .onDisappear(perform: releasePresentation)
+        }
+    }
+
+    private var retainedGameplayView: some View {
+        GeometryReader { geometry in
+            let isLandscape = geometry.size.width > geometry.size.height
+
+            Group {
+                if appState.emulationOnlyPresentation.showsVirtualControls && !isLandscape {
+                    VStack(spacing: 0) {
+                        let gameHeight = min(geometry.size.width * 3 / 4, geometry.size.height * 0.6)
+                        accessibleMetalSurface
+                            .frame(height: gameHeight)
+                            .clipped()
+                            .overlay { dynamicCrosshairOverlay }
+
+                        ZStack {
+                            Color.black
+                            retainedVirtualControls(isLandscape: false)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .ignoresSafeArea(.container, edges: .bottom)
+                } else {
+                    ZStack {
+                        accessibleMetalSurface
+                        if appState.emulationOnlyPresentation.showsVirtualControls {
+                            retainedVirtualControls(isLandscape: true)
+                        }
+                        dynamicCrosshairOverlay
+                    }
+                    .ignoresSafeArea()
+                }
+            }
+        }
+    }
+
+    private var accessibleMetalSurface: some View {
+        MetalGameView()
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Game display")
+            .accessibilityAddTraits(.isImage)
+    }
+
+    private func retainedVirtualControls(isLandscape: Bool) -> some View {
+        VirtualControllerView(
+            isLandscape: isLandscape,
+            layoutSnapshot: appState.emulationOnlyPresentation.padLayoutSnapshot,
+            skinDescriptor: appState.emulationOnlyPresentation.padSkinDescriptor,
+            touchActionSession: touchActionSession
+        )
+    }
+
+    private var dynamicCrosshairOverlay: some View {
+        DynamicAimCrosshairOverlay(
+            settings: dynamicSettings,
+            leftRuntime: touchActionSession.left.crosshairState,
+            rightRuntime: touchActionSession.right.crosshairState
+        )
+    }
+
+    private func preparePresentation() {
+        appState.hideStatusBar = true
+        appState.hideHomeIndicator = true
+        UIApplication.shared.isIdleTimerDisabled = true
+
+        // GameScreenView's onDisappear can run later in the same SwiftUI update.
+        // Reassert the retained presentation state after that teardown completes.
+        DispatchQueue.main.async {
+            guard appState.isEmulationOnlyMode else { return }
+            appState.hideStatusBar = true
+            appState.hideHomeIndicator = true
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+    }
+
+    private func releasePresentation() {
+        UIApplication.shared.isIdleTimerDisabled = false
+    }
+}
+
 struct GameScreenView: View {
     // MARK: - State & Constants
 
     @State private var appState = AppState.shared
     @State private var settings = SettingsStore.shared
+    @State private var dynamicSettings = DynamicThumbstickSettings.shared
     @State private var layoutPresets = PadLayoutPresetStore.shared
     @State private var skinLibrary = VPadSkinLibraryStore.shared
+    @State private var touchActionSession = VirtualPadTouchActionSession()
     @State private var userVirtualPadVisible = true
     @State private var externalControllerConnected = false
     @State private var fullScreen = false
@@ -126,6 +242,7 @@ struct GameScreenView: View {
     // (pause menu, per-game settings) aren't re-measured on rotation, so we
     // key them on this to force a fresh layout on a flip.
     @State private var screenIsLandscape = true
+    @State private var emulationOnlyTransitionTask: Task<Void, Never>?
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -217,10 +334,12 @@ struct GameScreenView: View {
                             VirtualControllerView(
                                 isLandscape: true,
                                 layoutSnapshot: effectivePadLayoutSnapshot,
-                                skinDescriptor: effectivePadSkinDescriptor
+                                skinDescriptor: effectivePadSkinDescriptor,
+                                touchActionSession: touchActionSession
                             )
                             .id(padRebuildToken)
                         }
+                        dynamicCrosshairOverlay
                         menuButtonOverlay(isLandscape: true)
                     }
                     .ignoresSafeArea()
@@ -238,14 +357,20 @@ struct GameScreenView: View {
                             .accessibilityLabel("Game display")
                             .accessibilityAddTraits(.isImage)
                             .accessibilityHint("VoiceOver image recognition can read on-screen text.")
-                            .overlay { AccessibilityHUDMirror() }
+                            .overlay {
+                                ZStack {
+                                    AccessibilityHUDMirror()
+                                    dynamicCrosshairOverlay
+                                }
+                            }
 
                         if effectiveVirtualPadVisible {
                             ZStack {
                                 Color.black
                                 VirtualControllerView(
                                     layoutSnapshot: effectivePadLayoutSnapshot,
-                                    skinDescriptor: effectivePadSkinDescriptor
+                                    skinDescriptor: effectivePadSkinDescriptor,
+                                    touchActionSession: touchActionSession
                                 )
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                             }
@@ -346,6 +471,8 @@ struct GameScreenView: View {
             Text(settings.localized("Restart the current game? Unsaved progress will be lost."))
         }
         .onAppear {
+            FrameTimeDynamicResolutionController.shared.resumeAfterEmulationOnlyMode()
+            GameEventHaptics.shared.prepareForGameplaySession()
             enterGameplaySystemChromeMode()
             syncFullscreenStateFromWindow()
             applyInitialFullscreenPreference()
@@ -353,8 +480,10 @@ struct GameScreenView: View {
             refreshRuntimeMenuState()
             consumePendingRetroAchievementsToast()
             startMenuRestorePollingIfNeeded()
+            enterEmulationOnlyModeIfReady()
         }
         .onDisappear {
+            cancelEmulationOnlyTransition()
             statusBanner.cancelDismiss()
             achievementsBanner.cancelDismiss()
             stopMenuRestorePolling()
@@ -400,11 +529,24 @@ struct GameScreenView: View {
                 stopMenuRestorePolling()
             }
         }
+        .onChange(of: settings.emulationOnlyModeEnabled) { _, isEnabled in
+            if isEnabled {
+                enterEmulationOnlyModeIfReady()
+            } else {
+                cancelEmulationOnlyTransition()
+            }
+        }
+        .onChange(of: appState.emulationOnlyStartupReady) { _, isReady in
+            if isReady {
+                enterEmulationOnlyModeIfReady()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: runtimeMenuStateChangedNotification)) { _ in
             refreshRuntimeMenuState()
         }
         .onReceive(NotificationCenter.default.publisher(for: .GCControllerDidConnect)) { _ in
             refreshExternalControllerConnectionState()
+            enterEmulationOnlyModeIfReady()
         }
         .onReceive(NotificationCenter.default.publisher(for: .GCControllerDidDisconnect)) { _ in
             refreshExternalControllerConnectionState()
@@ -450,6 +592,113 @@ struct GameScreenView: View {
         }
         .accessibilityLabel(settings.localized("Pause Menu"))
         .accessibilityHint(settings.localized("Opens the pause menu"))
+    }
+
+    @MainActor
+    private func enterEmulationOnlyModeIfReady() {
+        guard settings.emulationOnlyModeEnabled,
+              appState.emulationOnlyStartupReady,
+              !appState.isEmulationOnlyMode,
+              ARMSX2Bridge.isVMRunning(),
+              emulationOnlyTransitionTask == nil
+        else {
+            return
+        }
+
+        let delaySeconds = settings.emulationOnlyModeDelaySeconds
+        guard delaySeconds > 0 else {
+            activateEmulationOnlyModeIfReady()
+            return
+        }
+
+        emulationOnlyTransitionTask = Task { @MainActor in
+            do {
+                try await Task.sleep(nanoseconds: UInt64(delaySeconds) * 1_000_000_000)
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled else { return }
+            emulationOnlyTransitionTask = nil
+            activateEmulationOnlyModeIfReady()
+        }
+    }
+
+    @MainActor
+    private func activateEmulationOnlyModeIfReady() {
+        guard settings.emulationOnlyModeEnabled,
+              appState.emulationOnlyStartupReady,
+              !appState.isEmulationOnlyMode,
+              ARMSX2Bridge.isVMRunning()
+        else {
+            return
+        }
+
+        let hasExternalController = !GCController.controllers().isEmpty
+        let keepsVirtualControls =
+            !hasExternalController ||
+            (!settings.emulationOnlyDisableVirtualControls && effectiveVirtualPadVisible)
+        let keepsQuickMenu = !settings.emulationOnlyDisableQuickMenu
+        let presentation = EmulationOnlyPresentation(
+            showsVirtualControls: keepsVirtualControls,
+            showsQuickMenu: keepsQuickMenu,
+            padLayoutSnapshot: keepsVirtualControls ? effectivePadLayoutSnapshot : nil,
+            padSkinDescriptor: keepsVirtualControls ? effectivePadSkinDescriptor : nil
+        )
+
+        overlayRoute = .hidden
+        if keepsQuickMenu {
+            menuButtonHidden = false
+        }
+        statusBanner.cancelDismiss()
+        achievementsBanner.cancelDismiss()
+        stopMenuRestorePolling()
+
+        runtimePerGameSettingsEntry = nil
+        runtimePerGameSettings = nil
+        runtimePadLayoutIdentity = nil
+
+        if !keepsVirtualControls {
+            ARMSX2VirtualPadMaskImageCache.releaseForEmulationOnlyMode()
+            HapticManager.releaseForEmulationOnlyMode()
+        }
+        GameEventHaptics.shared.releaseForEmulationOnlyMode()
+        PatchStore.shared.releasePresentationResources()
+        if settings.emulationOnlyClearNetworkCache {
+            URLCache.shared.removeAllCachedResponses()
+        }
+        if settings.emulationOnlyDisableFramePacing {
+            FrameTimeDynamicResolutionController.shared.suspendForEmulationOnlyMode()
+        }
+
+        ARMSX2Bridge.releaseNonEmulationResources(emulationOnlyNativeReleaseFlags)
+        ARMSX2Bridge.setVMPaused(false)
+        appState.enterEmulationOnlyMode(presentation: presentation)
+    }
+
+    @MainActor
+    private func cancelEmulationOnlyTransition() {
+        emulationOnlyTransitionTask?.cancel()
+        emulationOnlyTransitionTask = nil
+    }
+
+    private var emulationOnlyNativeReleaseFlags: UInt {
+        var flags: UInt = 0
+        if settings.emulationOnlyDisablePatches { flags |= EmulationOnlyNativeReleaseFlag.patches }
+        if settings.emulationOnlyDisableDiscordPresence { flags |= EmulationOnlyNativeReleaseFlag.discordPresence }
+        if settings.emulationOnlyDisablePINE { flags |= EmulationOnlyNativeReleaseFlag.pine }
+        if settings.emulationOnlyDisableRetroAchievements { flags |= EmulationOnlyNativeReleaseFlag.achievements }
+        if settings.emulationOnlyDisableInputRecording { flags |= EmulationOnlyNativeReleaseFlag.inputRecording }
+        if settings.emulationOnlyDisableOSD { flags |= EmulationOnlyNativeReleaseFlag.osd }
+        return flags
+    }
+
+    private var dynamicCrosshairOverlay: some View {
+        DynamicAimCrosshairOverlay(
+            settings: dynamicSettings,
+            leftRuntime: touchActionSession.left.crosshairState,
+            rightRuntime: touchActionSession.right.crosshairState
+        )
     }
 
     @ViewBuilder
@@ -1058,7 +1307,12 @@ struct GameScreenView: View {
     // MARK: - Virtual Pad
 
     private var effectiveVirtualPadVisible: Bool {
-        userVirtualPadVisible && (!settings.autoHideVirtualPadWhenControllerConnected || !externalControllerConnected) && overlayRoute != .pausedPresenting(.padLayout)
+        if appState.isEmulationOnlyMode {
+            return appState.emulationOnlyPresentation.showsVirtualControls
+        }
+        return userVirtualPadVisible &&
+            (!settings.autoHideVirtualPadWhenControllerConnected || !externalControllerConnected) &&
+            overlayRoute != .pausedPresenting(.padLayout)
     }
 
     private var effectivePadLayoutSnapshot: PadLayoutSnapshot? {

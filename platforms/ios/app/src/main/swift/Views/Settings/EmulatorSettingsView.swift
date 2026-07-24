@@ -190,6 +190,55 @@ struct EmulatorSettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section(settings.localized("Advanced Emulation")) {
+                Toggle(settings.localized("Emulation-Only Mode"), isOn: $settings.emulationOnlyModeEnabled)
+                Text(settings.localized("Automatically unloads the selected menus, controls, and optional services for the current emulation session."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Group {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(settings.localized("Emulation-Only Mode Timer"))
+                            Spacer()
+                            Text("\(settings.emulationOnlyModeDelaySeconds)s")
+                                .foregroundStyle(.secondary)
+                                .font(.callout.monospacedDigit())
+                        }
+                        Slider(
+                            value: emulationOnlyModeDelayBinding,
+                            in: Double(SettingsStore.emulationOnlyModeDelayRange.lowerBound)...Double(SettingsStore.emulationOnlyModeDelayRange.upperBound),
+                            step: 1
+                        ) {
+                            Text(settings.localized("Emulation-Only Mode Timer"))
+                        } minimumValueLabel: {
+                            Text("0s")
+                        } maximumValueLabel: {
+                            Text("15s")
+                        }
+                    }
+
+                    Toggle(
+                        settings.localized("Disable Cheats, Widescreen and Dynamic Patches"),
+                        isOn: $settings.emulationOnlyDisablePatches
+                    )
+                    Toggle(settings.localized("Disable PINE Server"), isOn: $settings.emulationOnlyDisablePINE)
+                    Toggle(settings.localized("Disable RetroAchievements"), isOn: $settings.emulationOnlyDisableRetroAchievements)
+                    Toggle(settings.localized("Disable PCSX2 Input Recording"), isOn: $settings.emulationOnlyDisableInputRecording)
+                    Toggle(settings.localized("Disable OSD and Performance Overlays"), isOn: $settings.emulationOnlyDisableOSD)
+                    Toggle(settings.localized("Disable Frame Pacing"), isOn: $settings.emulationOnlyDisableFramePacing)
+                    Toggle(settings.localized("Disable Virtual Control Layout"), isOn: $settings.emulationOnlyDisableVirtualControls)
+                    Toggle(settings.localized("Disable Quick Menu"), isOn: $settings.emulationOnlyDisableQuickMenu)
+                    Toggle(settings.localized("Clear Network Cache"), isOn: $settings.emulationOnlyClearNetworkCache)
+                }
+                .disabled(!settings.emulationOnlyModeEnabled)
+
+                Text(settings.localized("The timer starts after boot patches and replacement-texture startup complete. Discord Presence is always disabled. All visible cleanup switches default ON, preserving the existing maximum-performance behavior. Disable Frame Pacing stops the optional adaptive frame-time monitor; the core limiter and audio/video timing remain active. Turn a switch off to retain that resource. Without an external controller, the current Virtual Control Layout is retained automatically. Turn Disable Quick Menu off to keep the complete Quick Menu available."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .disabled(!settings.emulationOnlyModeEnabled)
+            }
+
             Section {
                 Button(settings.localized("Use VU1 Interpreter Preset")) {
                     settings.applyVU1CompatibilityPreset()
@@ -298,6 +347,13 @@ struct EmulatorSettingsView: View {
 
     private static func formatFPS(_ value: Float) -> String {
         String(format: "%.2f FPS", value)
+    }
+
+    private var emulationOnlyModeDelayBinding: Binding<Double> {
+        Binding(
+            get: { Double(settings.emulationOnlyModeDelaySeconds) },
+            set: { settings.emulationOnlyModeDelaySeconds = Int($0.rounded()) }
+        )
     }
 
     /// Compact labeled picker over a fixed ordered option list (round/clamp modes).

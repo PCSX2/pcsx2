@@ -112,6 +112,8 @@ final class SettingsStore {
     static let textureOffsetRange = -4096...4096
     static let skipDrawRange = 0...5000
     static let defaultOsdPerformancePosition = 3
+    static let emulationOnlyModeDelayRange = 0...15
+    static let defaultEmulationOnlyModeDelaySeconds = 5
 
     /// Manual EmuCore/Gamefixes toggles — see SettingsStore+GameFixes.swift.
 
@@ -206,6 +208,133 @@ final class SettingsStore {
             ARMSX2Bridge.setINIBool("EmuCore/CPU/Recompiler", key: "EnableFastmem", value: fastmem)
         }
     }
+    let _emulationOnlyModeConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyMode", default: false,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyModeEnabled: Bool = false { didSet {
+        guard !(_emulationOnlyModeConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyModeConfig.writer(
+            _emulationOnlyModeConfig.section,
+            _emulationOnlyModeConfig.key,
+            emulationOnlyModeEnabled
+        )
+        _emulationOnlyModeConfig.onSet?(emulationOnlyModeEnabled)
+    }}
+    let _emulationOnlyDisablePatchesConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisablePatches", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisablePatches: Bool = true { didSet {
+        guard !(_emulationOnlyDisablePatchesConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisablePatchesConfig.writer(
+            _emulationOnlyDisablePatchesConfig.section,
+            _emulationOnlyDisablePatchesConfig.key,
+            emulationOnlyDisablePatches
+        )
+        _emulationOnlyDisablePatchesConfig.onSet?(emulationOnlyDisablePatches)
+    }}
+    // Discord presence is always released by Emulation-Only Mode.
+    let emulationOnlyDisableDiscordPresence = true
+    let _emulationOnlyDisablePINEConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisablePINE", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisablePINE: Bool = true { didSet {
+        guard !(_emulationOnlyDisablePINEConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisablePINEConfig.writer(
+            _emulationOnlyDisablePINEConfig.section,
+            _emulationOnlyDisablePINEConfig.key,
+            emulationOnlyDisablePINE)
+    }}
+    let _emulationOnlyDisableRetroAchievementsConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableRetroAchievements", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableRetroAchievements: Bool = true { didSet {
+        guard !(_emulationOnlyDisableRetroAchievementsConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableRetroAchievementsConfig.writer(
+            _emulationOnlyDisableRetroAchievementsConfig.section,
+            _emulationOnlyDisableRetroAchievementsConfig.key,
+            emulationOnlyDisableRetroAchievements)
+    }}
+    let _emulationOnlyDisableInputRecordingConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableInputRecording", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableInputRecording: Bool = true { didSet {
+        guard !(_emulationOnlyDisableInputRecordingConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableInputRecordingConfig.writer(
+            _emulationOnlyDisableInputRecordingConfig.section,
+            _emulationOnlyDisableInputRecordingConfig.key,
+            emulationOnlyDisableInputRecording)
+    }}
+    let _emulationOnlyDisableOSDConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableOSD", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableOSD: Bool = true { didSet {
+        guard !(_emulationOnlyDisableOSDConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableOSDConfig.writer(
+            _emulationOnlyDisableOSDConfig.section,
+            _emulationOnlyDisableOSDConfig.key,
+            emulationOnlyDisableOSD)
+    }}
+    let _emulationOnlyDisableFramePacingConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableFramePacing", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableFramePacing: Bool = true { didSet {
+        guard !(_emulationOnlyDisableFramePacingConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableFramePacingConfig.writer(
+            _emulationOnlyDisableFramePacingConfig.section,
+            _emulationOnlyDisableFramePacingConfig.key,
+            emulationOnlyDisableFramePacing)
+    }}
+    let _emulationOnlyDisableVirtualControlsConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableVirtualControls", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableVirtualControls: Bool = true { didSet {
+        guard !(_emulationOnlyDisableVirtualControlsConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableVirtualControlsConfig.writer(
+            _emulationOnlyDisableVirtualControlsConfig.section,
+            _emulationOnlyDisableVirtualControlsConfig.key,
+            emulationOnlyDisableVirtualControls)
+    }}
+    let _emulationOnlyDisableQuickMenuConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyDisableQuickMenu", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyDisableQuickMenu: Bool = true { didSet {
+        guard !(_emulationOnlyDisableQuickMenuConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyDisableQuickMenuConfig.writer(
+            _emulationOnlyDisableQuickMenuConfig.section,
+            _emulationOnlyDisableQuickMenuConfig.key,
+            emulationOnlyDisableQuickMenu)
+    }}
+    let _emulationOnlyClearNetworkCacheConfig = Setting<Bool>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyClearNetworkCache", default: true,
+        writer: ARMSX2Bridge.setINIBool)
+    var emulationOnlyClearNetworkCache: Bool = true { didSet {
+        guard !(_emulationOnlyClearNetworkCacheConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyClearNetworkCacheConfig.writer(
+            _emulationOnlyClearNetworkCacheConfig.section,
+            _emulationOnlyClearNetworkCacheConfig.key,
+            emulationOnlyClearNetworkCache)
+    }}
+    let _emulationOnlyModeDelayConfig = Setting<Int>(
+        section: "ARMSX2iOS/UI", key: "EmulationOnlyModeDelaySeconds",
+        default: SettingsStore.defaultEmulationOnlyModeDelaySeconds,
+        writer: { section, key, value in
+            ARMSX2Bridge.setINIInt(
+                section,
+                key: key,
+                value: Int32(SettingsStore.clamped(value, to: SettingsStore.emulationOnlyModeDelayRange)))
+        })
+    var emulationOnlyModeDelaySeconds = SettingsStore.defaultEmulationOnlyModeDelaySeconds { didSet {
+        let clamped = Self.clamped(emulationOnlyModeDelaySeconds, to: Self.emulationOnlyModeDelayRange)
+        guard emulationOnlyModeDelaySeconds == clamped else {
+            emulationOnlyModeDelaySeconds = clamped
+            return
+        }
+        guard !(_emulationOnlyModeDelayConfig.suppressible && suppressINIWrites) else { return }
+        _emulationOnlyModeDelayConfig.writer(
+            _emulationOnlyModeDelayConfig.section,
+            _emulationOnlyModeDelayConfig.key,
+            emulationOnlyModeDelaySeconds)
+    }}
 
     // ── CPU Rounding & Clamping ──
     // FPU/VU rounding and clamping improve accuracy/compatibility for specific games.
@@ -1678,6 +1807,21 @@ final class SettingsStore {
         vu1Recompiler = ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "EnableVU1", defaultValue: true)
         fastBoot = Self.loadedFastBoot()
         fastmem = ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "EnableFastmem", defaultValue: true)
+        emulationOnlyModeEnabled = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyMode", defaultValue: false)
+        emulationOnlyDisablePatches = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisablePatches", defaultValue: true)
+        emulationOnlyDisablePINE = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisablePINE", defaultValue: true)
+        emulationOnlyDisableRetroAchievements = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableRetroAchievements", defaultValue: true)
+        emulationOnlyDisableInputRecording = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableInputRecording", defaultValue: true)
+        emulationOnlyDisableOSD = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableOSD", defaultValue: true)
+        emulationOnlyDisableFramePacing = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableFramePacing", defaultValue: true)
+        emulationOnlyDisableVirtualControls = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableVirtualControls", defaultValue: true)
+        emulationOnlyDisableQuickMenu = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableQuickMenu", defaultValue: true)
+        emulationOnlyClearNetworkCache = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyClearNetworkCache", defaultValue: true)
+        emulationOnlyModeDelaySeconds = Self.clamped(
+            Int(ARMSX2Bridge.getINIInt(
+                "ARMSX2iOS/UI", key: "EmulationOnlyModeDelaySeconds",
+                defaultValue: Int32(Self.defaultEmulationOnlyModeDelaySeconds))),
+            to: Self.emulationOnlyModeDelayRange)
         // CPU rounding & clamping
         eeFpuRoundMode = Self.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "FPU.Roundmode", defaultValue: 3)))
         vu0RoundMode = Self.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "VU0.Roundmode", defaultValue: 3)))
@@ -1908,6 +2052,21 @@ final class SettingsStore {
         vu1Recompiler = ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "EnableVU1", defaultValue: true)
         fastBoot = Self.loadedFastBoot()
         fastmem = ARMSX2Bridge.getINIBool("EmuCore/CPU/Recompiler", key: "EnableFastmem", defaultValue: true)
+        emulationOnlyModeEnabled = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyMode", defaultValue: false)
+        emulationOnlyDisablePatches = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisablePatches", defaultValue: true)
+        emulationOnlyDisablePINE = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisablePINE", defaultValue: true)
+        emulationOnlyDisableRetroAchievements = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableRetroAchievements", defaultValue: true)
+        emulationOnlyDisableInputRecording = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableInputRecording", defaultValue: true)
+        emulationOnlyDisableOSD = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableOSD", defaultValue: true)
+        emulationOnlyDisableFramePacing = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableFramePacing", defaultValue: true)
+        emulationOnlyDisableVirtualControls = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableVirtualControls", defaultValue: true)
+        emulationOnlyDisableQuickMenu = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyDisableQuickMenu", defaultValue: true)
+        emulationOnlyClearNetworkCache = ARMSX2Bridge.getINIBool("ARMSX2iOS/UI", key: "EmulationOnlyClearNetworkCache", defaultValue: true)
+        emulationOnlyModeDelaySeconds = Self.clamped(
+            Int(ARMSX2Bridge.getINIInt(
+                "ARMSX2iOS/UI", key: "EmulationOnlyModeDelaySeconds",
+                defaultValue: Int32(Self.defaultEmulationOnlyModeDelaySeconds))),
+            to: Self.emulationOnlyModeDelayRange)
         eeFpuRoundMode = Self.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "FPU.Roundmode", defaultValue: 3)))
         vu0RoundMode = Self.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "VU0.Roundmode", defaultValue: 3)))
         vu1RoundMode = Self.clampedRoundMode(Int(ARMSX2Bridge.getINIInt("EmuCore/CPU", key: "VU1.Roundmode", defaultValue: 3)))
@@ -2392,6 +2551,17 @@ final class SettingsStore {
         vu1Recompiler = true
         fastBoot = false
         fastmem = true
+        emulationOnlyModeEnabled = false
+        emulationOnlyDisablePatches = true
+        emulationOnlyDisablePINE = true
+        emulationOnlyDisableRetroAchievements = true
+        emulationOnlyDisableInputRecording = true
+        emulationOnlyDisableOSD = true
+        emulationOnlyDisableFramePacing = true
+        emulationOnlyDisableVirtualControls = true
+        emulationOnlyDisableQuickMenu = true
+        emulationOnlyClearNetworkCache = true
+        emulationOnlyModeDelaySeconds = Self.defaultEmulationOnlyModeDelaySeconds
         eeFpuRoundMode = 3      // Chop (Zero)
         vu0RoundMode = 3
         vu1RoundMode = 3
