@@ -1160,20 +1160,26 @@
     <ClCompile Include="USB\shared\ringbuffer.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp">
-      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    <ClCompile Include="USB\usb-hid\usb-hid.cpp">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-printer\usb-printer.cpp">
-      <Filter>System\Ps2\USB\usb-printer</Filter>
+    <ClCompile Include="USB\usb-lightgun\guncon2.cpp">
+      <Filter>System\Ps2\USB\usb-lightgun</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-msd\usb-msd.cpp">
-      <Filter>System\Ps2\USB\usb-msd</Filter>
+    <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-mic\usb-headset.cpp">
       <Filter>System\Ps2\USB\usb-mic</Filter>
@@ -1181,8 +1187,11 @@
     <ClCompile Include="USB\usb-mic\usb-mic.cpp">
       <Filter>System\Ps2\USB\usb-mic</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-hid\usb-hid.cpp">
-      <Filter>System\Ps2\USB\usb-hid</Filter>
+    <ClCompile Include="USB\usb-msd\usb-msd.cpp">
+      <Filter>System\Ps2\USB\usb-msd</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-buzz.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
@@ -1190,44 +1199,41 @@
     <ClCompile Include="USB\usb-pad\usb-gametrak.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-realplay.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-pad\usb-pad.cpp">
+    <ClCompile Include="USB\usb-pad\usb-rhythm.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-pad\usb-trance-vibrator.cpp">
+    <ClCompile Include="USB\usb-pad\usb-train.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-pad\usb-train.cpp">
+    <ClCompile Include="USB\usb-pad\usb-trance-vibrator.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-pad\usb-turntable.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp">
+    <ClCompile Include="USB\usb-pad\usb-wheel.cpp">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp">
-      <Filter>System\Ps2\USB\usb-pad\lg</Filter>
-    </ClCompile>
-    <ClCompile Include="USB\usb-lightgun\guncon2.cpp">
-      <Filter>System\Ps2\USB\usb-lightgun</Filter>
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
     </ClCompile>
     <ClCompile Include="StateWrapper.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-mic\audiodev-cubeb.cpp">
-      <Filter>System\Ps2\USB\usb-mic</Filter>
-    </ClCompile>
     <ClCompile Include="USB\deviceproxy.cpp">
       <Filter>System\Ps2\USB</Filter>
-    </ClCompile>
-    <ClCompile Include="USB\usb-pad\usb-pad-sdl-ff.cpp">
-      <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\Debug.cpp">
       <Filter>System\Ps2\SPU2</Filter>
@@ -1409,9 +1415,6 @@
     </ClCompile>
     <ClCompile Include="DebugTools\SymbolImporter.cpp">
       <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="USB\usb-eyetoy\cam-jpeg.cpp">
-      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
     <ClCompile Include="Host\AudioStream.cpp">
       <Filter>Misc\Host</Filter>
@@ -2163,10 +2166,19 @@
     <ClInclude Include="USB\usb-pad\usb-gametrak.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad-ff.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-realplay.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
-    <ClInclude Include="USB\usb-pad\usb-pad.h">
+    <ClInclude Include="USB\usb-pad\usb-seamic.h">
       <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-pad\usb-train.h">
@@ -2189,9 +2201,6 @@
     </ClInclude>
     <ClInclude Include="USB\usb-mic\audiodev-cubeb.h">
       <Filter>System\Ps2\USB\usb-mic</Filter>
-    </ClInclude>
-    <ClInclude Include="USB\usb-pad\usb-pad-sdl-ff.h">
-      <Filter>System\Ps2\USB\usb-pad</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\Debug.h">
       <Filter>System\Ps2\SPU2</Filter>
