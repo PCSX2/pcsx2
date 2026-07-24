@@ -38,6 +38,11 @@ static void rc_alloc_helper_variable_memref_value(rc_richpresence_display_part_t
   /* ensure new needed memrefs are allocated in the primary buffer */
   rc_preparse_copy_memrefs(parse, &preparse.memrefs);
 
+  if (parse->offset < 0) {
+    rc_destroy_preparse_state(&preparse);
+    return;
+  }
+
   /* parse the value into the scratch buffer so we can look at it */
   rc_reset_parse_state(&preparse.parse, rc_buffer_alloc(&preparse.parse.scratch.buffer, (size_t)size));
   preparse.parse.memrefs = parse->memrefs;
@@ -725,13 +730,14 @@ rc_memrefs_t* rc_richpresence_get_memrefs(rc_richpresence_t* self) {
 void rc_update_richpresence(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud, void* unused_L) {
   (void)unused_L;
 
-  rc_update_richpresence_memrefs(richpresence, peek, peek_ud);
-  rc_update_values(richpresence->values, peek, peek_ud);
   rc_update_richpresence_internal(richpresence, peek, peek_ud);
 }
 
 void rc_update_richpresence_internal(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud) {
   rc_richpresence_display_t* display;
+
+  rc_update_richpresence_memrefs(richpresence, peek, peek_ud);
+  rc_update_values(richpresence->values, peek, peek_ud);
 
   for (display = richpresence->first_display; display; display = display->next) {
     if (display->has_required_hits)

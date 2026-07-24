@@ -56,7 +56,6 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
   rc_api_achievement_awarded_entry_t* entry;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  uint32_t timet;
   int result;
 
   rc_json_field_t fields[] = {
@@ -120,9 +119,8 @@ int rc_api_process_fetch_achievement_info_server_response(rc_api_fetch_achieveme
       if (!rc_json_get_required_string(&entry->username, &response->response, &entry_fields[0], "User"))
         return RC_MISSING_VALUE;
 
-      if (!rc_json_get_required_unum(&timet, &response->response, &entry_fields[1], "DateAwarded"))
+      if (!rc_json_get_required_timet(&entry->awarded, &response->response, &entry_fields[1], "DateAwarded"))
         return RC_MISSING_VALUE;
-      entry->awarded = (time_t)timet;
 
       rc_json_get_optional_string(&entry->avatar_url, &response->response, &entry_fields[2], "AvatarUrl", NULL);
       if (!entry->avatar_url)
@@ -185,7 +183,6 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
   rc_api_lboard_info_entry_t* entry;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  uint32_t timet;
   int result;
   size_t len;
   char format[16];
@@ -289,9 +286,8 @@ int rc_api_process_fetch_leaderboard_info_server_response(rc_api_fetch_leaderboa
       if (!rc_json_get_required_num(&entry->score, &response->response, &entry_fields[3], "Score"))
         return RC_MISSING_VALUE;
 
-      if (!rc_json_get_required_unum(&timet, &response->response, &entry_fields[4], "DateSubmitted"))
+      if (!rc_json_get_required_timet(&entry->submitted, &response->response, &entry_fields[4], "DateSubmitted"))
         return RC_MISSING_VALUE;
-      entry->submitted = (time_t)timet;
 
       rc_json_get_optional_string(&entry->avatar_url, &response->response, &entry_fields[5], "AvatarUrl", NULL);
       if (!entry->avatar_url)
@@ -325,8 +321,8 @@ int rc_api_init_fetch_games_list_request_hosted(rc_api_request_t* request,
     return RC_INVALID_STATE;
 
   rc_url_builder_init(&builder, &request->buffer, 48);
-  rc_url_builder_append_str_param(&builder, "r", "gameslist");
-  rc_url_builder_append_unum_param(&builder, "c", api_params->console_id);
+  rc_url_builder_append_str_param(&builder, "r", "systemgames");
+  rc_url_builder_append_unum_param(&builder, "s", api_params->console_id);
 
   request->post_data = rc_url_builder_finalize(&builder);
   request->content_type = RC_CONTENT_TYPE_URLENCODED;
@@ -347,14 +343,25 @@ int rc_api_process_fetch_games_list_response(rc_api_fetch_games_list_response_t*
 int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_response_t* response, const rc_api_server_response_t* server_response) {
   rc_api_game_list_entry_t* entry;
   rc_json_iterator_t iterator;
-  rc_json_field_t field;
+  rc_json_field_t array_field;
   int result;
-  char* end;
 
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
     RC_JSON_NEW_FIELD("Error"),
     RC_JSON_NEW_FIELD("Response")
+  };
+
+  rc_json_field_t game_fields[] = {
+    RC_JSON_NEW_FIELD("ID"),
+    RC_JSON_NEW_FIELD("Title"),
+    RC_JSON_NEW_FIELD("ImageIcon"),
+    RC_JSON_NEW_FIELD("ImageUrl"),
+    RC_JSON_NEW_FIELD("NumAchievements"),
+    RC_JSON_NEW_FIELD("NumLeaderboards"),
+    RC_JSON_NEW_FIELD("Points"),
+    RC_JSON_NEW_FIELD("SupportedHashes"), /* array */
+    RC_JSON_NEW_FIELD("UnsupportedHashes"), /* array */
   };
 
   memset(response, 0, sizeof(*response));
@@ -364,32 +371,50 @@ int rc_api_process_fetch_games_list_server_response(rc_api_fetch_games_list_resp
   if (result != RC_OK)
     return result;
 
-  if (!fields[2].value_start) {
-    /* call rc_json_get_required_object to generate the error message */
-    rc_json_get_required_object(NULL, 0, &response->response, &fields[2], "Response");
+  if (!rc_json_get_required_array(&response->num_entries, &array_field, &response->response, &fields[2], "Response"))
     return RC_MISSING_VALUE;
-  }
 
-  response->num_entries = fields[2].array_size;
-  rc_buffer_reserve(&response->response.buffer, response->num_entries * (32 + sizeof(rc_api_game_list_entry_t)));
+  if (response->num_entries) {
+    /* 8=image_name, 32=title, 64=image_url, 32=one hash */
+    rc_buffer_reserve(&response->response.buffer, response->num_entries * (8 + 32 + 64 + 32 + sizeof(rc_api_game_list_entry_t)));
 
-  response->entries = (rc_api_game_list_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_game_list_entry_t));
-  if (!response->entries)
-    return RC_OUT_OF_MEMORY;
+    response->entries = (rc_api_game_list_entry_t*)rc_buffer_alloc(&response->response.buffer, response->num_entries * sizeof(rc_api_game_list_entry_t));
+    if (!response->entries)
+      return RC_OUT_OF_MEMORY;
 
-  memset(&iterator, 0, sizeof(iterator));
-  iterator.json = fields[2].value_start;
-  iterator.end = fields[2].value_end;
+    memset(&iterator, 0, sizeof(iterator));
+    iterator.json = array_field.value_start;
+    iterator.end = array_field.value_end;
 
-  entry = response->entries;
-  while (rc_json_get_next_object_field(&iterator, &field)) {
-    entry->id = strtol(field.name, &end, 10);
+    entry = response->entries;
+    while (rc_json_get_array_entry_object(game_fields, sizeof(game_fields) / sizeof(game_fields[0]), &iterator)) {
+      if (!rc_json_get_required_unum(&entry->id, &response->response, &game_fields[0], "ID"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_string(&entry->name, &response->response, &game_fields[1], "Title"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_unum(&entry->num_achievements, &response->response, &game_fields[4], "NumAchievements"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_unum(&entry->num_leaderboards, &response->response, &game_fields[5], "NumLeaderboards"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_unum(&entry->points, &response->response, &game_fields[6], "Points"))
+        return RC_MISSING_VALUE;
 
-    field.name = "";
-    if (!rc_json_get_string(&entry->name, &response->response.buffer, &field, ""))
-      return RC_MISSING_VALUE;
+      /* ImageIcon will be '/Images/0123456.png' - only return the '0123456' */
+      rc_json_extract_filename(&game_fields[2]);
+      if (!rc_json_get_required_string(&entry->image_name, &response->response, &game_fields[2], "ImageIcon"))
+        return RC_MISSING_VALUE;
+      if (!rc_json_get_required_string(&entry->image_url, &response->response, &game_fields[3], "ImageUrl"))
+        return RC_MISSING_VALUE;
 
-    ++entry;
+      result = rc_json_get_required_string_array(&entry->supported_hashes, &entry->num_supported_hashes, &response->response, &game_fields[7], "SupportedHashes");
+      if (result != RC_OK)
+        return result;
+      result = rc_json_get_optional_string_array(&entry->unsupported_hashes, &entry->num_unsupported_hashes, &response->response, &game_fields[8], "UnsupportedHashes");
+      if (result != RC_OK)
+        return result;
+
+      ++entry;
+    }
   }
 
   return RC_OK;
@@ -484,7 +509,7 @@ int rc_api_process_fetch_game_titles_server_response(rc_api_fetch_game_titles_re
         return RC_MISSING_VALUE;
 
       rc_json_get_optional_string(&entry->image_url, &response->response, &entry_fields[3], "ImageUrl", "");
-      if (!entry->image_url[0])
+      if (!entry->image_url || !entry->image_url[0])
         entry->image_url = rc_api_build_avatar_url(&response->response.buffer, RC_IMAGE_TYPE_GAME, entry->image_name);
 
       ++entry;

@@ -164,8 +164,26 @@ rc_api_fetch_games_list_request_t;
 typedef struct rc_api_game_list_entry_t {
   /* The unique identifier of the game */
   uint32_t id;
+  /* The number of achievements in the game */
+  uint32_t num_achievements;
+  /* The number of leaderboards in the game */
+  uint32_t num_leaderboards;
+  /* The number of points in the game */
+  uint32_t points;
   /* The name of the game */
   const char* name;
+  /* The image name for the game badge */
+  const char* image_name;
+  /* The URL for the game badge image */
+  const char* image_url;
+  /* An array of supported hashes */
+  const char** supported_hashes;
+  /* An array of unsupported hashes */
+  const char** unsupported_hashes;
+  /* The number of items in the supported_hashes array */
+  uint32_t num_supported_hashes;
+  /* The number of items in the unsupported_hashes array */
+  uint32_t num_unsupported_hashes;
 }
 rc_api_game_list_entry_t;
 

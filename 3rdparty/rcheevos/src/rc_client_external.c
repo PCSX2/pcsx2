@@ -43,6 +43,7 @@ static const char* rc_client_external_build_avatar_url(char buffer[], size_t buf
     return NULL;
 
   snprintf(buffer, buffer_size, "%s", request.url);
+  rc_api_destroy_request(&request);
   return buffer;
 }
 

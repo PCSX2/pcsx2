@@ -49,7 +49,8 @@ enum {
   RC_INSUFFICIENT_BUFFER = -36,
   RC_INVALID_VARIABLE_NAME = -37,
   RC_UNKNOWN_VARIABLE_NAME = -38,
-  RC_NOT_FOUND = -39
+  RC_NOT_FOUND = -39,
+  RC_INVALID_VALUE = -40
 };
 
 RC_EXPORT const char* RC_CCONV rc_error_str(int ret);
