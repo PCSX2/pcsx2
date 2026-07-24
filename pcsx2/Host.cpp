@@ -181,7 +181,7 @@ static std::string GetIOSVersionForUserAgent()
 	if (sysctlbyname("kern.osproductversion", version, &version_len, nullptr, 0) == 0 && version[0] != '\0')
 		return fmt::format("iOS {}", version);
 
-	return Host::GetOSVersionString();
+	return GetOSVersionString();
 }
 #endif
 
