@@ -1758,7 +1758,7 @@ fragment MainPSOut ps_main(
 			main.current_depth = ds_tex.read(coord).x;
 	}
 
-	if (NEEDS_RT || (PS_ROV_COLOR && any(cb.fbmask == 0xff)))
+	if (NEEDS_RT)
 	{
 		if (PS_ROV_COLOR)
 		{
@@ -1786,8 +1786,6 @@ fragment MainPSOut ps_main(
 		ds_rov.write(out.depth, coord);
 	if (PS_ROV_COLOR && !main.color_discarded)
 	{
-		if (!PS_FBMASK)
-			out.c0 = select(out.c0, main.current_color, cb.fbmask == 0xff);
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else

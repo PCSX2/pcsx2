@@ -1594,7 +1594,6 @@ if (bad)
 		output.c1 = o_col1;
 	#endif
 #elif PS_RETURN_COLOR_ROV
-	o_col0 = (FbMask == 0xFFu) ? RtLoad(input.p.xy) : o_col0; // channel masking
 	if (!rov_discard_color)
 		RtWrite(input.p.xy, o_col0);
 #endif
