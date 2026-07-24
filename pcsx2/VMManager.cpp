@@ -661,6 +661,7 @@ void VMManager::LoadCoreSettings(SettingsInterface& si)
 	// Remove any user-specified hacks in the config (we don't want stale/conflicting values when it's globally disabled).
 	EmuConfig.GS.MaskUserHacks();
 	EmuConfig.GS.MaskUpscalingHacks();
+	EmuConfig.GS.MaskCPUUpscalingHacks();
 
 	// Force MTVU off when playing back GS dumps, it doesn't get used.
 	if (GSDumpReplayer::IsReplayingDump())

@@ -1273,6 +1273,29 @@ static const char* GetVSExpandName(GSHWDrawConfig::VSExpand vsexpand)
 		case GSHWDrawConfig::VSExpand::Sprite:      return "Sprite";
 		case GSHWDrawConfig::VSExpand::LineAA1:     return "LineAA1";
 		case GSHWDrawConfig::VSExpand::TriangleAA1: return "TriangleAA1";
+		case GSHWDrawConfig::VSExpand::Triangle:    return "Triangle";
+	}
+	return "Unknown";
+}
+
+static const char* GetVSClampUVName(GSHWDrawConfig::VS_CLAMP_UV clamp_uv)
+{
+	switch (clamp_uv)
+	{
+		case GSHWDrawConfig::VS_CLAMP_UV::NONE: return "NONE";
+		case GSHWDrawConfig::VS_CLAMP_UV::NEAREST: return "NEAREST";
+		case GSHWDrawConfig::VS_CLAMP_UV::LINEAR: return "LINEAR";
+	}
+	return "Unknown";
+}
+
+static const char* GetVSAlignUVName(GSHWDrawConfig::VS_ALIGN_UV align_uv)
+{
+	switch (align_uv)
+	{
+		case GSHWDrawConfig::VS_ALIGN_UV::NONE: return "NONE";
+		case GSHWDrawConfig::VS_ALIGN_UV::ALIGN: return "ALIGN";
+		case GSHWDrawConfig::VS_ALIGN_UV::PASSTHROUGH_: return "PASSTHROUGH";
 	}
 	return "Unknown";
 }
@@ -1526,6 +1549,17 @@ static const char* GetPSAA1Name(GSHWDrawConfig::PS_AA1 aa1)
 	return "Unknown";
 }
 
+static const char* GetPSRoundUVName(GSHWDrawConfig::PS_ROUND_UV round_uv)
+{
+	switch (round_uv)
+	{
+		case GSHWDrawConfig::PS_ROUND_UV::NONE: return "NONE";
+		case GSHWDrawConfig::PS_ROUND_UV::NEAREST: return "NEAREST";
+		case GSHWDrawConfig::PS_ROUND_UV::LINEAR: return "LINEAR";
+	}
+	return "Unknown";
+}
+
 static const char* GetTexHazardName(u32 tex_hazard)
 {
 	switch (tex_hazard)
@@ -1610,6 +1644,9 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("rov_depth: {} ({})", GetPSROVDepthname(ps.rov_depth), static_cast<u32>(ps.rov_depth));
 	out.WriteLn("ztst: {} ({})", GSUtil::GetZTSTName(ps.ztst), static_cast<u32>(ps.ztst));
 	out.WriteLn("zfloor: {}", static_cast<u32>(ps.zfloor));
+	out.WriteLn("round_uv: {} ({})", GetPSRoundUVName(ps.round_uv), static_cast<u32>(ps.round_uv));
+	out.WriteLn("clamp_uv: {}", ps.clamp_uv);
+	out.WriteLn("align_uv: {}", ps.align_uv);
 }
 
 static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelector& vs)
@@ -1618,6 +1655,8 @@ static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelect
 	out.WriteLn("tme: {}", vs.tme);
 	out.WriteLn("iip: {}", vs.iip);
 	out.WriteLn("point_size: {}", vs.point_size);
+	out.WriteLn(": {} ({})", GetVSClampUVName(vs.clamp_uv), static_cast<u32>(vs.clamp_uv));
+	out.WriteLn(": {} ({})", GetVSAlignUVName(vs.align_uv), static_cast<u32>(vs.align_uv));
 	out.WriteLn("expand: {} ({})", GetVSExpandName(vs.expand), static_cast<u32>(vs.expand));
 }
 

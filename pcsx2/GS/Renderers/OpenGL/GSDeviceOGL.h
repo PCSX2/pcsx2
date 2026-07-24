@@ -128,7 +128,7 @@ public:
 	{
 		PSSelector ps;
 		VSSelector vs;
-		u8 pad[15];
+		u8 pad[8];
 
 		__fi bool operator==(const ProgramSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const ProgramSelector& p) const { return !BitEqual(*this, p); }

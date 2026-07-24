@@ -3108,6 +3108,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Mipmapping"), FSUI_CSTR("Enables emulation of the GS's texture mipmapping."), "EmuCore/GS", "mipmap", true);
 	}
 
+	DrawToggleSetting(
+		bsi, FSUI_ICONSTR(ICON_FA_BULLSEYE, "Accurate UV Rounding"),
+		FSUI_CSTR("Enables accurate UV (texture coordinate) rounding. Some games need this to render sprites correctly."),
+		"EmuCore/GS", "AccurateUVRounding", false);
+
 	if (hw_fixes_visible)
 	{
 		MenuHeading(FSUI_CSTR("Hardware Fixes"));

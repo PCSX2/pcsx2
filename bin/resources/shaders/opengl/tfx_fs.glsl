@@ -40,6 +40,12 @@
 #define PS_AA1_TRIANGLE_SW_Z 3
 #endif
 
+#ifndef PS_ROUND_UV_NONE
+#define PS_ROUND_UV_NONE 0
+#define PS_ROUND_UV_NEAREST 1
+#define PS_ROUND_UV_LINEAR 2
+#endif
+
 // TEX_COORD_DEBUG output the uv coordinate as color. It is useful
 // to detect bad sampling due to upscaling
 //#define TEX_COORD_DEBUG
@@ -93,8 +99,8 @@ layout(std140, binding = 0) uniform cb21
 
 	float ScaledScaleFactor;
 	float RcpScaleFactor;
-	float _pad0_cb1;
-	float _pad1_cb1;
+	float ScaleRT_PS;
+	float ScaleTex_PS;
 
 	float LineCovScale;
 	float _pad2_cb1;
@@ -115,6 +121,16 @@ in SHADER
 
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge;
+	
+	#if PS_ROUND_UV || PS_CLAMP_UV || PS_ALIGN_UV
+		flat uvec4 rounduv;
+	#endif
+	#if PS_ROUND_UV
+		flat vec4 scaleuv;
+	#endif
+	#if PS_CLAMP_UV
+		flat vec4 clampuv;
+	#endif
 } PSin;
 
 #define TARGET_0_QUALIFIER out
@@ -457,6 +473,75 @@ vec4 clamp_wrap_uv(vec4 uv)
 #endif
 
 	return uv_out;
+}
+
+vec4 round_and_clamp_uv()
+{
+#if PS_ROUND_UV
+	// Check if we're at the prim top or left.
+	ivec2 native_xy_i = ivec2(gl_FragCoord.xy) / int(ScaleRT_PS);
+	ivec2 topleft = ivec2(equal(native_xy_i, ivec2(PSin.rounduv.xy)));
+
+	// Extract flags for whether to round U, V.
+	ivec2 round_per_pixel = ivec2(PSin.rounduv.zw) & ivec2(ROUND_UV_PER_PIXEL);
+	ivec2 round_flags = ivec2(PSin.rounduv.zw) & ivec2(ROUND_UV_UP | ROUND_UV_DOWN);
+	round_flags = ivec2(mix(ivec2(0), round_flags, bvec2(round_per_pixel)));
+
+	// Being on the top or left pixels converts round down to round up.
+	ivec2 round_down = ivec2(bvec2(round_flags & ivec2(ROUND_UV_DOWN))) & ~topleft;
+	ivec2 round_down_tl = ivec2(bvec2(round_flags & ivec2(ROUND_UV_DOWN))) & topleft;
+	ivec2 round_up = ivec2(bvec2(round_flags & ivec2(ROUND_UV_DOWN)));
+#endif
+
+	vec2 uv = PSin.t_int.zw; // Unnormalized UVs.
+
+#if PS_ROUND_UV == PS_ROUND_UV_NEAREST
+	// Find the equivalent native UV.
+	vec2 native_xy = vec2(native_xy_i) + 0.5f;
+	vec2 upscale_xy = gl_FragCoord.xy / ScaleRT_PS;
+	vec2 upscale_offset = upscale_xy - native_xy;
+	vec2 native_uv = uv - 16.0f * PSin.scaleuv.xy * upscale_offset;
+	uv = native_uv;
+#endif
+	
+#if PS_ROUND_UV
+	vec2 uvi = round(uv / 16.0f) * 16.0f; // Nearest texel.
+#endif
+	
+#if PS_ROUND_UV == PS_ROUND_UV_NEAREST
+	// Round only if close to a texel boundary.
+	ivec2 close = ivec2(lessThanEqual(abs(uv - uvi), vec2(ROUND_UV_THRESHOLD)));
+	round_down &= close;
+	round_down_tl &= close;
+	round_up &= close;
+#endif
+
+#if PS_ROUND_UV == PS_ROUND_UV_LINEAR
+	// Bilinear: round to 1/16 texel.
+	uv = mix(uv, uv - vec2(ROUND_UV_THRESHOLD), bvec2(round_down));
+	uv = mix(uv, uv + vec2(ROUND_UV_THRESHOLD), bvec2(round_up));
+	uv = floor(uv);
+#elif PS_ROUND_UV == PS_ROUND_UV_NEAREST
+	// Nearest: get the center of the texel we would sample from at native.
+	uv = mix(uv, uvi - vec2(8.0f), bvec2(round_down));
+	uv = mix(uv, uvi + vec2(8.0f), bvec2(round_up));
+	uv = mix(uv, floor(uv / 16.0f) * 16.0f + 8.0f, bvec2(1 & ~(round_down | round_up)));
+
+	// Then offset UV based on the XY offset from native texel center.
+	uv += 16.0f * sign(PSin.scaleuv.xy) * upscale_offset;
+	uv = mix(uv, uvi + vec2(8.0f / ScaleTex_PS), bvec2(round_down_tl));
+	uv += vec2(ROUND_UV_THRESHOLD);
+#endif
+
+#if PS_CLAMP_UV
+	uv = clamp(uv, PSin.clampuv.xy, PSin.clampuv.zw);
+#endif
+
+#if PS_ROUND_UV || PS_CLAMP_UV || PS_ALIGN_UV
+	uv = mix(uv, uv.yx, bvec2(PSin.rounduv.zw & uvec2(ROUND_UV_SWAP)));
+#endif
+
+	return vec4(uv / 16.0f / WH.xy, uv); // Return normalized and unnormalized coords.
 }
 
 mat4 sample_4c(vec4 uv)
@@ -877,6 +962,10 @@ vec4 ps_color()
 #if (PS_FST == 0)
 	vec2 st = PSin.t_float.xy / vec2(PSin.t_float.w);
 	vec2 st_int = PSin.t_int.zw / vec2(PSin.t_float.w);
+#elif PS_ROUND_UV || PS_CLAMP_UV || PS_ALIGN_UV
+	vec4 t_int_rounded = round_and_clamp_uv();
+	vec2 st = t_int_rounded.xy;
+	vec2 st_int = t_int_rounded.zw;
 #else
 	// Note xy are normalized coordinate
 	vec2 st = PSin.t_int.xy;

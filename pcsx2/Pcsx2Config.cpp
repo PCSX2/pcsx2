@@ -759,6 +759,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
+	AccurateUVRounding = false;
+	ShaderSpriteAlign = GSShaderSpriteAlignMode::AlignClamp;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -862,6 +864,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(ShaderSpriteAlign) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -1067,6 +1070,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
+	SettingsWrapBitBoolEx(AccurateUVRounding, "AccurateUVRounding");
+	SettingsWrapIntEnumEx(ShaderSpriteAlign, "ShaderSpriteAlign");
 	SettingsWrapIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
 	SettingsWrapBitfieldEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
 	SettingsWrapIntEnumEx(UserHacks_NativeScaling, "UserHacks_native_scaling");
@@ -1159,6 +1164,23 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 {
 	if (UpscaleMultiplier > 1.0f)
+		return;
+
+	UserHacks_AlignSpriteX = false;
+	UserHacks_MergePPSprite = false;
+	UserHacks_ForceEvenSpritePosition = false;
+	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
+	UserHacks_NativePaletteDraw = false;
+	UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
+	UserHacks_RoundSprite = 0;
+	UserHacks_NativeScaling = GSNativeScaling::Off;
+	UserHacks_TCOffsetX = 0;
+	UserHacks_TCOffsetY = 0;
+}
+
+void Pcsx2Config::GSOptions::MaskCPUUpscalingHacks()
+{
+	if (!(ShaderSpriteAlign != GSShaderSpriteAlignMode::Off || AccurateUVRounding))
 		return;
 
 	UserHacks_AlignSpriteX = false;
