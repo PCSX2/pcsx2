@@ -75,7 +75,7 @@ bool D3D11ShaderCache::Open(D3D_FEATURE_LEVEL feature_level, bool debug)
 
 	m_debug = debug;
 
-	if (!GSConfig.DisableShaderCache)
+	if (GSConfig.ShaderCacheType != GSShaderCacheType::Disabled)
 	{
 		const std::string base_filename = GetCacheBaseFileName(m_shader_model, debug);
 		const std::string index_filename = base_filename + ".idx";

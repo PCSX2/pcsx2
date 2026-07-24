@@ -266,7 +266,7 @@ private:
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
-	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
+	GSHWDrawConfig::TFXPushConstants m_tfx_pc_cache;
 
 	std::string m_shader_tfx_vgs;
 	std::string m_shader_tfx_fs;

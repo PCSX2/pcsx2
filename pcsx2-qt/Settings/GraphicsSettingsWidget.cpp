@@ -233,7 +233,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.overrideTextureBarriers, "EmuCore/GS", "OverrideTextureBarriers", -1, -1);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsDumpCompression, "EmuCore/GS", "GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableFramebufferFetch, "EmuCore/GS", "DisableFramebufferFetch", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableShaderCache, "EmuCore/GS", "DisableShaderCache", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.disableVertexShaderExpand, "EmuCore/GS", "DisableVertexShaderExpand", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.gsDownloadMode, "EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled));
 	SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_advanced.ntscFrameRate, "EmuCore/GS", "FrameRateNTSC", 59.94f);
@@ -242,6 +241,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.shaderCacheType, "EmuCore/GS", "ShaderCacheType", static_cast<int>(GSShaderCacheType::Standard));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.hybridShaderCacheThreads, "EmuCore/GS", "HybridShaderCacheThreads", Pcsx2Config::GSOptions::DEFAULT_HYBRID_SHADER_CACHE_THREADS);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.hybridShaderCacheLatencyMS, "EmuCore/GS", "HybridShaderCacheLatencyMS", Pcsx2Config::GSOptions::DEFAULT_HYBRID_SHADER_CACHE_LATENCY_MS);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.reducedUberShaders, "EmuCore/GS", "ReducedUberShaders", false);
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
 
