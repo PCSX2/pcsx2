@@ -22,6 +22,9 @@
 #include <wil/com.h>
 #endif
 
+#include <algorithm>
+#include <bit>
+
 namespace {
 struct GSUtilMaps
 {
@@ -361,5 +364,430 @@ bool GSUtil::IsValidPSM(int psm)
 			return true;
 		default:
 			return false;
+	}
+}
+
+template<bool swap_xy, typename T>
+static __forceinline T SwapXY(T rect)
+{
+	return swap_xy ? rect.yxwz() : rect;
+}
+
+template<typename T>
+static __forceinline T ExpandRect(const T& rect, const int expand)
+{
+	return rect + T(-expand, -expand, expand, expand);
+}
+
+// Type representing a W x H grid with boolean entries, as a bitfield.
+template<u32 W, u32 H, typename BitfieldType>
+requires ((W <= sizeof(BitfieldType) * 8) && (W % (sizeof(BitfieldType) * 8) == 0))
+class BitGrid
+{
+public:
+	static constexpr u32 BITWIDTH = sizeof(BitfieldType) * 8;
+	static constexpr BitfieldType ALLMASK = ~static_cast<BitfieldType>(0);
+
+	// A single boolean at (x, y).
+	bool Get(u32 x, u32 y) const
+	{
+		return GetBitfield(y, x) & (1 << (x & (BITWIDTH - 1)));
+	}
+
+	// The run of BITWIDTH booleans at (x, y). x is rounded.
+	BitfieldType& GetBitfield(u32 x, u32 y)
+	{
+		return grid[(W / BITWIDTH) * y + (x / BITWIDTH)];
+	}
+
+	// The run of BITWIDTH booleans at (x, y). x is rounded.
+	BitfieldType GetBitfield(u32 x, u32 y) const
+	{
+		return grid[(W / BITWIDTH) * y + (x / BITWIDTH)];
+	}
+private:
+	std::array<BitfieldType, W * H / (sizeof(BitfieldType) * 8)> grid{};
+};
+
+
+// Get the coarse coverage for a single scanline.
+template<u32 W, u32 H, typename BitfieldType>
+static __forceinline void CoarseRasterizeScanline(const u32 x0, const u32 x1, const u32 y,
+	BitGrid<W, H, BitfieldType>& grid)
+{
+	constexpr BitfieldType ALLMASK = BitGrid<W, H, BitfieldType>::ALLMASK;
+	constexpr u32 BITWIDTH = BitGrid<W, H, BitfieldType>::BITWIDTH;
+
+	const BitfieldType first_mask = (ALLMASK << (x0 & (BITWIDTH - 1)));
+	const BitfieldType last_mask = (ALLMASK >> (BITWIDTH - (x1 & (BITWIDTH - 1))));
+
+	if constexpr (W <= BITWIDTH)
+	{
+		// There's only one bitfield per scanline here.
+		grid.GetBitfield(0, y) |= first_mask & (x1 < BITWIDTH ? last_mask : ALLMASK);
+		return;
+	}
+
+	const u32 x0_floor = x0 & ~(BITWIDTH - 1);
+	const u32 x1_ceil = (x1 + (BITWIDTH - 1)) & ~(BITWIDTH - 1);
+	for (u32 x = x0_floor; x < x1_ceil; x += BITWIDTH)
+	{
+		const BitfieldType mask0 = (x <= x0) ? first_mask : ALLMASK;
+		const BitfieldType mask1 = (x >= (x1 & ~(BITWIDTH - 1))) ? last_mask : ALLMASK;
+		grid.GetBitfield(y, x) |= mask0 & mask1;
+	}
+}
+
+// Get the coarse coverage for a triangle section.
+template<u32 W, u32 H, typename BitfieldType>
+static void CoarseRasterizeTriangleSection(int top, int bottom,
+	const GSVector2& x_top, const float y_top, const GSVector2& ddx,
+	const GSVector2i& tile_size, const GSVector2i& tile_shift, const int expand, BitGrid<W, H, BitfieldType>& grid)
+{
+	top -= expand;
+	bottom += expand;
+
+	const int top_floor = top & ~(tile_size.y - 1);
+	const int bottom_ceil = (bottom + tile_size.y - 1) & ~(tile_size.y - 1);
+
+	for (int y = top_floor; y < bottom_ceil; y += tile_size.y)
+	{
+		const int y0 = std::clamp(y, top, bottom - 1);
+		const int y1 = std::clamp(y + tile_size.y, top, bottom - 1);
+
+		const float dy0 = static_cast<float>(y0) - y_top;
+		const float dy1 = static_cast<float>(y1) - y_top;
+
+		const GSVector2 x0 = x_top + ddx * dy0;
+		const GSVector2 x1 = x_top + ddx * dy1;
+
+		const int x0_left = static_cast<int>(std::floor(x0.x)) - expand;
+		const int x0_right = static_cast<int>(std::ceil(x0.y)) + expand;
+		const int x1_left = static_cast<int>(std::floor(x1.x)) - expand;
+		const int x1_right = static_cast<int>(std::ceil(x1.y)) + expand;
+
+		int x_left = std::min(x0_left, x1_left);
+		int x_right = std::max(x0_right, x1_right);
+
+		x_left = std::clamp<int>(x_left >> tile_shift.x, 0, W);
+		x_right = std::clamp<int>((x_right >> tile_shift.x) + 1, 0, W);
+
+		const int y_tile = y0 >> tile_shift.y;
+
+		if (0 < x_right && x_left < x_right && x_left < W && 0 <= y_tile && y_tile < H)
+			CoarseRasterizeScanline<W, H, BitfieldType>(x_left, x_right, y_tile, grid);
+	}
+}
+
+// Get the coarse coverage for a given rect.
+template<u32 W, u32 H, typename BitfieldType>
+static __forceinline void CoarseRasterizeRect(GSVector4i rect, const GSVector2i& tile_size,
+	const GSVector2i& tile_shift, const int expand, BitGrid<W, H, BitfieldType>& grid)
+{
+	rect = ExpandRect(rect, expand).ralign<Align_Outside>(tile_size);
+
+	const u32 x0 = std::clamp<int>(rect.x >> tile_shift.x, 0, W);
+	const u32 y0 = std::clamp<int>(rect.y >> tile_shift.y, 0, H);
+	const u32 x1 = std::clamp<int>(rect.z >> tile_shift.x, 0, W);
+	const u32 y1 = std::clamp<int>(rect.w >> tile_shift.y, 0, H);
+
+	for (u32 y = y0; y < y1; y++)
+		CoarseRasterizeScanline<W, H, BitfieldType>(x0, x1, y, grid);
+}
+
+// Lookup table to sort vertices by Y.
+static const u8 s_ysort[8][4] =
+{
+	{0, 1, 2, 0}, // y0 <= y1 <= y2
+	{1, 0, 2, 0}, // y1 < y0 <= y2
+	{0, 0, 0, 0},
+	{1, 2, 0, 0}, // y1 <= y2 < y0
+	{0, 2, 1, 0}, // y0 <= y2 < y1
+	{0, 0, 0, 0},
+	{2, 0, 1, 0}, // y2 < y0 <= y1
+	{2, 1, 0, 0}, // y2 < y1 < y0
+};
+
+// Get the coarse coverage for a triangle (code modified from SW renderer).
+template<u32 W, u32 H, typename BitfieldType>
+static __forceinline void CoarseRasterizeTriangle(const GSVector4* RESTRICT p,
+	const GSVector2i& tile_size, const GSVector2i& tile_shift,
+	const int expand, BitGrid<W, H, BitfieldType>& grid)
+{
+	GSVector4 y0011 = GSVector4::loadl(&p[0]).yyyy(GSVector4::loadl(&p[1]));
+	GSVector4 y1221 = GSVector4::loadl(&p[1]).yyyy(GSVector4::loadl(&p[2])).xzzx();
+
+	int m1 = (y0011 > y1221).mask() & 7;
+
+	int i[3];
+
+	i[0] = s_ysort[m1][0];
+	i[1] = s_ysort[m1][1];
+	i[2] = s_ysort[m1][2];
+
+	const GSVector4 v0 = GSVector4::loadl(&p[i[0]]);
+	const GSVector4 v1 = GSVector4::loadl(&p[i[1]]);
+	const GSVector4 v2 = GSVector4::loadl(&p[i[2]]);
+
+	y0011 = v0.yyyy(v1);
+	y1221 = v1.yyyy(v2).xzzx();
+
+	m1 = (y0011 == y1221).mask() & 7;
+
+	// if (i == 0) => y0 < y1 < y2
+	// if (i == 1) => y0 == y1 < y2
+	// if (i == 4) => y0 < y1 == y2
+
+	if (m1 == 7)
+		return; // y0 == y1 == y2
+
+	const GSVector4 tbf = y0011.xzxz(y1221).ceil();
+	const GSVector4 tbmax = tbf.max(GSVector4(0));
+	const GSVector4 tbmin = tbf.min(GSVector4(H << tile_shift.y));
+	const GSVector4i tb = GSVector4i(tbmax.xzyw(tbmin)); // max(y0, t) max(y1, t) min(y1, b) min(y2, b)
+
+	GSVector4 dv0 = v1 - v0;
+	GSVector4 dv1 = v2 - v0;
+	GSVector4 dv2 = v2 - v1;
+
+	GSVector4 cross = dv0 * dv1.yxwz();
+
+	cross = (cross - cross.yxwz()).yyyy();
+
+	int m2 = cross.upl(cross == GSVector4::zero()).mask();
+
+	if (m2 & 2)
+		return; // Degenerate triangle
+
+	m2 &= 1;
+
+	GSVector4 dxy01 = dv0.xyxy(dv1);
+
+	GSVector4 dx = dxy01.xzxy(dv2);
+	GSVector4 dy = dxy01.ywyx(dv2);
+
+	GSVector4 ddx[3];
+
+	ddx[0] = dx / dy;
+	ddx[1] = ddx[0].yxzw();
+	ddx[2] = ddx[0].xzyw();
+
+	if (m1 & 1)
+	{
+		if (tb.y < tb.w)
+		{
+			const GSVector2 x0(p[i[1 - m2]].x, p[i[m2]].x);
+			const float y0 = p[i[1 - m2]].y;
+			const GSVector2 ddx1(ddx[!m2 << 1].y, ddx[!m2 << 1].z);
+
+			CoarseRasterizeTriangleSection(tb.x, tb.w, x0, y0, ddx1, tile_size, tile_shift, expand, grid);
+		}
+	}
+	else
+	{
+		if (tb.x < tb.z)
+		{
+			const GSVector2 x0(v0.x, v0.x);
+			const float y0 = v0.y;
+			const GSVector2 ddx1(ddx[m2].x, ddx[m2].y);
+
+			CoarseRasterizeTriangleSection(tb.x, tb.z, x0, y0, ddx1, tile_size, tile_shift, expand, grid);
+		}
+
+		if (tb.y < tb.w)
+		{
+			const GSVector2 x0 = GSVector2(v0.x, v0.x) + GSVector2(ddx[m2].x, ddx[m2].y) * GSVector2(dv0.y);
+			const float y0 = v1.y;
+			const GSVector2 ddx1(ddx[!m2 << 1].y, ddx[!m2 << 1].z);
+
+			CoarseRasterizeTriangleSection(tb.y, tb.w, x0, y0, ddx1, tile_size, tile_shift, expand, grid);
+		}
+	}
+}
+
+// Convert the grid of booleans to a list of tiles.
+template<u32 W, u32 H, typename BitfieldType, bool SWAP_XY>
+static __forceinline void ConvertGridToTiles(const GSVector4i& area, const GSVector2i& tile_shift,
+	const BitGrid<W, H, BitfieldType>& grid, std::vector<GSVector4i>& tiles_out)
+{
+	tiles_out.reserve(W * H);
+	const GSVector4i tileoffset = area.xyxy();
+	constexpr u32 BITWIDTH = BitGrid<W, H, BitfieldType>::BITWIDTH;
+	for (u32 y = 0; y < H; y++)
+	{
+		for (u32 x = 0; x < W; x += BITWIDTH)
+		{
+			if (grid.GetBitfield(x, y))
+			{
+				const BitfieldType bitfield = grid.GetBitfield(x, y);
+				u32 x0 = 0;
+				while (x0 <= BITWIDTH)
+				{
+					x0 += std::countr_zero<BitfieldType>(bitfield >> x0);
+					const u32 x1 = x0 + std::countr_one<BitfieldType>(bitfield >> x0);
+
+					if (x0 < x1)
+					{
+						GSVector4i tile(x0 << tile_shift.x, y << tile_shift.y, x1 << tile_shift.x, (y + 1) << tile_shift.y);
+						tile = (tile + tileoffset).rintersect(area);
+						if (!tile.rempty())
+							tiles_out.push_back(SwapXY<SWAP_XY>(tile));
+						x0 = x1;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+static constexpr u32 MIN_TILE_SHIFT = 4; // Minimum of 16x16 tile size.
+
+template<u32 W, u32 H>
+static __forceinline void RoundTileSize(const GSVector4i& area, GSVector2i& tile_size, GSVector2i& tile_shift)
+{
+	tile_size = GSVector2i((area.width() + W - 1) / W, (area.height() + H - 1) / H);
+	tile_shift = GSVector2i(MIN_TILE_SHIFT);
+	while ((1 << tile_shift.x) < tile_size.x)
+		tile_shift.x++;
+	while ((1 << tile_shift.y) < tile_size.y)
+		tile_shift.y++;
+	tile_size = GSVector2i(1 << tile_shift.x, 1 << tile_shift.y);
+}
+
+template<u32 W, u32 H, typename BitfieldType, bool SWAP_XY>
+static __forceinline void CoarseRasterizeRects(GSVector4i area, const GSVector4i* rects, const u32 num_rects,
+	const int expand, std::vector<GSVector4i>& tiles_out)
+{
+	area = SwapXY<SWAP_XY>(area);
+
+	// Get the tile size.
+	GSVector2i tile_size, tile_shift;
+	RoundTileSize<W, H>(area, tile_size, tile_shift);
+
+	// Rasterize rects into the bit grid.
+	BitGrid<W, H, BitfieldType> grid;
+	const GSVector4i offset = area.xyxy();
+	for (u32 i = 0; i < num_rects; i++)
+	{
+		const GSVector4i rect = SwapXY<SWAP_XY>(rects[i]) - offset;
+		CoarseRasterizeRect<W, H, BitfieldType>(rect, tile_size, tile_shift, expand, grid);
+	}
+
+	// Convert grid to tiles.
+	ConvertGridToTiles<W, H, BitfieldType, SWAP_XY>(area, tile_shift, grid, tiles_out);
+}
+
+template<u32 W, u32 H, typename BitfieldType, bool SWAP_XY>
+static __forceinline void CoarseRasterizeTriangles(
+	GSVector4i area, const GSVector4* RESTRICT pos, const u32 npos,
+	const int expand, std::vector<GSVector4i>& tiles_out)
+{
+	area = SwapXY<SWAP_XY>(area);
+
+	// Get the tile size.
+	GSVector2i tile_size, tile_shift;
+	RoundTileSize<W, H>(area, tile_size, tile_shift);
+
+	// Rasterize triangles into the bit grid.
+	BitGrid<W, H, BitfieldType> grid;
+	GSVector4 offset(area.xyxy());
+	for (u32 i = 0; i < npos; i += 3)
+	{
+		const GSVector4 p[3] = {
+			SwapXY<SWAP_XY>(pos[i + 0]).xyxy() - offset,
+			SwapXY<SWAP_XY>(pos[i + 1]).xyxy() - offset,
+			SwapXY<SWAP_XY>(pos[i + 2]).xyxy() - offset,
+		};
+
+		GSVector4 bbox = p[0].min(p[1]).xyzw(p[0].max(p[1]));
+		bbox = bbox.min(p[2]).xyzw(bbox.max(p[2]));
+		GSVector4i bboxi(bbox.floor().xyzw(bbox.ceil()));
+
+		if (bboxi.width() <= tile_size.x || bboxi.height() <= tile_size.y)
+		{
+			// Don't rasterize small triangles; the extra accuracy is likely wasted.
+			CoarseRasterizeRect<W, H, BitfieldType>(bboxi, tile_size, tile_shift, expand, grid);
+		}
+		else
+		{
+			CoarseRasterizeTriangle<W, H, BitfieldType>(p, tile_size, tile_shift, expand, grid);
+		}
+	}
+	
+	// Convert grid to tiles.
+	ConvertGridToTiles<W, H, BitfieldType, SWAP_XY>(area, tile_shift, grid, tiles_out);
+}
+
+void GSUtil::CoarseRasterizeRects(const GSVector4i& area, const GSVector4i* rects, const u32 num_rects,
+	const u32 grid_size, const int expand, std::vector<GSVector4i>& tiles_out)
+{
+	switch (grid_size)
+	{
+		case 8:
+			if (area.width() >= area.height())
+				::CoarseRasterizeRects<8, 8, u8, false>(area, rects, num_rects, expand, tiles_out);
+			else
+				::CoarseRasterizeRects<8, 8, u8, true>(area, rects, num_rects, expand, tiles_out);
+			break;
+		case 16:
+			if (area.width() >= area.height())
+				::CoarseRasterizeRects<16, 16, u16, false>(area, rects, num_rects, expand, tiles_out);
+			else
+				::CoarseRasterizeRects<16, 16, u16, true>(area, rects, num_rects, expand, tiles_out);
+			break;
+		case 32:
+			if (area.width() >= area.height())
+				::CoarseRasterizeRects<32, 32, u32, false>(area, rects, num_rects, expand, tiles_out);
+			else
+				::CoarseRasterizeRects<32, 32, u32, true>(area, rects, num_rects, expand, tiles_out);
+			break;
+		case 64:
+			if (area.width() >= area.height())
+				::CoarseRasterizeRects<64, 64, u64, false>(area, rects, num_rects, expand, tiles_out);
+			else
+				::CoarseRasterizeRects<64, 64, u64, true>(area, rects, num_rects, expand, tiles_out);
+			break;
+		default:
+			pxAssert(false);
+			break;
+	}
+}
+
+void GSUtil::CoarseRasterizeTriangles(GSVector4i area, const GSVector4* RESTRICT pos, const u32 num_pos,
+	const u32 grid_size, const int expand, std::vector<GSVector4i>& tiles_out)
+{
+	switch (grid_size)
+	{
+		case 8:
+			if (area.width() >= area.height())
+				::CoarseRasterizeTriangles<8, 8, u8, false>(area, pos, num_pos, expand, tiles_out);
+			else
+				::CoarseRasterizeTriangles<8, 8, u8, true>(area, pos, num_pos, expand, tiles_out);
+			break;
+		case 16:
+			if (area.width() >= area.height())
+				::CoarseRasterizeTriangles<16, 16, u16, false>(area, pos, num_pos, expand, tiles_out);
+			else
+				::CoarseRasterizeTriangles<16, 16, u16, true>(area, pos, num_pos, expand, tiles_out);
+			break;
+		case 32:
+			if (area.width() >= area.height())
+				::CoarseRasterizeTriangles<32, 32, u32, false>(area, pos, num_pos, expand, tiles_out);
+			else
+				::CoarseRasterizeTriangles<32, 32, u32, true>(area, pos, num_pos, expand, tiles_out);
+			break;
+		case 64:
+			if (area.width() >= area.height())
+				::CoarseRasterizeTriangles<64, 64, u64, false>(area, pos, num_pos, expand, tiles_out);
+			else
+				::CoarseRasterizeTriangles<64, 64, u64, true>(area, pos, num_pos, expand, tiles_out);
+			break;
+		default:
+			pxAssert(false);
+			break;
 	}
 }

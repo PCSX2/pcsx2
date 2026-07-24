@@ -230,4 +230,5 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_SW_ANISO,
 	GSMTLConstantIndex_PS_ROV_COLOR,
 	GSMTLConstantIndex_PS_ROV_DEPTH,
+	GSMTLConstantIndex_PS_ROV_ONESHOT,
 };
