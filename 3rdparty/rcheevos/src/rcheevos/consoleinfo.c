@@ -818,12 +818,14 @@ static const rc_memory_region_t _rc_memory_regions_playstation2[] = {
 static const rc_memory_regions_t rc_memory_regions_playstation2 = { _rc_memory_regions_playstation2, 3 };
 
 /* ===== PlayStation Portable ===== */
-/* https://github.com/uofw/upspd/wiki/Memory-map */
+/* https://github.com/uofw/upspd/wiki/Memory-map
+ * the RAM is extended at loadtime if the game has a MEMSIZE flag in its PARAM.SFO */
 static const rc_memory_region_t _rc_memory_regions_psp[] = {
     { 0x00000000U, 0x007FFFFFU, 0x08000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Kernel RAM" },
     { 0x00800000U, 0x01FFFFFFU, 0x08800000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" },
+    { 0x02000000U, 0x03FFFFFFU, 0x0A000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Extended RAM" },
 };
-static const rc_memory_regions_t rc_memory_regions_psp = { _rc_memory_regions_psp, 2 };
+static const rc_memory_regions_t rc_memory_regions_psp = { _rc_memory_regions_psp, 3 };
 
 /* ===== Pokemon Mini ===== */
 /* https://www.pokemon-mini.net/documentation/memory-map/ */
@@ -992,6 +994,13 @@ static const rc_memory_region_t _rc_memory_regions_wonderswan[] = {
     { 0x010000U, 0x08FFFFU, 0x010000U, RC_MEMORY_TYPE_SAVE_RAM, "Cartridge RAM" }
 };
 static const rc_memory_regions_t rc_memory_regions_wonderswan = { _rc_memory_regions_wonderswan, 2 };
+
+/* ===== Xbox ===== */
+static const rc_memory_region_t _rc_memory_regions_xbox[] = {
+    /* Retail Xbox memory map: https://xboxdevwiki.net/Memory */
+    { 0x00000000U, 0x03FFFFFFU, 0x00000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "System RAM" }
+};
+static const rc_memory_regions_t rc_memory_regions_xbox = { _rc_memory_regions_xbox, 1 };
 
 /* ===== ZX Spectrum ===== */
 /* https://github.com/TASEmulators/BizHawk/blob/3a3b22c/src/BizHawk.Emulation.Cores/Computers/SinclairSpectrum/Machine/ZXSpectrum16K/ZX16.cs
@@ -1205,6 +1214,9 @@ const rc_memory_regions_t* rc_console_memory_regions(uint32_t console_id)
 
     case RC_CONSOLE_WONDERSWAN:
       return &rc_memory_regions_wonderswan;
+
+    case RC_CONSOLE_XBOX:
+      return &rc_memory_regions_xbox;
 
     case RC_CONSOLE_ZX_SPECTRUM:
       return &rc_memory_regions_zx_spectrum;

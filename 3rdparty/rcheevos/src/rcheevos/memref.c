@@ -742,6 +742,7 @@ uint32_t rc_get_modified_memref_value(const rc_modified_memref_t* memref, rc_pee
       break;
 
     case RC_OPERATOR_SUB_ACCUMULATOR:
+      /* sub accumulator is "parent - modifier" */
       rc_typed_value_negate(&modifier);
       /* fallthrough */ /* to case RC_OPERATOR_SUB_ACCUMULATOR */
 

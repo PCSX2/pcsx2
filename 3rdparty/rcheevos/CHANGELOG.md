@@ -1,3 +1,16 @@
+# v12.4.0
+* add avatar_last_updated field to rc_client_user_t and rc_api_login_response_t
+* add more fields to fetch_games_list API
+* add rc_client_begin_fetch_game_list
+* add extended RAM to memory map for PSP
+* add memory map for XBOX
+* add hash generation for .neo files (geolith-specific NeoGeo ROMs)
+* add validation warning if Mem and Delta conditions exist for same address and value
+* ignore warning achievements when reporting achievement count in rc_client_get_user_game_summary
+* fix crash when {recall} exists without a Remember
+* fix crash when legacy value contains invalid syntax that overflows the conversion buffer
+* fix handling of SubSource chain starting with a constant
+
 # v12.3.0
 * add rc_client_get_next_achievement_info
 * rc_client image functions will now return RC_INSUFFICENT_BUFFER instead of truncating if buffer is not large enough

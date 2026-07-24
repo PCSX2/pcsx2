@@ -494,7 +494,7 @@ static int rc_hash_file_from_buffer(char hash[33], uint32_t console_id, const rc
 
   result = rc_hash_from_file(hash, console_id, &buffered_file_iterator);
 
-  buffered_file_iterator.path = NULL;
+  buffered_file_iterator.path = NULL; /* prevent attempt to free static "memory stream" string */
   rc_hash_destroy_iterator(&buffered_file_iterator);
   return result;
 }
@@ -543,6 +543,11 @@ static int rc_hash_from_buffer(char hash[33], uint32_t console_id, const rc_hash
       return rc_hash_buffer(hash, iterator->buffer, iterator->buffer_size, iterator);
 
 #ifndef RC_HASH_NO_ROM
+    case RC_CONSOLE_ARCADE:
+      /* .neo (Geolith Neo Geo cart) files carry the ROM data; other arcade
+       * formats are archives, which aren't hashed from a buffer. */
+      return rc_hash_neogeo_cart(hash, iterator);
+
     case RC_CONSOLE_ARDUBOY:
       return rc_hash_arduboy(hash, iterator);
 
@@ -862,6 +867,11 @@ static int rc_hash_from_file(char hash[33], uint32_t console_id, const rc_hash_i
 
 #ifndef RC_HASH_NO_ROM
     case RC_CONSOLE_ARCADE:
+      /* .neo files (Geolith Neo Geo cart format) contain the actual ROM data,
+       * so are content-hashed. Everything else (.zip/.7z) hashes by filename. */
+      if (rc_path_compare_extension(path, "neo"))
+        return rc_hash_neogeo_cart(hash, iterator);
+
       return rc_hash_arcade(hash, iterator);
 
     case RC_CONSOLE_ARDUBOY:
@@ -971,7 +981,7 @@ void rc_hash_merge_callbacks(rc_hash_iterator_t* iterator, const rc_hash_callbac
   if (callbacks->verbose_message)
     iterator->callbacks.verbose_message = callbacks->verbose_message;
   if (callbacks->error_message)
-    iterator->callbacks.verbose_message = callbacks->error_message;
+    iterator->callbacks.error_message = callbacks->error_message;
 
   if (callbacks->filereader.open)
     memcpy(&iterator->callbacks.filereader, &callbacks->filereader, sizeof(callbacks->filereader));
@@ -1230,6 +1240,7 @@ static const rc_hash_iterator_ext_handler_entry_t rc_hash_iterator_ext_handlers[
   { "n64", rc_hash_initialize_iterator_single, RC_CONSOLE_NINTENDO_64 },
   { "ndd", rc_hash_initialize_iterator_single, RC_CONSOLE_NINTENDO_64 },
   { "nds", rc_hash_initialize_iterator_single, RC_CONSOLE_NINTENDO_DS }, /* handles both DS and DSi */
+  { "neo", rc_hash_initialize_iterator_single, RC_CONSOLE_ARCADE }, /* Geolith Neo Geo cart format */
   { "nes", rc_hash_initialize_iterator_single, RC_CONSOLE_NINTENDO },
   { "ngc", rc_hash_initialize_iterator_single, RC_CONSOLE_NEOGEO_POCKET },
   { "nib", rc_hash_initialize_iterator_nib, 0 },
@@ -1245,6 +1256,7 @@ static const rc_hash_iterator_ext_handler_entry_t rc_hash_iterator_ext_handlers[
   { "sg", rc_hash_initialize_iterator_single, RC_CONSOLE_SG1000 },
   { "sgx", rc_hash_initialize_iterator_single, RC_CONSOLE_PC_ENGINE },
   { "smc", rc_hash_initialize_iterator_single, RC_CONSOLE_SUPER_NINTENDO },
+  { "sms", rc_hash_initialize_iterator_single, RC_CONSOLE_MASTER_SYSTEM },
   { "sv", rc_hash_initialize_iterator_single, RC_CONSOLE_SUPERVISION },
   { "swc", rc_hash_initialize_iterator_single, RC_CONSOLE_SUPER_NINTENDO },
   { "tap", rc_hash_initialize_iterator_tap, 0 },

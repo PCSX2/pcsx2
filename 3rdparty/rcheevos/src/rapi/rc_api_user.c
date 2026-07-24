@@ -62,7 +62,8 @@ int rc_api_process_login_server_response(rc_api_login_response_t* response, cons
     RC_JSON_NEW_FIELD("Score"),
     RC_JSON_NEW_FIELD("SoftcoreScore"),
     RC_JSON_NEW_FIELD("Messages"),
-    RC_JSON_NEW_FIELD("AvatarUrl")
+    RC_JSON_NEW_FIELD("AvatarUrl"),
+    RC_JSON_NEW_FIELD("AvatarUpdatedAt")
   };
 
   memset(response, 0, sizeof(*response));
@@ -89,6 +90,8 @@ int rc_api_process_login_server_response(rc_api_login_response_t* response, cons
   rc_json_get_optional_string(&response->avatar_url, &response->response, &fields[8], "AvatarUrl", NULL);
   if (!response->avatar_url)
     response->avatar_url = rc_api_build_avatar_url(&response->response.buffer, RC_IMAGE_TYPE_USER, response->username);
+
+  rc_json_get_optional_timet(&response->avatar_last_updated, &fields[9], "AvatarUpdatedAt", 0);
 
   return RC_OK;
 }
@@ -145,7 +148,6 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
   rc_api_unlock_entry_t* unlock;
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
-  uint32_t timet;
   int result;
 
   rc_json_field_t fields[] = {
@@ -181,9 +183,8 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
     while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
       if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
         return RC_MISSING_VALUE;
-      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+      if (!rc_json_get_required_timet(&unlock->when, &response->response, &unlock_entry_fields[1], "When"))
         return RC_MISSING_VALUE;
-      unlock->when = (time_t)timet;
 
       ++unlock;
     }
@@ -202,16 +203,14 @@ int rc_api_process_start_session_server_response(rc_api_start_session_response_t
     while (rc_json_get_array_entry_object(unlock_entry_fields, sizeof(unlock_entry_fields) / sizeof(unlock_entry_fields[0]), &iterator)) {
       if (!rc_json_get_required_unum(&unlock->achievement_id, &response->response, &unlock_entry_fields[0], "ID"))
         return RC_MISSING_VALUE;
-      if (!rc_json_get_required_unum(&timet, &response->response, &unlock_entry_fields[1], "When"))
+      if (!rc_json_get_required_timet(&unlock->when, &response->response, &unlock_entry_fields[1], "When"))
         return RC_MISSING_VALUE;
-      unlock->when = (time_t)timet;
 
       ++unlock;
     }
   }
 
-  rc_json_get_optional_unum(&timet, &fields[4], "ServerNow", 0);
-  response->server_now = (time_t)timet;
+  rc_json_get_optional_timet(&response->server_now, &fields[4], "ServerNow", 0);
 
   return RC_OK;
 }
@@ -307,11 +306,11 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
   rc_json_field_t array_field;
   rc_json_iterator_t iterator;
   rc_api_followed_user_t* user;
-  uint32_t timet;
   int result;
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
     RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Code"),
     RC_JSON_NEW_FIELD("Friends")
   };
 
@@ -324,6 +323,7 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
     RC_JSON_NEW_FIELD("LastGameId"),
     RC_JSON_NEW_FIELD("LastGameTitle"),
     RC_JSON_NEW_FIELD("LastGameIconUrl"),
+    RC_JSON_NEW_FIELD("AvatarUpdatedAt"),
   };
 
   memset(response, 0, sizeof(*response));
@@ -333,7 +333,7 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
   if (result != RC_OK || !response->response.succeeded)
     return result;
 
-  if (!rc_json_get_required_array(&response->num_users, &array_field, &response->response, &fields[2], "Friends"))
+  if (!rc_json_get_required_array(&response->num_users, &array_field, &response->response, &fields[3], "Friends"))
     return RC_MISSING_VALUE;
 
   if (response->num_users) {
@@ -354,11 +354,9 @@ int rc_api_process_fetch_followed_users_server_response(rc_api_fetch_followed_us
       if (!rc_json_get_required_unum(&user->score, &response->response, &followed_user_entry_fields[2], "RAPoints"))
         return RC_MISSING_VALUE;
 
+      rc_json_get_optional_timet(&user->avatar_last_updated, &followed_user_entry_fields[8], "AvatarUpdatedAt", 0);
       rc_json_get_optional_string(&user->recent_activity.description, &response->response, &followed_user_entry_fields[3], "LastSeen", NULL);
-
-      rc_json_get_optional_unum(&timet, &followed_user_entry_fields[4], "LastSeenTime", 0);
-      user->recent_activity.when = (time_t)timet;
-
+      rc_json_get_optional_timet(&user->recent_activity.when, &followed_user_entry_fields[4], "LastSeenTime", 0);
       rc_json_get_optional_unum(&user->recent_activity.context_id, &followed_user_entry_fields[5], "LastGameId", 0);
       rc_json_get_optional_string(&user->recent_activity.context, &response->response, &followed_user_entry_fields[6], "LastGameTitle", NULL);
       rc_json_get_optional_string(&user->recent_activity.context_image_url, &response->response, &followed_user_entry_fields[7], "LastGameIconUrl", NULL);

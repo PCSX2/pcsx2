@@ -648,20 +648,45 @@ static void* cdreader_open_gdi_track(const char* path, uint32_t track, const rc_
       while (isspace((unsigned char)*ptr))
         ++ptr;
 
-      ptr2 = file;
       if (*ptr == '\"')
       {
-        ++ptr;
+        ptr2 = ++ptr; /* ignore leading quote */
         while (*ptr != '\"')
-          *ptr2++ = *ptr++;
-        ++ptr;
+        {
+          ++ptr;
+
+          if (ptr >= end)
+          {
+            if (iterator->callbacks.filereader.close)
+              iterator->callbacks.filereader.close(file_handle);
+
+            rc_hash_iterator_error(iterator, "Quoted string without closing quote");
+            return NULL;
+          }
+        }
+
+        num_read = ptr - ptr2;
+        ++ptr; /* ignore trailing quote */
       }
       else
       {
-        while (*ptr != ' ')
-          *ptr2++ = *ptr++;
+        ptr2 = ptr;
+        while (*ptr != ' ' && ptr < end)
+          ++ptr;
+        num_read = ptr - ptr2;
       }
-      *ptr2 = '\0';
+
+      if (num_read >= sizeof(file))
+      {
+        if (iterator->callbacks.filereader.close)
+          iterator->callbacks.filereader.close(file_handle);
+
+        rc_hash_iterator_error_formatted(iterator, "Cannot copy %u byte filename into %u byte buffer", (unsigned)num_read, (unsigned)sizeof(file));
+        return NULL;
+      }
+
+      memcpy(file, ptr2, num_read);
+      file[num_read] = '\0';
 
       if (track == current_track)
       {

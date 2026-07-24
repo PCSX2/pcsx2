@@ -181,11 +181,6 @@ int rc_api_process_update_code_note_server_response(rc_api_update_code_note_resp
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
     RC_JSON_NEW_FIELD("Error")
-    /* unused fields
-    RC_JSON_NEW_FIELD("GameID"),
-    RC_JSON_NEW_FIELD("Address"),
-    RC_JSON_NEW_FIELD("Note")
-    */
   };
 
   memset(response, 0, sizeof(*response));
@@ -199,6 +194,111 @@ int rc_api_process_update_code_note_server_response(rc_api_update_code_note_resp
 }
 
 void rc_api_destroy_update_code_note_response(rc_api_update_code_note_response_t* response) {
+  rc_buffer_destroy(&response->response.buffer);
+}
+
+/* --- Update Code Notes --- */
+
+int rc_api_init_update_code_notes_request_hosted(rc_api_request_t* request,
+  const rc_api_update_code_notes_request_t* api_params,
+  const rc_api_host_t* host) {
+  rc_api_update_code_note_entry_t* entry;
+  rc_api_update_code_note_entry_t* stop;
+  rc_api_url_builder_t builder;
+  char buffer[512];
+
+  rc_api_url_build_dorequest_url(request, host);
+
+  if (api_params->game_id == 0 || api_params->num_entries == 0)
+    return RC_INVALID_STATE;
+
+  rc_url_builder_init(&builder, &request->buffer, 128);
+  if (!rc_api_url_build_dorequest(&builder, "submitcodenotes", api_params->username, api_params->api_token))
+    return builder.result;
+
+  rc_url_builder_append_unum_param(&builder, "g", api_params->game_id);
+  rc_url_builder_append_str_param(&builder, "n", "");
+
+  entry = api_params->entries;
+  stop = entry + api_params->num_entries;
+  for (; entry < stop; ++entry) {
+    int chars = snprintf(buffer, sizeof(buffer), "%u", entry->address);
+    rc_url_builder_append(&builder, buffer, chars);
+    rc_url_builder_append(&builder, ":", 1);
+
+    if (entry->note) {
+      const char* src = entry->note;
+      char* dst = buffer;
+      const char* dst_stop = buffer + sizeof(buffer) - 8;
+      do {
+        while (*src && dst < dst_stop) {
+          switch (*src) {
+            case '\n': /* escape newline as newlines separate notes. normalize to windows style line endings */
+              *dst++ = '\\';
+              *dst++ = 'r';
+              *dst++ = '\\';
+              *dst++ = 'n';
+              ++src;
+              break;
+            case '\r': /* swallow line feed - one will be explicitly generated with the \n */
+              ++src;
+              break;
+            case '\\': /* escape backslashes so raw backslashes don't grab the next character */
+              *dst++ = '\\';
+              *dst++ = '\\';
+              ++src;
+              break;
+            default:
+              *dst++ = *src++;
+              break;
+          }
+        }
+
+        /* terminate and reset output pointer to front of buffer */
+        *dst = '\0';
+        dst = buffer;
+
+        /* url encode the normalized/escaped note */
+        rc_url_builder_append_encoded_str(&builder, buffer);
+      } while (*src);
+    }
+
+    rc_url_builder_append_encoded_str(&builder, "\n");
+  }
+
+  request->post_data = rc_url_builder_finalize(&builder);
+  request->content_type = RC_CONTENT_TYPE_URLENCODED;
+
+  return builder.result;
+}
+
+int rc_api_process_update_code_notes_server_response(rc_api_update_code_notes_response_t* response, const rc_api_server_response_t* server_response) {
+  int result;
+
+  rc_json_field_t fields[] = {
+    RC_JSON_NEW_FIELD("Success"),
+    RC_JSON_NEW_FIELD("Error"),
+    RC_JSON_NEW_FIELD("Code"),
+    RC_JSON_NEW_FIELD("SuccessfulAddresses"),
+    RC_JSON_NEW_FIELD("AccessDeniedAddresses")
+  };
+
+  memset(response, 0, sizeof(*response));
+  rc_buffer_init(&response->response.buffer);
+
+  result = rc_json_parse_server_response(&response->response, server_response, fields, sizeof(fields) / sizeof(fields[0]));
+  if (result == RC_OK || result == RC_ACCESS_DENIED) {
+    int result2 = rc_json_get_required_unum_array(&response->updated_addresses, &response->num_updated_addresses, &response->response, &fields[3], "SuccessfulAddresses");
+    if (result2 != RC_OK)
+      return RC_MISSING_VALUE;
+
+    rc_json_get_optional_unum_array(&response->access_denied_addresses, &response->num_access_denied_addresses, &response->response, &fields[4], "AccessDeniedAddresses");
+  }
+
+  return result;
+}
+
+void rc_api_destroy_update_code_notes_response(rc_api_update_code_notes_response_t* response) {
   rc_buffer_destroy(&response->response.buffer);
 }
 
@@ -456,7 +556,7 @@ int rc_api_process_update_rich_presence_server_response(rc_api_update_rich_prese
   rc_json_field_t fields[] = {
     RC_JSON_NEW_FIELD("Success"),
     RC_JSON_NEW_FIELD("Error"),
-    RC_JSON_NEW_FIELD("Code"),
+    RC_JSON_NEW_FIELD("Code")
   };
 
   memset(response, 0, sizeof(*response));
