@@ -213,6 +213,10 @@ static void rc_preparse_sync_operand(rc_operand_t* operand, rc_parse_state_t* pa
 {
   if (rc_operand_is_memref(operand) || rc_operand_is_recall(operand)) {
     const rc_memref_t* src_memref = operand->value.memref;
+    if (!src_memref) {
+      parse->offset = RC_INVALID_MEMORY_OPERAND;
+      return;
+    }
 
     if (src_memref->value.memref_type == RC_MEMREF_TYPE_MODIFIED_MEMREF) {
       const rc_modified_memref_list_t* modified_memref_list = &memrefs->modified_memrefs;

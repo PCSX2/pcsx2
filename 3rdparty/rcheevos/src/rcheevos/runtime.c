@@ -510,7 +510,7 @@ int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, size_t b
 
 void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, void* unused_L) {
   rc_runtime_event_t runtime_event;
-  int i;
+  int32_t i;
 
   runtime_event.value = 0;
 
@@ -670,7 +670,7 @@ void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_ha
         break;
 
       case RC_LBOARD_STATE_TRIGGERED:
-        if (lboard_state != RC_RUNTIME_EVENT_LBOARD_TRIGGERED) {
+        if (lboard_state != RC_LBOARD_STATE_TRIGGERED) {
           runtime_event.type = RC_RUNTIME_EVENT_LBOARD_TRIGGERED;
           runtime_event.id = self->lboards[i].id;
           event_handler(&runtime_event);

@@ -38,6 +38,7 @@ enum
   /* warnings about potential logic errors */
   RC_VALIDATION_ERR_COMPARING_DIFFERENT_MEMORY_SIZES,
   RC_VALIDATION_ERR_MASK_RESULT_ALWAYS_ZERO,
+  RC_VALIDATION_ERR_SAME_COMPARISON_ACROSS_FRAMES,
 
   /* warnings that some areas of memory should be avoided */
   RC_VALIDATION_ERR_KERNAL_RAM_REQUIRES_BIOS,
@@ -242,6 +243,13 @@ static int rc_validate_format_error(char buffer[], size_t buffer_size, const rc_
 
     case RC_VALIDATION_ERR_MASK_RESULT_ALWAYS_ZERO:
       snprintf(buffer, buffer_size, "Result of mask is always 0");
+      break;
+
+    case RC_VALIDATION_ERR_SAME_COMPARISON_ACROSS_FRAMES:
+      written = snprintf(buffer, buffer_size, "Same comparison across frames as ");
+      buffer += written;
+      buffer_size -= written;
+      rc_validate_format_cond_index(buffer, buffer_size, state, error->data1, error->data2);
       break;
 
     case RC_VALIDATION_ERR_MASK_TOO_LARGE:
@@ -1211,8 +1219,21 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
         continue;
 
       operand2 = rc_validate_get_comparison(compare_condition, &comparison2, &value2);
-      if (!operand2 || !rc_operands_are_equal(operand1, operand2))
+      if (!operand2)
         continue;
+
+      if (!rc_operands_are_equal(operand1, operand2)) {
+        if (compare_condition->type == condition->type &&
+            compare_condition->oper == condition->oper &&
+            operand1->type == RC_OPERAND_ADDRESS &&
+            (operand2->type == RC_OPERAND_DELTA || operand2->type == RC_OPERAND_PRIOR) &&
+            operand1->value.memref->address == operand2->value.memref->address &&
+            rc_operands_are_equal(&compare_condition->operand2, &condition->operand2)) {
+          rc_validate_add_error(state, RC_VALIDATION_ERR_SAME_COMPARISON_ACROSS_FRAMES,
+            group_index, rc_validate_get_condition_index(conditions, condition));
+        }
+        continue;
+      }
 
       switch (compare_condition->type) {
         case RC_CONDITION_PAUSE_IF:

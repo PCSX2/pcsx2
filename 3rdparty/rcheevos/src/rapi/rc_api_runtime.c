@@ -113,7 +113,6 @@ static int rc_api_process_fetch_game_data_achievements(rc_api_response_t* respon
   const char* last_author = "";
   const char* last_author_field = "";
   size_t last_author_len = 0;
-  uint32_t timet;
   size_t len;
 
   rc_json_field_t achievement_fields[] = {
@@ -155,11 +154,11 @@ static int rc_api_process_fetch_game_data_achievements(rc_api_response_t* respon
       return RC_MISSING_VALUE;
 
     rc_json_get_optional_string(&achievement->badge_url, response, &achievement_fields[13], "BadgeURL", "");
-    if (!achievement->badge_url[0])
+    if (!achievement->badge_url || !achievement->badge_url[0])
       achievement->badge_url = rc_api_build_avatar_url(&response->buffer, RC_IMAGE_TYPE_ACHIEVEMENT, achievement->badge_name);
 
     rc_json_get_optional_string(&achievement->badge_locked_url, response, &achievement_fields[14], "BadgeLockedURL", "");
-    if (!achievement->badge_locked_url[0])
+    if (!achievement->badge_locked_url || !achievement->badge_locked_url[0])
       achievement->badge_locked_url = rc_api_build_avatar_url(&response->buffer, RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED, achievement->badge_name);
 
     len = achievement_fields[6].value_end - achievement_fields[6].value_start;
@@ -181,12 +180,10 @@ static int rc_api_process_fetch_game_data_achievements(rc_api_response_t* respon
       }
     }
 
-    if (!rc_json_get_required_unum(&timet, response, &achievement_fields[8], "Created"))
+    if (!rc_json_get_required_timet(&achievement->created, response, &achievement_fields[8], "Created"))
       return RC_MISSING_VALUE;
-    achievement->created = (time_t)timet;
-    if (!rc_json_get_required_unum(&timet, response, &achievement_fields[9], "Modified"))
+    if (!rc_json_get_required_timet(&achievement->updated, response, &achievement_fields[9], "Modified"))
       return RC_MISSING_VALUE;
-    achievement->updated = (time_t)timet;
 
     if (rc_json_field_string_matches(&achievement_fields[10], ""))
       achievement->type = RC_ACHIEVEMENT_TYPE_STANDARD;
@@ -320,7 +317,7 @@ int rc_api_process_fetch_game_data_server_response(rc_api_fetch_game_data_respon
   rc_json_extract_filename(&patchdata_fields[3]);
   rc_json_get_optional_string(&response->image_name, &response->response, &patchdata_fields[3], "ImageIcon", "");
   rc_json_get_optional_string(&response->image_url, &response->response, &patchdata_fields[4], "ImageIconURL", "");
-  if (!response->image_url[0])
+  if (!response->image_url || !response->image_url[0])
     response->image_url = rc_api_build_avatar_url(&response->response.buffer, RC_IMAGE_TYPE_GAME, response->image_name);
 
   /* estimate the amount of space necessary to store the rich presence script, achievements, and leaderboards.
