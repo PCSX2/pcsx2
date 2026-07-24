@@ -970,6 +970,17 @@ extern "C" void ARMSX2_PostRuntimeMenuStateChanged(void)
     });
 }
 
+extern "C" void ARMSX2_PostEmulationOnlyStartupReady(void)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (VMManager::IsEmulationOnlyMode())
+            return;
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:@"ARMSX2iOSEmulationOnlyStartupReady"
+            object:nil];
+    });
+}
+
 // Gamepad button mapping — 16 PS2 buttons → SDL_GamepadButton
 std::atomic<bool> s_captureMode{false};
 std::atomic<int>  s_capturedButton{-1};

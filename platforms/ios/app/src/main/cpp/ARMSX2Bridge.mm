@@ -77,6 +77,7 @@ extern INISettingsInterface* g_p44_settings_interface;
 extern "C" void ARMSX2_PrepareGameRenderViewForCurrentRenderer(const char* reason);
 extern "C" void ARMSX2_PostRuntimeMenuStateChanged(void);
 extern "C" void ARMSX2_iOSTestGamepadRumble(void);
+extern "C" bool ARMSX2_IsIdleVMPrewarmResolved(void);
 
 // Coalesce base-settings INI writes so rapid changes (slider drags, preset bursts,
 // repeated toggles) persist to disk once per short window instead of once per call.
@@ -2266,6 +2267,10 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
     return DarwinMisc::iPSX2_FORCE_EE_INTERP != 0;
 }
 
++ (BOOL)isIdleVMPrewarmResolved {
+    return ARMSX2_IsIdleVMPrewarmResolved() ? YES : NO;
+}
+
 + (nonnull NSArray<NSURL *> *)extractControllerSkinArchiveAtURL:(nonnull NSURL *)archiveURL
                                                     toDirectory:(nonnull NSURL *)destinationDirectory {
     static const zip_uint64_t kMaxSkinArchiveEntryBytes = 16 * 1024 * 1024;
@@ -3196,6 +3201,9 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
 }
 
 + (void)triggerDeviceHapticLarge:(NSUInteger)large small:(NSUInteger)small {
+    if (VMManager::IsEmulationOnlyMode())
+        return;
+
     // GameEventHaptics is @MainActor-isolated; dispatch to the main queue.
     dispatch_async(dispatch_get_main_queue(), ^{
 #if ARMSX2_HAS_SWIFTUI_HOST
@@ -3205,6 +3213,22 @@ static std::string ARMSX2PerGameSettingsPath(const std::string& serial, u32 crc)
         (void)small;
 #endif
     });
+}
+
++ (void)releaseNonEmulationResources:(NSUInteger)releaseFlags {
+    if (releaseFlags & VMManager::EMULATION_ONLY_RELEASE_ACHIEVEMENTS) {
+        void (^clearPendingNotification)(void) = ^{
+            s_pendingRetroAchievementsNotification = nil;
+        };
+        if ([NSThread isMainThread])
+            clearPendingNotification();
+        else
+            dispatch_async(dispatch_get_main_queue(), clearPendingNotification);
+    }
+
+    Host::RunOnCPUThread([releaseFlags]() {
+        VMManager::ReleaseNonEssentialRuntimeResources(static_cast<u32>(releaseFlags));
+    }, false);
 }
 
 // Apply OSD preset — sets ALL GSConfig flags to match the preset

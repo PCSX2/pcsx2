@@ -88,6 +88,7 @@ typedef void (^ARMSX2RetroAchievementsCompletion)(BOOL success, NSString * _Nonn
 + (nonnull NSString *)buildVersion;
 + (BOOL)isJITAvailable;
 + (BOOL)isNoJITFallbackActive;
++ (BOOL)isIdleVMPrewarmResolved;
 + (nonnull NSArray<NSURL *> *)extractControllerSkinArchiveAtURL:(nonnull NSURL *)archiveURL
                                                     toDirectory:(nonnull NSURL *)destinationDirectory
     NS_SWIFT_NAME(extractControllerSkinArchive(at:to:));
@@ -107,6 +108,9 @@ typedef void (^ARMSX2RetroAchievementsCompletion)(BOOL success, NSString * _Nonn
 + (void)setPerformanceOverlayVisible:(BOOL)visible;
 + (BOOL)isPerformanceOverlayVisible;
 + (void)applyOsdPreset:(int)preset;  // 0=off, 1=simple, 2=detail, 3=full
+
+// Permanently releases the selected optional runtime resources for the current VM session.
++ (void)releaseNonEmulationResources:(NSUInteger)releaseFlags;
 
 // Accessibility: structured device stats for the VoiceOver HUD mirror.
 + (nonnull NSDictionary<NSString *, id> *)deviceStatsForAccessibility;

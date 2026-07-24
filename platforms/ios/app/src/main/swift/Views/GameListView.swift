@@ -169,7 +169,7 @@ struct GameListView: View {
 	@State private var coverWorkTask: Task<Void, Never>?
 	@State private var showGameImporter = false
 	@State private var isLoadingGames = false
-	@State private var showCoverImporter = false
+    @State private var showCoverImporter = false
     @State private var showCoverPhotoPicker = false
     @Environment(\.menuTabIsActive) private var menuTabIsActive
     @State private var showRestartAlert = false
@@ -202,10 +202,6 @@ struct GameListView: View {
         settings.dynamicBackgroundsEnabled
             || settings.backgroundPrimaryAsset != nil
             || settings.backgroundLandscapeAsset != nil
-    }
-
-    private var shouldRenderLibraryBackground: Bool {
-		menuTabIsActive
     }
 
     private struct CoverFlowMetrics {
@@ -247,8 +243,8 @@ struct GameListView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                if hasCustomBackground && shouldRenderLibraryBackground {
-                    MenuBackgroundLayer()
+                if hasCustomBackground {
+                    MenuBackgroundLayer(isActive: menuTabIsActive)
                 }
 
                 GeometryReader { geo in
@@ -567,6 +563,9 @@ struct GameListView: View {
 		.onReceive(NotificationCenter.default.publisher(for: ExternalGameLibrary.didChangeNotification)) { _ in
 			loadGames(autoDownloadExternalCovers: true)
 		}
+		.onReceive(NotificationCenter.default.publisher(for: InitialContentBootstrap.didChangeNotification)) { _ in
+			loadGames(autoDownloadExternalCovers: false)
+		}
 		.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ARMSX2iOSReturnToMenu"))) { _ in
 			restoreCachedGamesIfNeeded()
 			loadGames(autoDownloadExternalCovers: false)
@@ -756,11 +755,16 @@ struct GameListView: View {
                             .font(.body)
                             .fontWeight(.medium)
                             .foregroundStyle(.primary)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .layoutPriority(1)
 						if running {
 							Image(systemName: "circle.fill")
 								.font(.system(size: 8))
 								.foregroundStyle(.green)
 								.accessibilityLabel(settings.localized("Running"))
+                                .fixedSize()
 						}
                     }
                     HStack(spacing: 8) {
@@ -775,7 +779,10 @@ struct GameListView: View {
 					}
 					.font(.caption)
 					.foregroundStyle(.secondary)
+                    .lineLimit(1)
 				}
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
 				Spacer()
 				Button {
 					toggleFavorite(game)
@@ -831,12 +838,15 @@ struct GameListView: View {
                             .foregroundStyle(.primary)
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .center)
+                            .layoutPriority(1)
 						if running {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 7))
                                 .foregroundStyle(.green)
                                 .accessibilityLabel(settings.localized("Running"))
+                                .fixedSize()
                         }
                     }
                     // Reserve space for two title lines so cards stay aligned
@@ -905,6 +915,8 @@ struct GameListView: View {
                         .font((metrics.isCompact ? Font.subheadline : Font.headline).weight(.semibold))
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         // minHeight keeps cards aligned for 1- vs 2-line titles
                         // while letting Dynamic Type grow beyond it without clipping.
                         .frame(minHeight: metrics.isCompact ? 38 : 46, alignment: .top)

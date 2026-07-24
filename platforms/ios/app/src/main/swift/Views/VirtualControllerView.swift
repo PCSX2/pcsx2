@@ -4,30 +4,69 @@
 import SwiftUI
 import UIKit
 
-// Singleton haptic generator — prepared once, reused for all button presses
+// Lazily-created haptic generators reused for button presses and explicitly releasable
+// when the gameplay UI is removed.
 @MainActor
 enum HapticManager {
-    static let medium: UIImpactFeedbackGenerator = {
-        let g = UIImpactFeedbackGenerator(style: .medium)
-        g.prepare()
-        return g
-    }()
-    static let light: UIImpactFeedbackGenerator = {
-        let g = UIImpactFeedbackGenerator(style: .light)
-        g.prepare()
-        return g
-    }()
+    private static var mediumGenerator: UIImpactFeedbackGenerator?
+    private static var lightGenerator: UIImpactFeedbackGenerator?
+
+    static var medium: UIImpactFeedbackGenerator {
+        if let mediumGenerator { return mediumGenerator }
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.prepare()
+        mediumGenerator = generator
+        return generator
+    }
+
+    static var light: UIImpactFeedbackGenerator {
+        if let lightGenerator { return lightGenerator }
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.prepare()
+        lightGenerator = generator
+        return generator
+    }
+
+    static func dynamicActionAim() {
+        guard SettingsStore.shared.hapticFeedback else { return }
+        light.impactOccurred(intensity: 0.55)
+    }
+
+    static func dynamicActionShot() {
+        guard SettingsStore.shared.hapticFeedback else { return }
+        medium.impactOccurred(intensity: 0.75)
+    }
+
+    static func dynamicActionRapidFire() {
+        guard SettingsStore.shared.hapticFeedback else { return }
+        medium.impactOccurred(intensity: 0.9)
+    }
+
+    static func releaseForEmulationOnlyMode() {
+        mediumGenerator = nil
+        lightGenerator = nil
+    }
 }
 
 struct VirtualControllerView: View {
     @State private var settings = SettingsStore.shared
+    @State private var dynamicSettings = DynamicThumbstickSettings.shared
     @State private var skinLibrary = VPadSkinLibraryStore.shared
     @State private var layout = PadLayoutStore.shared
+    @State private var swipeInput = SwipeCameraInputDriver()
+    @State private var gyroscopeInput = VirtualPadGyroscopeController()
+    @State private var ownedTouchActionSession = VirtualPadTouchActionSession()
+    @State private var inputSessionGeneration = 0
     var isLandscape: Bool = false
     var layoutSnapshot: PadLayoutSnapshot? = nil
     var skinDescriptor: VPadSkinDescriptor? = nil
+    var touchActionSession: VirtualPadTouchActionSession? = nil
 
     @State private var v2Layout: SkinManifestRuntimeLayout? = nil
+
+    private var activeTouchActionSession: VirtualPadTouchActionSession {
+        touchActionSession ?? ownedTouchActionSession
+    }
 
     private var analogStickScale: CGFloat {
         min(max(CGFloat(settings.analogStickScale), 0.8), 1.6)
@@ -104,6 +143,8 @@ struct VirtualControllerView: View {
                     .allowsHitTesting(false)
             }
 
+            dynamicInputZones(w: w, h: h)
+
             ForEach(layout.controls) { control in
                 v2ControlView(control, transform: transform, assetsDirectory: assetsDirectory, descriptor: descriptor)
             }
@@ -150,7 +191,10 @@ struct VirtualControllerView: View {
         case .dpad:
             v2DPadView(visualRect: visual, hitRect: hit, normalPath: control.normalAssetPath, pressedPath: control.pressedAssetPath, directional: control.directional, assetsDirectory: assetsDirectory)
         case .thumbstick(let side, _):
-            v2StickView(visualRect: visual, captureDiameter: min(hit.width, hit.height), normalPath: control.normalAssetPath, knobPath: control.knobAssetPath, knobSize: knobSize, assetsDirectory: assetsDirectory, side: side)
+            if dynamicSettings.legacyThumbsticks && !(side == .right && dynamicSettings.swipeCamera) {
+                v2StickView(visualRect: visual, captureDiameter: min(hit.width, hit.height), normalPath: control.normalAssetPath, knobPath: control.knobAssetPath, knobSize: knobSize, assetsDirectory: assetsDirectory, side: side)
+                    .id(inputSessionGeneration)
+            }
         }
     }
 
@@ -224,41 +268,73 @@ struct VirtualControllerView: View {
             let usesFullSkin = ControllerAsset.gameplayFullSkinImage(descriptor: descriptor, isLandscape: isLandscape) != nil
             let v2Assets = v2AssetsDirectory
 
-            if isLandscape {
-                Group {
-                    if let v2 = v2Layout, let assets = v2Assets {
-                        v2ControllerOverlay(layout: v2, assetsDirectory: assets, descriptor: descriptor, w: geo.size.width, h: geo.size.height)
-                    } else {
-                        landscapeLayout(w: geo.size.width, h: geo.size.height)
+            ZStack {
+                if isLandscape {
+                    Group {
+                        if let v2 = v2Layout, let assets = v2Assets {
+                            v2ControllerOverlay(layout: v2, assetsDirectory: assets, descriptor: descriptor, w: geo.size.width, h: geo.size.height)
+                        } else {
+                            landscapeLayout(w: geo.size.width, h: geo.size.height)
+                        }
                     }
-                }
-                .environment(\.padOpacity, Double(settings.padOpacity))
-                .environment(\.padSkin, skin)
-                .environment(\.padSkinDescriptor, descriptor)
-                .environment(\.padUsesFullSkin, usesFullSkin)
-            } else {
-                Group {
-                    if let v2 = v2Layout, let assets = v2Assets {
-                        v2ControllerOverlay(layout: v2, assetsDirectory: assets, descriptor: descriptor, w: geo.size.width, h: geo.size.height)
-                    } else {
-                        portraitLayout(w: geo.size.width, h: geo.size.height)
+                    .environment(\.padOpacity, Double(settings.padOpacity))
+                    .environment(\.padSkin, skin)
+                    .environment(\.padSkinDescriptor, descriptor)
+                    .environment(\.padUsesFullSkin, usesFullSkin)
+                } else {
+                    Group {
+                        if let v2 = v2Layout, let assets = v2Assets {
+                            v2ControllerOverlay(layout: v2, assetsDirectory: assets, descriptor: descriptor, w: geo.size.width, h: geo.size.height)
+                        } else {
+                            portraitLayout(w: geo.size.width, h: geo.size.height)
+                        }
                     }
+                    .environment(\.padOpacity, Double(settings.padOpacity))
+                    .environment(\.padSkin, skin)
+                    .environment(\.padSkinDescriptor, descriptor)
+                    .environment(\.padUsesFullSkin, usesFullSkin)
                 }
-                .environment(\.padOpacity, Double(settings.padOpacity))
-                .environment(\.padSkin, skin)
-                .environment(\.padSkinDescriptor, descriptor)
-                .environment(\.padUsesFullSkin, usesFullSkin)
+
             }
         }
         // Prepare mask images before gameplay input so the first press cannot decode/scan on the hot path.
         .onAppear {
             ARMSX2VirtualPadMaskImageCache.prewarm(descriptor: effectiveSkinDescriptor)
+            configureAuxiliaryInputs()
         }
         .onChange(of: skinLibrary.selectedSkinID) { _, _ in
             ARMSX2VirtualPadMaskImageCache.prewarm(descriptor: effectiveSkinDescriptor)
         }
         .onChange(of: skinDescriptor) { _, _ in
             ARMSX2VirtualPadMaskImageCache.prewarm(descriptor: effectiveSkinDescriptor)
+        }
+        .onChange(of: dynamicSettings.swipeCamera) { _, _ in
+            resetDynamicInputs()
+            configureAuxiliaryInputs()
+        }
+        .onChange(of: dynamicSettings.gyroscopeCamera) { _, _ in
+            configureAuxiliaryInputs()
+        }
+        .onChange(of: dynamicSettings.legacyThumbsticks) { _, _ in
+            resetDynamicInputs()
+        }
+        .onChange(of: dynamicSettings.dynamicThumbsticks) { _, _ in
+            resetDynamicInputs()
+        }
+        .onChange(of: dynamicSettings.leftThumbstickActionsEnabled) { _, _ in
+            resetDynamicInputs()
+        }
+        .onChange(of: dynamicSettings.rightThumbstickActionsEnabled) { _, _ in
+            resetDynamicInputs()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            cancelActiveInputSession()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            configureAuxiliaryInputs()
+        }
+        .onDisappear {
+            stopAuxiliaryInputs()
         }
         .task(id: v2CacheKey) {
             v2Layout = SkinManifestRuntimeLayout.make(
@@ -420,8 +496,130 @@ struct VirtualControllerView: View {
         areaH: CGFloat
     ) -> some View {
         let p = pos(id, landscape: landscape)
-        StickView(isLeft: isLeft, sizeScale: analogStickScale, layoutScale: p.scale)
-            .position(x: p.x * areaW, y: p.y * areaH)
+        if dynamicSettings.legacyThumbsticks && !(!isLeft && dynamicSettings.swipeCamera) {
+            StickView(isLeft: isLeft, sizeScale: analogStickScale, layoutScale: p.scale)
+                .position(x: p.x * areaW, y: p.y * areaH)
+                .id(inputSessionGeneration)
+        }
+    }
+
+    @ViewBuilder
+    private func dynamicInputZones(w: CGFloat, h: CGFloat) -> some View {
+        Group {
+            if dynamicSettings.dynamicThumbsticks && isVisible("lstick") {
+                dynamicThumbstickZone(isLeft: true)
+                    .frame(width: w / 2, height: h)
+                    .position(x: w / 4, y: h / 2)
+            }
+
+            if dynamicSettings.swipeCamera && isVisible("rstick") {
+                VirtualPadCameraSwipeView(
+                    maximumTapDuration: dynamicSettings.tapMaximumDuration,
+                    tapTravelTolerance: CGFloat(dynamicSettings.tapTravelTolerance),
+                    onDelta: {
+                        swipeInput.add(delta: $0, isAiming: activeTouchActionSession.right.isAiming)
+                    },
+                    onBegan: {
+                        if dynamicSettings.rightThumbstickActionsEnabled {
+                            activeTouchActionSession.right.interactionBegan()
+                        }
+                    },
+                    onActivity: {
+                        if dynamicSettings.rightThumbstickActionsEnabled {
+                            activeTouchActionSession.right.interactionActivity()
+                        }
+                    },
+                    onTap: {
+                        if dynamicSettings.rightThumbstickActionsEnabled {
+                            activeTouchActionSession.right.interactionTapped()
+                        }
+                    },
+                    onEnded: {
+                        if dynamicSettings.rightThumbstickActionsEnabled {
+                            activeTouchActionSession.right.interactionEnded()
+                        }
+                    }
+                )
+                .frame(width: w / 2, height: h)
+                .position(x: w * 0.75, y: h / 2)
+            } else if dynamicSettings.dynamicThumbsticks && isVisible("rstick") {
+                dynamicThumbstickZone(isLeft: false)
+                    .frame(width: w / 2, height: h)
+                    .position(x: w * 0.75, y: h / 2)
+            }
+        }
+        .id(inputSessionGeneration)
+    }
+
+    private func dynamicThumbstickZone(isLeft: Bool) -> some View {
+        let usesActions = isLeft
+            ? dynamicSettings.leftThumbstickActionsEnabled
+            : dynamicSettings.rightThumbstickActionsEnabled
+        let actionController = isLeft
+            ? activeTouchActionSession.left
+            : activeTouchActionSession.right
+        return DynamicThumbstickView(
+            isLeft: isLeft,
+            radius: CGFloat(dynamicSettings.thumbstickRadius),
+            deadZone: CGFloat(dynamicSettings.deadZone),
+            hapticsEnabled: dynamicSettings.activationHaptics,
+            thumbstickOpacity: dynamicSettings.thumbstickOpacity,
+            baseOpacity: dynamicSettings.baseOpacity,
+            trailOpacity: dynamicSettings.trailOpacity,
+            tapActionsEnabled: usesActions,
+            maximumTapDuration: dynamicSettings.tapMaximumDuration,
+            tapTravelTolerance: CGFloat(dynamicSettings.tapTravelTolerance),
+            onVector: { vector in
+                if isLeft {
+                    EmulatorBridge.shared.setLeftStick(x: Float(vector.x), y: Float(vector.y))
+                } else {
+                    activeTouchActionSession.left.updateCameraMotion(vector, source: .thumbstick)
+                    activeTouchActionSession.right.updateCameraMotion(vector, source: .thumbstick)
+                    EmulatorBridge.shared.setRightStick(x: Float(vector.x), y: Float(vector.y))
+                }
+            },
+            onInteractionBegan: { actionController.interactionBegan() },
+            onInteractionActivity: { actionController.interactionActivity() },
+            onInteractionTap: { actionController.interactionTapped() },
+            onInteractionEnded: { actionController.interactionEnded() }
+        )
+    }
+
+    private func configureAuxiliaryInputs() {
+        swipeInput.onCameraMotion = { motion in
+            activeTouchActionSession.left.updateCameraMotion(motion, source: .swipe)
+            activeTouchActionSession.right.updateCameraMotion(motion, source: .swipe)
+        }
+        gyroscopeInput.onCameraMotion = { motion in
+            activeTouchActionSession.left.updateCameraMotion(motion, source: .gyroscope)
+            activeTouchActionSession.right.updateCameraMotion(motion, source: .gyroscope)
+        }
+        if dynamicSettings.swipeCamera {
+            swipeInput.start()
+        } else {
+            swipeInput.stop()
+        }
+        gyroscopeInput.setEnabled(dynamicSettings.gyroscopeCamera)
+    }
+
+    private func stopAuxiliaryInputs() {
+        swipeInput.stop()
+        gyroscopeInput.stop()
+        swipeInput.onCameraMotion = nil
+        gyroscopeInput.onCameraMotion = nil
+        activeTouchActionSession.reset()
+        EmulatorBridge.shared.resetVirtualPadAnalogInput()
+    }
+
+    private func resetDynamicInputs() {
+        activeTouchActionSession.reset()
+        EmulatorBridge.shared.resetVirtualPadAnalogInput()
+        inputSessionGeneration &+= 1
+    }
+
+    private func cancelActiveInputSession() {
+        stopAuxiliaryInputs()
+        inputSessionGeneration &+= 1
     }
 
     // MARK: - Landscape: overlay on game screen
@@ -438,6 +636,8 @@ struct VirtualControllerView: View {
                     .clipped()
                     .allowsHitTesting(false)
             }
+
+            dynamicInputZones(w: w, h: h)
 
             // D-pad buttons
             if isVisible("dpad") {
@@ -514,6 +714,8 @@ struct VirtualControllerView: View {
                     .clipped()
                     .allowsHitTesting(false)
             }
+
+            dynamicInputZones(w: w, h: h)
 
             GeometryReader { cGeo in
                 let cW = cGeo.size.width

@@ -7,24 +7,42 @@ import UIKit
 
 struct BootSplashView: View {
     private static let hardTimeout: UInt64 = 6_000_000_000
+    private static let idleVMPrewarmResolved = Notification.Name(
+        "ARMSX2iOSIdleVMPrewarmResolved"
+    )
 
     let onFinished: () -> Void
     @State private var finished = false
+    @State private var playbackReady = ARMSX2Bridge.isIdleVMPrewarmResolved()
 
     var body: some View {
         ZStack {
             Color.black
                 .ignoresSafeArea()
 
-            BootSplashPlayerView(onFinished: finish)
+            BootSplashPlayerView(shouldPlay: playbackReady, onFinished: finish)
                 .ignoresSafeArea()
         }
         .contentShape(Rectangle())
         .onTapGesture {
             finish()
         }
-        .task {
+        .onAppear {
+            if ARMSX2Bridge.isIdleVMPrewarmResolved() {
+                playbackReady = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Self.idleVMPrewarmResolved)) { _ in
+            playbackReady = true
+        }
+        .task(id: playbackReady) {
+            guard playbackReady else {
+                return
+            }
             try? await Task.sleep(nanoseconds: Self.hardTimeout)
+            guard !Task.isCancelled else {
+                return
+            }
             finish()
         }
     }
@@ -41,6 +59,7 @@ struct BootSplashView: View {
 }
 
 private struct BootSplashPlayerView: UIViewRepresentable {
+    let shouldPlay: Bool
     let onFinished: () -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -62,15 +81,19 @@ private struct BootSplashPlayerView: UIViewRepresentable {
         let item = AVPlayerItem(url: url)
         let player = AVPlayer(playerItem: item)
         player.actionAtItemEnd = .pause
-        context.coordinator.player = player
-        context.coordinator.observe(item: item)
+        context.coordinator.configure(player: player, item: item)
         view.playerLayer.player = player
-        player.play()
+        if shouldPlay {
+            context.coordinator.startIfNeeded()
+        }
 
         return view
     }
 
     func updateUIView(_ uiView: BootSplashPlayerUIView, context: Context) {
+        if shouldPlay {
+            context.coordinator.startIfNeeded()
+        }
     }
 
     static func dismantleUIView(_ uiView: BootSplashPlayerUIView, coordinator: Coordinator) {
@@ -84,6 +107,7 @@ private struct BootSplashPlayerView: UIViewRepresentable {
         private let onFinished: () -> Void
         private var endToken: NSObjectProtocol?
         private var errorToken: NSObjectProtocol?
+        private var hasStarted = false
 
         init(onFinished: @escaping () -> Void) {
             self.onFinished = onFinished
@@ -93,8 +117,9 @@ private struct BootSplashPlayerView: UIViewRepresentable {
             stopObserving()
         }
 
-        func observe(item: AVPlayerItem) {
+        func configure(player: AVPlayer, item: AVPlayerItem) {
             stopObserving()
+            self.player = player
 
             endToken = NotificationCenter.default.addObserver(
                 forName: .AVPlayerItemDidPlayToEndTime,
@@ -113,6 +138,16 @@ private struct BootSplashPlayerView: UIViewRepresentable {
             }
         }
 
+        func startIfNeeded() {
+            guard !hasStarted, let player else {
+                return
+            }
+
+            hasStarted = true
+            player.seek(to: .zero)
+            player.play()
+        }
+
         func stopObserving() {
             if let endToken {
                 NotificationCenter.default.removeObserver(endToken)
@@ -122,7 +157,9 @@ private struct BootSplashPlayerView: UIViewRepresentable {
                 NotificationCenter.default.removeObserver(errorToken)
                 self.errorToken = nil
             }
+            player?.pause()
             player = nil
+            hasStarted = false
         }
 
         func finish() {

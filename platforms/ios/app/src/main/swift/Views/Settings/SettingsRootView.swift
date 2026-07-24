@@ -16,6 +16,7 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
     case network
     case memoryCards
     case storage
+    case settingsPresets
     case retroAchievements
     case overlay
     case gameController
@@ -46,6 +47,8 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
             return "Memory Cards"
         case .storage:
             return "Storage"
+        case .settingsPresets:
+            return "Settings Presets"
         case .retroAchievements:
             return "RetroAchievements"
         case .overlay:
@@ -83,6 +86,8 @@ private enum SettingsPane: String, CaseIterable, Identifiable {
             return "memorychip"
         case .storage:
             return "internaldrive"
+        case .settingsPresets:
+            return "slider.horizontal.3"
         case .retroAchievements:
             return "trophy"
         case .overlay:
@@ -112,8 +117,12 @@ struct SettingsRootView: View {
     @State private var selectedPane: SettingsPane? = .emulator
 #endif
 
+    private var backgroundConfigured: Bool {
+        settings.hasCustomBackground && settings.backgroundEnabledInSettings
+    }
+
     private var backgroundActive: Bool {
-        settings.hasCustomBackground && settings.backgroundEnabledInSettings && menuTabIsActive
+        backgroundConfigured && menuTabIsActive
     }
 
     var body: some View {
@@ -133,9 +142,10 @@ struct SettingsRootView: View {
         .containerBackground(backgroundActive ? Color.clear : Color(uiColor: .systemGroupedBackground), for: .navigation)
 #else
         ZStack {
-            if backgroundActive {
-                MenuBackgroundLayer()
+            if backgroundConfigured {
+                MenuBackgroundLayer(isActive: menuTabIsActive)
             }
+
             List {
             Section(settings.localized("Interface")) {
                 NavigationLink {
@@ -210,6 +220,11 @@ struct SettingsRootView: View {
             }
 
             Section(settings.localized("Features")) {
+                NavigationLink {
+                    SettingsPresetsView()
+                } label: {
+                    Label(settings.localized("Settings Presets"), systemImage: "slider.horizontal.3")
+                }
                 NavigationLink {
                     RetroAchievementsSettingsView()
                 } label: {
@@ -376,6 +391,8 @@ struct SettingsRootView: View {
             MemoryCardSettingsView()
         case .storage:
             StorageSettingsView()
+        case .settingsPresets:
+            SettingsPresetsView()
         case .retroAchievements:
             RetroAchievementsSettingsView()
         case .overlay:

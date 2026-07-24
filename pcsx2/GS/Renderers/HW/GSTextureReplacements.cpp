@@ -127,6 +127,7 @@ namespace GSTextureReplacements
 	static void WorkerThreadEntryPoint();
 	static void SyncWorkerThread();
 	static void CancelPendingLoadsAndDumps();
+	static void NotifyStartupCompleteForCurrentGame();
 
 	static std::string s_current_serial;
 
@@ -503,6 +504,7 @@ static bool GetWrongCasePath(std::string* output, const char* dir, std::string_v
 void GSTextureReplacements::ReloadReplacementMap()
 {
 	SyncWorkerThread();
+	ScopedGuard startup_complete_guard([]() { NotifyStartupCompleteForCurrentGame(); });
 
 	// clear out the caches
 	{
@@ -591,6 +593,31 @@ void GSTextureReplacements::ReloadReplacementMap()
 			Console.Warning("Palette textures will be disabled. Please enable full preloading or disable GPU palette conversion.");
 		}
 	}
+}
+
+void GSTextureReplacements::NotifyStartupCompleteForCurrentGame()
+{
+	const std::string serial = s_current_serial;
+	if (serial.empty() || serial != VMManager::GetDiscSerial())
+		return;
+
+	// Without precaching there is no finite startup decode phase: replacement images are
+	// intentionally loaded on demand. In that configuration, indexing the active game's
+	// replacement map is the complete startup boundary.
+	if (!GSConfig.LoadTextureReplacements || !GSConfig.PrecacheTextureReplacements ||
+		s_replacement_texture_filenames.empty())
+	{
+		VMManager::NotifyTextureReplacementStartupComplete();
+		return;
+	}
+
+	// PrecacheReplacementTextures() queues every startup decode before this barrier.
+	// The serial check prevents a stale barrier from completing readiness after a disc
+	// change or a replacement-map reload for another game.
+	QueueWorkerThreadItem([serial]() {
+		if (serial == VMManager::GetDiscSerial())
+			VMManager::NotifyTextureReplacementStartupComplete();
+	}, false);
 }
 
 void GSTextureReplacements::UpdateConfig(Pcsx2Config::GSOptions& old_config)

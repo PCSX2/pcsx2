@@ -620,6 +620,28 @@ static std::atomic<bool> s_jitExpired{false};
 // when revalidation decides to tear the old thread down and create a new one.
 static std::atomic<bool> s_vmInitComplete{false};
 static std::atomic<bool> s_vmThreadShouldExit{false};
+static std::atomic<bool> s_idleVMPrewarmResolved{false};
+
+static void ARMSX2ResolveIdleVMPrewarm()
+{
+    bool expected = false;
+    if (!s_idleVMPrewarmResolved.compare_exchange_strong(expected, true))
+        return;
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:@"ARMSX2iOSIdleVMPrewarmResolved" object:nil];
+    });
+}
+
+extern "C" bool ARMSX2_IsIdleVMPrewarmResolved()
+{
+#if TARGET_OS_SIMULATOR
+    return true;
+#else
+    return s_idleVMPrewarmResolved.load(std::memory_order_acquire);
+#endif
+}
 
 static void ARMSX2StopJITKeepalive()
 {
@@ -713,6 +735,28 @@ static void ARMSX2StartJITKeepalive()
 
 #pragma mark - Persistent VM thread
 - (void)startVMThread {
+    [self startVMThreadRequestingBoot:YES];
+}
+
+- (void)prepareVMThreadForIdle {
+#if !TARGET_OS_SIMULATOR
+    ARMSX2ApplyJITScriptProtocol("idle-vm-prewarm");
+    const bool jitAlive = DarwinMisc::IsJITAvailable() && DarwinMisc::ValidateJITAlive();
+    if (!jitAlive) {
+        std::fprintf(stderr, "@@BOOT_IDLE_PREWARM@@ jit=0 action=skip\n");
+        std::fflush(stderr);
+        ARMSX2ResolveIdleVMPrewarm();
+        return;
+    }
+
+    DarwinMisc::iPSX2_FORCE_EE_INTERP = 0;
+    std::fprintf(stderr, "@@BOOT_IDLE_PREWARM@@ jit=1 action=prepare\n");
+    std::fflush(stderr);
+    [self startVMThreadRequestingBoot:NO];
+#endif
+}
+
+- (void)startVMThreadRequestingBoot:(BOOL)requestBoot {
     ARMSX2ApplyJITScriptProtocol("start-vm-thread");
     // Set inside the lock below when the JIT-dead re-boot path tears the old
     // thread down; consumed after the lock is released so the 200ms sleep does
@@ -727,11 +771,22 @@ static void ARMSX2StartJITKeepalive()
             return;
         }
 
-        // Signal the persistent thread to boot
-        s_requestVMBoot.store(true);
-        s_requestVMStop.store(false);
+        if (requestBoot) {
+            // Signal the persistent thread to boot. Idle preparation deliberately
+            // leaves this false so the initialized worker blocks in its wait loop.
+            s_requestVMBoot.store(true);
+            s_requestVMStop.store(false);
+        }
 
         if (s_vmThreadCreated) {
+            if (!requestBoot) {
+                std::fprintf(stderr, "@@BOOT_IDLE_PREWARM@@ action=already_prepared\n");
+                std::fflush(stderr);
+                if (s_vmInitComplete.load(std::memory_order_acquire))
+                    ARMSX2ResolveIdleVMPrewarm();
+                return;
+            }
+
             // Re-validate JIT before signaling the existing thread.
             // The persistent thread bypasses CPUThreadInitialize, so it reuses
             // the JIT memory allocated at first boot. If iOS revoked the grant,
@@ -795,7 +850,8 @@ static void ARMSX2StartJITKeepalive()
         s_vmThreadCreated = true;
     }
 
-    std::fprintf(stderr, "@@BOOT_START_THREAD@@ active=0 created=0 action=create\n");
+    std::fprintf(stderr, "@@BOOT_START_THREAD@@ active=0 created=0 action=create request_boot=%d\n",
+        requestBoot ? 1 : 0);
     std::fflush(stderr);
     Console.WriteLn("[VM] Creating persistent VM thread...");
 
@@ -828,6 +884,7 @@ static void ARMSX2StartJITKeepalive()
                         "via StikDebug.");
                     [[NSNotificationCenter defaultCenter] postNotificationName:@"ARMSX2iOSReturnToMenu" object:nil];
                 });
+                ARMSX2ResolveIdleVMPrewarm();
                 std::lock_guard<std::mutex> lk(s_vmMutex);
                 s_vmThreadCreated = false;
             }
@@ -835,6 +892,7 @@ static void ARMSX2StartJITKeepalive()
         watchdog.detach();
         const bool cpuInitOk = VMManager::Internal::CPUThreadInitialize();
         s_vmInitComplete.store(true, std::memory_order_relaxed);
+        ARMSX2ResolveIdleVMPrewarm();
         // NOTE (Issue 2, benign race): there is a TOCTOU window here. If the
         // watchdog fires between CPUThreadInitialize() completing and this point,
         // it will have already reset s_vmThreadCreated=false (and posted the
@@ -1159,6 +1217,13 @@ static void ARMSX2StartJITKeepalive()
         [rootVC.view setNeedsLayout];
         [rootVC.view layoutIfNeeded];
     }
+
+    // Prepare the persistent CPU/JIT worker while the launch-time JIT grant is
+    // fresh, but leave it waiting without a VM boot request. Running this from
+    // scene activation also retries after returning from a JIT-enabler app.
+#if !TARGET_OS_SIMULATOR
+    [self prepareVMThreadForIdle];
+#endif
 }
 
 - (void)sceneWillResignActive:(UIScene *)scene {

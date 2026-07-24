@@ -330,6 +330,8 @@
     <true/>
     <key>NSLocalNetworkUsageDescription</key>
     <string>ARMSX2 uses local network access for PS2 online play through DEV9 sockets.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>ARMSX2 uses device motion to control the emulated right analog stick when Gyroscope Camera is enabled.</string>
     <key>UILaunchScreen</key>
     <dict/>
     <key>UIStatusBarStyle</key>
@@ -416,6 +418,25 @@
     </array>
     <key>UTExportedTypeDeclarations</key>
     <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>com.armsx2.settings-preset</string>
+            <key>UTTypeDescription</key>
+            <string>ARMSX2 Settings Preset</string>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.plain-text</string>
+            </array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>ini</string>
+                </array>
+                <key>public.mime-type</key>
+                <string>text/plain</string>
+            </dict>
+        </dict>
         <dict>
             <key>UTTypeIdentifier</key>
             <string>com.armsx2.skin</string>

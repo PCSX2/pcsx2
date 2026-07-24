@@ -90,6 +90,11 @@ final class EmulatorBridge: @unchecked Sendable {
     var biosName: String = "Unknown"
     var buildVersion: String = ""
 
+    @ObservationIgnored private var virtualRightTouchX: Float = 0
+    @ObservationIgnored private var virtualRightTouchY: Float = 0
+    @ObservationIgnored private var virtualRightMotionX: Float = 0
+    @ObservationIgnored private var virtualRightMotionY: Float = 0
+
     private init() {
         biosName = ARMSX2Bridge.biosName()
         buildVersion = ARMSX2Bridge.buildVersion()
@@ -109,14 +114,51 @@ final class EmulatorBridge: @unchecked Sendable {
 
     @MainActor
     func setLeftStick(x: Float, y: Float) {
+        let sensitivity = Float(DynamicThumbstickSettings.shared.movementSensitivity)
+        let output = Self.radiallyClamped(x: x * sensitivity, y: y * sensitivity)
         let inv = SettingsStore.shared.stickInversion(for: .left)
-        ARMSX2Bridge.setLeftStickX(inv.x ? -x : x, y: inv.y ? -y : y)
+        ARMSX2Bridge.setLeftStickX(inv.x ? -output.x : output.x, y: inv.y ? -output.y : output.y)
     }
 
     @MainActor
     func setRightStick(x: Float, y: Float) {
+        let sensitivity = Float(DynamicThumbstickSettings.shared.lookSensitivity)
+        virtualRightTouchX = x * sensitivity
+        virtualRightTouchY = y * sensitivity
+        applyVirtualRightStick()
+    }
+
+    @MainActor
+    func setRightStickMotion(x: Float, y: Float) {
+        virtualRightMotionX = x
+        virtualRightMotionY = y
+        applyVirtualRightStick()
+    }
+
+    @MainActor
+    func resetVirtualPadAnalogInput() {
+        virtualRightTouchX = 0
+        virtualRightTouchY = 0
+        virtualRightMotionX = 0
+        virtualRightMotionY = 0
+        ARMSX2Bridge.setLeftStickX(0, y: 0)
+        ARMSX2Bridge.setRightStickX(0, y: 0)
+    }
+
+    @MainActor
+    private func applyVirtualRightStick() {
+        let output = Self.radiallyClamped(
+            x: virtualRightTouchX + virtualRightMotionX,
+            y: virtualRightTouchY + virtualRightMotionY
+        )
         let inv = SettingsStore.shared.stickInversion(for: .right)
-        ARMSX2Bridge.setRightStickX(inv.x ? -x : x, y: inv.y ? -y : y)
+        ARMSX2Bridge.setRightStickX(inv.x ? -output.x : output.x, y: inv.y ? -output.y : output.y)
+    }
+
+    private static func radiallyClamped(x: Float, y: Float) -> (x: Float, y: Float) {
+        let magnitude = hypotf(x, y)
+        guard magnitude > 1 else { return (x, y) }
+        return (x / magnitude, y / magnitude)
     }
 
     var isOsdVisible: Bool {

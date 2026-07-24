@@ -91,6 +91,10 @@ enum ARMSX2VirtualPadMaskImageCache {
             _ = image(for: button, descriptor: descriptor)
         }
     }
+
+    static func releaseForEmulationOnlyMode() {
+        cachedImages.removeAll(keepingCapacity: false)
+    }
 }
 
 enum VirtualPadPressSurfacePolicy {
