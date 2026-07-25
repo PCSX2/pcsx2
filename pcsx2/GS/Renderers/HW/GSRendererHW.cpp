@@ -10709,8 +10709,10 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8)
 		return 0;
 
+	const bool is_smaller = draw_size.x <= (tex_size.x * 0.75f) && draw_size.y <= (tex_size.y * 0.75f);
+	const bool is_smaller_and_writing_back = draw_size.x < tex_size.x && draw_size.y < tex_size.y && next_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 && next_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block();
 	// Should usually be 2x but some games like Monster House goes from 512x448 -> 128x128
-	const bool is_downscale = m_cached_ctx.TEX0.TBW >= m_cached_ctx.FRAME.FBW && draw_size.x <= (tex_size.x * 0.75f) && draw_size.y <= (tex_size.y * 0.75f);
+	const bool is_downscale = m_cached_ctx.TEX0.TBW >= m_cached_ctx.FRAME.FBW && (is_smaller || is_smaller_and_writing_back);
 	// Check we're getting most of the texture and not just stenciling a part of it.
 	// Only allow non-bilineared downscales if it's most of the target (misdetections of shadows in Naruto, Transformers etc), otherwise it's fine.
 	const GSVector4i src_valid = src->m_from_target ? src->m_from_target->m_valid : src->m_valid_rect;
