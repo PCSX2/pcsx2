@@ -2688,8 +2688,9 @@ StartRecomp:
 			if ((oldBlock->startpc + oldBlock->size * 4) <= HWADDR(startpc))
 				break;
 
-			if (memcmp(&recRAMCopy[oldBlock->startpc / 4], PSM(oldBlock->startpc),
-					oldBlock->size * 4))
+			if (memcmp(&recRAMCopy[oldBlock->startpc], PSM(oldBlock->startpc),
+					// clamp because delay slot might extend past the end of memory
+					std::min(oldBlock->size * 4, Ps2MemSize::ExposedRam - oldBlock->startpc)))
 			{
 				recClear(startpc, (pc - startpc) / 4);
 				s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
@@ -2698,7 +2699,7 @@ StartRecomp:
 			}
 		}
 
-		memcpy(&recRAMCopy[HWADDR(startpc) / 4], PSM(startpc), pc - startpc);
+		memcpy(&recRAMCopy[HWADDR(startpc)], PSM(startpc), pc - startpc);
 	}
 
 	s_pCurBlock->SetFnptr((uptr)recPtr);
