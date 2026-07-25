@@ -410,9 +410,6 @@ void GameListWidget::setCustomBackground()
 			delete m_background_movie;
 			m_background_movie = nullptr;
 		}
-		// Cache all frames for small images so loops don't keep re-decoding
-		else if (const s64 file_size = FileSystem::GetPathFileSize(path.c_str()); file_size > 0 && file_size < 64 * 1024 * 1024)
-			m_background_movie->setCacheMode(QMovie::CacheAll);
 	}
 
 	// Invalidate frame cache so the next animated frame triggers full reprocessing
@@ -435,6 +432,10 @@ void GameListWidget::setCustomBackground()
 		m_table_view->setAlternatingRowColors(true);
 		return;
 	}
+
+	// Cache all frames for small images so loops don't keep re-decoding
+	if (const s64 file_size = FileSystem::GetPathFileSize(path.c_str()); file_size > 0 && file_size < 25 * 1024 * 1024)
+		m_background_movie->setCacheMode(QMovie::CacheAll);
 
 	// Retrieve scaling setting
 	m_background_scaling = QtUtils::ScalingMode::Fit;
@@ -792,7 +793,7 @@ void GameListWidget::setShowFullCoverTitles(bool enabled)
 	Host::SetBaseBoolSettingValue("UI", "GameListShowFullCoverTitles", enabled);
 	Host::CommitBaseSettingChanges();
 	m_model->setShowFullCoverTitles(enabled);
-	m_list_view->setWordWrap(enabled); 
+	m_list_view->setWordWrap(enabled);
 	if (isShowingGameGrid())
 		m_model->refresh();
 	updateToolbar();
