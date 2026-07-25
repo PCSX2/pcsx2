@@ -1068,27 +1068,15 @@ void EmuThread::updatePerformanceMetrics(bool force)
 
 		if (gpu_usage != m_last_gpu_usage || force)
 		{
-			QString text;
-			if (gpu_usage == 0)
-				text = tr("GPU: N/A");
-			else
-				text = tr("GPU: %1%").arg(gpu_usage, 0, 'f', 0);
-
 			QMetaObject::invokeMethod(g_main_window, "setStatusGPUText", Qt::QueuedConnection,
-				Q_ARG(const QString&, text));
+				Q_ARG(const QString&, tr("GPU: %1%").arg(gpu_usage, 0, 'f', 0)));
 			m_last_gpu_usage = gpu_usage;
 		}
 
 		if (gfps != m_last_game_fps || force)
 		{
-			QString text;
-			if (gfps == 0)
-				text = tr("FPS: N/A");
-			else
-				text = tr("FPS: %1").arg(gfps, 0, 'f', 0);
-
 			QMetaObject::invokeMethod(g_main_window, "setStatusFPSText", Qt::QueuedConnection,
-				Q_ARG(const QString&, text));
+				Q_ARG(const QString&, gfps == 0 ? tr("FPS: N/A") : tr("FPS: %1").arg(gfps, 0, 'f', 0)));
 			m_last_game_fps = gfps;
 		}
 

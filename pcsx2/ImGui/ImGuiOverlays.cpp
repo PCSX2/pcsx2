@@ -428,7 +428,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 					const CPUInfo& info = GetCPUInfo();
 					const bool has_small = info.num_small_cores > 0;
 					const bool has_smt = info.num_threads != info.num_big_cores + info.num_small_cores;
-					s_hardware_info_cpu_line.format("CPU: {}", info.name);
+					s_hardware_info_cpu_line.format("CPU: {}", !info.name.empty() ? info.name : "Unknown");
 					if (has_smt && has_small)
 						s_hardware_info_cpu_line.append_format(" ({}P/{}E/{}T)", info.num_big_cores, info.num_small_cores, info.num_threads);
 					else if (has_small)
