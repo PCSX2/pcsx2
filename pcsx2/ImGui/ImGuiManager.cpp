@@ -1057,13 +1057,17 @@ void ImGuiManager::RenderOSD()
 	// acquire for IO.MousePos.
 	std::atomic_thread_fence(std::memory_order_acquire);
 
-	// Don't draw OSD when we're just running big picture.
-	if (VMManager::HasValidVM())
-		RenderOverlays();
-
 	const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
 	AcquirePendingOSDMessages(current_time);
-	DrawOSDMessages(current_time);
+
+	if (!FullscreenUI::HasActiveWindow())
+	{
+		// Don't draw OSD when we're just running big picture.
+		if (VMManager::HasValidVM())
+			RenderOverlays();
+
+		DrawOSDMessages(current_time);
+	}
 
 	// Cursors are always last.
 	DrawSoftwareCursors();
