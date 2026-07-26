@@ -10736,7 +10736,8 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	}
 
 	// Last ditched check if it's doing a lot of small draws exactly the same which could be recursive lighting bloom.
-	if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail > 2 && !no_gaps_or_single_sprite && m_context->TEX1.MMAG == 1 && !m_context->ALPHA.IsOpaque())
+	if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail > 2 && !no_gaps_or_single_sprite && m_context->TEX1.MMAG == 1 && is_target_src && (m_cached_ctx.TEST.ZTST == ZTST_ALWAYS || m_cached_ctx.TEST.ZTE == 0) &&
+		!m_context->ALPHA.IsOpaque() && GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].bpp == GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp)
 	{
 		GSVertex* v = &m_vertex->buff[0];
 		float tw = 1 << src->m_TEX0.TW;
@@ -10747,7 +10748,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 		const int first_x = (v[1].XYZ.X - v[0].XYZ.X) >> 4;
 		const int first_y = (v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
 
-		if (first_x > first_u && first_y > first_v && !no_resize && std::abs(draw_size.x - first_x) <= 4 && std::abs(draw_size.y - first_y) <= 4)
+		if (first_x >= first_u && first_y >= first_v && !no_resize && ((draw_size.x != first_x && draw_size.y != first_y) || (tex_size.x != first_u && tex_size.y != first_v)) && std::abs(draw_size.x - first_x) <= 4 && std::abs(draw_size.y - first_y) <= 4)
 		{
 			for (u32 i = 2; i < m_index->tail; i += 2)
 			{
@@ -10756,14 +10757,14 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 				const int next_x = (v[i + 1].XYZ.X - v[i].XYZ.X) >> 4;
 				const int next_y = (v[i + 1].XYZ.Y - v[i].XYZ.Y) >> 4;
 
-				if (std::abs(draw_size.x - next_x) > 4 || std::abs(draw_size.y - next_y) > 4)
+				if (std::abs(draw_size.x - next_x) > 4 || std::abs(draw_size.y - next_y) > 4 || (draw_size.x == next_x && tex_size.x == next_u) || (draw_size.y == next_y && tex_size.y == next_v))
 					break;
 
 				if (next_u != first_u || next_v != first_v || next_x != first_x || next_y != first_y)
 					break;
 
 				if (i + 2 >= m_index->tail)
-					return 2;
+					return (is_target_src && src->m_from_target->m_downscaled) ? -1 : 2;
 			}
 		}
 	}
