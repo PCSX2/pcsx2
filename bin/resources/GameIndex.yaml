@@ -12966,6 +12966,7 @@ SCUS-97584:
     autoFlush: 2
     preloadFrameData: 1
     nativeScaling: 2 # Fixes post-processing.
+    halfPixelOffset: 4 # Aligns post bloom.
 SCUS-97589:
   name: "NBA '08 featuring The Life Vol.3"
   region: "NTSC-U"
@@ -21964,6 +21965,7 @@ SLES-52940:
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes double image and aligns glow effects.
+    nativeScaling: 2 # Fixes depth blur.
 SLES-52941:
   name: "Gungrave - Overdose"
   region: "PAL-M3"
@@ -45879,6 +45881,7 @@ SLPM-65791:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes double image and aligns glow effects.
+    nativeScaling: 2 # Fixes depth blur.
 SLPM-65793:
   name: "SSX3 [EA BEST HITS]"
   name-sort: "SSX3 [EA BEST HITS]"
@@ -69425,6 +69428,7 @@ SLUS-20969:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes double image and aligns glow effects.
+    nativeScaling: 2 # Fixes depth blur.
 SLUS-20970:
   name: "Rumble Roses"
   region: "NTSC-U"
@@ -75957,6 +75961,7 @@ SLUS-29132:
   region: "NTSC-U"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes double image and aligns glow effects.
+    nativeScaling: 2 # Fixes depth blur.
 SLUS-29133:
   name: "Namco Transmission Demo Disc Vol.2"
   region: "NTSC-U"
@@ -76760,6 +76765,7 @@ TLES-52940:
   region: "PAL-E"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes double image and aligns glow effects.
+    nativeScaling: 2 # Fixes depth blur.
 TLES-53544:
   name: "Pro Evolution Soccer 5 Beta Trial Code"
   region: "PAL-E"
