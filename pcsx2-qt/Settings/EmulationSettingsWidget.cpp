@@ -33,6 +33,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.syncToHostRefreshRate, "EmuCore/GS", "SyncToHostRefreshRate", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useVSyncForTiming, "EmuCore/GS", "UseVSyncForTiming", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.skipPresentingDuplicateFrames, "EmuCore/GS", "SkipDuplicateFrames", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.advancedFrameDisplay, "EmuCore/GS", "AdvancedFrameDisplay", false);
 	connect(m_ui.optimalFramePacing, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::onOptimalFramePacingChanged);
 	connect(m_ui.vsync, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateUseVSyncForTimingEnabled);
 	connect(m_ui.syncToHostRefreshRate, &QCheckBox::checkStateChanged, this, &EmulationSettingsWidget::updateUseVSyncForTimingEnabled);
@@ -155,6 +156,11 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* settings_dialog
 		   "rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time "
 		   "fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase "
 		   "input lag. Helps when using frame generation on 25/30fps games."));
+	dialog()->registerWidgetHelp(m_ui.advancedFrameDisplay, tr("Advanced Frame Display"), tr("Unchecked"),
+		tr("Displays the newest frame immediately on the beginning of the "
+		   "frame raster time, instead of at the end. Can reduce perceived "
+		   "input lag but problematic with some games such as Soulcalibur II "
+		   "and Baldur's Gate Dark Alliance II."));
 	dialog()->registerWidgetHelp(m_ui.manuallySetRealTimeClock, tr("Manually Set Real-Time Clock"), tr("Unchecked"),
 		tr("Manually set a real-time clock to use for the virtual PlayStation 2 instead of using your OS' system clock."));
 	dialog()->registerWidgetHelp(m_ui.rtcDateTime, tr("Real-Time Clock"), tr("Current date and time"),
