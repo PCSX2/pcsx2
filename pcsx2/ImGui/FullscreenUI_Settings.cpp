@@ -2658,6 +2658,13 @@ void FullscreenUI::DrawEmulationSettingsPage()
 		SetSettingsChanged(bsi);
 	}
 
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ANGLES_RIGHT, "Advanced Frame Display"),
+		FSUI_CSTR("Displays the newest frame immediately at the beginning of the "
+		"frame raster time, instead of at the end. Can reduce perceived "
+		"input lag, but may cause problems with some games, such as "
+		"Soulcalibur II and Baldur's Gate Dark Alliance II. "),
+		"EmuCore/GS", "AdvancedFrameDisplay", false);
+
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_SPIN, "Vertical Sync (VSync)"), FSUI_CSTR("Synchronizes frame presentation with host refresh."),
 		"EmuCore/GS", "VsyncEnable", false);
 
