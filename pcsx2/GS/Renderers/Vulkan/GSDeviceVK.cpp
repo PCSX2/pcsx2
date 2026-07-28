@@ -2254,8 +2254,11 @@ void GSDeviceVK::Destroy()
 
 	m_swap_chain.reset();
 
-	DestroySpinResources();
-	DestroyResources();
+	if (m_device != VK_NULL_HANDLE)
+	{
+		DestroySpinResources();
+		DestroyResources();
+	}
 
 	VKShaderCache::Destroy();
 
