@@ -25,6 +25,148 @@ namespace Vulkan
 	const char* VkResultToString(VkResult res);
 	void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...);
 
+	class RenderPass
+	{
+	private:
+		union
+		{
+			struct
+			{
+				u64 color_format0 : 8;
+				u64 color_format1 : 8;
+				u64 depth_format : 8;
+				u64 color_load_op0 : 2;
+				u64 color_load_op1 : 2;
+				u64 color_store_op0 : 4;
+				u64 color_store_op1 : 4;
+				u64 depth_load_op : 2;
+				u64 depth_store_op : 1;
+				u64 stencil_load_op : 2;
+				u64 stencil_store_op : 1;
+				u64 color_feedback_loop : 1;
+				u64 depth_feedback_loop : 1;
+			};
+
+			u64 key;
+		} key;
+
+	public:
+		static constexpr u32 MAX_COLOR_ATTACHMENTS = 2;
+
+		RenderPass(); // Null
+
+		RenderPass(VkFormat color_format, VkFormat depth_format,
+			VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
+			VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
+			VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
+			VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
+			VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			bool color_feedback_loop = false, bool depth_feedback_loop = false);
+		bool IsNull() const;
+
+		u64 GetKey() const;
+
+		bool operator!=(const RenderPass& other) const;
+
+		bool operator==(const RenderPass& other) const;
+
+		VkAttachmentLoadOp GetColorLoadOp(u32 i) const;
+
+		VkAttachmentStoreOp GetColorStoreOp(u32 i) const;
+
+		VkFormat GetColorFormat(u32 i) const;
+
+		void SetColorLoadOp(u32 i, VkAttachmentLoadOp op);
+
+		void SetColorStoreOp(u32 i, VkAttachmentStoreOp op);
+
+		void SetColorFormat(u32 i, VkFormat fmt);
+
+		VkAttachmentLoadOp GetDepthLoadOp() const;
+
+		void SetDepthLoadOp(VkAttachmentLoadOp op);
+
+		VkAttachmentStoreOp GetDepthStoreOp() const;
+
+		void SetDepthStoreOp(VkAttachmentStoreOp op);
+
+		VkFormat GetDepthFormat() const;
+
+		void SetDepthFormat(VkFormat fmt);
+
+		VkAttachmentLoadOp GetStencilLoadOp() const;
+
+		void SetStencilLoadOp(VkAttachmentLoadOp op);
+
+		VkAttachmentStoreOp GetStencilStoreOp() const;
+
+		void SetStencilStoreOp(VkAttachmentStoreOp op);
+
+		bool GetColorFeedbackLoop() const;
+
+		void SetColorFeedbackLoop(bool fbl);
+
+		bool GetDepthFeedbackLoop() const;
+
+		void SetDepthFeedbackLoop(bool fbl);
+
+		u32 GetColorAttachmentCount() const;
+
+		u32 GetDepthAttachmentCount() const;
+	};
+
+	// Only allows single subpass render passes.
+	class RenderPassBuilder
+	{
+	public:
+		static constexpr u32 MAX_COLOR_ATTACHMENTS = RenderPass::MAX_COLOR_ATTACHMENTS;
+
+		void AddColorAttachment(VkImageLayout layout, VkFormat format,
+			VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op,
+			bool feedback_loop, bool input_reference, bool subpass_self_dependency);
+
+		void AddDepthStencilAttachment(VkImageLayout layout, VkFormat depth_format,
+			VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
+			VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op,
+			bool feedback_loop, bool input_reference, bool subpass_self_dependency);
+		
+		void SetColorFeedbackBarrier(const VkMemoryBarrier2& barrier, VkDependencyFlags dependency);
+		void SetDepthFeedbackBarrier(const VkMemoryBarrier2& barrier, VkDependencyFlags dependency);
+
+		void SetSubpassFlags(VkSubpassDescriptionFlags subpass_flags);
+
+		void Clear();
+
+		VkRenderPass Create(VkDevice device);
+	private:
+
+		std::array<VkAttachmentReference2, MAX_COLOR_ATTACHMENTS> m_color_reference{};
+		u32 m_num_color_attachments = 0;
+
+		VkAttachmentReference2 m_depth_reference{};
+		bool m_has_depth_attachment = false;
+
+		std::array<VkAttachmentReference2, MAX_COLOR_ATTACHMENTS + 1> m_input_reference{};
+		u32 m_num_subpass_inputs = 0;
+		u32 m_color_feedback_loop = false;
+
+		std::array<VkSubpassDependency2, MAX_COLOR_ATTACHMENTS + 1> m_subpass_dependency{};
+		u32 m_num_subpass_dependencies = 0;
+
+		std::array<VkAttachmentDescription2, MAX_COLOR_ATTACHMENTS + 1> m_attachments{};
+		u32 m_num_attachments = 0;
+
+		VkSubpassDescriptionFlags m_subpass_flags = 0;
+
+		struct
+		{
+			VkMemoryBarrier2 color;
+			VkMemoryBarrier2 depth;
+			VkDependencyFlags dependency;
+		} m_feedback_barriers{};
+	};
+
 	class DescriptorSetLayoutBuilder
 	{
 	public:
@@ -291,37 +433,6 @@ namespace Vulkan
 	private:
 		VkFramebufferCreateInfo m_ci;
 		std::array<VkImageView, MAX_ATTACHMENTS> m_images;
-	};
-
-	class RenderPassBuilder
-	{
-		enum : u32
-		{
-			MAX_ATTACHMENTS = 2,
-			MAX_ATTACHMENT_REFERENCES = 2,
-			MAX_SUBPASSES = 1,
-		};
-
-	public:
-		RenderPassBuilder();
-
-		void Clear();
-
-		VkRenderPass Create(VkDevice device, bool clear = true);
-
-		u32 AddAttachment(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp load_op,
-			VkAttachmentStoreOp store_op, VkImageLayout initial_layout, VkImageLayout final_layout);
-
-		u32 AddSubpass();
-		void AddSubpassColorAttachment(u32 subpass, u32 attachment, VkImageLayout layout);
-		void AddSubpassDepthAttachment(u32 subpass, u32 attachment, VkImageLayout layout);
-
-	private:
-		VkRenderPassCreateInfo m_ci;
-		std::array<VkAttachmentDescription, MAX_ATTACHMENTS> m_attachments;
-		std::array<VkAttachmentReference, MAX_ATTACHMENT_REFERENCES> m_attachment_references;
-		u32 m_num_attachment_references = 0;
-		std::array<VkSubpassDescription, MAX_SUBPASSES> m_subpasses;
 	};
 
 	class BufferViewBuilder
