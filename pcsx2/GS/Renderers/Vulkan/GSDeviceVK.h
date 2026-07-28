@@ -8,6 +8,7 @@
 #include "GS/Renderers/Vulkan/GSTextureVK.h"
 #include "GS/Renderers/Vulkan/VKLoader.h"
 #include "GS/Renderers/Vulkan/VKStreamBuffer.h"
+#include "GS/Renderers/Vulkan/VKBuilders.h"
 
 #include "common/HashCombine.h"
 #include "common/ReadbackSpinManager.h"
@@ -31,16 +32,17 @@ public:
 	enum : u32
 	{
 		NUM_COMMAND_BUFFERS = 3,
+		MAX_COLOR_ATTACHMENTS = Vulkan::RenderPass::MAX_COLOR_ATTACHMENTS,
 	};
 
 	struct OptionalExtensions
 	{
 		bool vk_ext_provoking_vertex : 1;
 		bool vk_ext_memory_budget : 1;
-		bool vk_ext_calibrated_timestamps : 1;
+		bool vk_khr_calibrated_timestamps : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
 		bool vk_ext_full_screen_exclusive : 1;
-		bool vk_ext_line_rasterization : 1;
+		bool vk_khr_line_rasterization : 1;
 		bool vk_swapchain_maintenance1 : 1;
 		bool vk_swapchain_maintenance1_is_khr : 1;
 		bool vk_khr_driver_properties : 1;
@@ -48,6 +50,9 @@ public:
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
 	};
+
+	using RenderPass = Vulkan::RenderPass;
+	VkRenderPass GetRenderPassVK(const RenderPass& rp);
 
 	// Global state accessors
 	__fi VkInstance GetVulkanInstance() const { return m_instance; }
@@ -66,6 +71,8 @@ public:
 		       !m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 	}
 
+	void SetPipelineRenderPass(const RenderPass& rp, Vulkan::GraphicsPipelineBuilder& gpb);
+
 	// Helpers for getting constants
 	__fi u32 GetBufferCopyOffsetAlignment() const
 	{
@@ -83,17 +90,17 @@ public:
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
 	// Creates a simple render pass.
-	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
+	RenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE, bool color_feedback_loop = false,
-		bool depth_sampling = false);
+		VkAttachmentStoreOp stencil_store_op = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		bool color_feedback_loop = false, bool depth_feedback_loop = false);
 
 	// Gets a non-clearing version of the specified render pass. Slow, don't call in hot path.
-	VkRenderPass GetRenderPassForRestarting(VkRenderPass pass);
+	RenderPass GetRenderPassForRestarting(const RenderPass& pass);
 
 	// These command buffers are allocated per-frame. They are valid until the command buffer
 	// is submitted, after that you should call these functions again.
@@ -249,6 +256,8 @@ private:
 	VkDevice m_device = VK_NULL_HANDLE;
 	VmaAllocator m_allocator = VK_NULL_HANDLE;
 
+	std::map<u64, VkRenderPass> m_render_pass_cache;
+
 	VkCommandBuffer m_current_command_buffer = VK_NULL_HANDLE;
 
 	VkDescriptorPool m_global_descriptor_pool = VK_NULL_HANDLE;
@@ -297,8 +306,6 @@ private:
 	u32 m_current_frame = 0;
 
 	bool m_last_submit_failed = false;
-
-	std::map<u32, VkRenderPass> m_render_pass_cache;
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
@@ -367,8 +374,7 @@ public:
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
 		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
-		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
+		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
 	};
 	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
@@ -442,7 +448,7 @@ private:
 	std::array<VkPipeline, NUM_INTERLACE_SHADERS> m_interlace{};
 	VkPipeline m_colclip_setup_pipelines[2][2] = {}; // [depth][feedback_loop]
 	VkPipeline m_colclip_finish_pipelines[2][2] = {}; // [depth][feedback_loop]
-	VkRenderPass m_primid_image_setup_render_passes[2][2] = {}; // [depth][clear]
+	RenderPass m_primid_image_setup_render_passes[2][2] = {}; // [depth][clear]
 	VkPipeline m_primid_image_setup_pipelines[2][4] = {}; // [depth][datm]
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
@@ -462,16 +468,17 @@ private:
 		m_tfx_fragment_shaders;
 	std::unordered_map<PipelineSelector, VkPipeline, PipelineSelectorHash> m_tfx_pipelines;
 
-	VkRenderPass m_utility_color_render_pass_load = VK_NULL_HANDLE;
-	VkRenderPass m_utility_color_render_pass_clear = VK_NULL_HANDLE;
-	VkRenderPass m_utility_color_render_pass_discard = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_load = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_clear = VK_NULL_HANDLE;
-	VkRenderPass m_utility_depth_render_pass_discard = VK_NULL_HANDLE;
-	VkRenderPass m_date_setup_render_pass = VK_NULL_HANDLE;
-	VkRenderPass m_swap_chain_render_pass = VK_NULL_HANDLE;
+	RenderPass m_utility_color_render_pass_load;
+	RenderPass m_utility_color_render_pass_clear;
+	RenderPass m_utility_color_render_pass_discard;
+	RenderPass m_utility_depth_render_pass_load;
+	RenderPass m_utility_depth_render_pass_clear;
+	RenderPass m_utility_depth_render_pass_discard;
+	RenderPass m_date_setup_render_pass;
+	RenderPass m_swap_chain_render_pass;
 
-	VkRenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {}; // [rt][ds][colclip][date][fbl][dsp][rt_op][ds_op]
+	// [rt][ds][colclip][date][feedback_rt][feedback_depth][rt_op][ds_op]
+	RenderPass m_tfx_render_pass[2][2][2][3][2][2][3][3] = {};
 
 	VkDescriptorSetLayout m_cas_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_cas_pipeline_layout = VK_NULL_HANDLE;
@@ -548,7 +555,7 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil, bool fbl, bool dsp,
+	__fi RenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil, bool fbl, bool dsp,
 		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
 	{
 		return m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][rt_op][ds_op];
@@ -641,9 +648,9 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
-	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
-	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	VkImageMemoryBarrier GetColorFeedbackBarrier(GSTextureVK* rt) const;
+	VkImageMemoryBarrier GetDepthFeedbackBarrier(GSTextureVK* ds) const;
+	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier);
 
@@ -682,11 +689,13 @@ public:
 	// When Bind() is next called, the pass will be restarted.
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
-	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
-	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
+	void BeginRenderPass(const RenderPass& rp, const GSVector4i& rect);
+	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
+	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, u32 clear_color);
+	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, float depth, u8 stencil);
+	bool BeginPresentRenderPass(const RenderPass& rp, const GSVector4i& rect, GSTextureVK* tex);
 	void EndRenderPass();
+	void EndPresentRenderPass();
 
 	void SetViewport(const VkViewport& viewport);
 	void SetScissor(const GSVector4i& scissor);
@@ -752,7 +761,7 @@ private:
 	GSTextureVK* m_current_render_target = nullptr;
 	GSTextureVK* m_current_depth_target = nullptr;
 	VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
-	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
+	RenderPass m_current_render_pass;
 	GSVector4i m_current_render_pass_area = GSVector4i::zero();
 
 	GSVector4i m_scissor = GSVector4i::zero();

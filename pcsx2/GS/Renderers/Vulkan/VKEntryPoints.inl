@@ -22,16 +22,11 @@ VULKAN_MODULE_ENTRY_POINT(vkDestroyInstance, true)
 
 VULKAN_INSTANCE_ENTRY_POINT(vkGetDeviceProcAddr, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumeratePhysicalDevices, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFormatProperties, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceImageFormatProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceQueueFamilyProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateDevice, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumerateDeviceExtensionProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkEnumerateDeviceLayerProperties, true)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSparseImageFormatProperties, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkDestroySurfaceKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceSupportKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR, false)
@@ -83,9 +78,13 @@ VULKAN_INSTANCE_ENTRY_POINT(vkCreateDisplayPlaneSurfaceKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFeatures2, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, true)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceImageFormatProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceQueueFamilyProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceFormatProperties2, true)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSparseImageFormatProperties2, true)
 
-// VK_EXT_calibrated_timestamps
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceCalibrateableTimeDomainsEXT, false)
+// VK_KHR_calibrated_timestamps
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceCalibrateableTimeDomainsKHR, false)
 
 #endif // VULKAN_INSTANCE_ENTRY_POINT
 
@@ -226,14 +225,25 @@ VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, true)
 // Vulkan 1.3 functions.
 VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceBufferMemoryRequirements, false)
 VULKAN_DEVICE_ENTRY_POINT(vkGetDeviceImageMemoryRequirements, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdPipelineBarrier2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCreateRenderPass2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdBeginRenderPass2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdEndRenderPass2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkQueueSubmit2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdWriteTimestamp2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdBlitImage2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdCopyBuffer2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdCopyBufferToImage2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdCopyImage2, true)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdCopyImageToBuffer2, true)
 
 #ifdef _WIN32
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)
 VULKAN_DEVICE_ENTRY_POINT(vkReleaseFullScreenExclusiveModeEXT, false)
 #endif
 
-// VK_EXT_calibrated_timestamps
-VULKAN_DEVICE_ENTRY_POINT(vkGetCalibratedTimestampsEXT, false)
+// VK_KHR_calibrated_timestamps
+VULKAN_DEVICE_ENTRY_POINT(vkGetCalibratedTimestampsKHR, false)
 
 // VK_KHR_push_descriptor
 VULKAN_DEVICE_ENTRY_POINT(vkCmdPushDescriptorSetKHR, false)
