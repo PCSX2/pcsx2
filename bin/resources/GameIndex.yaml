@@ -185,6 +185,7 @@ PAPX-90020:
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
+    textureInsideRT: 1 # Fixes post shuffles.
 PAPX-90201:
   name: "ファンタビジョン [体験版]"
   name-sort: "ふぁんたびじょん [たいけんばん]"
@@ -9111,6 +9112,7 @@ SCPS-15064:
     estimateTextureRegion: 1 # Improves performance and reduces hash cache size.
     halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
+    textureInsideRT: 1 # Fixes post shuffles.
   patches:
     A5768F53:
       content: |-
