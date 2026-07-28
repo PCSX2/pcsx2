@@ -7279,6 +7279,9 @@ GSTexture* GSTextureCache::LookupPaletteSource(u32 CBP, u32 CPSM, u32 CBW, GSVec
 				 t->m_TEX0.TBP0 < CBP && t->m_end_block >= CBP)
 		{
 			// If it's more than one group of 4 blocks, it's probably going to fail, horribly.
+			if ((size.x > GSLocalMemory::m_psm[CPSM].bs.x || size.y > GSLocalMemory::m_psm[CPSM].bs.y) && (CBP & 0x3) != (t->m_TEX0.TBP0 & 0x3))
+				continue;
+			// Somewhere within this target, can we find it?
 			const GSVector4i rc(0, 0, size.x, size.y);
 			SurfaceOffset so = ComputeSurfaceOffset(CBP, std::max<u32>(CBW, 0), CPSM, rc, t);
 			if (!so.is_valid)
