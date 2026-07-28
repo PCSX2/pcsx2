@@ -662,21 +662,6 @@ void GSgetInternalResolution(int* width, int* height)
 	*height = res.y;
 }
 
-void GSgetDisplayResolution(int* width, int* height)
-{
-	GSRenderer* gs = g_gs_renderer.get();
-	if (!gs)
-	{
-		*width = 0;
-		*height = 0;
-		return;
-	}
-
-	const GSVector2i res(gs->PCRTCDisplays.GetResolution());
-	*width = res.x;
-	*height = res.y;
-}
-
 void GSgetStats(SmallStringBase& info)
 {
 	GSPerfMon& pm = g_perfmon;
