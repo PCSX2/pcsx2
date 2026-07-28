@@ -23,7 +23,6 @@ void Vulkan::AddPointerToChain(void* head, const void* ptr)
 	last_st->pNext = static_cast<const VkBaseInStructure*>(ptr);
 }
 
-
 const char* Vulkan::VkResultToString(VkResult res)
 {
 	switch (res)
@@ -893,6 +892,22 @@ void Vulkan::GraphicsPipelineBuilder::SetRenderPass(VkRenderPass render_pass, u3
 {
 	m_ci.renderPass = render_pass;
 	m_ci.subpass = subpass;
+	m_rendering_info = {};
+}
+
+void Vulkan::GraphicsPipelineBuilder::SetDynamicRenderPass(const RenderPass& render_pass, bool stencil)
+{
+	m_ci.renderPass = VK_NULL_HANDLE;
+	m_ci.subpass = 0;
+
+	for (u32 i = 0; i < render_pass.GetColorAttachmentCount(); i++)
+	{
+		m_color_formats[i] = render_pass.GetColorFormat(i);
+	}
+	m_rendering_info = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO, nullptr, 0, render_pass.GetColorAttachmentCount(),
+		m_color_formats.data(), render_pass.GetDepthFormat(), stencil ? render_pass.GetDepthFormat() : VK_FORMAT_UNDEFINED };
+
+	AddPointerToChain(&m_ci, &m_rendering_info);
 }
 
 void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEXT mode)

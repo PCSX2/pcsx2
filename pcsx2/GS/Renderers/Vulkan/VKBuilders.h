@@ -280,6 +280,7 @@ namespace Vulkan
 
 		void SetPipelineLayout(VkPipelineLayout layout);
 		void SetRenderPass(VkRenderPass render_pass, u32 subpass);
+		void SetDynamicRenderPass(const RenderPass& render_pass, bool stencil);
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
@@ -310,6 +311,11 @@ namespace Vulkan
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
 		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+
+		// For dynamic rendering.
+		std::array<VkFormat, RenderPass::MAX_COLOR_ATTACHMENTS> m_color_formats;
+		VkPipelineRenderingCreateInfo m_rendering_info;
+		bool m_dynamic_rendering = false;
 	};
 
 	class ComputePipelineBuilder
