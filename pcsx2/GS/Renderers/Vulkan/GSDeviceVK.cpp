@@ -3548,7 +3548,7 @@ void GSDeviceVK::VSSetIndexBuffer(const void* index, size_t count)
 }
 
 void GSDeviceVK::OMSetRenderTargets(
-	GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlag feedback_loop,
+	GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlags feedback_loop,
 	const GSVector2i& viewport_size)
 {
 	GSTextureVK* vkRt = static_cast<GSTextureVK*>(rt);
@@ -3566,15 +3566,13 @@ void GSDeviceVK::OMSetRenderTargets(
 			if (vkRt)
 			{
 				m_current_framebuffer =
-					vkRt->GetLinkedFramebuffer(vkDs,
-						(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0,
-						(feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
+					vkRt->GetLinkedFramebuffer(vkDs, feedback_loop & FeedbackLoopFlags::RT, feedback_loop & FeedbackLoopFlags::Depth);
 			}
 			else if (vkDs)
 			{
-				pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
-				m_current_framebuffer = vkDs->GetLinkedFramebuffer(
-					nullptr, false, (feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
+				pxAssert(!(feedback_loop & FeedbackLoopFlags::RT));
+				m_current_framebuffer =
+					vkDs->GetLinkedFramebuffer(nullptr, false, feedback_loop & FeedbackLoopFlags::Depth);
 			}
 			else
 			{
@@ -3667,7 +3665,7 @@ void GSDeviceVK::OMSetRenderTargets(
 	{
 		if (vkRt)
 		{
-			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT)
+			if (feedback_loop & FeedbackLoopFlags::RT)
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
@@ -3691,7 +3689,7 @@ void GSDeviceVK::OMSetRenderTargets(
 		if (vkDs)
 		{
 			// need to update descriptors to reflect the new layout
-			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteDepth)
+			if (feedback_loop & FeedbackLoopFlags::Depth)
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
@@ -3702,16 +3700,6 @@ void GSDeviceVK::OMSetRenderTargets(
 				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				{
 					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH);
-					if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
-						m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE;
-					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
-				}
-			}
-			else if (feedback_loop & FeedbackLoopFlag_ReadDepth)
-			{
-				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
-				{
-					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE);
 					if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
 						m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE;
 					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
@@ -5222,7 +5210,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 	const GSVector4i scissor = m_scissor;
 	GSTexture* const current_rt = m_current_render_target;
 	GSTexture* const current_ds = m_current_depth_target;
-	const FeedbackLoopFlag current_feedback_loop = m_current_framebuffer_feedback_loop;
+	const FeedbackLoopFlags current_feedback_loop = m_current_framebuffer_feedback_loop;
 
 	EndRenderPass();
 	ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
@@ -5296,7 +5284,7 @@ void GSDeviceVK::InvalidateCachedState()
 	m_current_framebuffer = VK_NULL_HANDLE;
 	m_current_render_target = nullptr;
 	m_current_depth_target = nullptr;
-	m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
+	m_current_framebuffer_feedback_loop = FeedbackLoopFlags::None;
 
 	m_current_pipeline_layout = PipelineLayout::Undefined;
 	m_tfx_texture_descriptor_set = VK_NULL_HANDLE;
@@ -6057,7 +6045,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	pipe.dss.zwe = false;
 	pipe.cms.wrgba = 0;
 	pipe.bs = {};
-	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+	pipe.feedback_loop_flags = FeedbackLoopFlags::None;
 	pipe.rt = true;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
 	pipe.ps.no_color = false;
@@ -6143,7 +6131,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			colclip_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 			draw_rt = static_cast<GSTextureVK*>(config.rt);
-			OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+			OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), pipe.feedback_loop_flags);
 
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (draw_rt->GetState() == GSTexture::State::Cleared)
@@ -6287,11 +6275,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-		if (draw_rt)
-			pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT;
-		if (draw_ds)
-			pipe.feedback_loop_flags |= (m_current_framebuffer_feedback_loop &
-				(FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth));
+		FeedbackLoopFlags flags = pipe.feedback_loop_flags;
+		if (draw_rt && (m_current_framebuffer_feedback_loop & FeedbackLoopFlags::RT))
+			flags |= FeedbackLoopFlags::RT;
+		if (draw_ds && (m_current_framebuffer_feedback_loop & FeedbackLoopFlags::Depth))
+			flags |= FeedbackLoopFlags::Depth;
+		pipe.feedback_loop_flags = flags;
 	}
 
 	if (draw_rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
@@ -6376,7 +6365,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	
 	PSSetROVs(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
 
-	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags), rtsize);
+	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop_flags, rtsize);
 
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
@@ -6432,7 +6421,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// rt -> colclip hw blit if enabled
 	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
 	{
-		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), pipe.feedback_loop_flags);
 		SetUtilityTexture(static_cast<GSTextureVK*>(config.rt), m_point_sampler);
 		SetPipeline(m_colclip_setup_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 
@@ -6441,7 +6430,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		DrawStretchRect(sRect, drawareaf, rtsize);
 
 		GL_POP();
-		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop_flags);
 	}
 
 	// VB/IB upload, if we did DATE setup and it's not colclip hw this has already been done
@@ -6511,7 +6500,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			colclip_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 			draw_rt = static_cast<GSTextureVK*>(config.rt);
-			OMSetRenderTargets(draw_rt, draw_ds, (config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly) ? GSVector4i::loadh(rtsize) : config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+			OMSetRenderTargets(draw_rt, draw_ds, (config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly) ? GSVector4i::loadh(rtsize) : config.scissor, pipe.feedback_loop_flags);
 
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (draw_rt->GetState() == GSTexture::State::Cleared)
@@ -6563,19 +6552,22 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	pipe.line_width = config.line_expand;
-	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+
+	FeedbackLoopFlags flags = FeedbackLoopFlags::None;
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
 	{
 		if (config.IsFeedbackLoopRT(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
-
+			flags |= FeedbackLoopFlags::RT;
 		if (config.IsFeedbackLoopDepth(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
+			flags |= FeedbackLoopFlags::Depth;
 	}
-	if (pipe.ds && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
+	if (pipe.ds && config.tex && config.tex == config.ds)
 	{
-		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
+		// Depth sampling with no depth write (otherwise would need barrier).
+		pxAssert(!config.depth.zwe);
+		flags |= FeedbackLoopFlags::Depth;
 	}
+	pipe.feedback_loop_flags = flags;
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);

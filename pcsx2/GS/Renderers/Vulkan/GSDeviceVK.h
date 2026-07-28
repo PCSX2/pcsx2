@@ -26,6 +26,15 @@
 
 class VKSwapChain;
 
+enum class VKFeedbackLoopFlags : u8
+{
+	None = 0,
+	RT = 1,
+	Depth = 2,
+};
+
+MARK_ENUM_AS_FLAGS(VKFeedbackLoopFlags);
+
 class GSDeviceVK final : public GSDevice
 {
 public:
@@ -305,13 +314,7 @@ private:
 	u32 m_max_framebuffer_width = 0;
 	u32 m_max_framebuffer_height = 0;
 public:
-	enum FeedbackLoopFlag : u8
-	{
-		FeedbackLoopFlag_None = 0,
-		FeedbackLoopFlag_ReadAndWriteRT = 1,
-		FeedbackLoopFlag_ReadDepth = 2,
-		FeedbackLoopFlag_ReadAndWriteDepth = 4,
-	};
+	using FeedbackLoopFlags = VKFeedbackLoopFlags;
 
 	enum class ResourceType
 	{
@@ -344,7 +347,7 @@ public:
 				u32 rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
-				u32 feedback_loop_flags : 3;
+				FeedbackLoopFlags feedback_loop_flags : 3;
 			};
 
 			u32 key;
@@ -361,8 +364,8 @@ public:
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
-		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
+		__fi bool IsRTFeedbackLoop() const { return feedback_loop_flags & FeedbackLoopFlags::RT; }
+		__fi bool IsDepthFeedbackLoop() const { return feedback_loop_flags & FeedbackLoopFlags::Depth; }
 	};
 	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
@@ -626,7 +629,7 @@ public:
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
-		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None, const GSVector2i& viewport_size = {});
+		FeedbackLoopFlags feedback_loop = FeedbackLoopFlags::None, const GSVector2i& viewport_size = {});
 
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
@@ -742,7 +745,7 @@ private:
 
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
-	FeedbackLoopFlag m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
+	FeedbackLoopFlags m_current_framebuffer_feedback_loop = FeedbackLoopFlags::None;
 	bool m_warned_slow_spin = false;
 
 	VkBuffer m_index_buffer = VK_NULL_HANDLE;
