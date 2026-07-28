@@ -903,7 +903,7 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 	const std::optional<u32> addr = StringUtil::FromChars<u32>(pieces[2], 16, &addr_end);
 	const std::optional<patch_data_type> type = LookupEnumName<patch_data_type>(pieces[3], s_type_to_string);
 	std::optional<u64> data = StringUtil::FromChars<u64>(pieces[4], 16, &data_end);
-	u8* data_ptr = nullptr;
+	std::unique_ptr<u8[]> data_ptr;
 
 	if (!placetopatch.has_value())
 	{
@@ -944,8 +944,8 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 		}
 
 		data = bytes->size();
-		data_ptr = static_cast<u8*>(std::malloc(bytes->size()));
-		std::memcpy(data_ptr, bytes->data(), bytes->size());
+		data_ptr = std::make_unique_for_overwrite<u8[]>(bytes->size());
+		std::memcpy(data_ptr.get(), bytes->data(), bytes->size());
 	}
 
 	PatchCommand iPatch;
@@ -954,7 +954,7 @@ void Patch::PatchFunc::patch(PatchGroup* group, const std::string_view cmd, cons
 	iPatch.addr = addr.value();
 	iPatch.type = type.value();
 	iPatch.data = data.value();
-	iPatch.data_ptr = data_ptr;
+	iPatch.data_ptr = std::move(data_ptr);
 	group->patches.push_back(std::move(iPatch));
 
 #undef PATCH_ERROR
@@ -1761,7 +1761,7 @@ void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop, Exte
 				case BYTES_T:
 				{
 					// We compare before writing so the rec doesn't get upset and invalidate when there's no change.
-					ee.IdempotentWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+					ee.IdempotentWriteBytes(p->addr, p->data_ptr.get(), static_cast<u32>(p->data));
 					break;
 				}
 				default:
@@ -1792,7 +1792,7 @@ void Patch::ApplyPatch(const PatchCommand* p, EEMemory& ee, IOPMemory& iop, Exte
 				}
 				case BYTES_T:
 				{
-					iop.IdempotentWriteBytes(p->addr, p->data_ptr, static_cast<u32>(p->data));
+					iop.IdempotentWriteBytes(p->addr, p->data_ptr.get(), static_cast<u32>(p->data));
 					break;
 				}
 				default:
