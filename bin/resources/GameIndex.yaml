@@ -32427,6 +32427,10 @@ SLKA-25255:
   name-sort: "Mobile Suit Gundam Seed - Kkeunnaji Anneun Naeillo"
   name-en: "Mobile Suit Gundam Seed - Never Ending Tomorrow"
   region: "NTSC-K"
+SLKA-25256:
+  name: "UEFA 챔피언스 리그 2006-2007"
+  name-en: "UEFA Champions League 2006-2007"
+  region: "NTSC-K"
 SLKA-25257:
   name: "풍운　막말전" # Undumped on ReDump as of 2025-08-28
   name-en: "Fu-un Bakumatsu-den"
@@ -32656,7 +32660,7 @@ SLKA-25299:
 SLKA-25300:
   name: "디지털 데빌 사가: 아바탈 튜너 [Special Package]"
   name-en: "Digital Devil Saga - Avatar Tuner [Special Package]"
-  region: "NTSC-J-K"
+  region: "NTSC-K"
   compat: 5
   gameFixes:
     - EETimingHack
@@ -64189,6 +64193,9 @@ SLPS-73270:
   name-sort: "すーぱーろぼっとたいせんZ [PlayStation2 the Best]"
   name-en: "Super Robot Taisen Z [PlayStation2 the Best]"
   region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-73270"
+    - "SLPS-25887"
 SLPS-73401:
   name: "はじめの一歩 VICTORIOUS BOXERS ～CHAMPIONSHIP VERSION～ [PlayStation2 the Best]"
   name-sort: "はじめのいっぽ VICTORIOUS BOXERS CHAMPIONSHIP VERSION [PlayStation2 the Best]"
