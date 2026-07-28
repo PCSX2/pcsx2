@@ -49,6 +49,7 @@ public:
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
+		bool vk_khr_dynamic_rendering_local_read : 1;
 	};
 
 	using RenderPass = Vulkan::RenderPass;
@@ -67,8 +68,16 @@ public:
 	// The interaction between raster order attachment access and fbfetch is unclear.
 	__fi bool UseFeedbackLoopLayout() const
 	{
-		return m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
-		       !m_optional_extensions.vk_ext_rasterization_order_attachment_access;
+		return (m_optional_extensions.vk_ext_attachment_feedback_loop_layout &&
+			!m_optional_extensions.vk_ext_rasterization_order_attachment_access &&
+			!UseDynamicRendering());
+	}
+
+	__fi bool UseDynamicRendering() const
+	{
+		// Use dynamic rendering only if the local ready feature is present.
+		// Otherwise we can't use feedback barriers within a dynamic render pass.
+		return m_optional_extensions.vk_khr_dynamic_rendering_local_read;
 	}
 
 	void SetPipelineRenderPass(const RenderPass& rp, Vulkan::GraphicsPipelineBuilder& gpb);
@@ -170,25 +179,6 @@ private:
 	// Helper function for uploading indices.
 	void UploadIndices(VKStreamBuffer& buffer, const void* index, size_t count);
 
-	union RenderPassCacheKey
-	{
-		struct
-		{
-			u32 color_format : 8;
-			u32 depth_format : 8;
-			u32 color_load_op : 2;
-			u32 color_store_op : 1;
-			u32 depth_load_op : 2;
-			u32 depth_store_op : 1;
-			u32 stencil_load_op : 2;
-			u32 stencil_store_op : 1;
-			u32 color_feedback_loop : 1;
-			u32 depth_sampling : 1;
-		};
-
-		u32 key;
-	};
-
 	using ExtensionList = std::vector<const char*>;
 	static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
 		bool enable_debug_utils);
@@ -200,8 +190,6 @@ private:
 	bool CreateAllocator();
 	bool CreateCommandBuffers();
 	bool CreateGlobalDescriptorPool();
-
-	VkRenderPass CreateCachedRenderPass(RenderPassCacheKey key);
 
 	void CommandBufferCompleted(u32 index);
 	void ActivateCommandBuffer(u32 index);
@@ -690,6 +678,7 @@ public:
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
 	void BeginRenderPass(const RenderPass& rp, const GSVector4i& rect);
+	void BeginDynamicRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv = nullptr, u32 cv_count = 0);
 	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, u32 clear_color);
 	void BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, float depth, u8 stencil);

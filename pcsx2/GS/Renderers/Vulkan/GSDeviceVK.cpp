@@ -417,6 +417,8 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_line_rasterization = SupportsExtension(VK_KHR_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_dynamic_rendering_local_read =
+		SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -630,7 +632,10 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
+	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR};
 
+	featuresVK13.dynamicRendering = VK_TRUE;
 	featuresVK13.synchronization2 = VK_TRUE;
 	Vulkan::AddPointerToChain(&device_info, &featuresVK13);
 	if (m_optional_extensions.vk_ext_provoking_vertex)
@@ -662,6 +667,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	{
 		fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_ext_feature);
+	}
+	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
+	{
+		dynamic_rendering_local_read_features.dynamicRenderingLocalRead = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_local_read_features);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -740,6 +750,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
+	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR };
 
 	// Vulkan 1.3 features
 	Vulkan::AddPointerToChain(&features2, &featuresVK13);
@@ -757,6 +769,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 	if (m_optional_extensions.vk_ext_fragment_shader_interlock)
 		Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_ext_feature);
+	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
+		Vulkan::AddPointerToChain(&features2, &dynamic_rendering_local_read_features);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -767,9 +781,12 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
 		(attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
+	m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
+		(dynamic_rendering_local_read_features.dynamicRenderingLocalRead == VK_TRUE);
 	
 	// Features that should always be available with VK 1.3.
 	pxAssertRel(featuresVK13.synchronization2 == VK_TRUE, "Synchronization2 is not supported");
+	pxAssertRel(featuresVK13.dynamicRendering == VK_TRUE, "Dynamic rendering is not supported");
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 
@@ -859,6 +876,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_dynamic_rendering_local_read is %s",
+		m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
 
 	return true;
 }
@@ -3539,27 +3558,30 @@ void GSDeviceVK::OMSetRenderTargets(
 
 	if (m_current_render_target != vkRt || m_current_depth_target != vkDs ||
 		m_current_framebuffer_feedback_loop != feedback_loop ||
-		m_current_framebuffer == VK_NULL_HANDLE)
+		(m_current_framebuffer == VK_NULL_HANDLE && !UseDynamicRendering()))
 	{
 		// framebuffer change or feedback loop enabled/disabled
 		EndRenderPass();
 
-		if (vkRt)
+		if (!UseDynamicRendering())
 		{
-			m_current_framebuffer =
-				vkRt->GetLinkedFramebuffer(vkDs,
-					(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0,
-					(feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
-		}
-		else if (vkDs)
-		{
-			pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
-			m_current_framebuffer = vkDs->GetLinkedFramebuffer(
-				nullptr, false, (feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
-		}
-		else
-		{
-			m_current_framebuffer = m_null_framebuffer;
+			if (vkRt)
+			{
+				m_current_framebuffer =
+					vkRt->GetLinkedFramebuffer(vkDs,
+						(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0,
+						(feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
+			}
+			else if (vkDs)
+			{
+				pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
+				m_current_framebuffer = vkDs->GetLinkedFramebuffer(
+					nullptr, false, (feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
+			}
+			else
+			{
+				m_current_framebuffer = m_null_framebuffer;
+			}
 		}
 	}
 	else if (InRenderPass())
@@ -3819,7 +3841,14 @@ static void SetPipelineProvokingVertex(const GSDevice::FeatureSupport& features,
 
 __fi void GSDeviceVK::SetPipelineRenderPass(const RenderPass& rp, Vulkan::GraphicsPipelineBuilder& gpb)
 {
-	gpb.SetRenderPass(GetVkRenderPass(rp), 0);
+	if (UseDynamicRendering())
+	{
+		gpb.SetDynamicRenderPass(rp, m_features.stencil_buffer);
+	}
+	else
+	{
+		gpb.SetRenderPass(GetVkRenderPass(rp), 0);
+	}
 }
 
 VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, const char* replace_main = nullptr)
@@ -5524,15 +5553,66 @@ void GSDeviceVK::BeginRenderPass(const RenderPass& rp, const GSVector4i& rect)
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetVkRenderPass(m_current_render_pass),
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}}, 0,
-		nullptr};
+	if (UseDynamicRendering())
+	{
+		BeginDynamicRenderPass(rp, rect);
+	}
+	else
+	{
+		const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+			GetVkRenderPass(m_current_render_pass),
+			m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}}, 0,
+			nullptr};
 
-	const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
+		const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
+
+		m_command_buffer_render_passes++;
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
+}
+
+void GSDeviceVK::BeginDynamicRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
+{
+	std::array<VkRenderingAttachmentInfo, MAX_COLOR_ATTACHMENTS> color;
+
+	u32 i = 0;
+	for (i = 0; i < rp.GetColorAttachmentCount(); i++)
+	{
+		color[i] = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, nullptr, m_current_render_target->GetView(),
+			m_current_render_target->GetVkLayout(), VK_RESOLVE_MODE_NONE, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_UNDEFINED,
+			rp.GetColorLoadOp(i), rp.GetColorStoreOp(i), (cv && i < cv_count) ? cv[i] : VkClearValue{} };
+	}
+
+	VkRenderingAttachmentInfo depth;
+	VkRenderingAttachmentInfo stencil;
+
+	VkRenderingAttachmentInfo* depth_ptr = nullptr;
+	VkRenderingAttachmentInfo* stencil_ptr = nullptr;
+
+	if (rp.GetDepthAttachmentCount())
+	{
+		depth = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, nullptr, m_current_depth_target->GetView(),
+			m_current_depth_target->GetVkLayout(), VK_RESOLVE_MODE_NONE, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_UNDEFINED,
+			rp.GetDepthLoadOp(), rp.GetDepthStoreOp(), (cv && i < cv_count) ? cv[i] : VkClearValue{} };
+		depth_ptr = &depth;
+
+		if (m_features.stencil_buffer)
+		{
+			stencil = depth;
+			stencil.loadOp = rp.GetStencilLoadOp();
+			stencil.storeOp = rp.GetStencilStoreOp();
+			stencil_ptr = &stencil;
+		}
+
+		i++;
+	}
+
+	const VkRenderingInfo begin_info = { VK_STRUCTURE_TYPE_RENDERING_INFO, nullptr, static_cast<VkRenderingFlags>(0),
+		{{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+		1, 0, rp.GetColorAttachmentCount(), color.data(), depth_ptr, stencil_ptr };
 
 	m_command_buffer_render_passes++;
-	vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
 }
 
 void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
@@ -5543,14 +5623,21 @@ void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& re
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetVkRenderPass(m_current_render_pass),
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
-		cv_count, cv };
+	if (UseDynamicRendering())
+	{
+		BeginDynamicRenderPass(rp, rect, cv, cv_count);
+	}
+	else
+	{
+		const VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+			GetVkRenderPass(m_current_render_pass),
+			m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+			cv_count, cv };
 
-	const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
+		const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
 
-	vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
 }
 
 void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, u32 clear_color)
@@ -5573,19 +5660,35 @@ bool GSDeviceVK::BeginPresentRenderPass(const RenderPass& rp, const GSVector4i& 
 	if (!m_current_render_pass.IsNull())
 		EndRenderPass();
 
-	VkFramebuffer fb = swap_chain->GetFramebuffer(false);
+	if (UseDynamicRendering())
+	{
+		VkRenderingAttachmentInfo color = { VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, nullptr, swap_chain->GetView(),
+			swap_chain->GetVkLayout(), VK_RESOLVE_MODE_NONE, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_UNDEFINED,
+			rp.GetColorLoadOp(0), rp.GetColorStoreOp(0), s_present_clear_color };
 
-	if (fb == VK_NULL_HANDLE)
-		return false;
+		const VkRenderingInfo begin_info = { VK_STRUCTURE_TYPE_RENDERING_INFO, nullptr, static_cast<VkRenderingFlags>(0),
+			{{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())} },
+			1, 0, 1, &color, nullptr, nullptr };
 
-	const VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetVkRenderPass(rp), fb, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
-		1, &s_present_clear_color };
+		m_command_buffer_render_passes++;
+		vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
+	}
+	else
+	{
+		VkFramebuffer fb = swap_chain->GetFramebuffer(false);
 
-	const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
+		if (fb == VK_NULL_HANDLE)
+			return false;
 
-	m_command_buffer_render_passes++;
-	vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+		const VkRenderPassBeginInfo begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
+			GetVkRenderPass(rp), fb, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+			1, &s_present_clear_color };
+
+		const VkSubpassBeginInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, nullptr, VK_SUBPASS_CONTENTS_INLINE };
+
+		m_command_buffer_render_passes++;
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
 
 	return true;
 }
@@ -5598,16 +5701,30 @@ void GSDeviceVK::EndRenderPass()
 	m_current_render_pass = RenderPass();
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO, nullptr };
-	vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	if (UseDynamicRendering())
+	{
+		vkCmdEndRendering(GetCurrentCommandBuffer());
+	}
+	else
+	{
+		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO, nullptr };
+		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	}
 }
 
 void GSDeviceVK::EndPresentRenderPass()
 {
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO, nullptr };
-	vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	if (UseDynamicRendering())
+	{
+		vkCmdEndRendering(GetCurrentCommandBuffer());
+	}
+	else
+	{
+		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO, nullptr };
+		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	}
 
 	m_is_presenting = false;
 }
