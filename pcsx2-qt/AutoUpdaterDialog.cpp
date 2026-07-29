@@ -24,6 +24,7 @@
 #include "cpuinfo.h"
 
 #include <functional>
+#include <ctime>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -640,8 +641,8 @@ bool AutoUpdaterDialog::doUpdate(const std::string& application_dir, const std::
 
 	const std::wstring wupdater_path = StringUtil::UTF8StringToWideString(updater_path);
 	const std::wstring wapplication_dir = StringUtil::UTF8StringToWideString(application_dir);
-	const std::wstring arguments = StringUtil::UTF8StringToWideString(fmt::format("{} \"{}\" \"{}\" \"{}\"",
-		QCoreApplication::applicationPid(), application_dir, zip_path, program_path));
+	const std::wstring arguments = StringUtil::UTF8StringToWideString(fmt::format("{} \"{}\" \"{}\" \"{}\" \"{}\" \"{}\"",
+		QCoreApplication::applicationPid(), application_dir, zip_path, program_path, BuildVersion::GitRev, m_latest_version.toStdString()));
 
 	const bool needs_elevation = doesUpdaterNeedElevation(application_dir);
 
@@ -754,6 +755,18 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDial
 	{
 		reportError("Failed to execute new AppImage.");
 		return false;
+	}
+
+	// Log the version transition for regression bisecting
+	if (auto fp = FileSystem::OpenManagedCFile(
+			Path::Combine(EmuFolders::DataRoot, "update_log.txt").c_str(), "ab"))
+	{
+		const std::time_t t = std::time(nullptr);
+		char timestamp[32];
+		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+		const std::string entry = fmt::format("[{}] Updated PCSX2 from {} to {}\n",
+			timestamp, BuildVersion::GitRev, m_latest_version.toStdString());
+		std::fwrite(entry.c_str(), 1, entry.size(), fp.get());
 	}
 
 	// We exit once we return.
@@ -894,6 +907,19 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDial
 		reportError("Failed to start new application");
 		return false;
 	}
+
+	// Log the version transition for regression bisecting
+	if (auto fp = FileSystem::OpenManagedCFile(
+			Path::Combine(EmuFolders::DataRoot, "update_log.txt").c_str(), "ab"))
+	{
+		const std::time_t t = std::time(nullptr);
+		char timestamp[32];
+		std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+		const std::string entry = fmt::format("[{}] Updated PCSX2 from {} to {}\n",
+			timestamp, BuildVersion::GitRev, m_latest_version.toStdString());
+		std::fwrite(entry.c_str(), 1, entry.size(), fp.get());
+	}
+
 	return true;
 }
 
