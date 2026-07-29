@@ -492,7 +492,7 @@ static __fi void VSyncStart(u64 sCycle)
 
 	// Don't bother throttling if we're going to pause.
 	if (!VMManager::Internal::IsExecutionInterrupted())
-		VMManager::Internal::Throttle();
+		VMManager::Internal::Throttle(true);
 
 	if (!EmuConfig.GS.AdvancedFrameDisplay)
 	{
@@ -566,12 +566,13 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u64 sCycle)
 {
+	EECNT_LOG("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
+	VMManager::Internal::Throttle(false);
+
 	if (EmuConfig.GS.AdvancedFrameDisplay)
 	{
 		gsPostVsyncStart();
 	}
-
-	EECNT_LOG("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
 
 	g_FrameCount++;
 	if (!GSSMODE1reg.SINT)
