@@ -806,12 +806,12 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="816"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="838"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="817"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="839"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6606,7 +6606,7 @@ The URL was: %1</source>
 <context>
     <name>FullscreenUI</name>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4013"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4035"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6681,37 +6681,37 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4015"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4037"/>
         <source>No save present in this slot.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4016"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4038"/>
         <source>No save states found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4017"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4039"/>
         <source>Failed to delete save state.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4021"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4043"/>
         <source>Failed to copy text to clipboard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4023"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4045"/>
         <source>This game has no achievements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4024"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4046"/>
         <source>This game has no leaderboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4141"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4163"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5872"/>
         <source>Reset System</source>
         <translation type="unfinished"></translation>
@@ -6722,22 +6722,22 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4028"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4050"/>
         <source>Launch a game from images scanned from your game directories.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4036"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4058"/>
         <source>Launch a game by selecting a file/disc image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4040"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4062"/>
         <source>Start the console without any disc inserted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4038"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4060"/>
         <source>Start a game from a disc in your PC&apos;s DVD drive.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6782,7 +6782,7 @@ The URL was: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4118"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4140"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5902"/>
         <source>Options</source>
         <translation type="unfinished"></translation>
@@ -7842,7 +7842,7 @@ Enter the name for the new input profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4026"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4048"/>
         <source>Failed to Save State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7914,7 +7914,7 @@ Supported formats: PNG, JPG, JPEG, BMP.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4081"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4103"/>
         <source>{0} Slot {1}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8117,44 +8117,44 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4107"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4129"/>
         <source>Change Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4108"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4130"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6518"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4110"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4132"/>
         <source>Parent Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4111"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4133"/>
         <source>Enter Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4112"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4134"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4114"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4136"/>
         <source>Toggle Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4113"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4135"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6517"/>
         <source>Navigate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4115"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4137"/>
         <source>Load Global State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8164,27 +8164,27 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4116"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4138"/>
         <source>Return To Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4117"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4139"/>
         <source>Select State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4120"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4142"/>
         <source>Select Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4123"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4145"/>
         <source>Change View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4124"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4146"/>
         <source>Launch Options</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8229,53 +8229,53 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4029"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4051"/>
         <source>Start Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4030"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4052"/>
         <source>Launch a game from a file, disc, or starts the console without any disc inserted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4032"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4054"/>
         <source>Changes settings for the application.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4034"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4056"/>
         <source>Return to desktop mode, or exit the application.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4041"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4063"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6519"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4042"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4064"/>
         <source>Return to the previous menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4043"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4065"/>
         <source>Exit PCSX2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4044"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4066"/>
         <source>Completely exits the application, returning you to your desktop.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4045"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4067"/>
         <source>Desktop Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4046"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4068"/>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8575,7 +8575,7 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4031"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4053"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6147"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
@@ -8711,7 +8711,7 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4047"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4069"/>
         <source>Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8866,79 +8866,79 @@ Please check your username and password, and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4048"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4070"/>
         <source>Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4049"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4071"/>
         <source>Load Resume State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4050"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4072"/>
         <source>A resume save state created at %s was found.
 
 Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4051"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4073"/>
         <source>Region: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4052"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4074"/>
         <source>Compatibility: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4053"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4075"/>
         <source>No Game Selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4055"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4077"/>
         <source>Search Directories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4056"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4078"/>
         <source>Adds a new directory to the game search list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4057"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4079"/>
         <source>Scanning Subdirectories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4058"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4080"/>
         <source>Not Scanning Subdirectories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4059"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4081"/>
         <source>List Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4060"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4082"/>
         <source>Sets which view the game list will open to.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4061"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4083"/>
         <source>Determines which field the game list will be sorted by.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4062"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4084"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4064"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4086"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5933"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
@@ -8954,27 +8954,27 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4065"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4087"/>
         <source>Identifies any new files added to the game directories.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4066"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4088"/>
         <source>Forces a full rescan of all games previously identified.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4067"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4089"/>
         <source>About PCSX2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4068"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4090"/>
         <source>PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2&apos;s hardware, using a combination of MIPS CPU Interpreters, Recompilers and a Virtual Machine which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4069"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4091"/>
         <source>PlayStation 2 and PS2 are registered trademarks of Sony Interactive Entertainment. This application is not affiliated in any way with Sony Interactive Entertainment.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9009,7 +9009,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4012"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4034"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9164,19 +9164,19 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4075"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4097"/>
         <source>An error occurred while deleting empty game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4076"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4098"/>
         <source>An error occurred while saving game settings:
 {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4077"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4099"/>
         <source>{} is not a valid disc image.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9261,62 +9261,62 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4078"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4100"/>
         <source>This Session: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4079"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4101"/>
         <source>All Time: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4080"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4102"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4082"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4104"/>
         <source>Saved {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4083"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4105"/>
         <source>{} does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4084"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4106"/>
         <source>{} deleted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4085"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4107"/>
         <source>Failed to delete {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4086"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4108"/>
         <source>File: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4087"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4109"/>
         <source>CRC: {:08X}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4088"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4110"/>
         <source>Time Played: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4089"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4111"/>
         <source>Last Played: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4090"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4112"/>
         <source>Size: {:.2f} MB</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9630,7 +9630,7 @@ Do you want to load this save and continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4014"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4036"/>
         <source>Your memory card is still saving data.
 
 WARNING: Shutting down now can IRREVERSIBLY CORRUPT YOUR MEMORY CARD.
@@ -9706,12 +9706,12 @@ Do you want to shutdown anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4019"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4041"/>
         <source>empty title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4020"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4042"/>
         <source>no serial</source>
         <translation type="unfinished"></translation>
     </message>
@@ -9996,7 +9996,7 @@ Do you want to shutdown anyway and IRREVERSIBLY CORRUPT YOUR MEMORY CARD?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4063"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4085"/>
         <source>Shows Titles for Games when in Game Grid View Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10038,7 +10038,7 @@ Your password will not be saved in PCSX2, an access token will be generated and 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4091"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4113"/>
         <source>Are you sure you want to reset the play time for &apos;{}&apos; ({})?
 
 Your current play time is {}.
@@ -10047,17 +10047,17 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4095"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4117"/>
         <source>Failed to Load State From Backup Slot {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4096"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4118"/>
         <source>Failed to Load State From Slot {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4097"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4119"/>
         <source>Failed to Save State To Slot {}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10907,17 +10907,17 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4119"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4141"/>
         <source>Load/Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4125"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4147"/>
         <source>Startup Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4128"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4150"/>
         <source>WARNING: Memory Card Busy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10987,7 +10987,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4148"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4170"/>
         <source>Full Boot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11552,96 +11552,96 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4098"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4120"/>
         <source>Game Grid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4027"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4049"/>
         <source>Game List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4018"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4040"/>
         <source>Scanning for new games...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4054"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4076"/>
         <source>Game List Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4099"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4121"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6525"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4100"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4122"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6523"/>
         <source>Serial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4101"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4123"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6522"/>
         <source>Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4102"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4124"/>
         <source>File Title</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4103"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4125"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6524"/>
         <source>CRC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4104"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4126"/>
         <source>Time Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4105"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4127"/>
         <source>Last Played</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4106"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4128"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4126"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4148"/>
         <source>Select Disc Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4127"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4149"/>
         <source>Select Disc Drive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4035"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4057"/>
         <source>Start File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4039"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4061"/>
         <source>Start BIOS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4037"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4059"/>
         <source>Start Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4033"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4055"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11796,7 +11796,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4147"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4169"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6562"/>
         <source>Fast Boot</source>
         <translation type="unfinished"></translation>
@@ -11817,7 +11817,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4109"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4131"/>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6142"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
@@ -12103,92 +12103,92 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4129"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4151"/>
         <source>Resume Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4134"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4156"/>
         <source>Toggle Frame Limit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4135"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4157"/>
         <source>Game Properties</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4136"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4158"/>
         <source>Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4137"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4159"/>
         <source>Save Screenshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4138"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4160"/>
         <source>Switch To Software Renderer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4139"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4161"/>
         <source>Switch To Hardware Renderer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4140"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4162"/>
         <source>Change Disc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4130"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4152"/>
         <source>Close Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4132"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4154"/>
         <source>Exit Without Saving</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4131"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4153"/>
         <source>Back To Pause Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4142"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4164"/>
         <source>Exit And Save State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4133"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4155"/>
         <source>Leaderboards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4143"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4165"/>
         <source>Delete Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4144"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4166"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4146"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4168"/>
         <source>Delete State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4145"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4167"/>
         <source>Default Boot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4022"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4044"/>
         <source>Download Failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12208,27 +12208,27 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4070"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4092"/>
         <source>PCSX2 can automatically download covers for games which do not currently have a cover set. We do not host any cover images, the user must provide their own source for images.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4071"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4093"/>
         <source>Enter one or more cover image URL templates below. Variables such as ${serial} and ${title} are supported. See the Qt Cover Downloader for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4072"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4094"/>
         <source>URLs:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4073"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4095"/>
         <source>Saves covers using the game&apos;s title instead of serial number.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4074"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4096"/>
         <source>Downloading covers...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12238,17 +12238,17 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4092"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4114"/>
         <source>Version: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4093"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4115"/>
         <source>Error: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4094"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4116"/>
         <source>Warning: {}</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12264,117 +12264,117 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4121"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4143"/>
         <source>Cover Downloader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4122"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4144"/>
         <source>Refresh List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4149"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4171"/>
         <source>Reset Play Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4150"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4172"/>
         <source>Confirm Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4151"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4173"/>
         <source>Add Search Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4152"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4174"/>
         <source>Open in File Browser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4153"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4175"/>
         <source>Disable Subdirectory Scanning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4154"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4176"/>
         <source>Enable Subdirectory Scanning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4155"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4177"/>
         <source>Remove From List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4156"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4178"/>
         <source>Default View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4157"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4179"/>
         <source>Sort By</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4158"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4180"/>
         <source>Sort Reversed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4159"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4181"/>
         <source>Show Titles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4160"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4182"/>
         <source>Scan For New Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4161"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4183"/>
         <source>Rescan All Games</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4162"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4184"/>
         <source>Website</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4163"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4185"/>
         <source>Support Forums</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4164"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4186"/>
         <source>GitHub Repository</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4165"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4187"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4166"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4188"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4167"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4189"/>
         <source>Use Title File Names</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4168"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4190"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4169"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4191"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12394,7 +12394,7 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4025"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4047"/>
         <source>Failed to Load State</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12633,12 +12633,12 @@ This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2844"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2847"/>
         <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5305"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5308"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -26790,185 +26790,185 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1071"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1072"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1132"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1133"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1297"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1298"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1303"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1304"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1323"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1324"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1321"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1322"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1245"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1416"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1246"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1417"/>
         <source>Requested filename &apos;{}&apos; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1346"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1347"/>
         <source>The virtual machine is already running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1391"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1392"/>
         <source>Cannot load an indexed save state without a boot filename.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1399"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1400"/>
         <source>Could not resolve path for indexed save state load.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1458"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1459"/>
         <source>Failed to open CDVD &apos;{}&apos;: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1482"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1483"/>
         <source>Requested boot ELF &apos;{}&apos; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1534"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1535"/>
         <source>Failed to initialize GS.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1546"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1547"/>
         <source>Failed to initialize SPU2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1555"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1556"/>
         <source>Failed to initialize PAD.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1564"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1565"/>
         <source>Failed to initialize SIO2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1574"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1575"/>
         <source>Failed to initialize SIO0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1584"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1585"/>
         <source>Failed to initialize DEV9.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1595"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1596"/>
         <source>Failed to initialize USB.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1603"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1604"/>
         <source>Failed to initialize FW.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2149"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2150"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2352"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2353"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2360"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2361"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2369"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2370"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2378"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2379"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3221"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3222"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3225"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3226"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3235"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3236"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3281"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3300"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3301"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3335"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3336"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3369"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3370"/>
         <source>Extended RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3805"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3806"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3240"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3241"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="721"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="722"/>
         <source>Controller 1 has no input bindings configured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1440"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1441"/>
         <source>PCSX2 requires a PlayStation 2 BIOS in order to run.
 
 For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.
@@ -26979,255 +26979,255 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1670"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1671"/>
         <source>Failed to save resume state: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1752"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1753"/>
         <source>The memory card is busy, so the reset operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1899"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1900"/>
         <source>Cannot load state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1923"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1924"/>
         <source>Cannot save state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1944"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1945"/>
         <source>Cannot back up old save state &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1984"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1985"/>
         <source>Saved state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2054"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2087"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2055"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2088"/>
         <source>Cannot load state while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2061"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2094"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2062"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2095"/>
         <source>The memory card is busy, so the state load operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2080"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2081"/>
         <source>The save slot is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2105"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2106"/>
         <source>Loaded state from backup slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2111"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2112"/>
         <source>Loaded state from slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2123"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2142"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2124"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2143"/>
         <source>The memory card is busy, so the state save operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2136"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2137"/>
         <source>Cannot generate filename for save state.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2348"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2349"/>
         <source>No disc to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3168"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3169"/>
         <source>Cheats have been disabled due to RetroAchievements Hardcore Mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3246"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3250"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3251"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3271"/>
         <source>Draw Buffering is enabled, this may result in graphical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3285"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3286"/>
         <source>Accurate Alpha Test is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3290"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3291"/>
         <source>AA1 is enabled, this may severely degrade performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3295"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3296"/>
         <source>Overriding default depth feedback mode, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3305"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3306"/>
         <source>Dithering is set to Force 32 bit. This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3310"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3311"/>
         <source>Dithering is disabled. This will cause color banding in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3315"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3316"/>
         <source>Integer scaling is enabled. This may shrink the image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3324"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3325"/>
         <source>Graphics API is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3330"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3331"/>
         <source>Dumping draw data to {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3341"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3342"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3347"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3348"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3352"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3353"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3357"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3358"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3364"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3365"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3374"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3375"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3379"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3380"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3383"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3384"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3385"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3386"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3404"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3405"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3409"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3410"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3414"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3415"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3419"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3420"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3424"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3425"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3429"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3430"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3434"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3435"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3437"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3438"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3441"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3442"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3446"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3447"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3256"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2323"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2324"/>
         <source>Cannot frame advance while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3266"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3276"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
