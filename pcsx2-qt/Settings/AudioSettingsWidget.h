@@ -28,8 +28,9 @@ private Q_SLOTS:
 	void updateVolumeLabel();
 	void onMinimalOutputLatencyChanged();
 	void onStandardVolumeChanged(const int new_value);
-	void onFastForwardVolumeChanged(const int new_value);
+	void onFastForwardVolumeChanged();
 	void onOutputMutedChanged(const int new_state);
+	void resetVolumeAction(bool per_game, const char* key, QSlider* slider, QLabel* label, bool fast_forward);
 
 	void onExpansionSettingsClicked();
 	void onStretchSettingsClicked();
@@ -38,6 +39,10 @@ private:
 	AudioBackend getEffectiveBackend() const;
 	AudioExpansionMode getEffectiveExpansionMode() const;
 	u32 getEffectiveExpansionBlockSize() const;
+	int getNearestFastForwardMultiplierIndex(int standard_volume, int fast_forward_volume) const;
+	int getComputedFastForwardVolume(int standard_volume, int multiplier_index) const;
+	QString getFastForwardVolumeLabel(int multiplier_index) const;
+	void updateFastForwardVolumeSetting();
 	void resetVolume(const bool fast_forward);
 
 	Ui::AudioSettingsWidget m_ui;

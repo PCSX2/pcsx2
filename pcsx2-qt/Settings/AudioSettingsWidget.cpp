@@ -15,8 +15,20 @@
 #include "pcsx2/VMManager.h"
 
 #include <QtWidgets/QMessageBox>
+#include <array>
 #include <algorithm>
 #include <bit>
+#include <cmath>
+
+const int FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT = 5;
+const std::array<float, FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT + 1> s_fast_forward_multipliers = {
+	0.0f,
+	0.1f,
+	0.25f,
+	0.5f,
+	0.75f,
+	1.0f,
+};
 
 AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
@@ -73,20 +85,29 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	// for per-game, just use the normal path, since it needs to re-read/apply
 	if (!dialog()->isPerGameSettings())
 	{
-		m_ui.standardVolume->setValue(dialog()->getEffectiveIntValue("SPU2/Output", "StandardVolume", 100));
-		m_ui.fastForwardVolume->setValue(dialog()->getEffectiveIntValue("SPU2/Output", "FastForwardVolume", 100));
+		const int standard_volume = dialog()->getEffectiveIntValue("SPU2/Output", "StandardVolume", 100);
+		const int fast_forward_volume = dialog()->getEffectiveIntValue("SPU2/Output", "FastForwardVolume", standard_volume);
+
+		m_ui.standardVolume->setValue(standard_volume);
+		m_ui.fastForwardVolume->setValue(getNearestFastForwardMultiplierIndex(standard_volume, fast_forward_volume));
 		m_ui.muted->setChecked(dialog()->getEffectiveBoolValue("SPU2/Output", "OutputMuted", false));
 		connect(m_ui.standardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onStandardVolumeChanged);
 		connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
 		connect(m_ui.muted, &QCheckBox::checkStateChanged, this, &AudioSettingsWidget::onOutputMutedChanged);
-		updateVolumeLabel();
 	}
 	else
 	{
 		SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.standardVolume, m_ui.standardVolumeLabel, tr("%"), "SPU2/Output", "StandardVolume", 100);
-		SettingWidgetBinder::BindWidgetAndLabelToIntSetting(sif, m_ui.fastForwardVolume, m_ui.fastForwardVolumeLabel, tr("%"), "SPU2/Output", "FastForwardVolume", 100);
 		SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muted, "SPU2/Output", "OutputMuted", false);
+
+		const int standard_volume = dialog()->getEffectiveIntValue("SPU2/Output", "StandardVolume", 100);
+		const int fast_forward_volume = dialog()->getEffectiveIntValue("SPU2/Output", "FastForwardVolume", standard_volume);
+		m_ui.fastForwardVolume->setValue(getNearestFastForwardMultiplierIndex(standard_volume, fast_forward_volume));
+
+		connect(m_ui.standardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onStandardVolumeChanged);
+		connect(m_ui.fastForwardVolume, &QSlider::valueChanged, this, &AudioSettingsWidget::onFastForwardVolumeChanged);
 	}
+	updateVolumeLabel();
 	connect(m_ui.resetStandardVolume, &QToolButton::clicked, this, [this]() { resetVolume(false); });
 	connect(m_ui.resetFastForwardVolume, &QToolButton::clicked, this, [this]() { resetVolume(true); });
 
@@ -105,8 +126,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidge
 		   "to reduce audio delay."));
 	dialog()->registerWidgetHelp(m_ui.standardVolume, tr("Standard Volume"), "100%",
 		tr("Controls the volume of the audio played on the host at normal speed."));
-	dialog()->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume"), "100%",
-		tr("Controls the volume of the audio played on the host when fast forwarding."));
+	dialog()->registerWidgetHelp(m_ui.fastForwardVolume, tr("Fast Forward Volume Multiplier"), tr("1.00x"),
+		tr("Controls the volume multiplier used while fast forwarding, relative to the standard volume."));
 	dialog()->registerWidgetHelp(m_ui.muted, tr("Mute All Sound"), tr("Unchecked"),
 		tr("Prevents the emulator from producing any audible sound."));
 	dialog()->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"), tr("Disabled (Stereo)"),
@@ -121,9 +142,9 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	dialog()->registerWidgetHelp(m_ui.resetStandardVolume, tr("Reset Standard Volume"), tr("N/A"),
 		dialog()->isPerGameSettings() ? tr("Resets standard volume back to the global/inherited setting.") :
 										tr("Resets standard volume back to the default."));
-	dialog()->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume"), tr("N/A"),
-		dialog()->isPerGameSettings() ? tr("Resets fast forward volume back to the global/inherited setting.") :
-										tr("Resets fast forward volume back to the default."));
+	dialog()->registerWidgetHelp(m_ui.resetFastForwardVolume, tr("Reset Fast Forward Volume Multiplier"), tr("N/A"),
+		dialog()->isPerGameSettings() ? tr("Resets fast forward volume multiplier back to the global/inherited setting.") :
+										tr("Resets fast forward volume multiplier back to the default."));
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
@@ -293,7 +314,7 @@ void AudioSettingsWidget::updateLatencyLabel()
 void AudioSettingsWidget::updateVolumeLabel()
 {
 	m_ui.standardVolumeLabel->setText(tr("%1%").arg(m_ui.standardVolume->value()));
-	m_ui.fastForwardVolumeLabel->setText(tr("%1%").arg(m_ui.fastForwardVolume->value()));
+	m_ui.fastForwardVolumeLabel->setText(getFastForwardVolumeLabel(m_ui.fastForwardVolume->value()));
 }
 
 void AudioSettingsWidget::onMinimalOutputLatencyChanged()
@@ -308,20 +329,15 @@ void AudioSettingsWidget::onStandardVolumeChanged(const int new_value)
 	// only called for base settings
 	pxAssert(!dialog()->isPerGameSettings());
 	Host::SetBaseIntSettingValue("SPU2/Output", "StandardVolume", new_value);
-	Host::CommitBaseSettingChanges();
-	g_emu_thread->applySettings();
 
+	updateFastForwardVolumeSetting();
 	updateVolumeLabel();
 }
 
-void AudioSettingsWidget::onFastForwardVolumeChanged(const int new_value)
+void AudioSettingsWidget::onFastForwardVolumeChanged()
 {
-	// only called for base settings
-	pxAssert(!dialog()->isPerGameSettings());
-	Host::SetBaseIntSettingValue("SPU2/Output", "FastForwardVolume", new_value);
-	Host::CommitBaseSettingChanges();
-	g_emu_thread->applySettings();
 
+	updateFastForwardVolumeSetting();
 	updateVolumeLabel();
 }
 
@@ -334,6 +350,73 @@ void AudioSettingsWidget::onOutputMutedChanged(const int new_state)
 	Host::SetBaseBoolSettingValue("SPU2/Output", "OutputMuted", muted);
 	Host::CommitBaseSettingChanges();
 	g_emu_thread->applySettings();
+}
+
+int AudioSettingsWidget::getNearestFastForwardMultiplierIndex(const int standard_volume, const int fast_forward_volume) const
+{
+	if (standard_volume <= 0)
+		return FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT;
+
+	const float ratio = static_cast<float>(std::clamp(fast_forward_volume, 0, standard_volume)) /
+		static_cast<float>(standard_volume);
+	int best_index = FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT;
+	float best_distance = std::abs(ratio - s_fast_forward_multipliers[best_index]);
+
+	for (int i = 0; i < static_cast<int>(s_fast_forward_multipliers.size()); i++)
+	{
+		const float distance = std::abs(ratio - s_fast_forward_multipliers[i]);
+		if (distance < best_distance)
+		{
+			best_index = i;
+			best_distance = distance;
+		}
+	}
+
+	return best_index;
+}
+
+int AudioSettingsWidget::getComputedFastForwardVolume(const int standard_volume, const int multiplier_index) const
+{
+	const int clamped_index = std::clamp(multiplier_index, 0, FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT);
+	const float multiplier = s_fast_forward_multipliers[clamped_index];
+	return std::clamp(static_cast<int>(std::lround(static_cast<float>(standard_volume) * multiplier)), 0, 200);
+}
+
+QString AudioSettingsWidget::getFastForwardVolumeLabel(const int multiplier_index) const
+{
+	switch (std::clamp(multiplier_index, 0, FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT))
+	{
+		case 0:
+			return tr("Muted");
+		case 1:
+			return tr("0.10x");
+		case 2:
+			return tr("0.25x");
+		case 3:
+			return tr("0.50x");
+		case 4:
+			return tr("0.75x");
+		case 5:
+		default:
+			return tr("1.00x");
+	}
+}
+
+void AudioSettingsWidget::updateFastForwardVolumeSetting()
+{
+	const int standard_volume = m_ui.standardVolume->value();
+	const int fast_forward_volume = getComputedFastForwardVolume(standard_volume, m_ui.fastForwardVolume->value());
+
+	if (!dialog()->isPerGameSettings())
+	{
+		Host::SetBaseIntSettingValue("SPU2/Output", "FastForwardVolume", fast_forward_volume);
+		Host::CommitBaseSettingChanges();
+		g_emu_thread->applySettings();
+	}
+	else
+	{
+		dialog()->setIntSettingValue("SPU2/Output", "FastForwardVolume", fast_forward_volume);
+	}
 }
 
 void AudioSettingsWidget::onExpansionSettingsClicked()
@@ -483,24 +566,51 @@ void AudioSettingsWidget::resetVolume(const bool fast_forward)
 	const char* key = fast_forward ? "FastForwardVolume" : "StandardVolume";
 	QSlider* const slider = fast_forward ? m_ui.fastForwardVolume : m_ui.standardVolume;
 	QLabel* const label = fast_forward ? m_ui.fastForwardVolumeLabel : m_ui.standardVolumeLabel;
+	const bool perGame = dialog()->isPerGameSettings();
 
-	if (dialog()->isPerGameSettings())
+	resetVolumeAction(perGame, key, slider, label, fast_forward);
+	updateVolumeLabel();
+}
+
+void AudioSettingsWidget::resetVolumeAction(bool per_game, const char* key, QSlider* slider, QLabel* label,
+	bool fast_forward)
+{
+	if (per_game)
 	{
 		dialog()->removeSettingValue("SPU2/Output", key);
 
-		const int value = dialog()->getEffectiveIntValue("SPU2/Output", key, 100);
 		QSignalBlocker sb(slider);
-		slider->setValue(value);
-		label->setText(QStringLiteral("%1%2").arg(value).arg(tr("%")));
+		if (fast_forward)
+		{
+			const int standard_volume = dialog()->getEffectiveIntValue("SPU2/Output", "StandardVolume", 100);
+			const int fast_forward_volume = dialog()->getEffectiveIntValue("SPU2/Output", "FastForwardVolume", standard_volume);
+			slider->setValue(getNearestFastForwardMultiplierIndex(standard_volume, fast_forward_volume));
+		}
+		else
+		{
+			slider->setValue(dialog()->getEffectiveIntValue("SPU2/Output", key, 100));
+		}
 
 		// remove bold font if it was previously overridden
 		QFont font(label->font());
 		font.setBold(false);
 		label->setFont(font);
+
+		if (!fast_forward)
+			updateFastForwardVolumeSetting();
 	}
 	else
 	{
-		slider->setValue(100);
+		if (fast_forward)
+		{
+			QSignalBlocker sb(slider);
+			slider->setValue(FAST_FORWARD_MULTIPLIER_INDEX_DEFAULT);
+			updateFastForwardVolumeSetting();
+		}
+		else
+		{
+			slider->setValue(100);
+		}
 	}
 }
 
