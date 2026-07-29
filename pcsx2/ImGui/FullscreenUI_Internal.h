@@ -369,6 +369,9 @@ namespace FullscreenUI
 	inline std::vector<const GameList::Entry*> s_game_list_sorted_entries;
 	inline GameListView s_game_list_view = GameListView::Grid;
 
+	// Cached list of unsorted game list entries; used to detect changes and re-sort when needed
+	inline std::vector<const GameList::Entry*> s_last_unsorted_entries;
+
 	//////////////////////////////////////////////////////////////////////////
 	// Background
 	//////////////////////////////////////////////////////////////////////////

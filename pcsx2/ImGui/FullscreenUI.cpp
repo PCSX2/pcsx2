@@ -557,6 +557,7 @@ void FullscreenUI::Shutdown(bool clear_state)
 		CloseCoverDownloaderWindow();
 		s_cover_image_map.clear();
 		s_game_list_sorted_entries = {};
+		s_last_unsorted_entries = {};
 		s_game_list_directories_cache = {};
 		s_game_cheat_unlabelled_count = 0;
 		s_enabled_game_cheat_cache = {};
@@ -2467,7 +2468,6 @@ void FullscreenUI::PopulateGameListEntryList()
 	static int s_last_sort = -1;
 	static bool s_last_reverse = false;
 	static bool s_last_prefer_eng = false;
-	static std::vector<const GameList::Entry*> s_last_unsorted_entries;
 
 	// Sort can be expensive, try to avoid when possible
 	const u32 count = GameList::GetEntryCount();
