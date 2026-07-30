@@ -1292,7 +1292,7 @@ bool GSDeviceOGL::SetGPUPipelineStatisticsEnabled(bool enabled)
 	else
 		DestroyPipelineStatisticsQueries();
 
-	return true;
+	return (enabled == m_gpu_pipeline_statistics_enabled);
 }
 
 void GSDeviceOGL::DrawPrimitive()
