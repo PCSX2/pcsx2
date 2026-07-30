@@ -1150,7 +1150,7 @@ GPUPipelineStatistics GSDeviceVK::GetAndResetAccumulatedGPUPipelineStatistics()
 bool GSDeviceVK::SetGPUPipelineStatisticsEnabled(bool enabled)
 {
 	m_gpu_pipeline_statistics_enabled = enabled && m_gpu_pipeline_statistics_supported;
-	return true;
+	return (enabled == m_gpu_pipeline_statistics_enabled);
 }
 
 void GSDeviceVK::ScanForCommandBufferCompletion()
