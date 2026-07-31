@@ -1167,7 +1167,7 @@ void GSDevice11::DestroyTimestampQueries()
 	m_read_timestamp_query = 0;
 	m_write_timestamp_query = 0;
 	m_waiting_timestamp_queries = 0;
-	m_timestamp_query_started = 0;
+	m_timestamp_query_started = false;
 }
 
 void GSDevice11::PopTimestampQuery()
@@ -1286,13 +1286,13 @@ void GSDevice11::DestroyPipelineStatisticsQueries()
 		return;
 
 	if (m_pipeline_statistics_query_started)
-		m_ctx->End(m_pipeline_statistics_queries[m_write_timestamp_query].get());
+		m_ctx->End(m_pipeline_statistics_queries[m_write_pipeline_statistics_query].get());
 
-	m_timestamp_queries = {};
-	m_read_timestamp_query = 0;
-	m_write_timestamp_query = 0;
-	m_waiting_timestamp_queries = 0;
-	m_timestamp_query_started = 0;
+	m_pipeline_statistics_queries = {};
+	m_read_pipeline_statistics_query = 0;
+	m_write_pipeline_statistics_query = 0;
+	m_waiting_pipeline_statistics_queries = 0;
+	m_pipeline_statistics_query_started = false;
 }
 
 void GSDevice11::PopPipelineStatisticsQuery()
