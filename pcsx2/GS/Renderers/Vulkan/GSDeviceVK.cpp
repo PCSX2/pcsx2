@@ -5418,6 +5418,17 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 		PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
 	}
 
+	if (IsDeviceNVIDIA() && InRenderPass())
+	{
+		// Nvidia doesn't like switching ROV targets mid-render pass, doing so causes flickering or missing geometry.
+		// End the render pass to avoid such issues.
+		if (vkRt != oldVkRt || vkDs != oldVkDs)
+		{
+			GL_INS("VK: Ending render pass due to UAV switch");
+			EndRenderPass();
+		}
+	}
+
 	if (GSConfig.HWROVBarriersVK)
 	{
 		// This is to fix issues with some systems that seem to require barriers even with FSI.
