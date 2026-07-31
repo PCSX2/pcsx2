@@ -797,6 +797,7 @@ struct alignas(16) GSHWDrawConfig
 				// ROVs
 				u32 rov_color : 1;
 				PS_ROV_DEPTH rov_depth : 2;
+				u32 rov_oneshot : 1;
 			};
 
 			struct
@@ -889,17 +890,53 @@ struct alignas(16) GSHWDrawConfig
 
 		__fi bool HasDepthOutput() const
 		{
-			return zfloor || zclamp || IsFeedbackLoopDepth() || (rov_depth == PS_ROV_DEPTH::READ_WRITE);
+			return zfloor || zclamp || IsFeedbackLoopDepth() ||
+				(rov_depth == PS_ROV_DEPTH::READ_WRITE);
 		}
 
 		__fi bool HasColorROV() const
 		{
-			return rov_color != 0;
+			return rov_color;
 		}
 
 		__fi bool HasDepthROV() const
 		{
 			return rov_depth != PS_ROV_DEPTH::NONE;
+		}
+
+		__fi bool HasOneshotROV() const
+		{
+			return rov_oneshot;
+		}
+
+		bool HasOneshotColorROV() const
+		{
+			return HasColorROV() && HasOneshotROV();
+		}
+
+		bool HasOneshotDepthROV() const
+		{
+			return HasDepthROV() && HasOneshotROV();
+		}
+
+		bool HasContinuousColorROV() const
+		{
+			return HasColorROV() && !HasOneshotROV();
+		}
+
+		bool HasContinuousDepthROV() const
+		{
+			return HasDepthROV() && !HasOneshotROV();
+		}
+
+		bool HasContinuousROV() const
+		{
+			return HasContinuousColorROV() || HasContinuousDepthROV();
+		}
+
+		bool HasROV() const
+		{
+			return HasColorROV() || HasDepthROV();
 		}
 
 		__fi bool HasDepthROVWrite() const
@@ -1248,6 +1285,7 @@ struct alignas(16) GSHWDrawConfig
 	u32 indices_per_prim;  ///< Number of indices that make up one primitive
 	const std::vector<size_t>* drawlist;          ///< For reducing barriers on sprites
 	const std::vector<GSVector4i>* drawlist_bbox; ///< For RT copy when barriers not available.
+	const std::vector<GSVector4i>* draw_coarse_rasterize; ///< For cutting down on copy area.
 	GSVector4i scissor; ///< Scissor rect
 	GSVector4i drawarea; ///< Area in the framebuffer which will be modified.
 	GSVector4i samplearea; ///< Area in the texture which will be sampled.

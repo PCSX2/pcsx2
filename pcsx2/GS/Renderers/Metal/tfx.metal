@@ -78,6 +78,7 @@ constant bool PS_ABE                [[function_constant(GSMTLConstantIndex_PS_AB
 constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW_ANISO)]];
 constant bool PS_ROV_COLOR          [[function_constant(GSMTLConstantIndex_PS_ROV_COLOR)]];
 constant uint PS_ROV_DEPTH_RAW      [[function_constant(GSMTLConstantIndex_PS_ROV_DEPTH)]];
+constant bool PS_ROV_ONESHOT        [[function_constant(GSMTLConstantIndex_PS_ROV_ONESHOT)]];
 
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
@@ -123,10 +124,16 @@ constant bool NEEDS_DEPTH_FOR_AFAIL = PS_AFAIL == AFAIL::FB_ONLY || PS_AFAIL == 
 constant bool NEEDS_DEPTH_FOR_ZTST  = PS_ZTST == ZTST::GEQUAL || PS_ZTST == ZTST::GREATER;
 constant bool NEEDS_DEPTH_FOR_AA1   = PS_AA1 == AA1::TRIANGLE_SW_Z;
 constant bool SW_DEPTH = NEEDS_DEPTH_FOR_AFAIL || NEEDS_DEPTH_FOR_ZTST || NEEDS_DEPTH_FOR_AA1;
+constant bool DISCARD_COLOR = PS_AFAIL == AFAIL::ZB_ONLY;
+constant bool DISCARD_DEPTH = PS_AA1 == AA1::TRIANGLE_SW_Z || PS_AFAIL == AFAIL::RGB_ONLY_SW_Z || PS_AFAIL == AFAIL::FB_ONLY;
+constant bool DISCARD_FULL = NEEDS_DEPTH_FOR_ZTST || (PS_SCANMSK & 2) || PS_AFAIL == AFAIL::KEEP || PS_DATE >= 5 || PS_DATE == 3;
 
-constant bool PS_OUTPUT_COLOR0 = !PS_NO_COLOR  && !PS_ROV_COLOR;
+constant bool ROV_COLOR_CONTINUOUS = (PS_ROV_COLOR && !PS_ROV_ONESHOT);
+constant bool ROV_DEPTH_CONTINUOUS = (PS_ROV_DEPTH != ROV_DEPTH::NONE && !PS_ROV_ONESHOT);
+
+constant bool PS_OUTPUT_COLOR0 = !PS_NO_COLOR  && !ROV_COLOR_CONTINUOUS;
 constant bool PS_OUTPUT_COLOR1 = !PS_NO_COLOR1 && !PS_ROV_COLOR;
-constant bool PS_ZOUTPUT = (PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH) && PS_ROV_DEPTH == ROV_DEPTH::NONE;
+constant bool PS_ZOUTPUT = (PS_ZCLAMP || PS_ZFLOOR || SW_DEPTH) && !ROV_DEPTH_CONTINUOUS;
 constant bool PS_ZOUTPUT_LESS = PS_ZOUTPUT && !SW_DEPTH;
 constant bool PS_ZOUTPUT_ANY  = PS_ZOUTPUT && SW_DEPTH;
 constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && !DEPTH_FEEDBACK;
@@ -1793,12 +1800,31 @@ fragment MainPSOut ps_main(
 		else
 			rt_rov.write(out.c0, coord);
 	}
+	if (PS_ROV_ONESHOT)
+	{
+		if (DISCARD_FULL && main.color_discarded && main.depth_discarded)
+			discard_fragment();
+		else if (DISCARD_COLOR && main.color_discarded)
+			out.c0 = main.current_color;
+		else if (DISCARD_DEPTH && main.depth_discarded)
+			out.depth = main.current_depth;
+	}
 	return out;
 }
 
+struct MainPSOutEFT
+{
+	float4 c0 [[color(0), index(0), function_constant(PS_OUTPUT_COLOR0)]];
+	MainPSOutEFT(MainResult res)
+	{
+		if (PS_OUTPUT_COLOR0)
+			c0 = res.c0;
+	}
+};
+
 // Metal doesn't let you toggle eft with function constants so we need a separate function for it
 [[early_fragment_tests]]
-fragment void ps_main_rov_eft(
+fragment MainPSOutEFT ps_main_rov_eft(
 	MainPSIn in [[stage_in]],
 	constant GSMTLMainPSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]],
 	sampler s [[sampler(0)]],
@@ -1822,8 +1848,12 @@ fragment void ps_main_rov_eft(
 		main.current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
 	else
 		main.current_color = rt_rov.read(coord);
-	MainPSOut out = main.ps_main();
-	if (!main.color_discarded)
+	MainResult out = main.ps_main();
+	if (main.color_discarded)
+	{
+		out.c0 = main.current_color;
+	}
+	else
 	{
 		if (!PS_FBMASK)
 			out.c0 = select(out.c0, main.current_color, cb.fbmask == 0xff);
@@ -1832,6 +1862,7 @@ fragment void ps_main_rov_eft(
 		else
 			rt_rov.write(out.c0, coord);
 	}
+	return out;
 }
 
 #if PRIMID_SUPPORT
