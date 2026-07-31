@@ -806,12 +806,12 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="838"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="839"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="839"/>
+        <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="840"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
