@@ -5,14 +5,14 @@ add_library(imgui
 	include/imgui_internal.h
 	include/imgui_stdlib.h
 	include/imstb_textedit.h
+	include/imstb_rectpack.h
+	include/imstb_truetype.h
 	src/imgui.cpp
 	src/imgui_demo.cpp
 	src/imgui_draw.cpp
 	src/imgui_freetype.cpp
 	src/imgui_tables.cpp
 	src/imgui_widgets.cpp
-	src/imstb_rectpack.h
-	src/imstb_truetype.h
 	src/imgui_stdlib.cpp
 )
 
