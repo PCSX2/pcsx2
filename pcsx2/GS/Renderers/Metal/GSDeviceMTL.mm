@@ -2751,7 +2751,7 @@ static simd::float4 ToSimd(const ImVec4& vec)
 
 void GSDeviceMTL::RenderImGui(ImDrawData* data)
 {
-	if (data->CmdListsCount == 0)
+	if (data->CmdLists.Size == 0)
 		return;
 	UpdateImGuiTextures();
 	simd::float4 transform;
@@ -2774,7 +2774,7 @@ void GSDeviceMTL::RenderImGui(ImDrawData* data)
 	simd::float2 clip_scale = ToSimd(data->FramebufferScale); // (1,1) unless using retina display which are often (2,2)
 	ImTextureID last_tex = reinterpret_cast<ImTextureID>(nullptr);
 
-	for (int i = 0; i < data->CmdListsCount; i++)
+	for (int i = 0; i < data->CmdLists.Size; i++)
 	{
 		const ImDrawList* cmd_list = data->CmdLists[i];
 		size_t vtx_size = cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);

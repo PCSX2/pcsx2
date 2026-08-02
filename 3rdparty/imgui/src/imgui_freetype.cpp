@@ -450,7 +450,7 @@ static bool ImGui_ImplFreeType_FontBakedInit(ImFontAtlas* atlas, ImFontConfig* s
     // (FT_Set_Pixel_Sizes() essentially calls FT_Request_Size() with FT_SIZE_REQUEST_TYPE_NOMINAL)
     const float rasterizer_density = src->RasterizerDensity * baked->RasterizerDensity;
     FT_Size_RequestRec req;
-    req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+    req.type = FT_SIZE_REQUEST_TYPE_NOMINAL; // [PCSX2 Custom]
     req.width = 0;
     req.height = (uint32_t)(size * 64 * rasterizer_density);
     req.horiResolution = 0;
