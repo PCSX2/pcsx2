@@ -6324,6 +6324,7 @@ TRANSLATE_NOOP("FullscreenUI", "Tile");
 TRANSLATE_NOOP("FullscreenUI", "Xbox");
 TRANSLATE_NOOP("FullscreenUI", "PlayStation");
 TRANSLATE_NOOP("FullscreenUI", "Nintendo");
+TRANSLATE_NOOP("FullscreenUI", "Generic");
 TRANSLATE_NOOP("FullscreenUI", "Enabled");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "2% [1 FPS (NTSC) / 1 FPS (PAL)]");
