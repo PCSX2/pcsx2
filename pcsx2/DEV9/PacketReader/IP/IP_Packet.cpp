@@ -68,6 +68,19 @@ namespace PacketReader::IP
 
 	IP_Packet::IP_Packet(const u8* buffer, int bufferSize, bool fromICMP)
 	{
+		auto invalidate_packet = [this]() {
+			headerLength = 20;
+			protocol = 0;
+			payload = std::make_unique<IP_PayloadData>(0, 0);
+		};
+
+		if (bufferSize < 20)
+		{
+			Console.Error("DEV9: IP_Packet: Packet is smaller than an IPv4 header");
+			invalidate_packet();
+			return;
+		}
+
 		int offset = 0;
 
 		//Bits 0-31
@@ -99,26 +112,50 @@ namespace PacketReader::IP
 		NetLib::ReadIPAddress(buffer, &offset, &sourceIP);
 		//Bits 128-159
 		NetLib::ReadIPAddress(buffer, &offset, &destinationIP);
+		if (headerLength < 20 || headerLength > length)
+		{
+			Console.Error("DEV9: IP_Packet: Invalid header length");
+			invalidate_packet();
+			return;
+		}
 
 		//Bits 160+
 		if (headerLength > 20) //IP options (if any)
 		{
-			bool opReadFin = false;
-			do
+			while (offset < headerLength)
 			{
 				const u8 opKind = buffer[offset];
+				if (opKind == 0)
+					break;
+				if (opKind == 1)
+				{
+					options.push_back(new IPopNOP());
+					offset++;
+					continue;
+				}
+
+				if ((headerLength - offset) < 2)
+				{
+					Console.Error("DEV9: IP_Packet: Truncated IP option");
+					invalidate_packet();
+					return;
+				}
+
 				const u8 opLen = buffer[offset + 1];
+				if (opLen < 2 || opLen > (headerLength - offset))
+				{
+					Console.Error("DEV9: IP_Packet: Invalid IP option length");
+					invalidate_packet();
+					return;
+				}
+
 				switch (opKind)
 				{
-					case 0:
-						opReadFin = true;
-						break;
-					case 1:
-						options.push_back(new IPopNOP());
-						offset += 1;
-						continue;
 					case 148:
-						options.push_back(new IPopRouterAlert(buffer, offset));
+						if (opLen == 4)
+							options.push_back(new IPopRouterAlert(buffer, offset));
+						else
+							options.push_back(new IPopUnk(buffer, offset));
 						break;
 					default:
 						Console.Error("DEV9: IP_Packet: Got Unknown IP Option %d with len %d", opKind, opLen);
@@ -126,9 +163,7 @@ namespace PacketReader::IP
 						break;
 				}
 				offset += opLen;
-				if (offset == headerLength)
-					opReadFin = true;
-			} while (opReadFin == false);
+			}
 		}
 		offset = headerLength;
 
