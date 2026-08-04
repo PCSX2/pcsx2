@@ -105,7 +105,6 @@ GSState::GSState()
 	s_n = 0;
 	s_transfer_n = 0;
 
-
 	memset(&m_v, 0, sizeof(m_v));
 	memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
 
@@ -2496,6 +2495,11 @@ u32 GSState::CalcMask(int exp, int max_exp)
 	return (1 << std::min(amount, 23)) - 1;
 }
 
+void GSState::IncDraw()
+{
+	s_n++;
+}
+
 void GSState::FlushPrim()
 {
 	if (m_index->tail > 0)
@@ -2518,7 +2522,7 @@ void GSState::FlushPrim()
 		GSVertex buff[2];
 		GSVertexBuff& vtx_buff = *m_vertex;
 		GSIndexBuff& idx_buff = *m_index;
-		s_n++;
+		IncDraw();
 
 		const u32 head = vtx_buff.head;
 		const u32 tail = vtx_buff.tail;

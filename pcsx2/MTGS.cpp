@@ -1048,6 +1048,13 @@ void MTGS::SetRunIdle(bool enabled)
 	s_run_idle_flag.store(enabled, std::memory_order_release);
 }
 
+void MTGS::ResetStats()
+{
+	RunOnGSThread([]() {
+		GSResetStats();
+	});
+}
+
 // Used in MTVU mode... MTVU will later complete a real packet
 void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path)
 {

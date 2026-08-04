@@ -152,7 +152,7 @@ bool GSRenderer::Merge(int field)
 		return false;
 	}
 
-	s_n++;
+	IncDraw();
 
 	GSVector4 src_gs_read[2];
 	GSVector4 dst[3];
@@ -525,6 +525,9 @@ void GSJoinSnapshotThreads()
 bool GSRenderer::BeginPresentFrame(bool frame_skip)
 {
 	Host::BeginPresentFrame();
+
+	if (GSDumpReplayer::IsReplayingDump())
+		GSDumpReplayer::UpdateGSStats();
 
 	const GSDevice::PresentResult res = g_gs_device->BeginPresent(frame_skip);
 	if (res == GSDevice::PresentResult::FrameSkipped)
