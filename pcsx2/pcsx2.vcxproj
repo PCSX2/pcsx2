@@ -290,6 +290,7 @@
     <ClCompile Include="Recording\InputRecordingFile.cpp" />
     <ClCompile Include="Recording\PadData.cpp" />
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp" />
+    <ClCompile Include="SIO\Memcard\MemoryCardBackup.cpp" />
     <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp" />
     <ClCompile Include="SIO\Memcard\MemoryCardFolder.cpp" />
     <ClCompile Include="SIO\Memcard\MemoryCardProtocol.cpp" />
@@ -738,6 +739,7 @@
     <ClInclude Include="Recording\PadData.h" />
     <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
     <ClInclude Include="ShaderCacheVersion.h" />
+    <ClInclude Include="SIO\Memcard\MemoryCardBackup.h" />
     <ClInclude Include="SIO\Memcard\MemoryCardFile.h" />
     <ClInclude Include="SIO\Memcard\MemoryCardFolder.h" />
     <ClInclude Include="SIO\Memcard\MemoryCardProtocol.h" />

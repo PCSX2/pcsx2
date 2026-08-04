@@ -1367,6 +1367,9 @@
     <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp">
       <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
     </ClCompile>
+    <ClCompile Include="SIO\Memcard\MemoryCardBackup.cpp">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
+    </ClCompile>
     <ClCompile Include="SIO\Memcard\MemoryCardFile.cpp">
       <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
     </ClCompile>
@@ -2324,6 +2327,9 @@
     </ClInclude>
     <ClInclude Include="SIO\Multitap\MultitapProtocol.h">
       <Filter>System\Ps2\Iop\SIO\Multitap</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Memcard\MemoryCardBackup.h">
+      <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
     </ClInclude>
     <ClInclude Include="SIO\Memcard\MemoryCardFile.h">
       <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
