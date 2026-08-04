@@ -209,7 +209,6 @@ private:
 	void CalibrateSpinTimestamp();
 	u64 GetCPUTimestamp();
 
-	// For pipeline statistics
 	enum class QueryState
 	{
 		None,
@@ -228,7 +227,7 @@ private:
 		u32 submit_timestamp = 0;
 		bool init_buffer_used = false;
 		bool needs_fence_wait = false;
-		bool timestamp_written = false;
+		QueryState timestamp_query_state = QueryState::None;
 		QueryState pipeline_statistics_query = QueryState::None;
 
 		std::vector<std::function<void()>> cleanup_resources;
@@ -575,6 +574,9 @@ public:
 	bool IsPresenting() const;
 
 	bool SetGPUTimingEnabled(bool enabled) override;
+	void StartGPUTiming(u32 index);
+	void EndGPUTiming(u32 index);
+	void ReadGPUTiming(u32 index);
 	float GetAndResetAccumulatedGPUTime() override;
 
 	bool SetGPUPipelineStatisticsEnabled(bool enabled) override;
