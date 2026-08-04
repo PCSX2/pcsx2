@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "PerformanceMetrics.h"
+#include "GS/GSPerfMon.h"
 #include "GS.h"
 #include "GS/GSLzma.h"
 #include "GSDumpReplayer.h"
@@ -27,6 +29,7 @@
 #include "common/Timer.h"
 
 #include <atomic>
+#include <cinttypes>
 
 static void GSDumpReplayerCpuReserve();
 static void GSDumpReplayerCpuShutdown();
@@ -46,6 +49,20 @@ static bool s_needs_state_loaded = false;
 static u64 s_frame_ticks = 0;
 static u64 s_next_frame_time = 0;
 static bool s_is_dump_runner = false;
+static bool s_dump_perf_metrics = true;
+
+static bool s_use_frame_range = false;
+static bool s_init_frame_range = false;
+static u32 s_frame_start = 0;
+static u32 s_frame_end = 0;
+static u32 s_frame_start_packet = 0;
+static u32 s_frame_end_packet = 0;
+
+static GSDumpReplayer::PerfMetrics s_perf_metrics = {};
+static GSPerfMon s_total_gs_stats;
+static GSPerfMon s_last_g_perfmon;
+static u64 s_total_frames = 0;
+static u64 s_total_drawn_frames = 0;
 
 R5900cpu GSDumpReplayerCpu = {
 	GSDumpReplayerCpuReserve,
@@ -70,9 +87,10 @@ bool GSDumpReplayer::IsRunner()
 	return s_is_dump_runner;
 }
 
-void GSDumpReplayer::SetIsDumpRunner(bool is_runner)
+void GSDumpReplayer::SetIsDumpRunner(bool is_runner, bool dump_perf)
 {
 	s_is_dump_runner = is_runner;
+	s_dump_perf_metrics = dump_perf;
 }
 
 void GSDumpReplayer::SetLoopCount(s32 loop_count)
@@ -83,6 +101,13 @@ void GSDumpReplayer::SetLoopCount(s32 loop_count)
 int GSDumpReplayer::GetLoopCount()
 {
 	return s_dump_loop_count;
+}
+
+void GSDumpReplayer::SetFrameRange(bool use, u32 start, u32 end)
+{
+	s_use_frame_range = use;
+	s_frame_start = start;
+	s_frame_end = end;
 }
 
 bool GSDumpReplayer::Initialize(const char* filename, Error* error)
@@ -145,6 +170,8 @@ void GSDumpReplayer::Shutdown()
 {
 	Console.WriteLn("(GSDumpReplayer) Shutting down.");
 
+	DumpStats();
+
 	Cpu = nullptr;
 	psxCpu = nullptr;
 	CpuVU0 = nullptr;
@@ -196,6 +223,14 @@ void GSDumpReplayerCpuReset()
 	s_needs_state_loaded = true;
 	s_current_packet = 0;
 	s_dump_frame_number = 0;
+	s_perf_metrics = {};
+	s_total_gs_stats.Reset();
+	s_last_g_perfmon.Reset();
+	s_init_frame_range = false;
+	s_frame_start_packet = 0;
+	s_frame_end_packet = 0;
+	s_total_frames = 0;
+	s_total_drawn_frames = 0;
 }
 
 static void GSDumpReplayerLoadInitialState()
@@ -256,17 +291,10 @@ static void GSDumpReplayerFrameLimit()
 	s_next_frame_time = std::max(now, s_next_frame_time + s_frame_ticks);
 }
 
-void GSDumpReplayerCpuStep()
+void AdvanceNextLoop()
 {
-	if (s_needs_state_loaded)
-	{
-		GSDumpReplayerLoadInitialState();
-		s_needs_state_loaded = false;
-	}
-
-	const GSDumpFile::GSData& packet = s_dump_file->GetPackets()[s_current_packet];
-	s_current_packet = (s_current_packet + 1) % static_cast<u32>(s_dump_file->GetPackets().size());
-	if (s_current_packet == 0)
+	const bool end_of_dump = (s_current_packet == static_cast<u32>(s_dump_file->GetPackets().size()));
+	if (end_of_dump || (s_init_frame_range && s_current_packet > s_frame_end_packet))
 	{
 		s_dump_frame_number = 0;
 		if (s_dump_loop_count > 0)
@@ -277,6 +305,54 @@ void GSDumpReplayerCpuStep()
 			s_dump_running = false;
 		}
 	}
+}
+
+void UpdateFrameRangePacketsOnVSync()
+{
+	if (s_use_frame_range && !s_init_frame_range)
+	{
+		if (s_dump_frame_number == s_frame_start)
+		{
+			// +1 since the current packet is the previous frame VSync packet.
+			s_frame_start_packet = s_current_packet + 1;
+		}
+		else if (s_dump_frame_number >= s_frame_end && s_frame_end > s_frame_start)
+		{
+			// Current packet is the VSync packet of the last frame we want to loop over.
+			s_frame_end_packet = s_current_packet;
+			s_init_frame_range = true;
+		}
+	}
+}
+
+void CheckFrameRange()
+{
+	if (s_init_frame_range)
+	{
+		if (s_current_packet > s_frame_end_packet || s_current_packet < s_frame_start_packet)
+		{
+			s_dump_frame_number = s_frame_start;
+			s_current_packet = s_frame_start_packet;
+		}
+	}
+	else if (s_current_packet == static_cast<u32>(s_dump_file->GetPackets().size()))
+	{
+		// This will run if the frame range goes past the end of the dump.
+		s_frame_end_packet = s_current_packet;
+		s_init_frame_range = true;
+	}
+}
+
+void GSDumpReplayerCpuStep()
+{
+	if (s_needs_state_loaded)
+	{
+		GSDumpReplayerLoadInitialState();
+		s_needs_state_loaded = false;
+	}
+
+	// Get the next packet.
+	const GSDumpFile::GSData& packet = s_dump_file->GetPackets()[s_current_packet];
 
 	switch (packet.id)
 	{
@@ -323,6 +399,7 @@ void GSDumpReplayerCpuStep()
 			if (VMManager::Internal::IsExecutionInterrupted())
 				GSDumpReplayerExitExecution();
 			Host::PumpMessagesOnCPUThread();
+			UpdateFrameRangePacketsOnVSync();
 		}
 		break;
 
@@ -343,6 +420,18 @@ void GSDumpReplayerCpuStep()
 		}
 		break;
 	}
+
+	// Increment the packet counter.
+	s_current_packet++;
+
+	// Increment the loop counter.
+	AdvanceNextLoop();
+
+	// Adjust packet index based on the frame range we're replaying.
+	CheckFrameRange();
+
+	// Loop packet index.
+	s_current_packet %= static_cast<u32>(s_dump_file->GetPackets().size());
 }
 
 void GSDumpReplayerCpuExecute()
@@ -403,4 +492,93 @@ void GSDumpReplayer::RenderUI()
 	DRAW_LINE(font, font_size, text.c_str(), IM_COL32(255, 255, 255, 255));
 
 #undef DRAW_LINE
+}
+
+void GSDumpReplayer::UpdatePerformanceMetrics()
+{
+	s_perf_metrics.num_updates += 1.0f;
+	s_perf_metrics.fps += PerformanceMetrics::GetFPS();
+	s_perf_metrics.internal_fps += PerformanceMetrics::GetInternalFPS();
+	s_perf_metrics.cpu_thread_usage += PerformanceMetrics::GetCPUThreadUsage();
+	s_perf_metrics.cpu_thread_time += PerformanceMetrics::GetCPUThreadAverageTime();
+	s_perf_metrics.gs_thread_usage += PerformanceMetrics::GetGSThreadUsage();
+	s_perf_metrics.gs_thread_time += PerformanceMetrics::GetGSThreadAverageTime();
+	s_perf_metrics.gpu_time += PerformanceMetrics::GetGPUAverageTime();
+	s_perf_metrics.gpu_usage += PerformanceMetrics::GetGPUUsage();
+	std::atomic_thread_fence(std::memory_order_release);
+}
+
+static void UpdateSingleGSStat(GSPerfMon::counter_t counter)
+{
+	const double curr = g_perfmon.GetCounter(counter);
+	const double last = s_last_g_perfmon.GetCounter(counter);
+	// GSPerfMon resets every 30 frames to zero.
+	s_total_gs_stats.Put(counter, curr < last ? curr : (curr - last));
+};
+
+void GSDumpReplayer::UpdateGSStats()
+{
+	// Called on GS thread.
+	if (GSIsHardwareRenderer())
+	{
+		const double last_draws = s_total_gs_stats.GetCounter(GSPerfMon::Draw);
+		const double last_uploads = s_total_gs_stats.GetCounter(GSPerfMon::TextureUploads);
+
+		UpdateSingleGSStat(GSPerfMon::Draw);
+		UpdateSingleGSStat(GSPerfMon::DrawCalls);
+		UpdateSingleGSStat(GSPerfMon::RenderPasses);
+		UpdateSingleGSStat(GSPerfMon::Barriers);
+		UpdateSingleGSStat(GSPerfMon::TextureCopies);
+		UpdateSingleGSStat(GSPerfMon::TextureUploads);
+		UpdateSingleGSStat(GSPerfMon::Readbacks);
+		UpdateSingleGSStat(GSPerfMon::TextureCopiesROV);
+		UpdateSingleGSStat(GSPerfMon::DrawCallsROV);
+		UpdateSingleGSStat(GSPerfMon::BarriersROV);
+
+		s_last_g_perfmon = g_perfmon;
+
+		const bool idle_frame = s_total_frames > 0 &&
+			s_total_gs_stats.GetCounter(GSPerfMon::Draw) == last_draws &&
+			s_total_gs_stats.GetCounter(GSPerfMon::TextureUploads) == last_uploads;
+
+		if (!idle_frame)
+			s_total_drawn_frames++;
+
+		s_total_frames++;
+
+		std::atomic_thread_fence(std::memory_order_release);
+	}
+}
+
+static void DumpStatAndAvg(const char* format, double stat)
+{
+	Console.WriteLn(format, static_cast<u64>(stat), static_cast<u64>(std::ceil(stat / static_cast<double>(s_total_drawn_frames))));
+}
+
+void GSDumpReplayer::DumpStats()
+{
+	std::atomic_thread_fence(std::memory_order_acquire);
+	Console.WriteLnFmt("======= HW STATISTICS FOR {} ({}) FRAMES ========", s_total_frames, s_total_drawn_frames);
+	DumpStatAndAvg("@HWSTAT@ Draw Calls: %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::DrawCalls));
+	DumpStatAndAvg("@HWSTAT@ Render Passes: %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::RenderPasses));
+	DumpStatAndAvg("@HWSTAT@ Barriers: %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::Barriers));
+	DumpStatAndAvg("@HWSTAT@ Copies: %" PRIu64 " (avg %" PRIu64 ")",  s_total_gs_stats.GetCounter(GSPerfMon::TextureCopies));
+	DumpStatAndAvg("@HWSTAT@ Uploads: %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::TextureUploads));
+	DumpStatAndAvg("@HWSTAT@ Readbacks: %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::Readbacks));
+	DumpStatAndAvg("@HWSTAT@ Copies (ROV): %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::TextureCopiesROV));
+	DumpStatAndAvg("@HWSTAT@ Draws Calls (ROV): %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::DrawCallsROV));
+	DumpStatAndAvg("@HWSTAT@ Barriers (ROV): %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::BarriersROV));
+	if (s_dump_perf_metrics)
+	{
+		Console.WriteLnFmt("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime());
+		Console.WriteLnFmt("@HWSTAT@ Average Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetAverageFrameTime(), 1000.0f / PerformanceMetrics::GetAverageFrameTime());
+		Console.WriteLnFmt("@HWSTAT@ Maximum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMaximumFrameTime(), 1000.0f / PerformanceMetrics::GetMaximumFrameTime());
+		Console.WriteLnFmt("@HWSTAT@ Average CPU Thread Usage: {:.3f} %", s_perf_metrics.cpu_thread_usage / s_perf_metrics.num_updates);
+		Console.WriteLnFmt("@HWSTAT@ Average GS Thread Usage: {:.3f} %", s_perf_metrics.gs_thread_usage / s_perf_metrics.num_updates);
+		Console.WriteLnFmt("@HWSTAT@ Average GPU Usage: {:.3f} %", s_perf_metrics.gpu_usage / s_perf_metrics.num_updates);
+		Console.WriteLnFmt("@HWSTAT@ Average CPU Thread Time: {:.3f} ms", s_perf_metrics.cpu_thread_time / s_perf_metrics.num_updates);
+		Console.WriteLnFmt("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_metrics.gs_thread_time / s_perf_metrics.num_updates);
+		Console.WriteLnFmt("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_metrics.gpu_time / s_perf_metrics.num_updates);
+	}
+	Console.WriteLnFmt("============================================");
 }

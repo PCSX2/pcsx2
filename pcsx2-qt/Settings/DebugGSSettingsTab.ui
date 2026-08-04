@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBoxDrawDumping">
      <property name="title">
       <string>Draw Dumping</string>
      </property>
@@ -236,6 +236,80 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+	<widget class="QGroupBox" name="groupBoxDumpReplay">
+     <property name="title">
+      <string>Dump Replay Options</string>
+     </property>
+     <layout class="QFormLayout" name="formLayoutDumpReplay">
+      <item row="0" column="0" colspan="2">
+       <layout class="QGridLayout" name="gridLayoutDumpReplay">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="replayUseFrameRange">
+          <property name="text">
+           <string>Use Frame Range</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="labelDumpReplay1">
+        <property name="text">
+         <string>Replay Frame Start:</string>
+        </property>
+        <property name="buddy">
+         <cstring>replayFrameStart</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="replayFrameStart">
+        <property name="maximum">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="labelDumpReplay2">
+        <property name="text">
+         <string>Replay Frame End:</string>
+        </property>
+        <property name="buddy">
+         <cstring>replayFrameEnd</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="replayFrameEnd">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>99999999</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labelDumpReplay3">
+        <property name="text">
+         <string>Replay Loop Count:</string>
+        </property>
+        <property name="buddy">
+         <cstring>replayLoopCount</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="replayLoopCount">
+        <property name="maximum">
+         <number>99999999</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
