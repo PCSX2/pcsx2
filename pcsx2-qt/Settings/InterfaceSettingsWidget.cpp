@@ -12,6 +12,7 @@
 #include "QtHost.h"
 
 #include <QtCore/QLocale>
+#include <QtGui/QScreen>
 
 const char* InterfaceSettingsWidget::THEME_NAMES[] = {
 	QT_TRANSLATE_NOOP("InterfaceSettingsWidget", "Native"),
@@ -123,6 +124,13 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	{
 		m_ui.mouseLock->setEnabled(false);
 	}
+	connect(qGuiApp, &QGuiApplication::screenAdded, this, &InterfaceSettingsWidget::populateMonitors);
+	connect(qGuiApp, &QGuiApplication::screenRemoved, this, &InterfaceSettingsWidget::populateMonitors);
+	connect(m_ui.displayMonitor, &QComboBox::currentIndexChanged, this, [this]() {
+		Host::SetBaseIntSettingValue("UI", "DisplayMonitor", m_ui.displayMonitor->currentData().toInt());
+		Host::CommitBaseSettingChanges();
+	});
+	populateMonitors();
 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.startFullscreen, "UI", "StartFullscreen", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.doubleClickTogglesFullscreen, "UI", "DoubleClickTogglesFullscreen", true);
@@ -203,6 +211,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		tr("Checked"), tr("Displays a modal dialog when a save state load/save operation fails."));
 	dialog()->registerWidgetHelp(m_ui.preferEnglishGameList, tr("Prefer English Game Titles"), tr("Unchecked"),
 		tr("For games with both a title in the game's native language and one in English, prefer the English title. Affects how game titles are displayed on the game list, window title and Discord Presence"));
+	dialog()->registerWidgetHelp(
+		m_ui.displayMonitor, tr("Display Monitor"), tr("Current Monitor"),
+		tr("Selects which monitor the PCSX2 game window will be displayed on when launching."
+		   "<br><b>On Linux Wayland, this setting only takes effect when Start Fullscreen is enabled.</b>"));
 	dialog()->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),
 		tr("Automatically switches to fullscreen mode when a game is started."));
 	dialog()->registerWidgetHelp(m_ui.hideMouseCursor, tr("Hide Cursor In Fullscreen"), tr("Unchecked"),
@@ -277,6 +289,32 @@ void InterfaceSettingsWidget::populateLanguages()
 		else
 			m_ui.language->addItem(it.first, it.second);
 	}
+}
+
+void InterfaceSettingsWidget::populateMonitors()
+{
+	QSignalBlocker blocker(m_ui.displayMonitor);
+	m_ui.displayMonitor->clear();
+	m_ui.displayMonitor->addItem(tr("Current Monitor"), -1);
+	m_ui.displayMonitor->addItem(tr("Primary Monitor"), -2);
+	m_ui.displayMonitor->insertSeparator(m_ui.displayMonitor->count());
+
+	QList<QScreen*> screens = QGuiApplication::screens();
+	std::sort(screens.begin(), screens.end(), [](QScreen* a, QScreen* b) {
+		const QRect ga = a->geometry();
+		const QRect gb = b->geometry();
+		return ga.x() != gb.x() ? ga.x() < gb.x() : ga.y() < gb.y();
+	});
+	for (int i = 0; i < screens.size(); i++)
+		m_ui.displayMonitor->addItem(tr("Monitor %1: %2").arg(i + 1).arg(screens[i]->name()), i);
+
+	const int current_value = Host::GetBaseIntSettingValue("UI", "DisplayMonitor", -1);
+	int current_index = 0;
+	if (current_value == -2)
+		current_index = 1;
+	else if (current_value >= 0 && current_value < screens.size())
+		current_index = current_value + 3; // 0=Current, 1=Primary, 2=separator
+	m_ui.displayMonitor->setCurrentIndex(current_index);
 }
 
 void InterfaceSettingsWidget::onSetGameListBackgroundTriggered()

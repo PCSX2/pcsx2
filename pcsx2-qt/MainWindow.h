@@ -278,9 +278,10 @@ private:
 
 	QWidget* getContentParent();
 	void saveDisplayWindowGeometryToConfig();
-	void restoreDisplayWindowGeometryFromConfig();
+	void restoreDisplayWindowGeometryFromConfig(QScreen* target_screen = nullptr);
 	void createDisplayWidget(bool fullscreen, bool render_to_main);
 	void destroyDisplayWidget(bool show_game_list);
+	QScreen* getTargetScreenForWindow();
 	void updateDisplayWidgetCursor();
 
 	SettingsWindow* getSettingsWindow();
@@ -348,6 +349,8 @@ private:
 	bool m_was_disc_change_request = false;
 	bool m_is_closing = false;
 	bool m_is_temporarily_windowed = false;
+	QByteArray m_pre_game_main_window_geometry;
+	QByteArray m_target_screen_main_window_geometry;
 
 	QString m_last_fps_status;
 
