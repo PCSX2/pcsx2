@@ -932,11 +932,11 @@ void ps_fbmask(inout vec4 C)
 {
 	// FIXME do I need special case for 16 bits
 #if PS_FBMASK
-	#if PS_COLCLIP_HW == 1
-		vec4 RT = trunc(sample_from_rt() * 65535.0f);
-	#else
-		vec4 RT = trunc(sample_from_rt() * 255.0f + 0.1f);
-	#endif
+		float multi_rgb = PS_COLCLIP_HW != 0 ? 65535.0f : 255.0f;
+		float multi_a = PS_RTA_CORRECTION != 0 ? 128.0f : 255.0f;
+		vec4 RT = sample_from_rt();
+		RT.rgb = trunc(RT.rgb * multi_rgb + 0.1f);
+		RT.a = round(RT.a * multi_a);
 	C = vec4((uvec4(C) & ~FbMask) | (uvec4(RT) & FbMask));
 #endif
 }
