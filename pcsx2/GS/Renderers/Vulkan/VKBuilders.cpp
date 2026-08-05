@@ -326,12 +326,13 @@ void Vulkan::RenderPassBuilder::AddColorAttachment(
 {
 	pxAssert(m_num_color_attachments < MAX_COLOR_ATTACHMENTS);
 
-	m_attachments[m_num_attachments] = { VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr,
-		0, format, VK_SAMPLE_COUNT_1_BIT, load_op, store_op, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_STORE_OP_DONT_CARE, layout, layout };
+	m_attachments[m_num_attachments] = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+		.format = format, .samples = VK_SAMPLE_COUNT_1_BIT, .loadOp = load_op, .storeOp = store_op,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE, .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = layout, .finalLayout = layout };
 
-	m_color_reference[m_num_color_attachments] = { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,
-	m_num_attachments, layout, VK_IMAGE_ASPECT_COLOR_BIT };
+	m_color_reference[m_num_color_attachments] = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+		.attachment = m_num_attachments, .layout = layout, .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT };
 	m_num_color_attachments++;
 
 	if (feedback_loop)
@@ -340,15 +341,15 @@ void Vulkan::RenderPassBuilder::AddColorAttachment(
 
 		if (input_reference)
 		{
-			m_input_reference[m_num_subpass_inputs] = { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,
-				m_num_attachments, layout, VK_IMAGE_ASPECT_COLOR_BIT };
+			m_input_reference[m_num_subpass_inputs] = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment = m_num_attachments, .layout = layout, .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT };
 			m_num_subpass_inputs++;
 		}
 
 		if (subpass_self_dependency)
 		{
-			m_subpass_dependency[m_num_subpass_dependencies] = { VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
-				&m_feedback_barriers.color, 0, 0 };
+			m_subpass_dependency[m_num_subpass_dependencies] = { .sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.pNext = &m_feedback_barriers.color, .srcSubpass = 0, .dstSubpass =  0 };
 			m_subpass_dependency[m_num_subpass_dependencies].dependencyFlags = m_feedback_barriers.dependency,
 			m_num_subpass_dependencies++;
 		}
@@ -364,28 +365,29 @@ void Vulkan::RenderPassBuilder::AddDepthStencilAttachment(
 {
 	pxAssert(m_num_attachments < std::size(m_attachments));
 
-	m_attachments[m_num_attachments] = { VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2, nullptr,
-		0, depth_format, VK_SAMPLE_COUNT_1_BIT, depth_load_op, depth_store_op, stencil_load_op,
-		stencil_store_op, layout, layout };
+	m_attachments[m_num_attachments] = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2,
+		.format = depth_format, .samples = VK_SAMPLE_COUNT_1_BIT, .loadOp = depth_load_op, .storeOp = depth_store_op,
+		.stencilLoadOp = stencil_load_op, .stencilStoreOp = stencil_store_op, .initialLayout = layout, .finalLayout = layout };
 
 	pxAssert(!m_has_depth_attachment);
-	m_depth_reference = { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,
-		m_num_attachments, layout, VK_IMAGE_ASPECT_DEPTH_BIT };
+	m_depth_reference = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, .attachment = m_num_attachments,
+		.layout = layout, .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT };
 	m_has_depth_attachment = true;
 
 	if (feedback_loop)
 	{
 		if (input_reference)
 		{
-			m_input_reference[m_num_subpass_inputs] = { VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2, nullptr,
-				m_num_attachments, layout, VK_IMAGE_ASPECT_DEPTH_BIT };
+			m_input_reference[m_num_subpass_inputs] = { .sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2,
+				.attachment = m_num_attachments, .layout = layout, .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT };
 			m_num_subpass_inputs++;
 		}
 
 		if (subpass_self_dependency)
 		{
-			m_subpass_dependency[m_num_subpass_dependencies] = { VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
-				&m_feedback_barriers.depth, 0, 0, m_feedback_barriers.dependency };
+			m_subpass_dependency[m_num_subpass_dependencies] = { .sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+				.pNext = &m_feedback_barriers.depth, .srcSubpass = 0, .dstSubpass = 0,
+				.dependencyFlags = m_feedback_barriers.dependency };
 			m_num_subpass_dependencies++;
 		}
 	}
@@ -400,14 +402,15 @@ void Vulkan::RenderPassBuilder::SetSubpassFlags(VkSubpassDescriptionFlags subpas
 
 VkRenderPass Vulkan::RenderPassBuilder::Create(VkDevice device)
 {
-	const VkSubpassDescription2 subpass = { VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2, nullptr,
-		m_subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, m_num_subpass_inputs,
-		m_input_reference.data(), m_num_color_attachments, m_color_reference.data(),
-		nullptr, m_has_depth_attachment ? &m_depth_reference : nullptr, 0, nullptr };
+	const VkSubpassDescription2 subpass = { .sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2,
+		.flags = m_subpass_flags, .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+		.inputAttachmentCount = m_num_subpass_inputs, .pInputAttachments = m_input_reference.data(),
+		.colorAttachmentCount = m_num_color_attachments, .pColorAttachments = m_color_reference.data(),
+		.pDepthStencilAttachment = m_has_depth_attachment ? &m_depth_reference : nullptr };
 
-	const VkRenderPassCreateInfo2 pass_info = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2, nullptr,
-		0u, m_num_attachments, m_attachments.data(), 1u, &subpass, m_num_subpass_dependencies,
-		m_subpass_dependency.data() };
+	const VkRenderPassCreateInfo2 pass_info = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2,
+		.attachmentCount = m_num_attachments, .pAttachments = m_attachments.data(), .subpassCount = 1,
+		.pSubpasses = &subpass, .dependencyCount = m_num_subpass_dependencies, .pDependencies = m_subpass_dependency.data() };
 
 	VkRenderPass pass;
 	const VkResult res = vkCreateRenderPass2(device, &pass_info, nullptr, &pass);
@@ -904,8 +907,10 @@ void Vulkan::GraphicsPipelineBuilder::SetDynamicRenderPass(const RenderPass& ren
 	{
 		m_color_formats[i] = render_pass.GetColorFormat(i);
 	}
-	m_rendering_info = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO, nullptr, 0, render_pass.GetColorAttachmentCount(),
-		m_color_formats.data(), render_pass.GetDepthFormat(), stencil ? render_pass.GetDepthFormat() : VK_FORMAT_UNDEFINED };
+	m_rendering_info = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+		.colorAttachmentCount = render_pass.GetColorAttachmentCount(), .pColorAttachmentFormats = m_color_formats.data(),
+		.depthAttachmentFormat = render_pass.GetDepthFormat(),
+		.stencilAttachmentFormat = stencil ? render_pass.GetDepthFormat() : VK_FORMAT_UNDEFINED };
 
 	AddPointerToChain(&m_ci, &m_rendering_info);
 }
