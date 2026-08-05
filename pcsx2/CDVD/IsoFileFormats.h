@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "CDVDcommon.h"
 #include "CDVD/CDVD.h"
 #include "CDVD/ThreadedFileReader.h"
 #include <memory>
@@ -74,6 +75,8 @@ public:
 
 	void BeginRead2(uint lsn);
 	int FinishRead3(u8* dest, uint mode);
+
+	std::vector<toc_entry> ReadTOC() const;
 
 protected:
 	void _init();
