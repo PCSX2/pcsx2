@@ -171,6 +171,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.nativeScaling, "EmuCore/GS", "UserHacks_native_scaling", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.roundSprite, "EmuCore/GS", "UserHacks_round_sprite_offset", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.bilinearHack, "EmuCore/GS", "UserHacks_BilinearHack", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.shaderSpriteAlign, "EmuCore/GS", "ShaderSpriteAlign", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.textureOffsetX, "EmuCore/GS", "UserHacks_TCOffsetX", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
@@ -664,6 +665,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Dirty Upscale"), tr("Unchecked"),
 			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."));
+
+		dialog()->registerWidgetHelp(m_upscaling.shaderSpriteAlign, tr("Shader Sprite Align"), tr("Off (default)"),
+			tr("Align sprite and clamp texture coordinates in the shader. Helps with upscaling lines. Disables other upscaling hacks."));
 
 		dialog()->registerWidgetHelp(m_upscaling.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
