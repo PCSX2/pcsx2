@@ -110,7 +110,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, OptionalExtens
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(
 		BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
-	app_info.apiVersion = VK_API_VERSION_1_1;
+	app_info.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -254,12 +254,12 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 	gpus.reserve(physical_devices.size());
 	for (VkPhysicalDevice device : physical_devices)
 	{
-		VkPhysicalDeviceProperties props = {};
-		vkGetPhysicalDeviceProperties(device, &props);
+		VkPhysicalDeviceProperties2 props2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+		vkGetPhysicalDeviceProperties2(device, &props2);
+		const VkPhysicalDeviceProperties& props = props2.properties;
 
-		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
-		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
+		if (props.apiVersion < VK_API_VERSION_1_3)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
@@ -409,14 +409,16 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_calibrated_timestamps =
-		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_calibrated_timestamps =
+		SupportsExtension(VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_line_rasterization = SupportsExtension(VK_KHR_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_dynamic_rendering_local_read =
+		SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -451,8 +453,9 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 
 bool GSDeviceVK::SelectDeviceFeatures()
 {
-	VkPhysicalDeviceFeatures available_features;
-	vkGetPhysicalDeviceFeatures(m_physical_device, &available_features);
+	VkPhysicalDeviceFeatures2 available_features2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
+	vkGetPhysicalDeviceFeatures2(m_physical_device, &available_features2);
+	const VkPhysicalDeviceFeatures& available_features = available_features2.features;
 
 	// Enable the features we use.
 	m_device_features.dualSrcBlend = available_features.dualSrcBlend;
@@ -470,15 +473,15 @@ bool GSDeviceVK::SelectDeviceFeatures()
 bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer)
 {
 	u32 queue_family_count;
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, nullptr);
+	vkGetPhysicalDeviceQueueFamilyProperties2(m_physical_device, &queue_family_count, nullptr);
 	if (queue_family_count == 0)
 	{
 		Console.Error("No queue families found on specified vulkan physical device.");
 		return false;
 	}
 
-	std::vector<VkQueueFamilyProperties> queue_family_properties(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physical_device, &queue_family_count, queue_family_properties.data());
+	std::vector<VkQueueFamilyProperties2> queue_family_properties(queue_family_count, { VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2 });
+	vkGetPhysicalDeviceQueueFamilyProperties2(m_physical_device, &queue_family_count, queue_family_properties.data());
 	DevCon.WriteLn("%u vulkan queue families", queue_family_count);
 
 	// Find graphics and present queues.
@@ -488,7 +491,8 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	u32 spin_queue_index = 0;
 	for (uint32_t i = 0; i < queue_family_count; i++)
 	{
-		VkBool32 graphics_supported = queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
+		const VkQueueFamilyProperties& properties = queue_family_properties[i].queueFamilyProperties;
+		VkBool32 graphics_supported = properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
 		if (graphics_supported)
 		{
 			m_graphics_queue_family_index = i;
@@ -523,19 +527,20 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	}
 	for (uint32_t i = 0; i < queue_family_count; i++)
 	{
+		const VkQueueFamilyProperties& properties = queue_family_properties[i].queueFamilyProperties;
 		// Pick a queue for spinning
-		if (!(queue_family_properties[i].queueFlags & VK_QUEUE_COMPUTE_BIT))
+		if (!(properties.queueFlags & VK_QUEUE_COMPUTE_BIT))
 			continue; // We need compute
-		if (queue_family_properties[i].timestampValidBits == 0)
+		if (properties.timestampValidBits == 0)
 			continue; // We need timing
 		const bool queue_is_used = i == m_graphics_queue_family_index || i == m_present_queue_family_index;
 		if (queue_is_used && m_spin_queue_family_index != queue_family_count)
 			continue; // Found a non-graphics queue to use
 		spin_queue_index = 0;
 		m_spin_queue_family_index = i;
-		if (queue_is_used && queue_family_properties[i].queueCount > 1)
+		if (queue_is_used && properties.queueCount > 1)
 			spin_queue_index = 1;
-		if (!(queue_family_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		if (!(properties.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 			break; // Async compute queue, definitely pick this one
 	}
 	if (m_graphics_queue_family_index == queue_family_count)
@@ -612,21 +617,14 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 
 	device_info.pEnabledFeatures = &m_device_features;
 
-	// Enable debug layer on debug builds
-	if (enable_validation_layer)
-	{
-		static const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
-		device_info.enabledLayerCount = 1;
-		device_info.ppEnabledLayerNames = layer_names;
-	}
-
-	// provoking vertex
+	VkPhysicalDeviceVulkan13Features featuresVK13 = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
-	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+	VkPhysicalDeviceLineRasterizationFeaturesKHR line_rasterization_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_KHR};
 	VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT attachment_feedback_loop_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
@@ -634,13 +632,18 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
+	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR};
 
+	featuresVK13.dynamicRendering = VK_TRUE;
+	featuresVK13.synchronization2 = VK_TRUE;
+	Vulkan::AddPointerToChain(&device_info, &featuresVK13);
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
 		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &provoking_vertex_feature);
 	}
-	if (m_optional_extensions.vk_ext_line_rasterization)
+	if (m_optional_extensions.vk_khr_line_rasterization)
 	{
 		line_rasterization_feature.bresenhamLines = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
@@ -665,6 +668,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_ext_feature);
 	}
+	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
+	{
+		dynamic_rendering_local_read_features.dynamicRenderingLocalRead = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_local_read_features);
+	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
 	if (res != VK_SUCCESS)
@@ -684,18 +692,18 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		vkGetDeviceQueue(m_device, m_present_queue_family_index, 0, &m_present_queue);
 	}
 	m_spinning_supported = m_spin_queue_family_index != queue_family_count &&
-	                       queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+	                       queue_family_properties[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits > 0 &&
 	                       m_device_properties.limits.timestampPeriod > 0;
 	m_spin_queue_is_graphics_queue =
 		m_spin_queue_family_index == m_graphics_queue_family_index && spin_queue_index == 0;
 
 	m_gpu_timing_supported = (m_device_properties.limits.timestampComputeAndGraphics != 0 &&
-							  queue_family_properties[m_graphics_queue_family_index].timestampValidBits > 0 &&
+							  queue_family_properties[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits > 0 &&
 							  m_device_properties.limits.timestampPeriod > 0);
 	DevCon.WriteLn("GPU timing is %s (TS=%u TS valid bits=%u, TS period=%f)",
 		m_gpu_timing_supported ? "supported" : "not supported",
 		static_cast<u32>(m_device_properties.limits.timestampComputeAndGraphics),
-		queue_family_properties[m_graphics_queue_family_index].timestampValidBits,
+		queue_family_properties[m_graphics_queue_family_index].queueFamilyProperties.timestampValidBits,
 		m_device_properties.limits.timestampPeriod);
 
 	m_gpu_pipeline_statistics_supported = (m_device_features.pipelineStatisticsQuery != 0);
@@ -709,7 +717,7 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		vkGetDeviceQueue(m_device, m_spin_queue_family_index, spin_queue_index, &m_spin_queue);
 
 		m_spin_timestamp_scale = m_device_properties.limits.timestampPeriod;
-		if (m_optional_extensions.vk_ext_calibrated_timestamps)
+		if (m_optional_extensions.vk_khr_calibrated_timestamps)
 		{
 #ifdef _WIN32
 			LARGE_INTEGER Freq;
@@ -727,10 +735,12 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
 	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceVulkan13Features featuresVK13 = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
-	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT};
+	VkPhysicalDeviceLineRasterizationFeaturesKHR line_rasterization_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_KHR};
 	VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT};
 	// VK_EXT_swapchain_maintenance1 types/enums are aliases of VK_KHR_swapchain_maintenance1 types/enums.
@@ -740,11 +750,19 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
+	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR };
+
+	// Vulkan 1.3 features
+	Vulkan::AddPointerToChain(&features2, &featuresVK13);
+
+	// Vulkan 1.3 features
+	Vulkan::AddPointerToChain(&features2, &featuresVK13);
 
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
-	if (m_optional_extensions.vk_ext_line_rasterization)
+	if (m_optional_extensions.vk_khr_line_rasterization)
 		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
 	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
@@ -754,6 +772,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 	if (m_optional_extensions.vk_ext_fragment_shader_interlock)
 		Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_ext_feature);
+	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
+		Vulkan::AddPointerToChain(&features2, &dynamic_rendering_local_read_features);
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -764,6 +784,12 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
 		(attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
+	m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
+		(dynamic_rendering_local_read_features.dynamicRenderingLocalRead == VK_TRUE);
+	
+	// Features that should always be available with VK 1.3.
+	pxAssertRel(featuresVK13.synchronization2 == VK_TRUE, "Synchronization2 is not supported");
+	pxAssertRel(featuresVK13.dynamicRendering == VK_TRUE, "Dynamic rendering is not supported");
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 
@@ -788,35 +814,35 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		return false;
 	}
 
-	if (m_optional_extensions.vk_ext_line_rasterization && !line_rasterization_feature.bresenhamLines)
+	if (m_optional_extensions.vk_khr_line_rasterization && !line_rasterization_feature.bresenhamLines)
 	{
 		Console.Warning("VK: bresenhamLines is not supported.");
-		m_optional_extensions.vk_ext_line_rasterization = false;
+		m_optional_extensions.vk_khr_line_rasterization = false;
 	}
 
-	// VK_EXT_calibrated_timestamps checking
-	if (m_optional_extensions.vk_ext_calibrated_timestamps)
+	// VK_KHR_calibrated_timestamps checking
+	if (m_optional_extensions.vk_khr_calibrated_timestamps)
 	{
 		u32 count = 0;
-		vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(m_physical_device, &count, nullptr);
+		vkGetPhysicalDeviceCalibrateableTimeDomainsKHR(m_physical_device, &count, nullptr);
 		std::unique_ptr<VkTimeDomainEXT[]> time_domains = std::make_unique<VkTimeDomainEXT[]>(count);
-		vkGetPhysicalDeviceCalibrateableTimeDomainsEXT(m_physical_device, &count, time_domains.get());
-		const VkTimeDomainEXT* begin = &time_domains[0];
-		const VkTimeDomainEXT* end = &time_domains[count];
+		vkGetPhysicalDeviceCalibrateableTimeDomainsKHR(m_physical_device, &count, time_domains.get());
+		const VkTimeDomainKHR* begin = &time_domains[0];
+		const VkTimeDomainKHR* end = &time_domains[count];
 		if (std::find(begin, end, VK_TIME_DOMAIN_DEVICE_EXT) == end)
-			m_optional_extensions.vk_ext_calibrated_timestamps = false;
-		VkTimeDomainEXT preferred_types[] = {
+			m_optional_extensions.vk_khr_calibrated_timestamps = false;
+		VkTimeDomainKHR preferred_types[] = {
 #ifdef _WIN32
-			VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_EXT,
+			VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR,
 #else
 #ifdef CLOCK_MONOTONIC_RAW
-			VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT,
+			VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_KHR,
 #endif
-			VK_TIME_DOMAIN_CLOCK_MONOTONIC_EXT,
+			VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR,
 #endif
 		};
-		m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_EXT;
-		for (VkTimeDomainEXT type : preferred_types)
+		m_calibrated_timestamp_type = VK_TIME_DOMAIN_DEVICE_KHR;
+		for (VkTimeDomainKHR type : preferred_types)
 		{
 			if (std::find(begin, end, type) != end)
 			{
@@ -824,8 +850,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 				break;
 			}
 		}
-		if (m_calibrated_timestamp_type == VK_TIME_DOMAIN_DEVICE_EXT)
-			m_optional_extensions.vk_ext_calibrated_timestamps = false;
+		if (m_calibrated_timestamp_type == VK_TIME_DOMAIN_DEVICE_KHR)
+			m_optional_extensions.vk_khr_calibrated_timestamps = false;
 	}
 
 	m_optional_extensions.vk_swapchain_maintenance1 &= 
@@ -838,8 +864,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	Console.WriteLn(
 		"VK_EXT_memory_budget is %s", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
-		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_calibrated_timestamps is %s",
+		m_optional_extensions.vk_khr_calibrated_timestamps ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	Console.WriteLn("VK_%s_swapchain_maintenance1 is %s",
@@ -853,6 +879,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_dynamic_rendering_local_read is %s",
+		m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
 
 	return true;
 }
@@ -860,7 +888,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 bool GSDeviceVK::CreateAllocator()
 {
 	VmaAllocatorCreateInfo ci = {};
-	ci.vulkanApiVersion = VK_API_VERSION_1_1;
+	ci.vulkanApiVersion = VK_API_VERSION_1_3;
 	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 	ci.physicalDevice = m_physical_device;
 	ci.device = m_device;
@@ -878,8 +906,9 @@ bool GSDeviceVK::CreateAllocator()
 	std::array<VkDeviceSize, VK_MAX_MEMORY_HEAPS> heap_size_limits;
 	if (GSConfig.UseDebugDevice)
 	{
-		VkPhysicalDeviceMemoryProperties memory_properties;
-		vkGetPhysicalDeviceMemoryProperties(m_physical_device, &memory_properties);
+		VkPhysicalDeviceMemoryProperties2 memory_properties2 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2 };
+		vkGetPhysicalDeviceMemoryProperties2(m_physical_device, &memory_properties2);
+		VkPhysicalDeviceMemoryProperties memory_properties = memory_properties2.memoryProperties;
 
 		bool has_upload_heap = false;
 		heap_size_limits.fill(VK_WHOLE_SIZE);
@@ -927,7 +956,7 @@ bool GSDeviceVK::CreateCommandBuffers()
 		resources.needs_fence_wait = false;
 
 		VkCommandPoolCreateInfo pool_info = {
-			VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, nullptr, 0, m_graphics_queue_family_index};
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, .queueFamilyIndex = m_graphics_queue_family_index};
 		res = vkCreateCommandPool(m_device, &pool_info, nullptr, &resources.command_pool);
 		if (res != VK_SUCCESS)
 		{
@@ -936,9 +965,9 @@ bool GSDeviceVK::CreateCommandBuffers()
 		}
 		Vulkan::SetObjectName(m_device, resources.command_pool, "Frame Command Pool %u", frame_index);
 
-		VkCommandBufferAllocateInfo buffer_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, nullptr,
-			resources.command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			static_cast<u32>(resources.command_buffers.size())};
+		VkCommandBufferAllocateInfo buffer_info = { .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.commandPool = resources.command_pool, .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = static_cast<u32>(resources.command_buffers.size())};
 
 		res = vkAllocateCommandBuffers(m_device, &buffer_info, resources.command_buffers.data());
 		if (res != VK_SUCCESS)
@@ -952,7 +981,7 @@ bool GSDeviceVK::CreateCommandBuffers()
 				(i == 0) ? "Init" : "");
 		}
 
-		VkFenceCreateInfo fence_info = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT};
+		VkFenceCreateInfo fence_info = { .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .flags = VK_FENCE_CREATE_SIGNALED_BIT};
 
 		res = vkCreateFence(m_device, &fence_info, nullptr, &resources.fence);
 		if (res != VK_SUCCESS)
@@ -975,10 +1004,10 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 		{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3},
 	};
 
-	VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr,
-		VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-		1024, // TODO: tweak this
-		static_cast<u32>(std::size(pool_sizes)), pool_sizes};
+	VkDescriptorPoolCreateInfo pool_create_info = { .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+		.maxSets = 1024, // TODO: tweak this
+		.poolSizeCount = static_cast<u32>(std::size(pool_sizes)), .pPoolSizes = pool_sizes};
 
 	VkResult res = vkCreateDescriptorPool(m_device, &pool_create_info, nullptr, &m_global_descriptor_pool);
 	if (res != VK_SUCCESS)
@@ -991,7 +1020,7 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 	if (m_gpu_timing_supported)
 	{
 		const VkQueryPoolCreateInfo query_create_info = {
-			VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr, 0, VK_QUERY_TYPE_TIMESTAMP, NUM_COMMAND_BUFFERS * 4, 0};
+			.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, .queryType = VK_QUERY_TYPE_TIMESTAMP, .queryCount = NUM_COMMAND_BUFFERS * 4 };
 		res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_timestamp_query_pool);
 		if (res != VK_SUCCESS)
 		{
@@ -1004,8 +1033,10 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 	if (m_gpu_pipeline_statistics_supported)
 	{
 		const VkQueryPoolCreateInfo query_create_info = {
-			VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, nullptr, 0, VK_QUERY_TYPE_PIPELINE_STATISTICS, NUM_COMMAND_BUFFERS,
-			VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT | VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT };
+			.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO, .queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS,
+			.queryCount = NUM_COMMAND_BUFFERS,
+			.pipelineStatistics = VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
+				VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT };
 		res = vkCreateQueryPool(m_device, &query_create_info, nullptr, &m_pipeline_statistics_query_pool);
 		if (res != VK_SUCCESS)
 		{
@@ -1018,57 +1049,30 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 	return true;
 }
 
-VkRenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
+GSDeviceVK::RenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
 	VkAttachmentStoreOp color_store_op, VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
-	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op, bool color_feedback_loop,
-	bool depth_sampling)
+	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op,
+	bool color_feedback_loop, bool depth_feedback_loop)
 {
-	RenderPassCacheKey key = {};
-	key.color_format = color_format;
-	key.depth_format = depth_format;
-	key.color_load_op = color_load_op;
-	key.color_store_op = color_store_op;
-	key.depth_load_op = depth_load_op;
-	key.depth_store_op = depth_store_op;
-	key.stencil_load_op = stencil_load_op;
-	key.stencil_store_op = stencil_store_op;
-	key.color_feedback_loop = color_feedback_loop;
-	key.depth_sampling = depth_sampling;
-
-	auto it = m_render_pass_cache.find(key.key);
-	if (it != m_render_pass_cache.end())
-		return it->second;
-
-	return CreateCachedRenderPass(key);
+	return RenderPass(color_format, depth_format, color_load_op,
+		color_store_op, depth_load_op, depth_store_op,
+		stencil_load_op, stencil_store_op, color_feedback_loop, depth_feedback_loop);
 }
 
-VkRenderPass GSDeviceVK::GetRenderPassForRestarting(VkRenderPass pass)
+GSDeviceVK::RenderPass GSDeviceVK::GetRenderPassForRestarting(const RenderPass& pass)
 {
-	for (const auto& it : m_render_pass_cache)
+	RenderPass modified_pass = pass;
+	for (int i = 0; i < MAX_COLOR_ATTACHMENTS; i++)
 	{
-		if (it.second != pass)
-			continue;
-
-		RenderPassCacheKey modified_key;
-		modified_key.key = it.first;
-		if (modified_key.color_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-		if (modified_key.depth_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-		if (modified_key.stencil_load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
-			modified_key.stencil_load_op = VK_ATTACHMENT_LOAD_OP_LOAD;
-
-		if (modified_key.key == it.first)
-			return pass;
-
-		auto fit = m_render_pass_cache.find(modified_key.key);
-		if (fit != m_render_pass_cache.end())
-			return fit->second;
-
-		return CreateCachedRenderPass(modified_key);
+		if (modified_pass.GetColorLoadOp(i) == VK_ATTACHMENT_LOAD_OP_CLEAR)
+			modified_pass.SetColorLoadOp(i, VK_ATTACHMENT_LOAD_OP_LOAD);
 	}
+	if (modified_pass.GetDepthLoadOp() == VK_ATTACHMENT_LOAD_OP_CLEAR)
+		modified_pass.SetDepthLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD);
+	if (modified_pass.GetStencilLoadOp() == VK_ATTACHMENT_LOAD_OP_CLEAR)
+		modified_pass.SetStencilLoadOp(VK_ATTACHMENT_LOAD_OP_LOAD);
 
-	return pass;
+	return modified_pass;
 }
 
 VkCommandBuffer GSDeviceVK::GetCurrentInitCommandBuffer()
@@ -1079,7 +1083,7 @@ VkCommandBuffer GSDeviceVK::GetCurrentInitCommandBuffer()
 		return buf;
 
 	VkCommandBufferBeginInfo bi{
-		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr};
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
 	vkBeginCommandBuffer(buf, &bi);
 	res.init_buffer_used = true;
 	return buf;
@@ -1088,7 +1092,8 @@ VkCommandBuffer GSDeviceVK::GetCurrentInitCommandBuffer()
 VkDescriptorSet GSDeviceVK::AllocatePersistentDescriptorSet(VkDescriptorSetLayout set_layout)
 {
 	VkDescriptorSetAllocateInfo allocate_info = {
-		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, m_global_descriptor_pool, 1, &set_layout};
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, .descriptorPool = m_global_descriptor_pool,
+		.descriptorSetCount = 1, .pSetLayouts = &set_layout};
 
 	VkDescriptorSet descriptor_set;
 	VkResult res = vkAllocateDescriptorSets(m_device, &allocate_info, &descriptor_set);
@@ -1225,7 +1230,7 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 	bool wants_timestamp = m_gpu_timing_enabled || m_spin_timer;
 	if (wants_timestamp && resources.timestamp_written)
 	{
-		vkCmdWriteTimestamp(m_current_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool,
+		vkCmdWriteTimestamp2(m_current_command_buffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool,
 			m_current_frame * 2 + 1);
 	}
 
@@ -1254,7 +1259,7 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 		auto draw = m_spin_manager.DrawSubmitted(m_command_buffer_render_passes);
 		u32 constant_offset =
 			400000 * m_spin_manager.SpinsPerUnitTime(); // 400us, just to be safe since going over gets really bad
-		if (m_optional_extensions.vk_ext_calibrated_timestamps)
+		if (m_optional_extensions.vk_khr_calibrated_timestamps)
 			constant_offset /=
 				2; // Safety factor isn't as important here, going over just hurts this one submission a bit
 		u32 minimum_spin = 200000 * m_spin_manager.SpinsPerUnitTime();
@@ -1275,48 +1280,49 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 		if (m_spin_timer)
 			m_spin_timer--;
 		// Calibrate a max of once per frame
-		m_wants_new_timestamp_calibration = m_optional_extensions.vk_ext_calibrated_timestamps;
+		m_wants_new_timestamp_calibration = m_optional_extensions.vk_khr_calibrated_timestamps;
 	}
 
 	if (spin_cycles != 0)
 		WaitForSpinCompletion(m_current_frame);
 
-	if (spin_enabled && m_optional_extensions.vk_ext_calibrated_timestamps)
+	if (spin_enabled && m_optional_extensions.vk_khr_calibrated_timestamps)
 		resources.submit_timestamp = GetCPUTimestamp();
 
-	uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSemaphore semas[2];
-	VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
-	submit_info.commandBufferCount = resources.init_buffer_used ? 2u : 1u;
-	submit_info.pCommandBuffers =
-		resources.init_buffer_used ? resources.command_buffers.data() : &resources.command_buffers[1];
+	VkPipelineStageFlags2 wait_bits = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+	VkSubmitInfo2 submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO_2 };
+
+	VkCommandBufferSubmitInfo cmdbuf_info[2] = {
+		{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, .commandBuffer = resources.command_buffers[0] },
+		{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, .commandBuffer = resources.command_buffers[1] },
+	};
+
+	submit_info.commandBufferInfoCount = resources.init_buffer_used ? 2u : 1u;
+	submit_info.pCommandBufferInfos = resources.init_buffer_used ? &cmdbuf_info[0] : &cmdbuf_info[1];
+
+	VkSemaphoreSubmitInfo semaphore_wait_info;
+	VkSemaphoreSubmitInfo semaphore_signal_info[2];
 
 	if (present_swap_chain)
 	{
-		submit_info.pWaitSemaphores = present_swap_chain->GetImageAvailableSemaphorePtr();
-		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitDstStageMask = &wait_bits;
+		semaphore_wait_info = { .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = present_swap_chain->GetImageAvailableSemaphore(), .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-		if (spin_cycles != 0)
-		{
-			semas[0] = present_swap_chain->GetRenderingFinishedSemaphore();
-			semas[1] = m_spin_resources[m_current_frame].semaphore;
-			submit_info.signalSemaphoreCount = 2;
-			submit_info.pSignalSemaphores = semas;
-		}
-		else
-		{
-			submit_info.pSignalSemaphores = present_swap_chain->GetRenderingFinishedSemaphorePtr();
-			submit_info.signalSemaphoreCount = 1;
-		}
-	}
-	else if (spin_cycles != 0)
-	{
-		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = &m_spin_resources[m_current_frame].semaphore;
+		submit_info.waitSemaphoreInfoCount = 1;
+		submit_info.pWaitSemaphoreInfos = &semaphore_wait_info;
+
+		semaphore_signal_info[0] = { .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = present_swap_chain->GetRenderingFinishedSemaphore(),
+			.stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT };
+		semaphore_signal_info[1] = { .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = m_spin_resources[m_current_frame].semaphore,
+			.stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT },
+
+		submit_info.pSignalSemaphoreInfos = semaphore_signal_info;
+		submit_info.signalSemaphoreInfoCount = (spin_cycles != 0) ? 2 : 1;
 	}
 
-	res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
+	res = vkQueueSubmit2(m_graphics_queue, 1, &submit_info, resources.fence);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
@@ -1329,9 +1335,10 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 
 	if (present_swap_chain)
 	{
-		const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1,
-			present_swap_chain->GetRenderingFinishedSemaphorePtr(), 1, present_swap_chain->GetSwapChainPtr(),
-			present_swap_chain->GetCurrentImageIndexPtr(), nullptr};
+		const VkPresentInfoKHR present_info = { .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.waitSemaphoreCount = 1, .pWaitSemaphores = present_swap_chain->GetRenderingFinishedSemaphorePtr(),
+			.swapchainCount = 1, .pSwapchains = present_swap_chain->GetSwapChainPtr(),
+			.pImageIndices = present_swap_chain->GetCurrentImageIndexPtr() };
 
 		present_swap_chain->ResetImageAcquireResult();
 
@@ -1382,12 +1389,12 @@ void GSDeviceVK::CommandBufferCompleted(u32 index)
 			}
 			if (resources.spin_id >= 0)
 			{
-				if (m_optional_extensions.vk_ext_calibrated_timestamps && timestamps[1] > 0)
+				if (m_optional_extensions.vk_khr_calibrated_timestamps && timestamps[1] > 0)
 				{
 					u64 end = timestamps[1] * m_spin_timestamp_scale + m_spin_timestamp_offset;
 					m_spin_manager.DrawCompleted(resources.spin_id, resources.submit_timestamp, end);
 				}
-				else if (!m_optional_extensions.vk_ext_calibrated_timestamps && timestamps[0] > 0)
+				else if (!m_optional_extensions.vk_khr_calibrated_timestamps && timestamps[0] > 0)
 				{
 					u64 begin = timestamps[0] * m_spin_timestamp_scale;
 					u64 end = timestamps[1] * m_spin_timestamp_scale;
@@ -1429,7 +1436,7 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 
 	// Enable commands to be recorded to the two buffers again.
 	VkCommandBufferBeginInfo begin_info = {
-		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr};
+		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
 	res = vkBeginCommandBuffer(resources.command_buffers[1], &begin_info);
 	if (res != VK_SUCCESS)
 		LOG_VULKAN_ERROR(res, "vkBeginCommandBuffer failed: ");
@@ -1438,8 +1445,8 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 	if (wants_timestamp)
 	{
 		vkCmdResetQueryPool(resources.command_buffers[1], m_timestamp_query_pool, index * 2, 2);
-		vkCmdWriteTimestamp(
-			resources.command_buffers[1], VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
+		vkCmdWriteTimestamp2(
+			resources.command_buffers[1], VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
 	}
 
 	if (resources.pipeline_statistics_query == QueryState::Ready)
@@ -1572,13 +1579,12 @@ bool GSDeviceVK::EnableDebugUtils()
 		return false;
 	}
 
-	VkDebugUtilsMessengerCreateInfoEXT messenger_info = {VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-		nullptr, 0,
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+	VkDebugUtilsMessengerCreateInfoEXT messenger_info = { .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+		.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,
-		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+		.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
-		DebugMessengerCallback, nullptr};
+		.pfnUserCallback = DebugMessengerCallback };
 
 	const VkResult res =
 		vkCreateDebugUtilsMessengerEXT(m_instance, &messenger_info, nullptr, &m_debug_messenger_callback);
@@ -1600,124 +1606,56 @@ void GSDeviceVK::DisableDebugUtils()
 	}
 }
 
-VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
+VkRenderPass GSDeviceVK::GetRenderPassVK(const RenderPass& rp)
 {
-	VkAttachmentReference color_reference;
-	VkAttachmentReference* color_reference_ptr = nullptr;
-	VkAttachmentReference depth_reference;
-	VkAttachmentReference* depth_reference_ptr = nullptr;
-	std::array<VkAttachmentReference, 2> input_reference;
-	u32 num_subpass_inputs = 0;
-	std::array<VkSubpassDependency, 2> subpass_dependency;
-	u32 num_subpass_dependencies = 0;
-	std::array<VkAttachmentDescription, 2> attachments;
-	u32 num_attachments = 0;
-	if (key.color_format != VK_FORMAT_UNDEFINED)
-	{
-		const VkImageLayout layout =
-			key.color_feedback_loop ? (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
-																 VK_IMAGE_LAYOUT_GENERAL) :
-									  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		attachments[num_attachments] = {0, static_cast<VkFormat>(key.color_format), VK_SAMPLE_COUNT_1_BIT,
-			static_cast<VkAttachmentLoadOp>(key.color_load_op), static_cast<VkAttachmentStoreOp>(key.color_store_op),
-			VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, layout, layout};
-		color_reference.attachment = num_attachments;
-		color_reference.layout = layout;
-		color_reference_ptr = &color_reference;
-
-		if (key.color_feedback_loop)
-		{
-			if (!UseFeedbackLoopLayout())
-			{
-				input_reference[num_subpass_inputs].attachment = num_attachments;
-				input_reference[num_subpass_inputs].layout = layout;
-				num_subpass_inputs++;
-			}
-
-			if (!m_features.framebuffer_fetch)
-			{
-				// don't need the framebuffer-local dependency when we have rasterization order attachment access
-				subpass_dependency[num_subpass_dependencies].srcSubpass = 0;
-				subpass_dependency[num_subpass_dependencies].dstSubpass = 0;
-				subpass_dependency[num_subpass_dependencies].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				subpass_dependency[num_subpass_dependencies].srcAccessMask =
-					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				subpass_dependency[num_subpass_dependencies].dstAccessMask =
-					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency[num_subpass_dependencies].dependencyFlags =
-					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-											  VK_DEPENDENCY_BY_REGION_BIT;
-				num_subpass_dependencies++;
-			}
-		}
-
-		num_attachments++;
-	}
-	if (key.depth_format != VK_FORMAT_UNDEFINED)
-	{
-		const VkImageLayout layout =
-			key.depth_sampling ? (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
-															VK_IMAGE_LAYOUT_GENERAL) :
-								 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		attachments[num_attachments] = {0, static_cast<VkFormat>(key.depth_format), VK_SAMPLE_COUNT_1_BIT,
-			static_cast<VkAttachmentLoadOp>(key.depth_load_op), static_cast<VkAttachmentStoreOp>(key.depth_store_op),
-			static_cast<VkAttachmentLoadOp>(key.stencil_load_op),
-			static_cast<VkAttachmentStoreOp>(key.stencil_store_op), layout, layout};
-		depth_reference.attachment = num_attachments;
-		depth_reference.layout = layout;
-		depth_reference_ptr = &depth_reference;
-
-		if (key.depth_sampling)
-		{
-			if (!UseFeedbackLoopLayout())
-			{
-				input_reference[num_subpass_inputs].attachment = num_attachments;
-				input_reference[num_subpass_inputs].layout = layout;
-				num_subpass_inputs++;
-			}
-
-			if (!m_features.framebuffer_fetch)
-			{
-				// don't need the framebuffer-local dependency when we have rasterization order attachment access
-				subpass_dependency[num_subpass_dependencies].srcSubpass = 0;
-				subpass_dependency[num_subpass_dependencies].dstSubpass = 0;
-				subpass_dependency[num_subpass_dependencies].srcStageMask =
-					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				subpass_dependency[num_subpass_dependencies].srcAccessMask =
-					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				subpass_dependency[num_subpass_dependencies].dstAccessMask =
-					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency[num_subpass_dependencies].dependencyFlags =
-					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-											  VK_DEPENDENCY_BY_REGION_BIT;
-				num_subpass_dependencies++;
-			}
-		}
-
-		num_attachments++;
-	}
-
-	const VkSubpassDescriptionFlags subpass_flags =
-		(key.color_feedback_loop && m_optional_extensions.vk_ext_rasterization_order_attachment_access) ?
-			VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT :
-			0;
-	const VkSubpassDescription subpass = {subpass_flags, VK_PIPELINE_BIND_POINT_GRAPHICS, num_subpass_inputs,
-		num_subpass_inputs ? input_reference.data() : nullptr, color_reference_ptr ? 1u : 0u,
-		color_reference_ptr ? color_reference_ptr : nullptr, nullptr, depth_reference_ptr, 0, nullptr};
-	const VkRenderPassCreateInfo pass_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0u, num_attachments,
-		attachments.data(), 1u, &subpass, num_subpass_dependencies, num_subpass_dependencies ? subpass_dependency.data() : nullptr};
-
-	VkRenderPass pass;
-	const VkResult res = vkCreateRenderPass(m_device, &pass_info, nullptr, &pass);
-	if (res != VK_SUCCESS)
-	{
-		LOG_VULKAN_ERROR(res, "vkCreateRenderPass failed: ");
+	if (rp.IsNull())
 		return VK_NULL_HANDLE;
+
+	auto it = m_render_pass_cache.find(rp.GetKey());
+	if (it != m_render_pass_cache.end())
+		return it->second;
+
+	Vulkan::RenderPassBuilder rpb;
+
+	const GSTextureVK::Layout color_layout =
+		rp.GetColorFeedbackLoop() ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::ColorAttachment;
+	
+	const GSTextureVK::Layout depth_layout =
+		rp.GetDepthFeedbackLoop() ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::DepthStencilAttachment;
+
+	VkDependencyFlags feedback_dependency = GSTextureVK::GetFeedbackLoopDependencyFlags();
+
+	if (rp.GetColorFeedbackLoop())
+	{
+		rpb.SetColorFeedbackBarrier(GSTextureVK::GetFeedbackBarrierFlags(true), feedback_dependency);
+		rpb.SetSubpassFlags(m_features.framebuffer_fetch ?
+			VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT : 0);
 	}
 
-	m_render_pass_cache.emplace(key.key, pass);
+	if (rp.GetDepthFeedbackLoop())
+		rpb.SetDepthFeedbackBarrier(GSTextureVK::GetFeedbackBarrierFlags(false), feedback_dependency);
+
+	for (u32 i = 0; i < MAX_COLOR_ATTACHMENTS; i++)
+	{
+		if (rp.GetColorFormat(i) != VK_FORMAT_UNDEFINED)
+		{
+			rpb.AddColorAttachment(GSTextureVK::GetVkImageLayout(color_layout),
+				rp.GetColorFormat(i), rp.GetColorLoadOp(i), rp.GetColorStoreOp(i), rp.GetColorFeedbackLoop(),
+				!UseFeedbackLoopLayout(), !m_features.framebuffer_fetch);
+		}
+	}
+
+	if (rp.GetDepthFormat() != VK_FORMAT_UNDEFINED)
+	{
+		rpb.AddDepthStencilAttachment(GSTextureVK::GetVkImageLayout(depth_layout), rp.GetDepthFormat(),
+			rp.GetDepthLoadOp(), rp.GetDepthStoreOp(), rp.GetStencilLoadOp(), rp.GetStencilStoreOp(), rp.GetDepthFeedbackLoop(),
+			!UseFeedbackLoopLayout(), !m_features.framebuffer_fetch);
+	}
+
+	VkRenderPass pass = rpb.Create(m_device);
+
+	m_render_pass_cache.insert({ rp.GetKey(), pass });
+
 	return pass;
 }
 
@@ -1932,7 +1870,7 @@ void GSDeviceVK::SpinCommandCompleted(u32 index)
 	if (res == VK_SUCCESS)
 	{
 		u64 begin, end;
-		if (m_optional_extensions.vk_ext_calibrated_timestamps)
+		if (m_optional_extensions.vk_khr_calibrated_timestamps)
 		{
 			begin = timestamps[0] * m_spin_timestamp_scale + m_spin_timestamp_offset;
 			end = timestamps[1] * m_spin_timestamp_scale + m_spin_timestamp_offset;
@@ -1973,77 +1911,96 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 	{
 		m_spin_buffer_initialized = true;
 		vkCmdFillBuffer(resources.command_buffer, m_spin_buffer, 0, VK_WHOLE_SIZE, 0);
-		VkBufferMemoryBarrier barrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		barrier.srcQueueFamilyIndex = m_spin_queue_family_index;
-		barrier.dstQueueFamilyIndex = m_spin_queue_family_index;
-		barrier.buffer = m_spin_buffer;
-		barrier.offset = 0;
-		barrier.size = VK_WHOLE_SIZE;
-		vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+		const VkBufferMemoryBarrier2 barrier{ .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+			.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT, .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+			.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, .dstAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT,
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.buffer = m_spin_buffer, .offset = 0, .size = VK_WHOLE_SIZE };
+
+		const VkDependencyInfo dependency{ .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.bufferMemoryBarrierCount = 1, .pBufferMemoryBarriers = &barrier };
+
+		vkCmdPipelineBarrier2(resources.command_buffer, &dependency);
 	}
 
 	if (m_spin_queue_is_graphics_queue)
-		vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	{
+		const VkMemoryBarrier2 barrier{ .sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2,
+			.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, .srcAccessMask = VK_ACCESS_2_NONE,
+			.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, .dstAccessMask = VK_ACCESS_2_NONE };
+		
+		const VkDependencyInfo dependency{ .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.memoryBarrierCount = 1, .pMemoryBarriers = &barrier };
+
+		vkCmdPipelineBarrier2(resources.command_buffer, &dependency);
+	}
 
 	const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
 	vkCmdResetQueryPool(resources.command_buffer, m_timestamp_query_pool, timestamp_base, 2);
-	vkCmdWriteTimestamp(
-		resources.command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, m_timestamp_query_pool, timestamp_base);
+	vkCmdWriteTimestamp2(
+		resources.command_buffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool, timestamp_base);
 	vkCmdPushConstants(
 		resources.command_buffer, m_spin_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(u32), &cycles);
 	vkCmdBindPipeline(resources.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_spin_pipeline);
 	vkCmdBindDescriptorSets(resources.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_spin_pipeline_layout, 0, 1,
 		&m_spin_descriptor_set, 0, nullptr);
 	vkCmdDispatch(resources.command_buffer, 1, 1, 1);
-	vkCmdWriteTimestamp(
-		resources.command_buffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, m_timestamp_query_pool, timestamp_base + 1);
+	vkCmdWriteTimestamp2(
+		resources.command_buffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, m_timestamp_query_pool, timestamp_base + 1);
 
 	if ((res = vkEndCommandBuffer(resources.command_buffer)) != VK_SUCCESS)
 		LOG_VULKAN_ERROR(res, "vkEndCommandBuffer failed: ");
 
-	VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
-	submit_info.commandBufferCount = 1;
-	submit_info.pCommandBuffers = &resources.command_buffer;
-	VkPipelineStageFlags sema_waits[] = {VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT};
+	VkSubmitInfo2 submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO_2 };
+
+	VkCommandBufferSubmitInfo cmdbuf_info =
+		{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, .commandBuffer = resources.command_buffer };
+
+	submit_info.commandBufferInfoCount = 1;
+	submit_info.pCommandBufferInfos = &cmdbuf_info;
+
+	VkSemaphoreSubmitInfo semaphore_info = { VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO };
+
 	if (!m_spin_queue_is_graphics_queue)
 	{
-		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = &resources.semaphore;
-		submit_info.pWaitDstStageMask = sema_waits;
+		semaphore_info.semaphore = resources.semaphore;
+		semaphore_info.deviceIndex = 0;
+		semaphore_info.stageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		
+		submit_info.waitSemaphoreInfoCount = 1;
+		submit_info.pWaitSemaphoreInfos = &semaphore_info;
 	}
-	vkQueueSubmit(m_spin_queue, 1, &submit_info, resources.fence);
+
+	vkQueueSubmit2(m_spin_queue, 1, &submit_info, resources.fence);
 	resources.in_progress = true;
 	resources.cycles = cycles;
 }
 
 void GSDeviceVK::CalibrateSpinTimestamp()
 {
-	if (!m_optional_extensions.vk_ext_calibrated_timestamps)
+	if (!m_optional_extensions.vk_khr_calibrated_timestamps)
 		return;
-	VkCalibratedTimestampInfoEXT infos[2] = {
-		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, VK_TIME_DOMAIN_DEVICE_EXT},
-		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, m_calibrated_timestamp_type},
+	VkCalibratedTimestampInfoKHR infos[2] = {
+		{.sType = VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_KHR, .timeDomain = VK_TIME_DOMAIN_DEVICE_KHR},
+		{.sType = VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_KHR, .timeDomain = m_calibrated_timestamp_type},
 	};
 	u64 timestamps[2];
 	u64 maxDeviation;
 	constexpr u64 MAX_MAX_DEVIATION = 100000; // 100us
 	for (int i = 0; i < 4; i++) // 4 tries to get under MAX_MAX_DEVIATION
 	{
-		const VkResult res = vkGetCalibratedTimestampsEXT(m_device, std::size(infos), infos, timestamps, &maxDeviation);
+		const VkResult res = vkGetCalibratedTimestampsKHR(m_device, std::size(infos), infos, timestamps, &maxDeviation);
 		if (res != VK_SUCCESS)
 		{
-			LOG_VULKAN_ERROR(res, "vkGetCalibratedTimestampsEXT failed: ");
+			LOG_VULKAN_ERROR(res, "vkGetCalibratedTimestampsKHR failed: ");
 			return;
 		}
 		if (maxDeviation < MAX_MAX_DEVIATION)
 			break;
 	}
 	if (maxDeviation >= MAX_MAX_DEVIATION)
-		Console.Warning("vkGetCalibratedTimestampsEXT returned high max deviation of %lluus", maxDeviation / 1000);
+		Console.Warning("vkGetCalibratedTimestampsKHR returned high max deviation of %lluus", maxDeviation / 1000);
 	const double gpu_time = timestamps[0] * m_spin_timestamp_scale;
 #ifdef _WIN32
 	const double cpu_time = timestamps[1] * m_queryperfcounter_to_ns;
@@ -2061,7 +2018,7 @@ u64 GSDeviceVK::GetCPUTimestamp()
 	return static_cast<u64>(static_cast<double>(value.QuadPart) * m_queryperfcounter_to_ns);
 #else
 #ifdef CLOCK_MONOTONIC_RAW
-	const bool use_raw = m_calibrated_timestamp_type == VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT;
+	const bool use_raw = m_calibrated_timestamp_type == VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_KHR;
 	const clockid_t clock = use_raw ? CLOCK_MONOTONIC_RAW : CLOCK_MONOTONIC;
 #else
 	const clockid_t clock = CLOCK_MONOTONIC;
@@ -2078,8 +2035,8 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 	// Try to place the fixed index buffer in GPU local memory.
 	// Use the staging buffer to copy into it.
 
-	const VkBufferCreateInfo cpu_bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size,
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE};
+	const VkBufferCreateInfo cpu_bci = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,.size = size,
+		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
 	const VmaAllocationCreateInfo cpu_aci = {VMA_ALLOCATION_CREATE_MAPPED_BIT, VMA_MEMORY_USAGE_CPU_ONLY, 0, 0};
 	VkBuffer cpu_buffer;
 	VmaAllocation cpu_allocation;
@@ -2091,8 +2048,8 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 		return false;
 	}
 
-	const VkBufferCreateInfo gpu_bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size,
-		VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE};
+	const VkBufferCreateInfo gpu_bci = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size = size,
+		.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
 	const VmaAllocationCreateInfo gpu_aci = {0, VMA_MEMORY_USAGE_GPU_ONLY, 0, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 	VmaAllocationInfo ai;
 	res = vmaCreateBuffer(m_allocator, &gpu_bci, &gpu_aci, gpu_buffer, gpu_allocation, &ai);
@@ -2103,10 +2060,12 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 		return false;
 	}
 
-	const VkBufferCopy buf_copy = {0u, 0u, size};
+	const VkBufferCopy2 buf_copy = { .sType = VK_STRUCTURE_TYPE_BUFFER_COPY_2, .size = size};
+	const VkCopyBufferInfo2 copy_info = { .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_INFO_2, .srcBuffer = cpu_buffer,
+		.dstBuffer = *gpu_buffer, .regionCount = 1, .pRegions = &buf_copy };
 	fill_callback(cpu_ai.pMappedData);
 	vmaFlushAllocation(m_allocator, cpu_allocation, 0, size);
-	vkCmdCopyBuffer(GetCurrentInitCommandBuffer(), cpu_buffer, *gpu_buffer, 1, &buf_copy);
+	vkCmdCopyBuffer2(GetCurrentInitCommandBuffer(), &copy_info);
 	DeferBufferDestruction(cpu_buffer, cpu_allocation);
 	return true;
 }
@@ -2491,17 +2450,13 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	if (!frame_skip && m_current)
 		static_cast<GSTextureVK*>(m_current)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
-	const VkFramebuffer fb = swap_chain_texture->GetFramebuffer(false);
-	if (fb == VK_NULL_HANDLE)
-		return GSDevice::PresentResult::FrameSkipped;
+	GSVector4i render_area(0, 0, swap_chain_texture->GetWidth(), swap_chain_texture->GetHeight());
 
-	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_CLEAR,
-			VK_ATTACHMENT_STORE_OP_STORE),
-		fb,
-		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
-		1u, &s_present_clear_color};
-	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+	if (!BeginPresentRenderPass(GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE), render_area, swap_chain_texture))
+	{
+		return GSDevice::PresentResult::FrameSkipped;	
+	}
 
 	const VkViewport vp{0.0f, 0.0f, static_cast<float>(swap_chain_texture->GetWidth()),
 		static_cast<float>(swap_chain_texture->GetHeight()), 0.0f, 1.0f};
@@ -2517,10 +2472,8 @@ void GSDeviceVK::EndPresent()
 {
 	RenderImGui();
 
-	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
-	vkCmdEndRenderPass(cmdbuffer);
-	m_is_presenting = false;
-	m_swap_chain->GetCurrentTexture()->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::PresentSrc);
+	EndPresentRenderPass();
+	m_swap_chain->GetCurrentTexture()->TransitionToLayout(GetCurrentCommandBuffer(), GSTextureVK::Layout::PresentSrc);
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
 	SubmitCommandBuffer(m_swap_chain.get());
@@ -2561,10 +2514,9 @@ void GSDeviceVK::PushDebugGroup(const char* fmt, ...)
 		++s_debug_scope_depth, {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
 
 	const VkDebugUtilsLabelEXT label = {
-		VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
-		nullptr,
-		buf.c_str(),
-		{color[0], color[1], color[2], 1.0f},
+		.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+		.pLabelName = buf.c_str(),
+		.color = {color[0], color[1], color[2], 1.0f},
 	};
 	vkCmdBeginDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
 #endif
@@ -2604,8 +2556,8 @@ void GSDeviceVK::InsertDebugMessage(DebugMessageCategory category, const char* f
 		{0.0f, 0.2f, 0.0f} // Performance
 	};
 
-	const VkDebugUtilsLabelEXT label = {VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, buf.c_str(),
-		{colors[static_cast<int>(category)][0], colors[static_cast<int>(category)][1],
+	const VkDebugUtilsLabelEXT label = { .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, .pLabelName = buf.c_str(),
+		.color = {colors[static_cast<int>(category)][0], colors[static_cast<int>(category)][1],
 			colors[static_cast<int>(category)][2], 1.0f}};
 	vkCmdInsertDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
 #endif
@@ -2687,7 +2639,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	}
 
 	// Read device physical memory properties, we need it for allocating buffers
-	vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+	VkPhysicalDeviceProperties2 properties = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
+	vkGetPhysicalDeviceProperties2(m_physical_device, &properties);
+	m_device_properties = properties.properties;
 
 	// Stores the GPU name
 	m_name = m_device_properties.deviceName;
@@ -2778,10 +2732,10 @@ bool GSDeviceVK::CheckFeatures()
 
 	// Test for D32S8 support.
 	{
-		VkFormatProperties props = {};
-		vkGetPhysicalDeviceFormatProperties(m_physical_device, VK_FORMAT_D32_SFLOAT_S8_UINT, &props);
+		VkFormatProperties2 props2 = { VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2 };
+		vkGetPhysicalDeviceFormatProperties2(m_physical_device, VK_FORMAT_D32_SFLOAT_S8_UINT, &props2);
 		m_features.stencil_buffer =
-			((props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
+			((props2.formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0);
 	}
 
 	// Fbfetch is useless if we don't have barriers enabled.
@@ -2824,8 +2778,9 @@ bool GSDeviceVK::CheckFeatures()
 		else
 			bits |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT;
 
-		VkFormatProperties props = {};
-		vkGetPhysicalDeviceFormatProperties(m_physical_device, vkfmt, &props);
+		VkFormatProperties2 props2 = { VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2 };
+		vkGetPhysicalDeviceFormatProperties2(m_physical_device, vkfmt, &props2);
+		const VkFormatProperties& props = props2.formatProperties;
 		if ((props.optimalTilingFeatures & bits) != bits)
 		{
 			Host::ReportFormattedErrorAsync("VK: Renderer Unavailable",
@@ -3013,25 +2968,28 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		dTexVK->CommitClear();
 
 	// *now* we can do a normal image copy.
-	const VkImageAspectFlags src_aspect =
-		(sTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageAspectFlags dst_aspect =
-		(dTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u},
-		{static_cast<s32>(destX), static_cast<s32>(destY), 0u},
-		{static_cast<u32>(r.width()), static_cast<u32>(r.height()), 1u}};
-
 	EndRenderPass();
 
 	sTexVK->SetUseFenceCounter(GetCurrentFenceCounter());
 	dTexVK->SetUseFenceCounter(GetCurrentFenceCounter());
 	sTexVK->TransitionToLayout(
-		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferSrc);
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::CopySelf : GSTextureVK::Layout::CopySrc);
 	dTexVK->TransitionToLayout(
-		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferDst);
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::CopySelf : GSTextureVK::Layout::CopyDst);
 
-	vkCmdCopyImage(GetCurrentCommandBuffer(), sTexVK->GetImage(), sTexVK->GetVkLayout(), dTexVK->GetImage(),
-		dTexVK->GetVkLayout(), 1, &ic);
+	const VkImageAspectFlags src_aspect =
+		(sTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	const VkImageAspectFlags dst_aspect =
+		(dTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	const VkImageCopy2 ic = { .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
+		.srcSubresource = {src_aspect, 0u, 0u, 1u}, .srcOffset = {r.left, r.top, 0u},
+		.dstSubresource = {dst_aspect, 0u, 0u, 1u}, .dstOffset = {static_cast<s32>(destX), static_cast<s32>(destY), 0u},
+		.extent = {static_cast<u32>(r.width()), static_cast<u32>(r.height()), 1u} };
+	const VkCopyImageInfo2 copy_info = { .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2,
+		.srcImage = sTexVK->GetImage(), .srcImageLayout = sTexVK->GetVkLayout(),
+		.dstImage = dTexVK->GetImage(), .dstImageLayout = dTexVK->GetVkLayout(), .regionCount = 1, .pRegions = &ic };
+
+	vkCmdCopyImage2(GetCurrentCommandBuffer(), &copy_info);
 
 	dTexVK->SetState(GSTexture::State::Dirty);
 }
@@ -3212,7 +3170,7 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 	else
 	{
 		// integer formats, etc
-		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
+		const RenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
 			VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
 		{
@@ -3296,8 +3254,8 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 
 	EndRenderPass();
 
-	sTexVK->TransitionToLayout(GSTextureVK::Layout::TransferSrc);
-	dTexVK->TransitionToLayout(GSTextureVK::Layout::TransferDst);
+	sTexVK->TransitionToLayout(GSTextureVK::Layout::BlitSrc);
+	dTexVK->TransitionToLayout(GSTextureVK::Layout::BlitDst);
 
 	// ensure we don't leave this bound later on
 	if (m_tfx_textures[0] == sTexVK)
@@ -3306,12 +3264,15 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	pxAssert(sTexVK->IsDepthStencil() == dTexVK->IsDepthStencil());
 	const VkImageAspectFlags aspect =
 		sTexVK->IsDepthStencil() ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageBlit ib{{aspect, sLevel, 0u, 1u}, {{sRect.left, sRect.top, 0}, {sRect.right, sRect.bottom, 1}},
-		{aspect, dLevel, 0u, 1u}, {{dRect.left, dRect.top, 0}, {dRect.right, dRect.bottom, 1}}};
+	const VkImageBlit2 ib{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+		.srcSubresource = {aspect, sLevel, 0u, 1u}, .srcOffsets = {{sRect.left, sRect.top, 0}, {sRect.right, sRect.bottom, 1}},
+		.dstSubresource = {aspect, dLevel, 0u, 1u}, .dstOffsets = {{dRect.left, dRect.top, 0}, {dRect.right, dRect.bottom, 1}} };
+	const VkBlitImageInfo2 blit_info{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+		.srcImage = sTexVK->GetImage(), .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		.dstImage = dTexVK->GetImage(), .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		.regionCount = 1, .pRegions = &ib, .filter = filter == Biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST };
 
-	vkCmdBlitImage(GetCurrentCommandBuffer(), sTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-		dTexVK->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &ib,
-		filter == Biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST);
+	vkCmdBlitImage2(GetCurrentCommandBuffer(), &blit_info);
 }
 
 void GSDeviceVK::UpdateCLUTTexture(
@@ -3599,7 +3560,7 @@ void GSDeviceVK::VSSetIndexBuffer(const void* index, size_t count)
 }
 
 void GSDeviceVK::OMSetRenderTargets(
-	GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlag feedback_loop,
+	GSTexture* rt, GSTexture* ds, const GSVector4i& scissor, FeedbackLoopFlags feedback_loop,
 	const GSVector2i& viewport_size)
 {
 	GSTextureVK* vkRt = static_cast<GSTextureVK*>(rt);
@@ -3607,27 +3568,28 @@ void GSDeviceVK::OMSetRenderTargets(
 
 	if (m_current_render_target != vkRt || m_current_depth_target != vkDs ||
 		m_current_framebuffer_feedback_loop != feedback_loop ||
-		m_current_framebuffer == VK_NULL_HANDLE)
+		(m_current_framebuffer == VK_NULL_HANDLE && !UseDynamicRendering()))
 	{
 		// framebuffer change or feedback loop enabled/disabled
 		EndRenderPass();
 
-		if (vkRt)
+		if (!UseDynamicRendering())
 		{
-			m_current_framebuffer =
-				vkRt->GetLinkedFramebuffer(vkDs,
-					(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT) != 0,
-					(feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
-		}
-		else if (vkDs)
-		{
-			pxAssert(!(feedback_loop & FeedbackLoopFlag_ReadAndWriteRT));
-			m_current_framebuffer = vkDs->GetLinkedFramebuffer(
-				nullptr, false, (feedback_loop & (FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth)) != 0);
-		}
-		else
-		{
-			m_current_framebuffer = m_null_framebuffer;
+			if (vkRt)
+			{
+				m_current_framebuffer =
+					vkRt->GetLinkedFramebuffer(vkDs, feedback_loop & FeedbackLoopFlags::RT, feedback_loop & FeedbackLoopFlags::Depth);
+			}
+			else if (vkDs)
+			{
+				pxAssert(!(feedback_loop & FeedbackLoopFlags::RT));
+				m_current_framebuffer =
+					vkDs->GetLinkedFramebuffer(nullptr, false, feedback_loop & FeedbackLoopFlags::Depth);
+			}
+			else
+			{
+				m_current_framebuffer = m_null_framebuffer;
+			}
 		}
 	}
 	else if (InRenderPass())
@@ -3715,7 +3677,7 @@ void GSDeviceVK::OMSetRenderTargets(
 	{
 		if (vkRt)
 		{
-			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteRT)
+			if (feedback_loop & FeedbackLoopFlags::RT)
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
@@ -3739,7 +3701,7 @@ void GSDeviceVK::OMSetRenderTargets(
 		if (vkDs)
 		{
 			// need to update descriptors to reflect the new layout
-			if (feedback_loop & FeedbackLoopFlag_ReadAndWriteDepth)
+			if (feedback_loop & FeedbackLoopFlags::Depth)
 			{
 				// NVIDIA drivers appear to return random garbage when sampling the RT via a feedback loop, if the load op for
 				// the render pass is CLEAR. Using vkCmdClearAttachments() doesn't work, so we have to clear the image instead.
@@ -3750,16 +3712,6 @@ void GSDeviceVK::OMSetRenderTargets(
 				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 				{
 					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH);
-					if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
-						m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE;
-					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
-				}
-			}
-			else if (feedback_loop & FeedbackLoopFlag_ReadDepth)
-			{
-				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
-				{
-					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE);
 					if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
 						m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE;
 					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
@@ -3789,24 +3741,24 @@ VkSampler GSDeviceVK::GetSampler(GSHWDrawConfig::SamplerSelector ss)
 	// See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkSamplerCreateInfo.html#_description
 	// for the reasoning behind 0.25f here.
 	const VkSamplerCreateInfo ci = {
-		VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, nullptr, 0,
-		ss.IsMagFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // min
-		ss.IsMinFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // mag
-		ss.IsMipFilterLinear() ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST, // mip
-		static_cast<VkSamplerAddressMode>(
+		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+		.magFilter = ss.IsMagFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // min
+		.minFilter = ss.IsMinFilterLinear() ? VK_FILTER_LINEAR : VK_FILTER_NEAREST, // mag
+		.mipmapMode = ss.IsMipFilterLinear() ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST, // mip
+		.addressModeU = static_cast<VkSamplerAddressMode>(
 			ss.tau ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE), // u
-		static_cast<VkSamplerAddressMode>(
+		.addressModeV = static_cast<VkSamplerAddressMode>(
 			ss.tav ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE), // v
-		VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, // w
-		0.0f, // lod bias
-		VK_FALSE, // anisotropy enable
-		1.0f, // anisotropy
-		VK_FALSE, // compare enable
-		VK_COMPARE_OP_ALWAYS, // compare op
-		0.0f, // min lod
-		(ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : VK_LOD_CLAMP_NONE, // max lod
-		VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, // border
-		VK_FALSE // unnormalized coordinates
+		.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, // w
+		.mipLodBias = 0.0f, // lod bias
+		.anisotropyEnable = VK_FALSE, // anisotropy enable
+		.maxAnisotropy = 1.0f, // anisotropy
+		.compareEnable = VK_FALSE, // compare enable
+		.compareOp = VK_COMPARE_OP_ALWAYS, // compare op
+		.minLod = 0.0f, // min lod
+		.maxLod = (ss.lodclamp || !ss.UseMipmapFiltering()) ? 0.25f : VK_LOD_CLAMP_NONE, // max lod
+		.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, // border
+		.unnormalizedCoordinates = VK_FALSE // unnormalized coordinates
 	};
 	VkSampler sampler = VK_NULL_HANDLE;
 	VkResult res = vkCreateSampler(m_device, &ci, nullptr, &sampler);
@@ -3881,6 +3833,18 @@ static void SetPipelineProvokingVertex(const GSDevice::FeatureSupport& features,
 	// pipeline bound before the render pass begun, and in this case, we can't bind null.
 	if (features.provoking_vertex_last)
 		gpb.SetProvokingVertex(VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT);
+}
+
+__fi void GSDeviceVK::SetPipelineRenderPass(const RenderPass& rp, Vulkan::GraphicsPipelineBuilder& gpb)
+{
+	if (UseDynamicRendering())
+	{
+		gpb.SetDynamicRenderPass(rp, m_features.stencil_buffer);
+	}
+	else
+	{
+		gpb.SetRenderPass(GetRenderPassVK(rp), 0);
+	}
 }
 
 VkShaderModule GSDeviceVK::GetUtilityVertexShader(const std::string& source, const char* replace_main = nullptr)
@@ -4019,13 +3983,13 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	dslb.AddBinding(TFX_TEXTURE_TEXTURE, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_RT,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-																                              VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ?
+			VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
 		1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PRIMID, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_DEPTH,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-		                                                           VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ?
+			VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
 		1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_RT_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_DEPTH_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -4043,24 +4007,24 @@ bool GSDeviceVK::CreatePipelineLayouts()
 
 bool GSDeviceVK::CreateRenderPasses()
 {
-#define GET(dest, rt, depth, fbl, dsp, opa, opb, opc) \
-	do \
-	{ \
-		dest = GetRenderPass( \
-			(rt), (depth), ((rt) != VK_FORMAT_UNDEFINED) ? (opa) : VK_ATTACHMENT_LOAD_OP_DONT_CARE, /* color load */ \
-			((rt) != VK_FORMAT_UNDEFINED) ? VK_ATTACHMENT_STORE_OP_STORE : \
-											VK_ATTACHMENT_STORE_OP_DONT_CARE, /* color store */ \
-			((depth) != VK_FORMAT_UNDEFINED) ? (opb) : VK_ATTACHMENT_LOAD_OP_DONT_CARE, /* depth load */ \
-			((depth) != VK_FORMAT_UNDEFINED) ? VK_ATTACHMENT_STORE_OP_STORE : \
-											   VK_ATTACHMENT_STORE_OP_DONT_CARE, /* depth store */ \
-			((depth) != VK_FORMAT_UNDEFINED) ? (opc) : VK_ATTACHMENT_LOAD_OP_DONT_CARE, /* stencil load */ \
-			VK_ATTACHMENT_STORE_OP_DONT_CARE, /* stencil store */ \
-			(fbl), /* feedback loop */ \
-			(dsp) /* depth sampling */ \
-		); \
-		if (dest == VK_NULL_HANDLE) \
-			return false; \
-	} while (0)
+	
+	const auto CreateHelper = [&](VkFormat rt, VkFormat depth, bool feedback_rt, bool feedback_depth,
+		VkAttachmentLoadOp load_rt, VkAttachmentLoadOp load_depth, VkAttachmentLoadOp load_stencil) {
+		return GetRenderPass(
+			rt,
+			depth,
+			(rt != VK_FORMAT_UNDEFINED)    ? load_rt                      : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			(rt != VK_FORMAT_UNDEFINED)    ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			(depth != VK_FORMAT_UNDEFINED) ? load_depth                   : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			(depth != VK_FORMAT_UNDEFINED) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			(depth != VK_FORMAT_UNDEFINED) ? load_stencil                 : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			feedback_rt,
+			feedback_depth
+		);
+	};
+
+#define CHECK_RESULT(x) if ((x).IsNull()) return false;
 
 	const VkFormat rt_format = LookupNativeFormat(GSTexture::Format::Color);
 	const VkFormat colclip_rt_format = LookupNativeFormat(GSTexture::Format::ColorClip);
@@ -4074,23 +4038,23 @@ bool GSDeviceVK::CreateRenderPasses()
 			{
 				for (u32 stencil = 0; stencil < 2; stencil++)
 				{
-					for (u32 fbl = 0; fbl < 2; fbl++)
+					for (u32 feedback_rt = 0; feedback_rt < 2; feedback_rt++)
 					{
-						for (u32 dsp = 0; dsp < 2; dsp++)
+						for (u32 feedback_depth = 0; feedback_depth < 2; feedback_depth++)
 						{
-							for (u32 opa = VK_ATTACHMENT_LOAD_OP_LOAD; opa <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; opa++)
+							for (u32 load_rt = VK_ATTACHMENT_LOAD_OP_LOAD; load_rt <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; load_rt++)
 							{
-								for (u32 opb = VK_ATTACHMENT_LOAD_OP_LOAD; opb <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; opb++)
+								for (u32 load_depth = VK_ATTACHMENT_LOAD_OP_LOAD; load_depth <= VK_ATTACHMENT_LOAD_OP_DONT_CARE; load_depth++)
 								{
-									const VkFormat rp_rt_format =
-										(rt != 0) ? ((colclip != 0) ? colclip_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
+									const VkFormat rp_rt_format = (rt != 0) ? ((colclip != 0) ? colclip_rt_format : rt_format) : VK_FORMAT_UNDEFINED;
 									const VkFormat rp_depth_format = (ds != 0) ? depth_format : VK_FORMAT_UNDEFINED;
-									const VkAttachmentLoadOp opc = (!stencil || !m_features.stencil_buffer) ?
-									                                   VK_ATTACHMENT_LOAD_OP_DONT_CARE :
-									                                   VK_ATTACHMENT_LOAD_OP_LOAD;
-									GET(m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][opa][opb], rp_rt_format,
-										rp_depth_format, (fbl != 0), (dsp != 0), static_cast<VkAttachmentLoadOp>(opa),
-										static_cast<VkAttachmentLoadOp>(opb), static_cast<VkAttachmentLoadOp>(opc));
+									const VkAttachmentLoadOp load_stencil = (!stencil || !m_features.stencil_buffer) ?
+										VK_ATTACHMENT_LOAD_OP_DONT_CARE : VK_ATTACHMENT_LOAD_OP_LOAD;
+
+									m_tfx_render_pass[rt][ds][colclip][stencil][feedback_rt][feedback_depth][load_rt][load_depth] =
+										CreateHelper(rp_rt_format, rp_depth_format, feedback_rt, feedback_depth, static_cast<VkAttachmentLoadOp>(load_rt),
+											static_cast<VkAttachmentLoadOp>(load_depth), static_cast<VkAttachmentLoadOp>(load_stencil));
+									CHECK_RESULT(m_tfx_render_pass[rt][ds][colclip][stencil][feedback_rt][feedback_depth][load_rt][load_depth]);
 								}
 							}
 						}
@@ -4100,27 +4064,37 @@ bool GSDeviceVK::CreateRenderPasses()
 		}
 	}
 
-	GET(m_utility_color_render_pass_load, rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_LOAD,
+	m_utility_color_render_pass_load =  CreateHelper(rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_LOAD,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_color_render_pass_clear, rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_CLEAR,
+	CHECK_RESULT(m_utility_color_render_pass_load);
+
+	m_utility_color_render_pass_clear = CreateHelper(rt_format, VK_FORMAT_UNDEFINED, false, false, VK_ATTACHMENT_LOAD_OP_CLEAR,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_color_render_pass_discard, rt_format, VK_FORMAT_UNDEFINED, false, false,
+	CHECK_RESULT(m_utility_color_render_pass_clear);
+		
+	m_utility_color_render_pass_discard = CreateHelper(rt_format, VK_FORMAT_UNDEFINED, false, false,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_load, VK_FORMAT_UNDEFINED, depth_format, false, false,
+	CHECK_RESULT(m_utility_color_render_pass_discard);
+
+	m_utility_depth_render_pass_load = CreateHelper(VK_FORMAT_UNDEFINED, depth_format, false, false,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_clear, VK_FORMAT_UNDEFINED, depth_format, false, false,
+	CHECK_RESULT(m_utility_depth_render_pass_load);
+
+	m_utility_depth_render_pass_clear = CreateHelper(VK_FORMAT_UNDEFINED, depth_format, false, false,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
-	GET(m_utility_depth_render_pass_discard, VK_FORMAT_UNDEFINED, depth_format, false, false,
+	CHECK_RESULT(m_utility_depth_render_pass_clear);
+
+	m_utility_depth_render_pass_discard = CreateHelper(VK_FORMAT_UNDEFINED, depth_format, false, false,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+	CHECK_RESULT(m_utility_depth_render_pass_discard);
 
 	m_date_setup_render_pass = GetRenderPass(VK_FORMAT_UNDEFINED, depth_format, VK_ATTACHMENT_LOAD_OP_LOAD,
 		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
 		m_features.stencil_buffer ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		m_features.stencil_buffer ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
-	if (m_date_setup_render_pass == VK_NULL_HANDLE)
-		return false;
+	CHECK_RESULT(m_date_setup_render_pass);
 
-#undef GET
+#undef CHECK_RESULT
 
 	return true;
 }
@@ -4155,7 +4129,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 	{
 		const ShaderConvertSelector shader = ShaderConvertSelector::Get(i);
 
-		VkRenderPass rp;
+		RenderPass rp;
 		if (shader.DATMConvertShader())
 		{
 			rp = m_date_setup_render_pass;
@@ -4175,10 +4149,10 @@ bool GSDeviceVK::CompileConvertPipelines()
 				VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 		}
 
-		if (!rp)
+		if (rp.IsNull())
 			return false;
 
-		gpb.SetRenderPass(rp, 0);
+		SetPipelineRenderPass(rp, gpb);
 
 		if (shader.DATMConvertShader())
 		{
@@ -4233,9 +4207,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 				{
 					pxAssert(!arr[ds][fbl]);
 
-					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
-						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-						0);
+					SetPipelineRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
+						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE), gpb);
 					arr[ds][fbl] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
 					if (!arr[ds][fbl])
 						return false;
@@ -4280,7 +4253,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 
 		for (u32 ds = 0; ds < 2; ds++)
 		{
-			gpb.SetRenderPass(m_primid_image_setup_render_passes[ds][0], 0);
+			SetPipelineRenderPass(m_primid_image_setup_render_passes[ds][0], gpb);
 			m_primid_image_setup_pipelines[ds][datm] =
 				gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
 			if (!m_primid_image_setup_pipelines[ds][datm])
@@ -4299,7 +4272,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 	// we may not have a swap chain if running in headless mode.
 	m_swap_chain_render_pass =
 		GetRenderPass(m_swap_chain ? m_swap_chain->GetTextureFormat() : VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
-	if (m_swap_chain_render_pass == VK_NULL_HANDLE)
+	if (m_swap_chain_render_pass.IsNull())
 		return false;
 
 	const std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/present.glsl");
@@ -4326,7 +4299,7 @@ bool GSDeviceVK::CompilePresentPipelines()
 	gpb.SetVertexShader(vs);
 	gpb.SetDepthState(false, false, VK_COMPARE_OP_ALWAYS);
 	gpb.SetNoStencilState();
-	gpb.SetRenderPass(m_swap_chain_render_pass, 0);
+	SetPipelineRenderPass(m_swap_chain_render_pass, gpb);
 
 	for (PresentShader i = PresentShader::COPY; i < PresentShader::Count; i = static_cast<PresentShader>(static_cast<int>(i) + 1))
 	{
@@ -4359,9 +4332,9 @@ bool GSDeviceVK::CompileInterlacePipelines()
 		return false;
 	}
 
-	VkRenderPass rp =
+	RenderPass rp =
 		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
-	if (!rp)
+	if (rp.IsNull())
 		return false;
 
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
@@ -4379,7 +4352,7 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
 	gpb.SetNoBlendingState();
-	gpb.SetRenderPass(rp, 0);
+	SetPipelineRenderPass(rp, gpb);
 	gpb.SetVertexShader(vs);
 
 	for (int i = 0; i < static_cast<int>(m_interlace.size()); i++)
@@ -4410,9 +4383,9 @@ bool GSDeviceVK::CompileMergePipelines()
 		return false;
 	}
 
-	VkRenderPass rp =
+	RenderPass rp =
 		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
-	if (!rp)
+	if (rp.IsNull())
 		return false;
 
 	VkShaderModule vs = GetUtilityVertexShader(*shader);
@@ -4429,7 +4402,7 @@ bool GSDeviceVK::CompileMergePipelines()
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
-	gpb.SetRenderPass(rp, 0);
+	SetPipelineRenderPass(rp, gpb);
 	gpb.SetVertexShader(vs);
 
 	for (int i = 0; i < static_cast<int>(m_merge.size()); i++)
@@ -4455,9 +4428,9 @@ bool GSDeviceVK::CompileMergePipelines()
 
 bool GSDeviceVK::CompilePostProcessingPipelines()
 {
-	VkRenderPass rp =
+	RenderPass rp =
 		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
-	if (!rp)
+	if (rp.IsNull())
 		return false;
 
 	Vulkan::GraphicsPipelineBuilder gpb;
@@ -4470,7 +4443,7 @@ bool GSDeviceVK::CompilePostProcessingPipelines()
 	gpb.SetNoCullRasterizationState();
 	gpb.SetNoDepthTestState();
 	gpb.SetNoBlendingState();
-	gpb.SetRenderPass(rp, 0);
+	SetPipelineRenderPass(rp, gpb);
 
 	{
 		const std::optional<std::string> vshader = ReadShaderSource("shaders/vulkan/convert.glsl");
@@ -4610,7 +4583,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 	Vulkan::GraphicsPipelineBuilder gpb;
 	SetPipelineProvokingVertex(m_features, gpb);
 	gpb.SetPipelineLayout(m_utility_pipeline_layout);
-	gpb.SetRenderPass(m_swap_chain_render_pass, 0);
+	SetPipelineRenderPass(m_swap_chain_render_pass, gpb);
 	gpb.AddVertexBuffer(0, sizeof(ImDrawVert), VK_VERTEX_INPUT_RATE_VERTEX);
 	gpb.AddVertexAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, pos));
 	gpb.AddVertexAttribute(1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, uv));
@@ -4723,7 +4696,7 @@ void GSDeviceVK::RenderBlankFrame()
 
 	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
 	GSTextureVK* sctex = m_swap_chain->GetCurrentTexture();
-	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::TransferDst);
+	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ClearDst);
 
 	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 	vkCmdClearColorImage(
@@ -5044,23 +5017,21 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// DATE image prepass
-		gpb.SetRenderPass(m_primid_image_setup_render_passes[p.ds][0], 0);
+		SetPipelineRenderPass(m_primid_image_setup_render_passes[p.ds][0], gpb);
 	}
 	else
 	{
-		gpb.SetRenderPass(
-			GetTFXRenderPass(p.rt, p.ds, p.ps.colclip_hw, p.dss.date,
-				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
+		SetPipelineRenderPass(GetTFXRenderPass(p.rt, p.ds, p.ps.colclip_hw, p.dss.date,
+				p.IsRTFeedbackLoop(), p.IsDepthFeedbackLoop(),
 				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-			0);
+				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE), gpb);
 	}
 	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-	if (m_optional_extensions.vk_ext_line_rasterization &&
+	if (m_optional_extensions.vk_khr_line_rasterization &&
 		p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
 	{
-		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT);
+		gpb.SetLineRasterizationMode(VK_LINE_RASTERIZATION_MODE_BRESENHAM_KHR);
 	}
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
@@ -5166,7 +5137,7 @@ bool GSDeviceVK::BindDrawPipeline(const PipelineSelector& p)
 void GSDeviceVK::InitializeState()
 {
 	m_current_framebuffer = VK_NULL_HANDLE;
-	m_current_render_pass = VK_NULL_HANDLE;
+	m_current_render_pass = RenderPass();
 
 	for (u32 i = 0; i < NUM_TFX_TEXTURES; i++)
 		m_tfx_textures[i] = m_null_texture.get();
@@ -5246,17 +5217,17 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartRenderPass(bool wait_for_completi
 {
 	Console.Warning("VK: Executing command buffer due to '%s'", reason);
 
-	const VkRenderPass render_pass = m_current_render_pass;
+	const RenderPass render_pass = m_current_render_pass;
 	const GSVector4i render_pass_area = m_current_render_pass_area;
 	const GSVector4i scissor = m_scissor;
 	GSTexture* const current_rt = m_current_render_target;
 	GSTexture* const current_ds = m_current_depth_target;
-	const FeedbackLoopFlag current_feedback_loop = m_current_framebuffer_feedback_loop;
+	const FeedbackLoopFlags current_feedback_loop = m_current_framebuffer_feedback_loop;
 
 	EndRenderPass();
 	ExecuteCommandBuffer(GetWaitType(wait_for_completion, GSConfig.HWSpinCPUForReadbacks));
 
-	if (render_pass != VK_NULL_HANDLE)
+	if (!render_pass.IsNull())
 	{
 		// rebind framebuffer
 		OMSetRenderTargets(current_rt, current_ds, scissor, current_feedback_loop);
@@ -5276,7 +5247,8 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 	Console.Warning("VK: Executing command buffer due to '%s'", reason_str.c_str());
 
 	pxAssert(m_is_presenting);
-	vkCmdEndRenderPass(GetCurrentCommandBuffer());
+	const VkSubpassEndInfo sub_end = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
+	vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub_end);
 	ExecuteCommandBuffer(wait_for_completion);
 
 	GSTextureVK* swap_chain_texture = m_swap_chain->GetCurrentTexture();
@@ -5284,13 +5256,15 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 	const VkFramebuffer fb = swap_chain_texture->GetFramebuffer(false);
 	pxAssert(fb);
 
-	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD,
-			VK_ATTACHMENT_STORE_OP_STORE),
-		fb,
-		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
-		0u, nullptr};
-	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
+	const VkRenderPassBeginInfo rp = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+		.renderPass = GetRenderPassVK(GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+			VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE)),
+		.framebuffer = fb,
+		.renderArea = {{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}} };
+
+	const VkSubpassBeginInfo sub_begin = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
+
+	vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &rp, &sub_begin);
 }
 
 void GSDeviceVK::ExecuteCommandBufferForReadback()
@@ -5301,7 +5275,7 @@ void GSDeviceVK::ExecuteCommandBufferForReadback()
 		m_spin_timer = 30;
 		m_spin_manager.ReadbackRequested();
 
-		if (!m_optional_extensions.vk_ext_calibrated_timestamps && !m_warned_slow_spin)
+		if (!m_optional_extensions.vk_khr_calibrated_timestamps && !m_warned_slow_spin)
 		{
 			m_warned_slow_spin = true;
 			Host::AddKeyedOSDMessage("GSDeviceVK_NoCalibratedTimestamps",
@@ -5321,7 +5295,7 @@ void GSDeviceVK::InvalidateCachedState()
 	m_current_framebuffer = VK_NULL_HANDLE;
 	m_current_render_target = nullptr;
 	m_current_depth_target = nullptr;
-	m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
+	m_current_framebuffer_feedback_loop = FeedbackLoopFlags::None;
 
 	m_current_pipeline_layout = PipelineLayout::Undefined;
 	m_tfx_texture_descriptor_set = VK_NULL_HANDLE;
@@ -5556,48 +5530,112 @@ void GSDeviceVK::UnbindTexture(GSTextureVK* tex)
 
 bool GSDeviceVK::InRenderPass()
 {
-	return m_current_render_pass != VK_NULL_HANDLE;
+	return !m_current_render_pass.IsNull();
 }
 
-void GSDeviceVK::BeginRenderPass(VkRenderPass rp, const GSVector4i& rect)
+void GSDeviceVK::BeginRenderPass(const RenderPass& rp, const GSVector4i& rect)
 {
-	if (m_current_render_pass != VK_NULL_HANDLE)
+	if (!m_current_render_pass.IsNull())
 		EndRenderPass();
 
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_current_render_pass,
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}}, 0,
-		nullptr};
+	if (UseDynamicRendering())
+	{
+		BeginDynamicRenderPass(rp, rect);
+	}
+	else
+	{
+		const VkRenderPassBeginInfo begin_info = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.renderPass = GetRenderPassVK(m_current_render_pass), .framebuffer = m_current_framebuffer,
+			.renderArea = {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}} };
+
+		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
+
+		m_command_buffer_render_passes++;
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
+}
+
+void GSDeviceVK::BeginDynamicRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
+{
+	std::array<VkRenderingAttachmentInfo, MAX_COLOR_ATTACHMENTS> color;
+
+	u32 i = 0;
+	for (i = 0; i < rp.GetColorAttachmentCount(); i++)
+	{
+		color[i] = { .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, .imageView = m_current_render_target->GetView(),
+			.imageLayout = m_current_render_target->GetVkLayout(), .loadOp = rp.GetColorLoadOp(i),
+			.storeOp = rp.GetColorStoreOp(i), .clearValue = (cv && i < cv_count) ? cv[i] : VkClearValue{} };
+	}
+
+	VkRenderingAttachmentInfo depth;
+	VkRenderingAttachmentInfo stencil;
+
+	VkRenderingAttachmentInfo* depth_ptr = nullptr;
+	VkRenderingAttachmentInfo* stencil_ptr = nullptr;
+
+	if (rp.GetDepthAttachmentCount())
+	{
+		depth = { .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, .imageView = m_current_depth_target->GetView(),
+			.imageLayout = m_current_depth_target->GetVkLayout(), .loadOp = rp.GetDepthLoadOp(),
+			.storeOp = rp.GetDepthStoreOp(), .clearValue = (cv && i < cv_count) ? cv[i] : VkClearValue{} };
+		depth_ptr = &depth;
+
+		if (m_features.stencil_buffer)
+		{
+			stencil = depth;
+			stencil.loadOp = rp.GetStencilLoadOp();
+			stencil.storeOp = rp.GetStencilStoreOp();
+			stencil_ptr = &stencil;
+		}
+
+		i++;
+	}
+
+	const VkRenderingInfo begin_info = { .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+		.renderArea = {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+		.layerCount = 1, .colorAttachmentCount = rp.GetColorAttachmentCount(), .pColorAttachments = color.data(),
+		.pDepthAttachment = depth_ptr, .pStencilAttachment = stencil_ptr };
 
 	m_command_buffer_render_passes++;
-	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
+void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
 {
-	if (m_current_render_pass != VK_NULL_HANDLE)
+	if (!m_current_render_pass.IsNull())
 		EndRenderPass();
 
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_current_render_pass,
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
-		cv_count, cv};
+	if (UseDynamicRendering())
+	{
+		BeginDynamicRenderPass(rp, rect, cv, cv_count);
+	}
+	else
+	{
+		const VkRenderPassBeginInfo begin_info = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.renderPass = GetRenderPassVK(m_current_render_pass), .framebuffer = m_current_framebuffer,
+			.renderArea = {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+			.clearValueCount = cv_count, .pClearValues = cv };
 
-	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
+
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color)
+void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, u32 clear_color)
 {
 	alignas(16) VkClearValue cv;
 	GSVector4::store<true>((void*)cv.color.float32, GSVector4::unorm8(clear_color));
 	BeginClearRenderPass(rp, rect, &cv, 1);
 }
 
-void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil)
+void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, float depth, u8 stencil)
 {
 	VkClearValue cv;
 	cv.depthStencil.depth = depth;
@@ -5605,15 +5643,79 @@ void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, f
 	BeginClearRenderPass(rp, rect, &cv, 1);
 }
 
+bool GSDeviceVK::BeginPresentRenderPass(const RenderPass& rp, const GSVector4i& rect, GSTextureVK* swap_chain)
+{
+	if (!m_current_render_pass.IsNull())
+		EndRenderPass();
+
+	if (UseDynamicRendering())
+	{
+		VkRenderingAttachmentInfo color = { .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO, .imageView = swap_chain->GetView(),
+			.imageLayout = swap_chain->GetVkLayout(), .loadOp = rp.GetColorLoadOp(0), .storeOp = rp.GetColorStoreOp(0),
+			.clearValue = s_present_clear_color };
+
+		const VkRenderingInfo begin_info = { .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+			.renderArea = {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())} },
+			.layerCount = 1, .colorAttachmentCount = 1, .pColorAttachments = &color };
+
+		m_command_buffer_render_passes++;
+		vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
+	}
+	else
+	{
+		VkFramebuffer fb = swap_chain->GetFramebuffer(false);
+
+		if (fb == VK_NULL_HANDLE)
+			return false;
+
+		const VkRenderPassBeginInfo begin_info = { .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			.renderPass = GetRenderPassVK(rp), .framebuffer = fb,
+			.renderArea = {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
+			.clearValueCount = 1, .pClearValues = &s_present_clear_color };
+
+		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
+
+		m_command_buffer_render_passes++;
+		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+	}
+
+	return true;
+}
+
 void GSDeviceVK::EndRenderPass()
 {
-	if (m_current_render_pass == VK_NULL_HANDLE)
+	if (m_current_render_pass.IsNull())
 		return;
 
-	m_current_render_pass = VK_NULL_HANDLE;
+	m_current_render_pass = RenderPass();
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	vkCmdEndRenderPass(GetCurrentCommandBuffer());
+	if (UseDynamicRendering())
+	{
+		vkCmdEndRendering(GetCurrentCommandBuffer());
+	}
+	else
+	{
+		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
+		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	}
+}
+
+void GSDeviceVK::EndPresentRenderPass()
+{
+	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
+
+	if (UseDynamicRendering())
+	{
+		vkCmdEndRendering(GetCurrentCommandBuffer());
+	}
+	else
+	{
+		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
+		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+	}
+
+	m_is_presenting = false;
 }
 
 void GSDeviceVK::SetViewport(const VkViewport& viewport)
@@ -5841,7 +5943,6 @@ bool GSDeviceVK::ApplyUtilityState(bool already_execed)
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_utility_pipeline_layout, 0, false);
 	}
 
-
 	ApplyBaseState(flags, cmdbuf);
 	return true;
 }
@@ -5967,7 +6068,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	pipe.dss.zwe = false;
 	pipe.cms.wrgba = 0;
 	pipe.bs = {};
-	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+	pipe.feedback_loop_flags = FeedbackLoopFlags::None;
 	pipe.rt = true;
 	pipe.ps.blend_a = pipe.ps.blend_b = pipe.ps.blend_c = pipe.ps.blend_d = false;
 	pipe.ps.no_color = false;
@@ -6053,7 +6154,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			colclip_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 			draw_rt = static_cast<GSTextureVK*>(config.rt);
-			OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+			OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), pipe.feedback_loop_flags);
 
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (draw_rt->GetState() == GSTexture::State::Cleared)
@@ -6065,7 +6166,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
 				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+										 pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_CLEAR,
 										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect(), cvs, cv_count);
 				draw_rt->SetState(GSTexture::State::Dirty);
@@ -6073,7 +6174,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			else
 			{
 				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
+									pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_LOAD,
 									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect());
 			}
@@ -6197,11 +6298,12 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 
 		// Prefer keeping feedback loop enabled, that way we're not constantly restarting render passes
-		if (draw_rt)
-			pipe.feedback_loop_flags |= m_current_framebuffer_feedback_loop & FeedbackLoopFlag_ReadAndWriteRT;
-		if (draw_ds)
-			pipe.feedback_loop_flags |= (m_current_framebuffer_feedback_loop &
-				(FeedbackLoopFlag_ReadAndWriteDepth | FeedbackLoopFlag_ReadDepth));
+		FeedbackLoopFlags flags = pipe.feedback_loop_flags;
+		if (draw_rt && (m_current_framebuffer_feedback_loop & FeedbackLoopFlags::RT))
+			flags |= FeedbackLoopFlags::RT;
+		if (draw_ds && (m_current_framebuffer_feedback_loop & FeedbackLoopFlags::Depth))
+			flags |= FeedbackLoopFlags::Depth;
+		pipe.feedback_loop_flags = flags;
 	}
 
 	if (draw_rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
@@ -6286,16 +6388,16 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	
 	PSSetROVs(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
 
-	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags), rtsize);
+	OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop_flags, rtsize);
 
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(draw_rt);
 		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(draw_ds);
-		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
+		const RenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
-			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
+			pipe.IsDepthFeedbackLoop(), rt_op, ds_op);
 		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
 
 		// Only draw to the active area of the colclip hw target. Except when depth is cleared, we need to use the full
@@ -6342,7 +6444,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// rt -> colclip hw blit if enabled
 	if (colclip_rt && (config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly || config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertAndResolve) && config.rt->GetState() == GSTexture::State::Dirty)
 	{
-		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+		OMSetRenderTargets(draw_rt, draw_ds, GSVector4i::loadh(rtsize), pipe.feedback_loop_flags);
 		SetUtilityTexture(static_cast<GSTextureVK*>(config.rt), m_point_sampler);
 		SetPipeline(m_colclip_setup_pipelines[pipe.ds][pipe.IsRTFeedbackLoop()]);
 
@@ -6351,7 +6453,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		DrawStretchRect(sRect, drawareaf, rtsize);
 
 		GL_POP();
-		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+		OMSetRenderTargets(draw_rt, draw_ds, config.scissor, pipe.feedback_loop_flags);
 	}
 
 	// VB/IB upload, if we did DATE setup and it's not colclip hw this has already been done
@@ -6421,7 +6523,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			colclip_rt->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 			draw_rt = static_cast<GSTextureVK*>(config.rt);
-			OMSetRenderTargets(draw_rt, draw_ds, (config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly) ? GSVector4i::loadh(rtsize) : config.scissor, static_cast<FeedbackLoopFlag>(pipe.feedback_loop_flags));
+			OMSetRenderTargets(draw_rt, draw_ds, (config.colclip_mode == GSHWDrawConfig::ColClipMode::ResolveOnly) ? GSVector4i::loadh(rtsize) : config.scissor, pipe.feedback_loop_flags);
 
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (draw_rt->GetState() == GSTexture::State::Cleared)
@@ -6433,7 +6535,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 					cvs[cv_count++].depthStencil = {draw_ds->GetClearDepth(), 1};
 
 				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-										 pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+										 pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_CLEAR,
 										 pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect(), cvs, cv_count);
 				draw_rt->SetState(GSTexture::State::Dirty);
@@ -6441,7 +6543,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			else
 			{
 				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-									pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
+									pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_LOAD,
 									pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					draw_rt->GetRect());
 			}
@@ -6473,19 +6575,22 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	pipe.line_width = config.line_expand;
-	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
+
+	FeedbackLoopFlags flags = FeedbackLoopFlags::None;
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
 	{
 		if (config.IsFeedbackLoopRT(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
-
+			flags |= FeedbackLoopFlags::RT;
 		if (config.IsFeedbackLoopDepth(config.ps))
-			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteDepth;
+			flags |= FeedbackLoopFlags::Depth;
 	}
-	if (pipe.ds && !(pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth))
+	if (pipe.ds && config.tex && config.tex == config.ds)
 	{
-		pipe.feedback_loop_flags |= (config.tex && config.tex == config.ds) ? FeedbackLoopFlag_ReadDepth : FeedbackLoopFlag_None;
+		// Depth sampling with no depth write (otherwise would need barrier).
+		pxAssert(!config.depth.zwe);
+		flags |= FeedbackLoopFlags::Depth;
 	}
+	pipe.feedback_loop_flags = flags;
 
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
@@ -6512,33 +6617,44 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 	}
 }
 
-VkImageMemoryBarrier GSDeviceVK::GetColorBufferFeedbackBarrier(GSTextureVK* rt) const
+void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
 {
-	const VkImageLayout layout =
-		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
-	const VkAccessFlags dst_access =
-		UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
-		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
-}
+	std::array<VkImageMemoryBarrier2, 2> barriers;
+	u32 num_barriers = 0;
 
-VkImageMemoryBarrier GSDeviceVK::GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const
-{
-	const VkImageLayout layout =
-		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
-	const VkAccessFlags dst_access =
-		UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
-		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, ds->GetImage(),
-		{VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u}};
-}
+	if (rt)
+	{
+		VkMemoryBarrier2 flags = GSTextureVK::GetFeedbackBarrierFlags(true);
 
-VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags() const
-{
-	return UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-	                                 VK_DEPENDENCY_BY_REGION_BIT;
+		barriers[num_barriers++] = { .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+			.srcStageMask = flags.srcStageMask, .srcAccessMask = flags.srcAccessMask,
+			.dstStageMask = flags.dstStageMask, .dstAccessMask = flags.dstAccessMask,
+			.oldLayout = GSTextureVK::GetVkImageLayout(GSTextureVK::Layout::FeedbackLoop),
+			.newLayout = GSTextureVK::GetVkImageLayout(GSTextureVK::Layout::FeedbackLoop),
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.image = rt->GetImage(), .subresourceRange = { GSTextureVK::GetBarrierImageAspectFlags(true), 0, 1, 0, 1} };
+	}
+
+	if (ds)
+	{
+		VkMemoryBarrier2 flags = GSTextureVK::GetFeedbackBarrierFlags(false);
+
+		barriers[num_barriers++] = { .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+			.srcStageMask = flags.srcStageMask, .srcAccessMask = flags.srcAccessMask,
+			.dstStageMask = flags.dstStageMask, .dstAccessMask = flags.dstAccessMask,
+			.oldLayout = GSTextureVK::GetVkImageLayout(GSTextureVK::Layout::FeedbackLoop),
+			.newLayout = GSTextureVK::GetVkImageLayout(GSTextureVK::Layout::FeedbackLoop),
+			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+			.image = ds->GetImage(), .subresourceRange = { GSTextureVK::GetBarrierImageAspectFlags(false), 0, 1, 0, 1} };
+	}
+
+	VkDependencyInfo dependency = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+		.dependencyFlags = GSTextureVK::GetFeedbackLoopDependencyFlags(),
+		.imageMemoryBarrierCount = num_barriers, .pImageMemoryBarriers = barriers.data() };
+
+	vkCmdPipelineBarrier2(GetCurrentCommandBuffer(), &dependency);
 }
 
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
@@ -6554,38 +6670,8 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(m_pipeline_selector.ps) || config.IsFeedbackLoopDepth(m_pipeline_selector.ps))) [[unlikely]]
 		Console.Warning("VK: Possible unnecessary barrier detected.");
 #endif
-	VkDependencyFlags barrier_flags = GetFeedbackBarrierDependencyFlags();
 
-	std::array<VkImageMemoryBarrier, 2> barriers;
-	u32 n_barriers = 0;
-	if (full_barrier || one_barrier)
-	{
-		if (draw_rt)
-		{
-			barriers[0] = GetColorBufferFeedbackBarrier(draw_rt);
-			n_barriers++;
-		}
-		if (draw_ds)
-		{
-			barriers[1] = GetDepthStencilBufferFeedbackBarrier(draw_ds);
-			n_barriers++;
-		}
-	}
-
-	const auto IssueBarriers = [&]() {
-		if (draw_rt)
-		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[0]);
-		}
-		if (draw_ds)
-		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[1]);
-		}
-	};
+	const int n_barriers = (draw_rt ? 1 : 0) + (draw_ds ? 1 : 0);
 
 	if (full_barrier)
 	{
@@ -6599,7 +6685,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			IssueBarriers();
+			FeedbackBarrier(draw_rt, draw_ds);
 
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
 			Draw(config, p, count);
@@ -6612,7 +6698,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if (one_barrier)
 	{
 		g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
-		IssueBarriers();
+		FeedbackBarrier(draw_rt, draw_ds);
 	}
 
 	Draw(config);
