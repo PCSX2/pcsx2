@@ -1304,8 +1304,12 @@ struct PSMain
 	{
 		if (PS_FBMASK)
 		{
-			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
-			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(current_color * float4(multi, multi, multi, 255)) & cb.fbmask));
+			float multi_rgb = PS_COLCLIP_HW ? 65535.0 : 255.5;
+			float multi_a = PS_RTA_CORRECTION ? 128.0 : 255.0;
+			float4 RT = current_color;
+			RT.rgb = RT.rgb * multi_rgb;
+			RT.a = round(RT.a * multi_a);
+			C = float4((uint4(int4(C)) & (cb.fbmask ^ 0xff)) | (uint4(RT) & cb.fbmask));
 		}
 	}
 
@@ -1769,7 +1773,7 @@ fragment MainPSOut ps_main(
 			main.current_depth = ds_tex.read(coord).x;
 	}
 
-	if (NEEDS_RT || (PS_ROV_COLOR && any(cb.fbmask == 0xff)))
+	if (NEEDS_RT)
 	{
 		if (PS_ROV_COLOR)
 		{
@@ -1797,8 +1801,6 @@ fragment MainPSOut ps_main(
 		ds_rov.write(out.depth, coord);
 	if (PS_ROV_COLOR && !main.color_discarded)
 	{
-		if (!PS_FBMASK)
-			out.c0 = select(out.c0, main.current_color, cb.fbmask == 0xff);
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else
