@@ -5,9 +5,13 @@
 
 using namespace metal;
 
-constant bool BILN      [[function_constant(GSMTLConstantIndex_BILN)]];
-constant bool DEPTH_OUT [[function_constant(GSMTLConstantIndex_DEPTH_OUT)]];
-constant bool COLOR_OUT = !DEPTH_OUT;
+constant bool BILN        [[function_constant(GSMTLConstantIndex_BILN)]];
+constant bool INTEGER_IN  [[function_constant(GSMTLConstantIndex_INTEGER_IN)]];
+constant bool INTEGER_OUT [[function_constant(GSMTLConstantIndex_INTEGER_OUT)]];
+constant bool FLOAT_IN  = !INTEGER_IN;
+constant bool FLOAT_OUT = !INTEGER_OUT;
+constant bool DEPTH_OUT   [[function_constant(GSMTLConstantIndex_DEPTH_OUT)]];
+constant bool COLOR_OUT = !DEPTH_OUT && !INTEGER_OUT;
 
 struct ConvertVSIn
 {
@@ -160,24 +164,51 @@ fragment float4 ps_filter_transparency(ConvertShaderData data [[stage_in]], Conv
 	return float4(c.rgb, 1.0);
 }
 
-fragment uint ps_convert_depth32_32bits(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+struct FloatOrUIntDepth
 {
-	return uint(0x1p32 * res.sample(data.t));
+	float f;
+	uint u;
+	explicit FloatOrUIntDepth(float value): f(value), u(value * 0x1p32) {}
+	explicit FloatOrUIntDepth(uint value): f(value * 0x1p-32), u(value) {}
+};
+
+struct DepthOrColorOut
+{
+	float color [[color(0), function_constant(COLOR_OUT)]];
+	float depth [[depth(any), function_constant(DEPTH_OUT)]];
+	uint ucolor [[color(0), function_constant(INTEGER_OUT)]];
+	DepthOrColorOut(float value): color(value), depth(value), ucolor(value * 0x1p32) {}
+	DepthOrColorOut(uint value): color(value * 0x1p-32), depth(value * 0x1p-32), ucolor(value) {}
+	DepthOrColorOut(FloatOrUIntDepth value)
+		: color(FLOAT_IN ? value.f : float(value.u) * 0x1p-32)
+		, depth(FLOAT_IN ? value.f : float(value.u) * 0x1p-32)
+		, ucolor(FLOAT_IN ? uint(value.f * 0x1p32) : value.u) {}
+};
+
+struct ConvertPSDepthOrColorRes
+{
+	texture2d<float> f [[texture(GSMTLTextureIndexNonHW), function_constant(FLOAT_IN)]];
+	texture2d<uint> u [[texture(GSMTLTextureIndexNonHW), function_constant(INTEGER_IN)]];
+	sampler s [[sampler(0)]];
+	FloatOrUIntDepth sample(float2 coord)
+	{
+		return FLOAT_IN ? FloatOrUIntDepth(f.sample(s, coord).x) : FloatOrUIntDepth(u.sample(s, coord).x);
+	}
+};
+
+fragment uint ps_convert_depth32_32bits(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
+{
+	return res.sample(data.t).u;
 }
 
-fragment float4 ps_convert_depth32_rgba8(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+fragment float4 ps_convert_depth32_rgba8(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
 {
-	return convert_depth32_rgba8(res.sample(data.t)) / 255.f;
+	return (FLOAT_IN ? convert_depth32_rgba8(res.sample(data.t).f) : convert_depth32_rgba8(res.sample(data.t).u)) / 255.f;
 }
 
-fragment float4 ps_convert_depth16_rgb5a1(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
+fragment float4 ps_convert_depth16_rgb5a1(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
 {
-	return convert_depth16_rgba8(res.sample(data.t)) / 255.f;
-}
-
-fragment float ps_convert_float32_depth_to_color(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
-{
-	return res.sample(data.t);
+	return (FLOAT_IN ? convert_depth16_rgba8(res.sample(data.t).f) :  convert_depth16_rgba8(res.sample(data.t).u)) / 255.f;
 }
 
 fragment float4 ps_downsample_copy(ConvertShaderData data [[stage_in]],
@@ -196,44 +227,34 @@ fragment float4 ps_downsample_copy(ConvertShaderData data [[stage_in]],
 	return result;
 }
 
-static float rgba8_to_depth32(half4 unorm)
+static FloatOrUIntDepth rgba8_to_depth32(half4 unorm)
 {
-	return float(as_type<uint>(uchar4(unorm * 255.5h))) * 0x1p-32f;
+	return FloatOrUIntDepth(as_type<uint>(uchar4(unorm * 255.5h)));
 }
 
-static float rgba8_to_depth24(half4 unorm)
+static FloatOrUIntDepth rgba8_to_depth24(half4 unorm)
 {
 	return rgba8_to_depth32(half4(unorm.rgb, 0));
 }
 
-static float rgba8_to_depth16(half4 unorm)
+static FloatOrUIntDepth rgba8_to_depth16(half4 unorm)
 {
-	return float(as_type<ushort>(uchar2(unorm.rg * 255.5h))) * 0x1p-32f;
+	return FloatOrUIntDepth(uint(as_type<ushort>(uchar2(unorm.rg * 255.5h))));
 }
 
-static float rgb5a1_to_depth16(half4 unorm)
+static FloatOrUIntDepth rgb5a1_to_depth16(half4 unorm)
 {
 	uint4 cu = uint4(unorm * 255.5h);
 	uint out = (cu.x >> 3) | ((cu.y << 2) & 0x03e0) | ((cu.z << 7) & 0x7c00) | ((cu.w << 8) & 0x8000);
-	return float(out) * 0x1p-32f;
+	return FloatOrUIntDepth(out);
 }
 
-struct DepthOrColorOut
+static FloatOrUIntDepth lerp_depth(FloatOrUIntDepth a, FloatOrUIntDepth b, float c)
 {
-	float color [[color(0), function_constant(COLOR_OUT)]];
-	float depth [[depth(any), function_constant(DEPTH_OUT)]];
-	DepthOrColorOut(float value): color(value), depth(value) {}
-};
-
-struct ConvertPSDepthOrColorRes
-{
-	texture2d<float> texture [[texture(GSMTLTextureIndexNonHW)]];
-	sampler s [[sampler(0)]];
-	float sample(float2 coord)
-	{
-		return texture.sample(s, coord).x;
-	}
-};
+  uint absdiff = a.u > b.u ? a.u - b.u : b.u - a.u;
+  uint adjust = min(uint(round(float(absdiff) * c)), absdiff);
+  return FLOAT_IN ? FloatOrUIntDepth(mix(a.f, b.f, c)) : FloatOrUIntDepth(a.u > b.u ? a.u - adjust : a.u + adjust);
+}
 
 struct ConvertToDepthRes
 {
@@ -247,8 +268,8 @@ struct ConvertToDepthRes
 	}
 
 	/// Manual bilinear sampling where we do the bilinear *after* rgba → depth conversion
-	template <float (&convert)(half4)>
-	float sample_biln(float2 coord)
+	template <FloatOrUIntDepth (&convert)(half4)>
+	FloatOrUIntDepth sample_biln(float2 coord)
 	{
 		uint2 dimensions = uint2(texture.get_width(), texture.get_height());
 		float2 top_left_f = coord * float2(dimensions) - 0.5f;
@@ -256,15 +277,15 @@ struct ConvertToDepthRes
 		uint4 coords = uint4(clamp(int4(top_left, top_left + 1), 0, int2(dimensions - 1).xyxy));
 		float2 mix_vals = fract(top_left_f);
 
-		float depthTL = convert(texture.read(coords.xy));
-		float depthTR = convert(texture.read(coords.zy));
-		float depthBL = convert(texture.read(coords.xw));
-		float depthBR = convert(texture.read(coords.zw));
-		return mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+		FloatOrUIntDepth depthTL = convert(texture.read(coords.xy));
+		FloatOrUIntDepth depthTR = convert(texture.read(coords.zy));
+		FloatOrUIntDepth depthBL = convert(texture.read(coords.xw));
+		FloatOrUIntDepth depthBR = convert(texture.read(coords.zw));
+		return lerp_depth(lerp_depth(depthTL, depthTR, mix_vals.x), lerp_depth(depthBL, depthBR, mix_vals.x), mix_vals.y);
 	}
 
-	template <float (&convert)(half4)>
-	float sample_maybe_biln(float2 coord)
+	template <FloatOrUIntDepth (&convert)(half4)>
+	FloatOrUIntDepth sample_maybe_biln(float2 coord)
 	{
 		if (BILN)
 			return sample_biln<convert>(coord);
@@ -278,9 +299,9 @@ fragment DepthOrColorOut ps_depth_copy(ConvertShaderData data [[stage_in]], Conv
 	return res.sample(data.t);
 }
 
-static float depth32_to_depth24(float d)
+static FloatOrUIntDepth depth32_to_depth24(FloatOrUIntDepth d)
 {
-	return float(uint(d * exp2(32.0f)) & 0xffffff) * exp2(-32.0f); 
+	return FloatOrUIntDepth(d.u & 0xffffff); 
 }
 
 fragment DepthOrColorOut ps_convert_depth32_depth24(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
