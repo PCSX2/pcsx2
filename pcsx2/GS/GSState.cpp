@@ -2527,7 +2527,8 @@ void GSState::FlushPrim()
 
 		if (tail > head)
 		{
-			switch (PRIM->PRIM)
+			// NOTE: Do not use PRIM->PRIM as the previous environment may have been restored and it may have changed from strip to fan, which messes up the backup.
+			switch (m_env.PRIM.PRIM)
 			{
 				case GS_POINTLIST:
 					pxAssert(0);
@@ -2667,7 +2668,7 @@ void GSState::FlushPrim()
 
 			// If it's a Triangle fan the XY buffer needs to be updated to point to the correct head vert
 			// Jak 3 shadows get spikey (with autoflush) if you don't.
-			if (PRIM->PRIM == GS_TRIANGLEFAN)
+			if (m_env.PRIM.PRIM == GS_TRIANGLEFAN)
 			{
 				for (u32 i = 0; i < unused; i++)
 				{
