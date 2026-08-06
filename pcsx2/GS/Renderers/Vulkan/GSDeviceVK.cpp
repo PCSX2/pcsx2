@@ -1657,9 +1657,11 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 	if (key.depth_format != VK_FORMAT_UNDEFINED)
 	{
 		const VkImageLayout layout =
-			key.depth_sampling ? (UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
-															VK_IMAGE_LAYOUT_GENERAL) :
-								 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			key.depth_sampling ?
+				((m_features.depth_feedback && UseFeedbackLoopLayout()) ?
+					VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
+					VK_IMAGE_LAYOUT_GENERAL) :
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		attachments[num_attachments] = {0, static_cast<VkFormat>(key.depth_format), VK_SAMPLE_COUNT_1_BIT,
 			static_cast<VkAttachmentLoadOp>(key.depth_load_op), static_cast<VkAttachmentStoreOp>(key.depth_store_op),
 			static_cast<VkAttachmentLoadOp>(key.stencil_load_op),
@@ -3757,12 +3759,14 @@ void GSDeviceVK::OMSetRenderTargets(
 			}
 			else if (feedback_loop & FeedbackLoopFlag_ReadDepth)
 			{
-				if (vkDs->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
+				const GSTextureVK::Layout layout = m_features.depth_feedback ?
+					GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::General;
+				if (vkDs->GetLayout() != layout)
 				{
 					m_dirty_flags |= (DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE);
 					if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
 						m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_TEXTURE;
-					vkDs->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
+					vkDs->TransitionToLayout(layout);
 				}
 			}
 			else
