@@ -10747,7 +10747,10 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 		const int first_x = (v[1].XYZ.X - v[0].XYZ.X) >> 4;
 		const int first_y = (v[1].XYZ.Y - v[0].XYZ.Y) >> 4;
 
-		if (first_x >= first_u && first_y >= first_v && !no_resize && ((draw_size.x != first_x && draw_size.y != first_y) || (tex_size.x != first_u && tex_size.y != first_v)) && std::abs(draw_size.x - first_x) <= 4 && std::abs(draw_size.y - first_y) <= 4)
+		const u32 half_color_mask = (m_vt.m_min.c == GSVector4i(64, 64, 64, 64)).mask() & 0xfff;
+		const bool possible_fake_bilinear = no_resize && PRIM->ABE && m_context->ALPHA.IsAdditive() && m_cached_ctx.TEX0.TFX == TFX_MODULATE && m_vt.m_eq.rgba && half_color_mask == 0xfff;
+
+		if (first_x >= first_u && first_y >= first_v && (!no_resize || possible_fake_bilinear) && ((draw_size.x != first_x && draw_size.y != first_y) || (tex_size.x != first_u && tex_size.y != first_v)) && std::abs(draw_size.x - first_x) <= 4 && std::abs(draw_size.y - first_y) <= 4)
 		{
 			for (u32 i = 2; i < m_index->tail; i += 2)
 			{
