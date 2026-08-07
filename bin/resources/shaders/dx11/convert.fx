@@ -662,9 +662,9 @@ float ps_primid_image_init_0(PS_INPUT input) : SV_Target
 {
 	float c;
 	if ((127.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
-		c = float(-1);
+		c = float(PRIMID_MIN);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(PRIMID_MAX);
 	return c;
 }
 #endif
@@ -674,9 +674,9 @@ float ps_primid_image_init_1(PS_INPUT input) : SV_Target
 {
 	float c;
 	if (sample_c(input.t).a < (127.5f / 255.0f)) // >= 0x80 pass
-		c = float(-1);
+		c = float(PRIMID_MIN);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(PRIMID_MAX);
 	return c;
 }
 #endif
@@ -686,9 +686,9 @@ float ps_primid_image_init_2(PS_INPUT input) : SV_Target
 {
 	float c;
 	if ((254.5f / 255.0f) < sample_c(input.t).a) // < 0x80 pass (== 0x80 should not pass)
-		c = float(-1);
+		c = float(PRIMID_MIN);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(PRIMID_MAX);
 	return c;
 }
 #endif
@@ -698,9 +698,9 @@ float ps_primid_image_init_3(PS_INPUT input) : SV_Target
 {
 	float c;
 	if (sample_c(input.t).a < (254.5f / 255.0f)) // >= 0x80 pass
-		c = float(-1);
+		c = float(PRIMID_MIN);
 	else
-		c = float(0x7FFFFFFF);
+		c = float(PRIMID_MAX);
 	return c;
 }
 #endif

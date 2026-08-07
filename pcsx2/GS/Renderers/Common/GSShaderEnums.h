@@ -63,4 +63,15 @@ enum class PS_ROV_DEPTH : uint32_t
 	READ_ONLY = 2,
 };
 
+#if defined(__METAL_VERSION__)
+	#define CONSTANT constant
+#else
+	#define CONSTANT 
+#endif
+
+static constexpr CONSTANT int PRIMID_MAX = (1 << 24) - 1;
+static constexpr CONSTANT int PRIMID_MIN = -1;
+
+#undef CONSTANT
+
 } // namespace GSShader

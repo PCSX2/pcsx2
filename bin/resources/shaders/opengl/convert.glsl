@@ -627,23 +627,23 @@ void ps_yuv()
 
 void main()
 {
-	o_col0 = vec4(0x7FFFFFFF);
+	o_col0 = vec4(PRIMID_MAX);
 
 	#ifdef ps_primid_image_init_0
 		if((127.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
-			o_col0 = vec4(-1);
+			o_col0 = vec4(PRIMID_MIN);
 	#endif
 	#ifdef ps_primid_image_init_1
 		if(sample_c().a < (127.5f / 255.0f)) // >= 0x80 pass
-			o_col0 = vec4(-1);
+			o_col0 = vec4(PRIMID_MIN);
 	#endif
 	#ifdef ps_primid_image_init_2
 		if((254.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
-			o_col0 = vec4(-1);
+			o_col0 = vec4(PRIMID_MIN);
 	#endif
 	#ifdef ps_primid_image_init_3
 		if(sample_c().a < (254.5f / 255.0f)) // >= 0x80 pass
-			o_col0 = vec4(-1);
+			o_col0 = vec4(PRIMID_MIN);
 	#endif
 }
 #endif
