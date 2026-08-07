@@ -59,6 +59,7 @@ enum class ShaderConvert
 	RGBA8_TO_DEPTH16,
 	RGB5A1_TO_DEPTH16,
 	DEPTH32_TO_DEPTH24,
+	PRIMID_TO_RGBA8,
 	DOWNSAMPLE_COPY,
 	RGBA_TO_8I,
 	RGB5A1_TO_8I,
@@ -122,6 +123,7 @@ static inline constexpr bool HasColorOutput(ShaderConvert shader)
 		case ShaderConvert::DEPTH32_TO_RGBA8:
 		case ShaderConvert::DEPTH32_TO_RGB8:
 		case ShaderConvert::DEPTH16_TO_RGB5A1:
+		case ShaderConvert::PRIMID_TO_RGBA8:
 		case ShaderConvert::DOWNSAMPLE_COPY:
 		case ShaderConvert::RGBA_TO_8I:
 		case ShaderConvert::RGB5A1_TO_8I:
@@ -162,6 +164,7 @@ static inline constexpr bool HasFloat32Input(ShaderConvert shader)
 		case ShaderConvert::DEPTH32_TO_RGB8:
 		case ShaderConvert::DEPTH16_TO_RGB5A1:
 		case ShaderConvert::DEPTH32_TO_DEPTH24:
+		case ShaderConvert::PRIMID_TO_RGBA8:
 			return true;
 		default:
 			return false;
@@ -525,6 +528,10 @@ static inline ShaderConvertSelector GetConvertShader(GSTexture::Format src, GSTe
 				default:
 					pxAssert(false);
 			}
+			break;
+		case GSTexture::Format::PrimID:
+			pxAssert(dst == GSTexture::Format::Color);
+			shader = ShaderConvert::PRIMID_TO_RGBA8;
 			break;
 		default:
 			pxAssert(false);
@@ -1276,6 +1283,8 @@ struct alignas(16) GSHWDrawConfig
 	DestinationAlphaMode destination_alpha;
 	SetDATM datm;
 	bool line_expand;
+
+	const std::string* dump_primid_path; // for debugging only
 
 	struct AlphaPass
 	{

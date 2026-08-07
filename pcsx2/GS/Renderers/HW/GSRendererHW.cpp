@@ -6048,6 +6048,16 @@ void GSRendererHW::EmulateDATESelectMethod(DATEOptions& date_options, GSTextureC
 	pxAssert(!(date_options.barrier && date_options.stencil_one));
 	pxAssert(!(date_options.primid && date_options.stencil_one));
 	pxAssert(!(date_options.primid && date_options.barrier));
+
+	if (date_options.primid && GSConfig.ShouldDump(s_n, g_perfmon.GetFrame()) && GSConfig.SaveRT)
+	{
+		m_dump_primid_path = GetDrawDumpPath("%05lld_f%05lld_primid.bmp", s_n, g_perfmon.GetFrame());
+		m_conf.dump_primid_path = &m_dump_primid_path;
+	}
+	else
+	{
+		m_conf.dump_primid_path = nullptr;
+	}
 }
 
 void GSRendererHW::EmulateDATEGetConfig(DATEOptions& date_options, bool scale_rt_alpha, GSDevice::RecycledTexture& temp_ds)

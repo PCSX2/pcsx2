@@ -49,6 +49,7 @@ const char* ShaderEntryPoint(ShaderConvert value)
 		case ShaderConvert::RGB5A1_TO_DEPTH16:      return "ps_convert_rgb5a1_depth16";
 		case ShaderConvert::DEPTH32_TO_DEPTH24:     return "ps_convert_depth32_depth24";
 		case ShaderConvert::DEPTH_COPY:             return "ps_depth_copy";
+		case ShaderConvert::PRIMID_TO_RGBA8:        return "ps_convert_primid_rgba8";
 		case ShaderConvert::DOWNSAMPLE_COPY:        return "ps_downsample_copy";
 		case ShaderConvert::RGBA_TO_8I:             return "ps_convert_rgba_8i";
 		case ShaderConvert::RGB5A1_TO_8I:           return "ps_convert_rgb5a1_8i";
@@ -109,6 +110,7 @@ const char* ShaderConvertName(ShaderConvert shader)
 		ENTRY(RGBA8_TO_DEPTH16);
 		ENTRY(RGB5A1_TO_DEPTH16);
 		ENTRY(DEPTH32_TO_DEPTH24);
+		ENTRY(PRIMID_TO_RGBA8);
 		ENTRY(DOWNSAMPLE_COPY);
 		ENTRY(RGBA_TO_8I);
 		ENTRY(RGB5A1_TO_8I);

@@ -6401,12 +6401,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
-	if (date_image)
-		Recycle(date_image);
-
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
@@ -6458,6 +6452,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	}
 
 	config.colclip_mode = GSHWDrawConfig::ColClipMode::NoModify;
+
+	if (date_image && config.dump_primid_path)
+		date_image->Save(*config.dump_primid_path);
+
+	if (date_image)
+		Recycle(date_image);
+
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
 }
 
 void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe)

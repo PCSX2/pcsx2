@@ -2560,6 +2560,9 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 		}
 	}
 
+	if (primid_tex && config.dump_primid_path)
+		primid_tex->Save(*config.dump_primid_path);
+
 	if (primid_tex)
 		Recycle(primid_tex);
 }}

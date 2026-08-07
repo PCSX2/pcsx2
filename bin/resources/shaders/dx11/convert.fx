@@ -169,6 +169,11 @@ float depth32_to_depth24(float d)
 	return uint_to_depth24(depth_to_uint(d));
 }
 
+float4 primid_to_rgba8(float p)
+{
+	return uint_to_rgba8(asuint(p));
+}
+
 #if defined(__ps_copy__)
 OUTPUT_TYPE ps_copy(PS_INPUT input) : OUTPUT_SV
 {
@@ -320,6 +325,13 @@ OUTPUT_TYPE ps_convert_depth32_depth24(PS_INPUT input) : OUTPUT_SV
 {
 	// Truncates depth value to 24bits
 	return depth32_to_depth24(sample_c(input.t));
+}
+#endif
+
+#if defined(__ps_convert_primid_rgba8__)
+OUTPUT_TYPE ps_convert_primid_rgba8(PS_INPUT input) : OUTPUT_SV
+{
+	return primid_to_rgba8(sample_c(input.t));
 }
 #endif
 

@@ -346,6 +346,8 @@ private:
 	std::unique_ptr<GSTextureCacheSW::Texture> m_sw_texture[7 + 1];
 	std::unique_ptr<GSVirtualAlignedClass<32>> m_sw_rasterizer;
 
+	std::string m_dump_primid_path;
+	
 public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;

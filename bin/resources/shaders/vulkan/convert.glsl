@@ -130,6 +130,11 @@ float depth32_to_depth24(float d)
 	return uint_to_depth24(depth_to_uint(d));
 }
 
+vec4 primid_to_rgba8(float p)
+{
+	return uint_to_rgba8(floatBitsToUint(p));
+}
+
 #ifdef ps_copy
 void ps_copy()
 {
@@ -278,6 +283,13 @@ void ps_convert_depth32_depth24()
 {
 	// Truncates depth value to 24bits
 	OUTPUT = depth32_to_depth24(sample_c(v_tex));
+}
+#endif
+
+#ifdef ps_convert_primid_rgba8
+void ps_convert_primid_rgba8()
+{
+	OUTPUT = primid_to_rgba8(sample_c(v_tex));
 }
 #endif
 

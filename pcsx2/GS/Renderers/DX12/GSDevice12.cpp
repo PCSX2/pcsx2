@@ -4696,12 +4696,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			config.alpha_second_pass.require_full_barrier);
 	}
 
-	if (date_image)
-		Recycle(date_image);
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
@@ -4733,6 +4727,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+
+	if (date_image && config.dump_primid_path)
+		date_image->Save(*config.dump_primid_path);
+
+	if (date_image)
+		Recycle(date_image);
+
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
 }
 
 void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,

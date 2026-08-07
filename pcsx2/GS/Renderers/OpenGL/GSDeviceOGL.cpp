@@ -3196,6 +3196,9 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+
+	if (primid_texture && config.dump_primid_path)
+		primid_texture->Save(*config.dump_primid_path);
 }
 
 void GSDeviceOGL::FeedbackCopyAndBind(const GSHWDrawConfig& config,
