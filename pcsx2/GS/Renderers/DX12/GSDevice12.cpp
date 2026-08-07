@@ -2877,6 +2877,8 @@ bool GSDevice12::CompileConvertPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("PIXEL_SHADER", 1);
+		sm.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
 		sm.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
@@ -2930,6 +2932,8 @@ bool GSDevice12::CompileConvertPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("PIXEL_SHADER", "1");
+		sm.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm.AddMacro(entry_point_macro.c_str(), "1");
 
 		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), entry_point.c_str()));
