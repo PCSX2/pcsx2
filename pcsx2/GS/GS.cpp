@@ -876,6 +876,7 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 	// clear the hash texture cache since we might have replacements now
 	// also clear it when dumping changes, since we want to dump everything being used
 	if (GSConfig.LoadTextureReplacements != old_config.LoadTextureReplacements ||
+		GSConfig.LoadTextureReplacementsFromArchives != old_config.LoadTextureReplacementsFromArchives ||
 		GSConfig.DumpReplaceableTextures != old_config.DumpReplaceableTextures)
 	{
 		g_gs_renderer->PurgeTextureCache(true, false, true);
