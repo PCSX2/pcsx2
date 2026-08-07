@@ -373,6 +373,7 @@ void GSState::ResetDrawBufferIdx()
 void GSState::ResetDrawBuffers()
 {
 	m_used_buffers_idx = 1;
+	m_max_vertex_count = 0;
 
 	for (int i = 0; i < MAX_DRAW_BUFFERS; i++)
 	{
@@ -383,9 +384,9 @@ void GSState::ResetDrawBuffers()
 		m_index = &m_index_buffers[i];
 		m_vertex = &m_vertex_buffers[i];
 		m_vertex_buffers[i].head = m_vertex_buffers[i].tail = m_vertex_buffers[i].next = 0;
-		GrowVertexBuffer();
 	}
 
+	GrowVertexBuffer();
 	ResetDrawBufferIdx();
 }
 
@@ -3826,56 +3827,49 @@ void GSState::UpdateVertexKick()
 	m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZ2] = m_fpGIFPackedRegHandlerSTQRGBAXYZ2[prim];
 }
 
+static void GrowBuffer(void** pbuff, size_t old_size, size_t new_size, bool vertices)
+{
+	void* new_buff = _aligned_malloc(new_size, 32);
+	if (!new_buff)
+	{
+		Console.Error("GS: failed to allocate %zu bytes for %s.", new_size, vertices ? "vertices" : "indices");
+		pxFailRel("Memory allocation failed");
+	}
+	if (*pbuff)
+	{
+		if (old_size)
+		{
+			std::memcpy(new_buff, *pbuff, old_size);
+		}
+		_aligned_free(*pbuff);
+	}
+	*pbuff = new_buff;
+}
+
+template <typename T>
+static void GrowBuffer(T** pbuff, size_t old_count, size_t new_count)
+{
+	static_assert(std::is_same_v<T, GSVertex> || std::is_same_v<T, u16>, "For use with indices or vertices");
+	GrowBuffer(reinterpret_cast<void**>(pbuff), old_count * sizeof(T), new_count * sizeof(T), std::is_same_v<T, GSVertex>);
+}
+
 void GSState::GrowVertexBuffer()
 {
-	const u32 maxcount = std::max<u32>(m_vertex->maxcount * 3 / 2, 10000);
-	const u32 old_vertex_size = sizeof(GSVertex) * m_vertex->tail;
-	const u32 new_vertex_size = sizeof(GSVertex) * maxcount;
-	const u32 old_index_size = sizeof(u16) * m_index->tail;
-	const u32 new_index_size = sizeof(u16) * maxcount * 6; // Worst case index list is a list of points with vs expansion, 6 indices per point
+	const u32 maxcount = std::max<u32>(m_max_vertex_count * 3 / 2, 10000);
+	const u32 new_vertex_count = maxcount;
+	const u32 new_index_count = maxcount * 6; // Worst case index list is a list of points with vs expansion, 6 indices per point
 
-	// Structure describing buffers to reallocate
-	struct AllocDesc
+	for (GSVertexBuff& buf : m_vertex_buffers)
 	{
-		void** pbuff;
-		u32 old_size;
-		u32 new_size;
-	};
-	const std::array<AllocDesc, 5> alloc_desc = {{
-		{reinterpret_cast<void**>(&m_vertex->buff),      old_vertex_size, new_vertex_size},
-		// discard contents of buff_copy by setting old_size = 0
-		{reinterpret_cast<void**>(&m_vertex->buff_copy), 0,               new_vertex_size},
-		{reinterpret_cast<void**>(&m_draw_vertex.buff), old_vertex_size, new_vertex_size},
-		{reinterpret_cast<void**>(&m_index->buff),       old_index_size,  new_index_size},
-		{reinterpret_cast<void**>(&m_draw_index.buff),  old_index_size,  new_index_size}
-	}};
-
-	// For logging
-	u32 total_size = 0;
-	for (const auto& desc : alloc_desc)
-		total_size += desc.new_size;
-
-	// Reallocate each of the needed buffers
-	for (const auto [pbuff, old_size, new_size] : alloc_desc)
-	{
-		void* new_buff = _aligned_malloc(new_size, 32);
-		if (!new_buff)
-		{
-			Console.Error("GS: failed to allocate %zu bytes for vertices and indices.", total_size);
-			pxFailRel("Memory allocation failed");
-		}
-		if (*pbuff)
-		{
-			if (old_size)
-			{
-				std::memcpy(new_buff, *pbuff, old_size);
-			}
-			_aligned_free(*pbuff);
-		}
-		*pbuff = new_buff;
+		GrowBuffer(&buf.buff, buf.tail, new_vertex_count);
+		GrowBuffer(&buf.buff_copy, 0, new_vertex_count);
 	}
+	for (GSIndexBuff& buf : m_index_buffers)
+		GrowBuffer(&buf.buff, buf.tail, new_index_count);
+	GrowBuffer(&m_draw_vertex.buff, m_vertex->tail, new_vertex_count);
+	GrowBuffer(&m_draw_index.buff, m_index->tail, new_index_count);
 
-	m_vertex->maxcount = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
+	m_max_vertex_count = maxcount - 3; // -3 to have some space at the end of the buffer before DrawingKick can grow it
 }
 
 // For returning order of vertices to form a right triangle
@@ -5844,7 +5838,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 	GSVertexBuff& vtx_buff = *m_vertex;
 	GSIndexBuff& idx_buff = *m_index;
 	static_assert(n > 0);
-	pxAssert(vtx_buff.tail < vtx_buff. maxcount + 3);
+	pxAssert(vtx_buff.tail < m_max_vertex_count + 3);
 
 	if constexpr (prim == GS_INVALID)
 	{
@@ -5981,7 +5975,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 				vtx_buff.head = head + 1;
 				[[fallthrough]];
 			case GS_TRIANGLEFAN:
-				if (tail >= vtx_buff.maxcount)
+				if (tail >= m_max_vertex_count)
 					GrowVertexBuffer(); // in case too many vertices were skipped
 				break;
 			default:
@@ -6005,7 +5999,7 @@ __forceinline void GSState::VertexKick(u32 skip)
 			SetDrawBufferEnv();
 	}
 
-	if (tail >= vtx_buff.maxcount)
+	if (tail >= m_max_vertex_count)
 		GrowVertexBuffer();
 
 	u16* RESTRICT buff = &idx_buff.buff[idx_buff.tail];
