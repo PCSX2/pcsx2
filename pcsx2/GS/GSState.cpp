@@ -7010,7 +7010,12 @@ GSVector2i GSState::GSPCRTCRegs::GetResolution()
 
 	if (!GSConfig.PCRTCOffsets)
 	{
-		if (PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled)
+		if (!PCRTCDisplays[0].enabled && !PCRTCDisplays[1].enabled)
+		{
+			const int shift = is_full_height ? 1 : 0;
+			resolution = {offsets.x, offsets.y << shift};
+		}
+		else if (PCRTCDisplays[0].enabled && PCRTCDisplays[1].enabled)
 		{
 			const GSVector4i combined_size = PCRTCDisplays[0].displayRect.runion(PCRTCDisplays[1].displayRect);
 			resolution = { combined_size.width(), combined_size.height() };
