@@ -320,7 +320,7 @@ void GSRendererSW::RewriteVerticesIfSTOverflow()
 			constexpr int n = GSUtil::GetClassVertexCount(primclass);
 
 			// Make sure the copy buffer is large enough.
-			while (m_vertex->maxcount < m_index->tail)
+			while (m_max_vertex_count < m_index->tail)
 				GrowVertexBuffer();
 
 			GSVertex* RESTRICT vertex = m_vertex->buff;
