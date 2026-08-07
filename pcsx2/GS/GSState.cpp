@@ -476,12 +476,14 @@ void GSState::PushBuffer()
 		GSIndexBuff& idx_buff = *m_index;
 
 		const u32 base = m_vertex_buffers[m_current_buffer_idx].head;
-		const u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - base;
+		u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - base;
 
 		m_vertex->tail = 0;
 
-		if (copy_amt)
+		if (copy_amt && m_env.PRIM.PRIM == m_env_buffers[m_current_buffer_idx].m_env.PRIM.PRIM)
 			memcpy(vtx_buff.buff, &m_vertex_buffers[m_current_buffer_idx].buff[base], sizeof(GSVertex) * copy_amt);
+		else
+			copy_amt = 0;
 
 		vtx_buff.head = 0;
 		vtx_buff.next = 0;
@@ -638,20 +640,27 @@ bool GSState::CanBufferNewDraw()
 				GSVertexBuff& vtx_buff = *m_vertex;
 				GSIndexBuff& idx_buff = *m_index;
 
-				const u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - m_vertex_buffers[m_current_buffer_idx].head;
-
-				m_recent_buffer_switch = vtx_buff.tail == vtx_buff.head;
 				if (idx_buff.tail)
-					vtx_buff.tail = idx_buff.buff[idx_buff.tail - 1] + 1;
+					vtx_buff.tail = std::max(idx_buff.buff[idx_buff.tail - 1], idx_buff.buff[std::max(static_cast<int>(idx_buff.tail) - 2, 0)]) + 1;
 				else
 					vtx_buff.tail = 0;
 
-				if (copy_amt)
-					memcpy(&vtx_buff.buff[vtx_buff.tail], &m_vertex_buffers[m_current_buffer_idx].buff[m_vertex_buffers[m_current_buffer_idx].head], sizeof(GSVertex) * copy_amt);
-
 				vtx_buff.head = vtx_buff.tail;
 				vtx_buff.next = vtx_buff.head;
-				vtx_buff.tail += copy_amt;
+
+				u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - m_vertex_buffers[m_current_buffer_idx].head;
+
+				if (copy_amt && m_env_buffers[i].m_env.PRIM.PRIM == m_env_buffers[m_current_buffer_idx].m_env.PRIM.PRIM)
+				{
+					memcpy(&vtx_buff.buff[vtx_buff.tail], &m_vertex_buffers[m_current_buffer_idx].buff[m_vertex_buffers[m_current_buffer_idx].head], sizeof(GSVertex) * copy_amt);
+
+					vtx_buff.tail += copy_amt;
+				}
+				else
+					copy_amt = 0;
+
+				m_recent_buffer_switch = vtx_buff.tail == vtx_buff.head;
+
 				m_backed_up_ctx = m_env_buffers[i].m_backed_up_ctx;
 				temp_draw_rect = m_env_buffers[i].draw_rect;
 				m_env_buffers[i].m_dirty_regs = 0;
@@ -678,7 +687,6 @@ bool GSState::CanBufferNewDraw()
 					vtx_buff.xy_tail = 0;
 
 				m_current_buffer_idx = i;
-
 			}
 
 			m_dirty_gs_regs = 0;
