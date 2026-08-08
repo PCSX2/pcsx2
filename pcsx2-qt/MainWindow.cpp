@@ -3016,6 +3016,7 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 #else
 		m_display_container->setWindowState(m_display_container->windowState() & ~Qt::WindowFullScreen);
 #endif
+		QGuiApplication::sync();
 	}
 #endif
 
