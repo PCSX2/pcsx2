@@ -5,6 +5,7 @@
 
 #include "GS/Renderers/HW/GSTextureCache.h"
 
+#include <cstddef>
 #include <utility>
 
 namespace GSTextureReplacements
@@ -56,6 +57,11 @@ namespace GSTextureReplacements
 	/// Loader will take a filename and interpret the format (e.g. DDS, PNG, etc).
 	using ReplacementTextureLoader = bool (*)(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 	ReplacementTextureLoader GetLoader(const std::string_view filename);
+
+	/// Loader will take an in-memory file and interpret the format (e.g. DDS, PNG, etc).
+	using ReplacementTextureBufferLoader = bool (*)(const void* data, size_t data_size, const std::string& filename,
+		GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+	ReplacementTextureBufferLoader GetBufferLoader(const std::string_view filename);
 
 	/// Saves an image buffer to a PNG file (for dumping).
 	bool SavePNGImage(const std::string& filename, u32 width, u32 height, const u8* buffer, u32 pitch);

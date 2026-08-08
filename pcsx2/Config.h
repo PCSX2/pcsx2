@@ -830,6 +830,7 @@ struct Pcsx2Config
 					DumpDirectTextures : 1,
 					DumpPaletteTextures : 1,
 					LoadTextureReplacements : 1,
+					LoadTextureReplacementsFromArchives : 1,
 					LoadTextureReplacementsAsync : 1,
 					PrecacheTextureReplacements : 1,
 					EnableVideoCapture : 1,

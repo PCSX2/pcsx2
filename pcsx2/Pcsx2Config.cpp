@@ -781,6 +781,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	DumpDirectTextures = true;
 	DumpPaletteTextures = true;
 	LoadTextureReplacements = false;
+	LoadTextureReplacementsFromArchives = false;
 	LoadTextureReplacementsAsync = true;
 	PrecacheTextureReplacements = false;
 
@@ -1024,6 +1025,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(DumpDirectTextures);
 	SettingsWrapBitBool(DumpPaletteTextures);
 	SettingsWrapBitBool(LoadTextureReplacements);
+	SettingsWrapBitBool(LoadTextureReplacementsFromArchives);
 	SettingsWrapBitBool(LoadTextureReplacementsAsync);
 	SettingsWrapBitBool(PrecacheTextureReplacements);
 	SettingsWrapBitBool(EnableVideoCapture);
