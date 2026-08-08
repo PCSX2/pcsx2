@@ -840,6 +840,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		g_gs_renderer->UpdateRenderFixes();
 	}
 
+	if (GSConfig.ShaderSpriteAlign != old_config.ShaderSpriteAlign ||
+		GSConfig.AccurateUVRounding != old_config.AccurateUVRounding)
+	{
+		g_gs_renderer->UpdateUpscalingAlignmentFixes();
+	}
+
 	// renderer-specific options (e.g. auto flush, TC offset)
 	g_gs_renderer->UpdateSettings(old_config);
 

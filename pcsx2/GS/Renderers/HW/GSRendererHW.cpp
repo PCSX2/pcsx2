@@ -11156,3 +11156,16 @@ void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSText
 		m_conf.ps.align_uv = true;
 	}
 }
+
+void GSRendererHW::UpdateUpscalingAlignmentFixes()
+{
+	if (GSConfig.UpscaleMultiplier > 1.0f &&
+		(GSConfig.ShaderSpriteAlign != GSShaderSpriteAlignMode::Off || GSConfig.AccurateUVRounding))
+	{
+		GSConfig.UserHacks_AlignSpriteX = false;
+		GSConfig.UserHacks_MergePPSprite = false;
+		GSConfig.UserHacks_ForceEvenSpritePosition = false;
+		GSConfig.UserHacks_HalfPixelOffset = GSHalfPixelOffset::Off;
+		GSConfig.UserHacks_RoundSprite = 0;
+	}
+}

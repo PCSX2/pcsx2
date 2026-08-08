@@ -1163,9 +1163,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 {
-	if (UpscaleMultiplier <= 1.0f ||
-		ShaderSpriteAlign != GSShaderSpriteAlignMode::Off ||
-		AccurateUVRounding)
+	if (UpscaleMultiplier <= 1.0f)
 	{
 		UserHacks_AlignSpriteX = false;
 		UserHacks_MergePPSprite = false;

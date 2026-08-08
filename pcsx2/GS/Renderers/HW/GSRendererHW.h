@@ -358,6 +358,7 @@ public:
 	void Destroy() override;
 
 	void UpdateRenderFixes() override;
+	void UpdateUpscalingAlignmentFixes() override;
 
 	bool CanUpscale() override;
 	float GetUpscaleMultiplier() override;
