@@ -824,6 +824,7 @@ struct Pcsx2Config
 					SaveDrawStats : 1,
 					SaveFrameStats : 1,
 					SaveHWConfig : 1,
+					DumpReplayUseFrameRange : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,
 					DumpTexturesWithFMVActive : 1,
@@ -912,6 +913,9 @@ struct Pcsx2Config
 		int SaveFrameStart = 0;
 		int SaveFrameCount = -1;
 		int SaveFrameBy = 1;
+		int DumpReplayLoopCount = 0;
+		int DumpReplayFrameStart = 0;
+		int DumpReplayFrameEnd = 0;
 
 		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;

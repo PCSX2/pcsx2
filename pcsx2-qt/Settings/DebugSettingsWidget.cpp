@@ -125,6 +125,14 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	connect(m_gs.dumpGSData, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onDrawDumpingChanged);
 	onDrawDumpingChanged();
 
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.replayUseFrameRange, "EmuCore/GS", "DumpReplayUseFrameRange", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.replayFrameStart, "EmuCore/GS", "DumpReplayFrameStart", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.replayFrameEnd, "EmuCore/GS", "DumpReplayFrameEnd", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.replayLoopCount, "EmuCore/GS", "DumpReplayLoopCount", 0);
+
+	connect(m_gs.replayUseFrameRange, &QCheckBox::checkStateChanged, this, &DebugSettingsWidget::onDumpReplayUseFrameRangeChanged);
+	onDumpReplayUseFrameRangeChanged();
+
 #ifdef PCSX2_DEVBUILD
 	//////////////////////////////////////////////////////////////////////////
 	// Logging Settings
@@ -231,6 +239,13 @@ void DebugSettingsWidget::onDrawDumpingChanged()
 	m_gs.swDumpDirectory->setEnabled(enabled);
 	m_gs.swDumpBrowse->setEnabled(enabled);
 	m_gs.swDumpOpen->setEnabled(enabled);
+}
+
+void DebugSettingsWidget::onDumpReplayUseFrameRangeChanged()
+{
+	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore/GS", "DumpReplayUseFrameRange", false);
+	m_gs.replayFrameStart->setEnabled(enabled);
+	m_gs.replayFrameEnd->setEnabled(enabled);
 }
 
 #ifdef PCSX2_DEVBUILD

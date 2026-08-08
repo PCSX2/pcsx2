@@ -1013,6 +1013,9 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		QMetaObject::invokeMethod(g_main_window, "setStatusVerboseText", Qt::QueuedConnection, Q_ARG(const QString&, gs_stat));
 	}
 
+	if (GSDumpReplayer::IsReplayingDump())
+		GSDumpReplayer::UpdatePerformanceMetrics();
+
 	const GSRendererType renderer = GSGetCurrentRenderer(); // Reading from GS thread, therefore racey, but it's just visual.
 	const float upscale = EmuConfig.GS.UpscaleMultiplier;
 	const float speed = std::round(PerformanceMetrics::GetSpeed());
