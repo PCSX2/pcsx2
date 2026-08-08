@@ -114,6 +114,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.accurateAlphaTest, "EmuCore/GS", "HWAccurateAlphaTest", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.hwAA1, "EmuCore/GS", "HWAA1", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.rov, "EmuCore/GS", "HWROV", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.accurateUVRounding, "EmuCore/GS", "AccurateUVRounding", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_hw.blending, "EmuCore/GS", "accurate_blending_unit", static_cast<int>(AccBlendLevel::Basic));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_hw.enableHWFixes, "EmuCore/GS", "UserHacks", false);
@@ -130,6 +131,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_sw.extraSWThreads, "EmuCore/GS", "extrathreads", 2);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_sw.swAutoFlush, "EmuCore/GS", "autoflush_sw", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_sw.swMipmap, "EmuCore/GS", "mipmap", true);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_sw.accurateUVRounding, "EmuCore/GS", "AccurateUVRounding", false);
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Renderer Fixes
@@ -169,6 +171,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.nativeScaling, "EmuCore/GS", "UserHacks_native_scaling", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.roundSprite, "EmuCore/GS", "UserHacks_round_sprite_offset", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.bilinearHack, "EmuCore/GS", "UserHacks_BilinearHack", 0);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.shaderSpriteAlign, "EmuCore/GS", "ShaderSpriteAlign", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.textureOffsetX, "EmuCore/GS", "UserHacks_TCOffsetX", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_upscaling.textureOffsetY, "EmuCore/GS", "UserHacks_TCOffsetY", 0);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_upscaling.alignSprite, "EmuCore/GS", "UserHacks_align_sprite_X", false);
@@ -503,6 +506,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			m_hw.rov, tr("Rasterizer Ordered View"), tr("Unchecked"), tr("Enables Rasterizer Ordered View (ROV), which allows feedback loops to be executed with fewer draw calls. Can improve performance in feedback heavy games with higher accuracy settings."));
 
 		dialog()->registerWidgetHelp(
+			m_hw.accurateUVRounding, tr("Accurate UV Rounding"), tr("Unchecked"), tr("Enables accurate UV (texture coordinate) rounding. Some games need this to render sprites correctly."));
+
+		dialog()->registerWidgetHelp(
 			m_hw.textureFiltering, tr("Texture Filtering"), tr("Bilinear (PS2)"),
 			tr("Changes what filtering algorithm is used to map textures to surfaces.<br> "
 			   "Nearest: Makes no attempt to blend colors.<br> "
@@ -562,6 +568,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(
 			m_sw.swMipmap, tr("Mipmapping"), tr("Checked"), tr("Enables mipmapping, which some games require to render correctly."));
+
+		dialog()->registerWidgetHelp(
+			m_sw.accurateUVRounding, tr("Accurate UV Rounding"), tr("Unchecked"), tr("Enables accurate UV (texture coordinate) rounding. Some games need this to render sprites correctly."));
 	}
 
 	// Hardware Fixes tab
@@ -656,6 +665,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_upscaling.bilinearHack, tr("Bilinear Dirty Upscale"), tr("Unchecked"),
 			tr("Can smooth out textures due to be bilinear filtered when upscaling. E.g. Brave sun glare."));
+
+		dialog()->registerWidgetHelp(m_upscaling.shaderSpriteAlign, tr("Shader Sprite Align"), tr("Off (default)"),
+			tr("Align sprite and clamp texture coordinates in the shader. Helps with upscaling lines. Disables other upscaling hacks."));
 
 		dialog()->registerWidgetHelp(m_upscaling.mergeSprite, tr("Merge Sprite"), tr("Unchecked"),
 			tr("Replaces post-processing multiple paving sprites by a single fat sprite. It reduces various upscaling lines."));
