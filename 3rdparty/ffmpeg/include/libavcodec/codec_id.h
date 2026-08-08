@@ -24,8 +24,6 @@
 #include "libavutil/avutil.h"
 #include "libavutil/samplefmt.h"
 
-#include "version_major.h"
-
 /**
  * @addtogroup lavc_core
  * @{
@@ -206,9 +204,6 @@ enum AVCodecID {
     AV_CODEC_ID_BMV_VIDEO,
     AV_CODEC_ID_VBLE,
     AV_CODEC_ID_DXTORY,
-#if FF_API_V408_CODECID
-    AV_CODEC_ID_V410,
-#endif
     AV_CODEC_ID_XWD,
     AV_CODEC_ID_CDXL,
     AV_CODEC_ID_XBM,
@@ -256,10 +251,6 @@ enum AVCodecID {
     AV_CODEC_ID_012V,
     AV_CODEC_ID_AVUI,
     AV_CODEC_ID_TARGA_Y216,
-#if FF_API_V408_CODECID
-    AV_CODEC_ID_V308,
-    AV_CODEC_ID_V408,
-#endif
     AV_CODEC_ID_YUV4,
     AV_CODEC_ID_AVRN,
     AV_CODEC_ID_CPIA,
@@ -331,6 +322,8 @@ enum AVCodecID {
     AV_CODEC_ID_JPEGXL_ANIM,
     AV_CODEC_ID_APV,
     AV_CODEC_ID_PRORES_RAW,
+    AV_CODEC_ID_JPEGXS,
+    AV_CODEC_ID_WEBP_ANIM,
 
     /* various PCM "codecs" */
     AV_CODEC_ID_FIRST_AUDIO = 0x10000,     ///< A dummy id pointing at the start of audio codecs
@@ -427,6 +420,14 @@ enum AVCodecID {
     AV_CODEC_ID_ADPCM_XMD,
     AV_CODEC_ID_ADPCM_IMA_XBOX,
     AV_CODEC_ID_ADPCM_SANYO,
+    AV_CODEC_ID_ADPCM_IMA_HVQM4,
+    AV_CODEC_ID_ADPCM_IMA_PDA,
+    AV_CODEC_ID_ADPCM_N64,
+    AV_CODEC_ID_ADPCM_IMA_HVQM2,
+    AV_CODEC_ID_ADPCM_IMA_MAGIX,
+    AV_CODEC_ID_ADPCM_PSXC,
+    AV_CODEC_ID_ADPCM_CIRCUS,
+    AV_CODEC_ID_ADPCM_IMA_ESCAPE,
 
     /* AMR */
     AV_CODEC_ID_AMR_NB = 0x12000,
@@ -556,6 +557,8 @@ enum AVCodecID {
     AV_CODEC_ID_QOA,
     AV_CODEC_ID_LC3,
     AV_CODEC_ID_G728,
+    AV_CODEC_ID_AHX,
+    AV_CODEC_ID_APPLE_APAC,
 
     /* subtitle codecs */
     AV_CODEC_ID_FIRST_SUBTITLE = 0x17000,          ///< A dummy ID pointing at the start of subtitle codecs.

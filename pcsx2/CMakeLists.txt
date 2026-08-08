@@ -1320,7 +1320,7 @@ function(setup_main_executable target)
 			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
 		endforeach()
 
-		set(OPT_DEPS_TO_COPY avcodec-62.dll avformat-62.dll avutil-60.dll swresample-6.dll swscale-9.dll)
+		set(OPT_DEPS_TO_COPY avcodec-63.dll avformat-63.dll avutil-61.dll swresample-7.dll swscale-10.dll)
 		foreach(OPT_DEP_TO_COPY ${OPT_DEPS_TO_COPY})
 			install(FILES "${DEPS_BINDIR}/${OPT_DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
 		endforeach()

@@ -254,6 +254,51 @@ enum AVFrameSideDataType {
      * libavutil/tdrdi.h.
      */
     AV_FRAME_DATA_3D_REFERENCE_DISPLAYS,
+
+    /**
+     * Exchangeable image file format metadata. The payload is a buffer containing
+     * EXIF metadata, starting with either 49 49 2a 00, or 4d 4d 00 2a. These four
+     * bytes signify the endianness, and occur as the first part of the TIFF header.
+     */
+    AV_FRAME_DATA_EXIF,
+
+    /**
+     * HDR dynamic metadata associated with a video frame. The payload is
+     * an AVDynamicHDRSmpte2094App5 type and contains information for color
+     * volume transform as specified in the SMPTE 2094-50 standard.
+     */
+    AV_FRAME_DATA_DYNAMIC_HDR_SMPTE_2094_APP5,
+
+    /**
+     * IAMF Mix Gain Parameter Data associated with the audio frame. This metadata
+     * is in the form of the AVIAMFParamDefinition struct and contains information
+     * defined in sections 3.6.1 and 3.8.1 of the Immersive Audio Model and
+     * Formats standard.
+     */
+    AV_FRAME_DATA_IAMF_MIX_GAIN_PARAM,
+
+    /**
+    * IAMF Demixing Info Parameter Data associated with the audio frame. This
+    * metadata is in the form of the AVIAMFParamDefinition struct and contains
+    * information defined in sections 3.6.1 and 3.8.2 of the Immersive Audio Model
+    * and Formats standard.
+    */
+    AV_FRAME_DATA_IAMF_DEMIXING_INFO_PARAM,
+
+    /**
+    * IAMF Recon Gain Info Parameter Data associated with the audio frame. This
+    * metadata is in the form of the AVIAMFParamDefinition struct and contains
+    * information defined in sections 3.6.1 and 3.8.3 of the Immersive Audio Model
+    * and Formats standard.
+    */
+    AV_FRAME_DATA_IAMF_RECON_GAIN_INFO_PARAM,
+
+    /**
+     * Color information from a RAW camera codecs, needed to correctly process
+     * the video data. The payload is an AVRawColorParams struct defined in
+     * libavutil/raw_color_params.h.
+     */
+    AV_FRAME_DATA_RAW_COLOR_PARAMS,
 };
 
 enum AVActiveFormatDescription {
@@ -652,7 +697,7 @@ typedef struct AVFrame {
  *
  * For coding bitstream formats which support both lossless and lossy
  * encoding, it is sometimes possible for a decoder to determine which method
- * was used when the bitsream was encoded.
+ * was used when the bitstream was encoded.
  */
 #define AV_FRAME_FLAG_LOSSLESS        (1 << 5)
 /**
@@ -736,7 +781,7 @@ typedef struct AVFrame {
     /**
      * @anchor cropping
      * @name Cropping
-     * Video frames only. The number of pixels to discard from the the
+     * Video frames only. The number of pixels to discard from the
      * top/bottom/left/right border of the frame to obtain the sub-rectangle of
      * the frame intended for presentation.
      * @{
@@ -767,6 +812,13 @@ typedef struct AVFrame {
      * Duration of the frame, in the same units as pts. 0 if unknown.
      */
     int64_t duration;
+
+    /**
+     * Indicates how the alpha channel of the video is to be handled.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     */
+    enum AVAlphaMode alpha_mode;
 } AVFrame;
 
 
@@ -812,7 +864,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src);
  * Ensure the destination frame refers to the same data described by the source
  * frame, either by creating a new reference for each AVBufferRef from src if
  * they differ from those in dst, by allocating new buffers and copying data if
- * src is not reference counted, or by unrefencing it if src is empty.
+ * src is not reference counted, or by unreferencing it if src is empty.
  *
  * Frame properties on dst will be replaced by those from src.
  *
