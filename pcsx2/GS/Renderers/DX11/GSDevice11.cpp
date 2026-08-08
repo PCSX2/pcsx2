@@ -249,6 +249,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 		ShaderMacro sm_ps;
 		sm_ps.AddMacro("PIXEL_SHADER", 1);
+		sm_ps.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm_ps.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm_ps.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm_ps.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
 		sm_ps.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
@@ -582,6 +584,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		const std::string entry_point_macro = WrapEntryPointMacro(entry_point);
 		ShaderMacro sm_ps;
 		sm_ps.AddMacro("PIXEL_SHADER", 1);
+		sm_ps.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm_ps.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm_ps.AddMacro(entry_point_macro.c_str(), 1);
 		m_date.primid_init_ps[i] = m_shader_cache.GetPixelShader(m_dev.get(), *convert_hlsl, sm_ps.GetPtr(), entry_point.c_str());
 		if (!m_date.primid_init_ps[i])
@@ -3299,6 +3303,9 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+
+	if (primid_texture && config.dump_primid_path)
+		primid_texture->Save(*config.dump_primid_path);
 }
 
 void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,

@@ -112,22 +112,22 @@ fragment void ps_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 
 fragment float4 ps_primid_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a < (127.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a < (127.5f / 255.f) ? GSShader::PRIMID_MIN : GSShader::PRIMID_MAX;
 }
 
 fragment float4 ps_primid_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a > (127.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a > (127.5f / 255.f) ? GSShader::PRIMID_MIN : GSShader::PRIMID_MAX;
 }
 
 fragment float4 ps_primid_rta_init_datm1(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a < (254.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a < (254.5f / 255.f) ? GSShader::PRIMID_MIN : GSShader::PRIMID_MAX;
 }
 
 fragment float4 ps_primid_rta_init_datm0(float4 p [[position]], DirectReadTextureIn<float> tex)
 {
-	return tex.read(p).a > (254.5f / 255.f) ? -1 : FLT_MAX;
+	return tex.read(p).a > (254.5f / 255.f) ? GSShader::PRIMID_MIN : GSShader::PRIMID_MAX;
 }
 
 fragment float4 ps_rta_correction(ConvertShaderData data [[stage_in]], ConvertPSRes res)
@@ -173,11 +173,6 @@ fragment float4 ps_convert_depth32_rgba8(ConvertShaderData data [[stage_in]], Co
 fragment float4 ps_convert_depth16_rgb5a1(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
 {
 	return convert_depth16_rgba8(res.sample(data.t)) / 255.f;
-}
-
-fragment float ps_convert_float32_depth_to_color(ConvertShaderData data [[stage_in]], ConvertPSDepthRes res)
-{
-	return res.sample(data.t);
 }
 
 fragment float4 ps_downsample_copy(ConvertShaderData data [[stage_in]],
@@ -272,6 +267,16 @@ struct ConvertToDepthRes
 			return convert(sample(coord));
 	}
 };
+
+static float4 primid_to_rgba8(float p)
+{
+	return float4(as_type<uchar4>(p)) / 255.f;
+}
+
+fragment float4 ps_convert_primid_rgba8(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
+{
+	return primid_to_rgba8(res.sample(data.t));
+}
 
 fragment DepthOrColorOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
 {

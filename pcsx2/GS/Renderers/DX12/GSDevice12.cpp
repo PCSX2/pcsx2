@@ -2877,6 +2877,8 @@ bool GSDevice12::CompileConvertPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("PIXEL_SHADER", 1);
+		sm.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
 		sm.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
@@ -2930,6 +2932,8 @@ bool GSDevice12::CompileConvertPipelines()
 
 		ShaderMacro sm;
 		sm.AddMacro("PIXEL_SHADER", "1");
+		sm.AddMacro("PRIMID_MAX", GSShader::PRIMID_MAX);
+		sm.AddMacro("PRIMID_MIN", GSShader::PRIMID_MIN);
 		sm.AddMacro(entry_point_macro.c_str(), "1");
 
 		ComPtr<ID3DBlob> ps(m_shader_cache.GetPixelShader(*source, sm.GetPtr(), entry_point.c_str()));
@@ -4696,12 +4700,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			config.alpha_second_pass.require_full_barrier);
 	}
 
-	if (date_image)
-		Recycle(date_image);
-
-	if (draw_rt_clone)
-		Recycle(draw_rt_clone);
-
 	// now blit the colclip texture back to the original target
 	if (colclip_rt)
 	{
@@ -4733,6 +4731,15 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 			g_gs_device->SetColorClipTexture(nullptr);
 		}
 	}
+
+	if (date_image && config.dump_primid_path)
+		date_image->Save(*config.dump_primid_path);
+
+	if (date_image)
+		Recycle(date_image);
+
+	if (draw_rt_clone)
+		Recycle(draw_rt_clone);
 }
 
 void GSDevice12::SendHWDraw(const PipelineSelector& pipe, const GSHWDrawConfig& config, GSTexture12* draw_rt,
