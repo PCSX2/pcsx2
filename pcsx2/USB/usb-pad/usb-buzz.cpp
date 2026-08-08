@@ -10,7 +10,6 @@
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-pad/usb-buzz.h"
-#include "USB/usb-pad/usb-pad.h"
 #include <common/Console.h>
 
 namespace usb_pad
@@ -239,7 +238,6 @@ namespace usb_pad
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
-
 		return &s->dev;
 
 	fail:
