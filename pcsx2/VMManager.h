@@ -319,7 +319,7 @@ namespace VMManager
 		void FrameRateChanged();
 
 		/// Throttles execution, or limits the frame rate.
-		void Throttle();
+		void Throttle(bool vsync_start);
 
 		/// Resets/clears all execution/code caches.
 		void ClearCPUExecutionCaches();
