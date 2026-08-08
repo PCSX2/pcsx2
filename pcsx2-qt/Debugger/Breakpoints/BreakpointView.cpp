@@ -5,6 +5,7 @@
 
 #include "QtUtils.h"
 #include "Debugger/DebuggerSettingsManager.h"
+#include "Debugger/DebuggerWindow.h"
 #include "BreakpointDialog.h"
 #include "BreakpointModel.h"
 
@@ -23,6 +24,48 @@ BreakpointView::BreakpointView(const DebuggerViewParameters& parameters)
 	m_ui.breakpointList->setModel(m_model);
 	m_ui.breakpointList->horizontalHeader()->setSectionsMovable(true);
 	this->resizeColumns();
+
+	connect(g_debugger_window, &DebuggerWindow::onVMActuallyPaused, this, [this]() {
+		const bool isEditing = m_ui.breakpointList->viewport()->findChild<QWidget*>(QString(), Qt::FindDirectChildrenOnly) != nullptr;
+		if (!isEditing)
+			m_model->refreshData();
+	});
+
+	connect(m_model, &QAbstractTableModel::modelAboutToBeReset, this, [this]() {
+		const QItemSelectionModel* sel = m_ui.breakpointList->selectionModel();
+		if (sel->hasSelection())
+		{
+			m_selectedRowOnRefresh = sel->selectedIndexes().first().row();
+			m_selectedColOnRefresh = sel->selectedIndexes().first().column();
+		}
+		else
+		{
+			m_selectedRowOnRefresh = -1;
+			m_selectedColOnRefresh = -1;
+		}
+	});
+	connect(m_model, &QAbstractTableModel::modelReset, this, [this]() {
+		if (m_selectedRowOnRefresh >= 0 && m_selectedRowOnRefresh < m_model->rowCount())
+		{
+			const QModelIndex idx = m_model->index(m_selectedRowOnRefresh, m_selectedColOnRefresh);
+			m_ui.breakpointList->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::ClearAndSelect);
+		}
+	});
+
+	// Continue-on-hit breakpoints update their hit counts without ever pausing the VM,
+	// so onVMActuallyPaused never fires. Refresh periodically off the debugger's
+	// refresh timer so the UI can update regularly. We don't refresh if the VM is paused
+	// or if a child of the breakpoint list is being edited.
+	receiveEvent<DebuggerEvents::Refresh>([this](const DebuggerEvents::Refresh& event) -> bool {
+		// If focus is on a child of the breakpoint list and not the list itself,
+		// we assume an inline editor is active and we should not refresh.
+		const bool isEditing = m_ui.breakpointList->viewport()->findChild<QWidget*>(QString(), Qt::FindDirectChildrenOnly) != nullptr;
+
+		if (!QtHost::IsVMPaused() && !isEditing)
+			m_model->refreshData();
+
+		return true;
+	});
 }
 
 void BreakpointView::onDoubleClicked(const QModelIndex& index)

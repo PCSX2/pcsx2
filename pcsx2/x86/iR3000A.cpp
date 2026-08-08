@@ -1341,7 +1341,8 @@ static bool psxDynarecCheckBreakpoint()
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
 		if (cond == NULL || cond->Evaluate())
 		{
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_IOP, pc))
+				hit = true;
 		}
 	}
 	//check breakpoint in delay slot
@@ -1349,7 +1350,8 @@ static bool psxDynarecCheckBreakpoint()
 	{
 		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc + 4);
 		if (cond == NULL || cond->Evaluate())
-			hit = true;
+			if(CBreakPoints::HandleBreakpointHit(BREAKPOINT_IOP, pc + 4))
+				hit = true;
 	}
 
 	if (!hit)
@@ -1381,13 +1383,8 @@ static bool psxDynarecMemcheck(size_t i)
 			return false;
 	}
 
-	if (mc.result & MEMCHECK_LOG)
-	{
-		if (opcode.flags & IS_STORE)
-			DevCon.WriteLn("Hit R3000 store breakpoint @0x%x", pc);
-		else
-			DevCon.WriteLn("Hit R3000 load breakpoint @0x%x", pc);
-	}
+	if (!CBreakPoints::HandleMemCheckHit(BREAKPOINT_IOP, mc.start, mc.end))
+		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
 	VMManager::SetPaused(true);
