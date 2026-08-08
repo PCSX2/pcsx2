@@ -149,6 +149,12 @@ namespace usb_lightgun
 		u32 cursor_color = 0xFFFFFFFF;
 		float relative_pos[4] = {};
 
+		bool follow_video_mode = false;
+		s32 ref_width = 0;
+		s32 ref_height = 0;
+		s32 last_width = 0;
+		s32 last_height = 0;
+
 		//////////////////////////////////////////////////////////////////////////
 		// Device State (Saved)
 		//////////////////////////////////////////////////////////////////////////
@@ -362,6 +368,7 @@ namespace usb_lightgun
 			center_y = static_cast<float>(gc.center_y);
 			screen_width = gc.screen_width;
 			screen_height = gc.screen_height;
+			follow_video_mode = true;
 			return;
 		}
 
@@ -391,6 +398,33 @@ namespace usb_lightgun
 			// apply curvature scale
 			fx *= scale_x;
 			fy *= scale_y;
+
+			if (follow_video_mode)
+			{
+				int cur_width, cur_height;
+				GSgetDisplayResolution(&cur_width, &cur_height);
+				if (cur_height > 0)
+				{
+					if (ref_height == 0)
+					{
+						ref_width = cur_width;
+						ref_height = cur_height;
+					}
+
+					const float mode_scale =
+						std::min(1.0f, static_cast<float>(cur_height) / static_cast<float>(ref_height));
+
+					if (cur_width != last_width || cur_height != last_height)
+					{
+						last_width = cur_width;
+						last_height = cur_height;
+						Console.WriteLn(fmt::format("(GunCon2) Display {}x{} (reference {}x{}), scaling vertical aim by {:.3f}",
+							cur_width, cur_height, ref_width, ref_height, mode_scale));
+					}
+
+					fy *= mode_scale;
+				}
+			}
 
 			// and re-center based on game center
 			s32 x = static_cast<s32>(std::round(fx + center_x));
