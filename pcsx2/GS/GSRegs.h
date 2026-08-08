@@ -531,6 +531,7 @@ REG_END2
 	__forceinline bool IsOpaque() const { return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80); }
 	__forceinline bool IsOpaque(int amin, int amax) const { return ((A == B || amax == 0) && D == 0) || (A == 0 && B == D && amin == 0x80 && amax == 0x80); }
 	__forceinline bool IsCd() const { return (A == B) && (D == 1); }
+	__forceinline bool IsAdditive() const { return (A == 0 && B == 2 && (C != 2 || FIX != 0) && D == 1); }
 
 	// output will be Cd, Cs is discarded
 	__forceinline bool IsCdOutput() const { return (C == 2 && D != 1 && FIX == 0x00); }
