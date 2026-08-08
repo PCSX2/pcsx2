@@ -3006,6 +3006,20 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 	if (!(m_display_surface->isFullScreen() || m_display_is_exclusive_fullscreen) && !isRenderingToMain())
 		saveDisplayWindowGeometryToConfig();
 
+#ifdef __APPLE__
+	// The fullscreen state affects the whole application on MacOS.
+	// Exit fullscreen before destroying the display widget.
+	if (m_display_surface->isFullScreen())
+	{
+#ifdef DISPLAY_SURFACE_WINDOW
+		m_display_surface->setWindowStates(m_display_surface->windowStates() & ~Qt::WindowFullScreen);
+#else
+		m_display_container->setWindowState(m_display_container->windowState() & ~Qt::WindowFullScreen);
+#endif
+		QGuiApplication::sync();
+	}
+#endif
+
 	if (isRenderingToMain())
 	{
 		pxAssertRel(m_ui.mainContainer->indexOf(m_display_container) == 1, "Display widget in stack");
