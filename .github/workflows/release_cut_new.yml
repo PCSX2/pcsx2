@@ -120,10 +120,16 @@ jobs:
     secrets: inherit
 
   # Windows
+  build_windows_deps:
+    if: github.repository == 'PCSX2/pcsx2'
+    name: "Windows Dependencies"
+    uses: ./.github/workflows/windows_deps_build.yml
+
   build_windows_qt:
     if: github.repository == 'PCSX2/pcsx2'
     needs:
       - cut-release
+      - build_windows_deps
     name: "Windows"
     uses: ./.github/workflows/windows_build_qt.yml
     with:

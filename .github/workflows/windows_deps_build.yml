@@ -1,0 +1,41 @@
+name: Windows Build Steps - Deps
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: false
+        type: string
+        default: windows-2025-vs2026
+      platform:
+        required: false
+        type: string
+        default: x64
+
+jobs:
+  build_windows_deps:
+    name: "Cache Dependencies"
+    runs-on: ${{ inputs.os }}
+    # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
+    timeout-minutes: 90
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Check Dependencies
+        id: cache-deps
+        uses: actions/cache@v6
+        with:
+          lookup-only: true
+          path: deps
+          key: ${{ inputs.os }} ${{ inputs.platform }} deps ${{ hashFiles('.github/workflows/scripts/windows/build-dependencies.bat', '.github/workflows/scripts/common/*.patch') }}
+
+      - name: Build Dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        env:
+          DEBUG: 0
+          BUILD_FFMPEG: 1
+        run: .github/workflows/scripts/windows/build-dependencies.bat
