@@ -22,6 +22,7 @@ find_package(Freetype 2.10 REQUIRED) # 2.10 is the first with COLRv0 support, wh
 find_package(plutovg 1.1.0 REQUIRED)
 find_package(plutosvg 0.0.7 REQUIRED)
 find_package(ryml REQUIRED)
+find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample swscale REQUIRED)
 if (WIN32)
 	find_package(DirectX-Headers 1.618.1 REQUIRED)
 endif()
@@ -35,20 +36,11 @@ if (WIN32)
 	add_subdirectory(3rdparty/D3D12MemAlloc EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/winpixeventruntime EXCLUDE_FROM_ALL)
 	add_subdirectory(3rdparty/winwil EXCLUDE_FROM_ALL)
-	set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/ffmpeg/include")
 	find_package(Vtune)
 else()
 	find_package(CURL REQUIRED)
 	find_package(PCAP REQUIRED)
 	find_package(Vtune)
-
-	# Use bundled ffmpeg v4.x.x headers if we can't locate it in the system.
-	# We'll try to load it dynamically at runtime.
-	find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample swscale)
-	if(NOT FFMPEG_FOUND)
-		message(WARNING "FFmpeg not found, using bundled headers.")
-		set(FFMPEG_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/ffmpeg/include")
-	endif()
 
 	## Use CheckLib package to find module
 	include(CheckLib)

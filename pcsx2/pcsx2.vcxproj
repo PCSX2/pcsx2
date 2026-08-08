@@ -48,7 +48,6 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\soundtouch\soundtouch</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\discord-rpc\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\jpgd</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\ffmpeg\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\glad\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64'">%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\vulkan\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)3rdparty\d3d12memalloc\include</AdditionalIncludeDirectories>

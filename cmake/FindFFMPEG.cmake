@@ -55,10 +55,16 @@ function (_ffmpeg_find component headername)
     list(APPEND CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
   endif ()
 
+  if (WIN32 AND FFMPEG_${component}_INCLUDE_DIR)
+    get_filename_component(_ffmpeg_prefix "${FFMPEG_${component}_INCLUDE_DIR}" DIRECTORY)
+    set(_ffmpeg_bindir "${_ffmpeg_prefix}/bin")
+  endif ()
+
   find_library("FFMPEG_${component}_LIBRARY"
     NAMES
       "${component}"
     PATHS
+      "${_ffmpeg_bindir}"
       "${FFMPEG_ROOT}/lib"
       ~/Library/Frameworks
       /Library/Frameworks
