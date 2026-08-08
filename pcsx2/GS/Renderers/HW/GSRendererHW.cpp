@@ -222,9 +222,7 @@ void GSRendererHW::Lines2Sprites()
 
 	// each sprite converted to quad needs twice the space
 
-	const int tail = m_vertex->tail * 2;
-	const int max_count = m_vertex->maxcount;
-	while (tail > max_count)
+	while (m_vertex->tail * 2 > m_vertex->max_count)
 	{
 		GrowVertexBuffer();
 	}
