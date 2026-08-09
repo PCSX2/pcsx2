@@ -184,8 +184,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_texture.dumpTexturesWithFMVActive, "EmuCore/GS", "DumpTexturesWithFMVActive", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_texture.loadTextureReplacements, "EmuCore/GS", "LoadTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(
-		sif, m_texture.loadTextureReplacementsFromArchives, "EmuCore/GS", "LoadTextureReplacementsFromArchives", false);
-	SettingWidgetBinder::BindWidgetToBoolSetting(
 		sif, m_texture.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_texture.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_texture.texturesDirectory, m_texture.texturesBrowse, m_texture.texturesOpen, m_texture.texturesReset,
@@ -678,9 +676,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_texture.loadTextureReplacements, tr("Load Textures"), tr("Unchecked"), tr("Loads replacement textures where available and user-provided."));
 
-		dialog()->registerWidgetHelp(m_texture.loadTextureReplacementsFromArchives, tr("Load Textures from ZIP Archives"), tr("Unchecked"),
-			tr("Loads replacement textures directly from ZIP archives in the configured texture directory without extracting them first. Loose replacement texture files take precedence."));
-
 		dialog()->registerWidgetHelp(m_texture.precacheTextureReplacements, tr("Precache Textures"), tr("Unchecked"), tr("Preloads all replacement textures to memory. Not necessary with asynchronous loading."));
 	}
 
@@ -885,7 +880,6 @@ void GraphicsSettingsWidget::onTextureReplacementChanged()
 {
 	const bool enabled = dialog()->getEffectiveBoolValue("EmuCore/GS", "LoadTextureReplacements", false);
 	m_texture.loadTextureReplacementsAsync->setEnabled(enabled);
-	m_texture.loadTextureReplacementsFromArchives->setEnabled(enabled);
 	m_texture.precacheTextureReplacements->setEnabled(enabled);
 }
 

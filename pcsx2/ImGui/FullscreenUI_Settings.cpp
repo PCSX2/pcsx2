@@ -3282,9 +3282,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		MenuHeading(FSUI_CSTR("Texture Replacement"));
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Load Textures"), FSUI_CSTR("Loads replacement textures where available and user-provided."),
 			"EmuCore/GS", "LoadTextureReplacements", false);
-		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ZIPPER, "Load Textures from ZIP Archives"),
-			FSUI_CSTR("Loads replacement textures directly from ZIP archives in the configured texture directory without extracting them first. Loose replacement texture files take precedence."),
-			"EmuCore/GS", "LoadTextureReplacementsFromArchives", false, replacement_active);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SPINNER, "Asynchronous Texture Loading"),
 			FSUI_CSTR("Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled."), "EmuCore/GS",
 			"LoadTextureReplacementsAsync", true, replacement_active);
@@ -6035,7 +6032,6 @@ TRANSLATE_NOOP("FullscreenUI", "Lowers the GS precision to avoid gaps between pi
 TRANSLATE_NOOP("FullscreenUI", "Can fix some broken effects which rely on pixel perfect precision.");
 TRANSLATE_NOOP("FullscreenUI", "Texture Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Loads replacement textures where available and user-provided.");
-TRANSLATE_NOOP("FullscreenUI", "Loads replacement textures directly from ZIP archives in the configured texture directory without extracting them first. Loose replacement texture files take precedence.");
 TRANSLATE_NOOP("FullscreenUI", "Loads replacement textures on a worker thread, reducing microstutter when replacements are enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Preloads all replacement textures to memory. Not necessary with asynchronous loading.");
 TRANSLATE_NOOP("FullscreenUI", "Folders");
@@ -6649,7 +6645,6 @@ TRANSLATE_NOOP("FullscreenUI", "Merge Sprite");
 TRANSLATE_NOOP("FullscreenUI", "Force Even Sprite Position");
 TRANSLATE_NOOP("FullscreenUI", "Unscaled Palette Texture Draws");
 TRANSLATE_NOOP("FullscreenUI", "Load Textures");
-TRANSLATE_NOOP("FullscreenUI", "Load Textures from ZIP Archives");
 TRANSLATE_NOOP("FullscreenUI", "Asynchronous Texture Loading");
 TRANSLATE_NOOP("FullscreenUI", "Precache Textures");
 TRANSLATE_NOOP("FullscreenUI", "Search Directory");

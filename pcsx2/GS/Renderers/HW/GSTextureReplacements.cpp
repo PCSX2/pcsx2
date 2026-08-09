@@ -9,7 +9,6 @@
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
 #include "common/TextureDecompress.h"
-#include "common/Timer.h"
 #include "common/ZipHelpers.h"
 
 #include "Config.h"
@@ -26,7 +25,6 @@
 #include <deque>
 #include <functional>
 #include <limits>
-#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
@@ -105,22 +103,7 @@ namespace std
 
 namespace GSTextureReplacements
 {
-	using ManagedZipArchive = std::unique_ptr<zip_t, void (*)(zip_t*)>;
-
 	static constexpr u64 MAX_REPLACEMENT_TEXTURE_ARCHIVE_ENTRY_SIZE = 1024ull * 1024ull * 1024ull;
-
-	struct ReplacementTextureArchive
-	{
-		ReplacementTextureArchive(std::string filename_, ManagedZipArchive zip_)
-			: filename(std::move(filename_))
-			, zip(std::move(zip_))
-		{
-		}
-
-		std::string filename;
-		ManagedZipArchive zip;
-		std::mutex mutex;
-	};
 
 	struct ReplacementTextureSource
 	{
@@ -133,10 +116,6 @@ namespace GSTextureReplacements
 		Type type;
 		std::string filename;
 		std::string zip_entry_name;
-		u64 zip_entry_index = 0;
-		u64 zip_entry_size = 0;
-		u64 zip_entry_compressed_size = 0;
-		std::shared_ptr<ReplacementTextureArchive> archive;
 	};
 
 	static TextureName CreateTextureName(const GSTextureCache::HashCacheKey& hash, u32 miplevel);
@@ -148,14 +127,11 @@ namespace GSTextureReplacements
 	std::pair<u8, u8> GetBCAlphaMinMax(ReplacementTexture& rtex);
 	static void SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex);
 	static bool AddReplacementTextureSource(const TextureName& name, ReplacementTextureSource source);
-	static const char* GetReplacementTextureSourceTypeName(ReplacementTextureSource::Type type);
-	static std::string GetReplacementTextureSourceDisplayName(const ReplacementTextureSource& source);
-	static bool IsSafeZipEntryName(std::string_view entry_name);
 	static bool IsReplacementTextureArchiveEntryName(std::string_view entry_name);
 	static bool IsValidZipReplacementTextureEntry(const std::string& archive_filename, std::string_view entry_name, const zip_stat_t& stat);
-	static u32 IndexReplacementTextureArchive(const std::string& archive_filename);
+	static void IndexReplacementTextureArchive(const std::string& archive_filename);
 	static std::optional<ReplacementTexture> LoadReplacementTexture(const TextureName& name, const ReplacementTextureSource& source, bool only_base_image);
-	static std::optional<std::vector<u8>> ReadReplacementTextureFromArchive(const ReplacementTextureSource& source, zip_stat_t* stat);
+	static std::optional<std::vector<u8>> ReadReplacementTextureFromArchive(const ReplacementTextureSource& source);
 	static void QueueAsyncReplacementTextureLoad(const TextureName& name, ReplacementTextureSource source, bool mipmap, bool cache_only);
 	static void PrecacheReplacementTextures();
 	static void ClearReplacementTextures();
@@ -477,32 +453,22 @@ void GSTextureReplacements::ReloadReplacementMap()
 				continue;
 
 			if (AddReplacementTextureSource(name.value(),
-					ReplacementTextureSource{ReplacementTextureSource::Type::LooseFile, std::move(fd.FileName), {}, 0}))
+					ReplacementTextureSource{ReplacementTextureSource::Type::LooseFile, std::move(fd.FileName)}))
 				DbgCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
 		}
 	}
 
 	files.clear();
-	if (GSConfig.LoadTextureReplacementsFromArchives &&
-		FileSystem::FindFiles(texture_dir.c_str(), "*",
-			FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE | FILESYSTEM_FIND_SORT_BY_NAME, &files))
+	if (FileSystem::FindFiles(texture_dir.c_str(), "*.zip",
+			FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_SORT_BY_NAME, &files))
 	{
 		for (const FILESYSTEM_FIND_DATA& fd : files)
-		{
-			if (StringUtil::compareNoCase(Path::GetExtension(fd.FileName), "zip"))
-				IndexReplacementTextureArchive(fd.FileName);
-		}
+			IndexReplacementTextureArchive(fd.FileName);
 	}
 
-	if (GSConfig.LoadTextureReplacementsFromArchives)
-	{
-		const std::string serial_archive_filename = Path::Combine(EmuFolders::Textures, fmt::format("{}.zip", s_current_serial));
-		DEV_LOG("Checking serial-named replacement archive: '{}'", serial_archive_filename);
-		if (FileSystem::FileExists(serial_archive_filename.c_str()))
-			IndexReplacementTextureArchive(serial_archive_filename);
-		else
-			DEV_LOG("Replacement archive not found: '{}'", serial_archive_filename);
-	}
+	const std::string serial_archive_filename = Path::Combine(EmuFolders::Textures, fmt::format("{}.zip", s_current_serial));
+	if (FileSystem::FileExists(serial_archive_filename.c_str()))
+		IndexReplacementTextureArchive(serial_archive_filename);
 
 	if (!s_replacement_texture_sources.empty())
 	{
@@ -520,16 +486,9 @@ void GSTextureReplacements::ReloadReplacementMap()
 
 bool GSTextureReplacements::AddReplacementTextureSource(const TextureName& name, ReplacementTextureSource source)
 {
-	const auto existing_source = s_replacement_texture_sources.find(name);
-	if (existing_source != s_replacement_texture_sources.end())
-	{
-		DEV_LOG("Skipping duplicate {} replacement texture '{}' because {} source '{}' is already indexed.",
-			GetReplacementTextureSourceTypeName(source.type), GetReplacementTextureSourceDisplayName(source),
-			GetReplacementTextureSourceTypeName(existing_source->second.type), GetReplacementTextureSourceDisplayName(existing_source->second));
+	if (!s_replacement_texture_sources.emplace(name, std::move(source)).second)
 		return false;
-	}
 
-	s_replacement_texture_sources.emplace(name, std::move(source));
 	TextureName clutless_name = name;
 	// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
 	clutless_name.CLUTHash = 0;
@@ -537,59 +496,11 @@ bool GSTextureReplacements::AddReplacementTextureSource(const TextureName& name,
 	return true;
 }
 
-const char* GSTextureReplacements::GetReplacementTextureSourceTypeName(ReplacementTextureSource::Type type)
-{
-	switch (type)
-	{
-		case ReplacementTextureSource::Type::LooseFile:
-			return "loose";
-		case ReplacementTextureSource::Type::ZipEntry:
-			return "archive";
-	}
-
-	return "unknown";
-}
-
-std::string GSTextureReplacements::GetReplacementTextureSourceDisplayName(const ReplacementTextureSource& source)
-{
-	switch (source.type)
-	{
-		case ReplacementTextureSource::Type::LooseFile:
-			return source.filename;
-		case ReplacementTextureSource::Type::ZipEntry:
-			return fmt::format("{}:{}", source.filename, source.zip_entry_name);
-	}
-
-	return source.filename;
-}
-
-bool GSTextureReplacements::IsSafeZipEntryName(std::string_view entry_name)
+bool GSTextureReplacements::IsReplacementTextureArchiveEntryName(std::string_view entry_name)
 {
 	if (entry_name.empty() || entry_name.front() == '/' || entry_name.front() == '\\')
 		return false;
 
-	size_t component_start = 0;
-	while (component_start <= entry_name.length())
-	{
-		const size_t component_end = entry_name.find_first_of("/\\", component_start);
-		const std::string_view component = (component_end == std::string_view::npos) ?
-			entry_name.substr(component_start) :
-			entry_name.substr(component_start, component_end - component_start);
-
-		if (component == "." || component == "..")
-			return false;
-
-		if (component_end == std::string_view::npos)
-			break;
-
-		component_start = component_end + 1;
-	}
-
-	return true;
-}
-
-bool GSTextureReplacements::IsReplacementTextureArchiveEntryName(std::string_view entry_name)
-{
 	const std::vector<std::string_view> components = Path::SplitWindowsPath(entry_name);
 	if (components.size() < 2)
 		return false;
@@ -597,11 +508,8 @@ bool GSTextureReplacements::IsReplacementTextureArchiveEntryName(std::string_vie
 	if (StringUtil::compareNoCase(components[0], TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME))
 		return true;
 
-	if (components.size() < 3 || components[0].size() != s_current_serial.size() ||
-		!StringUtil::compareNoCase(components[0], s_current_serial))
-	{
+	if (components.size() < 3 || !StringUtil::compareNoCase(components[0], s_current_serial))
 		return false;
-	}
 
 	return StringUtil::compareNoCase(components[1], TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME);
 }
@@ -610,77 +518,58 @@ bool GSTextureReplacements::IsValidZipReplacementTextureEntry(const std::string&
 {
 	if (!(stat.valid & ZIP_STAT_SIZE))
 	{
-		Console.Warning("Skipping replacement texture archive entry '%.*s' in '%s' because its size is unknown.",
-			static_cast<int>(entry_name.size()), entry_name.data(), archive_filename.c_str());
+		Console.WarningFmt("Skipping replacement texture archive entry '{}' in '{}' because its size is unknown.", entry_name, archive_filename);
 		return false;
 	}
 
 	if (stat.size == 0)
 	{
-		Console.Warning("Skipping empty replacement texture archive entry '%.*s' in '%s'.",
-			static_cast<int>(entry_name.size()), entry_name.data(), archive_filename.c_str());
+		Console.WarningFmt("Skipping empty replacement texture archive entry '{}' in '{}'.", entry_name, archive_filename);
 		return false;
 	}
 
 	if (stat.size > MAX_REPLACEMENT_TEXTURE_ARCHIVE_ENTRY_SIZE ||
 		stat.size > static_cast<zip_uint64_t>(std::numeric_limits<size_t>::max()))
 	{
-		Console.Warning("Skipping replacement texture archive entry '%.*s' in '%s' because its uncompressed size is too large (%" PRIu64 " bytes).",
-			static_cast<int>(entry_name.size()), entry_name.data(), archive_filename.c_str(), static_cast<u64>(stat.size));
+		Console.WarningFmt("Skipping replacement texture archive entry '{}' in '{}' because its uncompressed size is too large ({} bytes).",
+			entry_name, archive_filename, static_cast<u64>(stat.size));
 		return false;
 	}
 
 	if ((stat.valid & ZIP_STAT_ENCRYPTION_METHOD) && stat.encryption_method != ZIP_EM_NONE)
 	{
-		Console.Warning("Skipping encrypted replacement texture archive entry '%.*s' in '%s'.",
-			static_cast<int>(entry_name.size()), entry_name.data(), archive_filename.c_str());
+		Console.WarningFmt("Skipping encrypted replacement texture archive entry '{}' in '{}'.", entry_name, archive_filename);
 		return false;
 	}
 
 	return true;
 }
 
-u32 GSTextureReplacements::IndexReplacementTextureArchive(const std::string& archive_filename)
+void GSTextureReplacements::IndexReplacementTextureArchive(const std::string& archive_filename)
 {
-	DEV_LOG("Replacement texture ZIP archive discovered: '{}'", archive_filename);
-
 	zip_error_t ze = {};
-	ManagedZipArchive zip = zip_open_managed(archive_filename.c_str(), ZIP_RDONLY, &ze);
+	auto zip = zip_open_managed(archive_filename.c_str(), ZIP_RDONLY, &ze);
 	if (!zip)
 	{
-		DEV_LOG("Replacement archive could not be opened: '{}': {}", archive_filename, zip_error_strerror(&ze));
-		Console.Warning("Failed to open replacement texture archive '%s': %s", archive_filename.c_str(), zip_error_strerror(&ze));
-		return 0;
+		Console.WarningFmt("Failed to open replacement texture archive '{}': {}", archive_filename, zip_error_strerror(&ze));
+		return;
 	}
-
-	DEV_LOG("Opened replacement archive: '{}'", archive_filename);
 
 	const zip_int64_t count = zip_get_num_entries(zip.get(), 0);
 	if (count <= 0)
 	{
-		DEV_LOG("Archive contained no valid replacement entries: '{}'", archive_filename);
-		return 0;
+		DEV_LOG("Replacement texture archive '{}' contained no valid replacement entries.", archive_filename);
+		return;
 	}
-
-	std::shared_ptr<ReplacementTextureArchive> archive = std::make_shared<ReplacementTextureArchive>(archive_filename, std::move(zip));
 
 	u32 valid_replacements = 0;
 	u32 indexed_replacements = 0;
-	u32 duplicate_replacements = 0;
-	u32 invalid_entries = 0;
 
 	for (zip_uint64_t i = 0; i < static_cast<zip_uint64_t>(count); i++)
 	{
-		const char* entry_name = zip_get_name(archive->zip.get(), i, ZIP_FL_ENC_GUESS);
+		const char* entry_name = zip_get_name(zip.get(), i, ZIP_FL_ENC_GUESS);
 		if (!entry_name)
 			continue;
-
-		if (!IsSafeZipEntryName(entry_name))
-		{
-			invalid_entries++;
-			DEV_LOG("Skipping unsafe replacement texture archive entry '{}' in '{}'.", entry_name, archive_filename);
-			continue;
-		}
 
 		if (!IsReplacementTextureArchiveEntryName(entry_name))
 			continue;
@@ -695,10 +584,9 @@ u32 GSTextureReplacements::IndexReplacementTextureArchive(const std::string& arc
 
 		zip_stat_t stat;
 		zip_stat_init(&stat);
-		if (zip_stat_index(archive->zip.get(), i, 0, &stat) != 0 ||
+		if (zip_stat_index(zip.get(), i, 0, &stat) != 0 ||
 			!IsValidZipReplacementTextureEntry(archive_filename, entry_name, stat))
 		{
-			invalid_entries++;
 			continue;
 		}
 
@@ -708,79 +596,60 @@ u32 GSTextureReplacements::IndexReplacementTextureArchive(const std::string& arc
 		source.type = ReplacementTextureSource::Type::ZipEntry;
 		source.filename = archive_filename;
 		source.zip_entry_name = entry_name;
-		source.zip_entry_index = i;
-		source.zip_entry_size = stat.size;
-		source.zip_entry_compressed_size = (stat.valid & ZIP_STAT_COMP_SIZE) ? stat.comp_size : 0;
-		source.archive = archive;
 
 		if (AddReplacementTextureSource(name.value(), std::move(source)))
-		{
 			indexed_replacements++;
-			DbgCon.WriteLn("Found %ux%u replacement '%s' in archive '%s'", name->Width(), name->Height(), entry_name, archive_filename.c_str());
-		}
-		else
-		{
-			duplicate_replacements++;
-		}
 	}
 
-	DEV_LOG("Replacement texture ZIP archive '{}' scanned: {} entries, {} valid replacements, {} indexed, {} duplicates skipped, {} invalid skipped.",
-		archive_filename, static_cast<u64>(count), valid_replacements, indexed_replacements, duplicate_replacements, invalid_entries);
-	DEV_LOG("Indexed {} replacement textures from archive: '{}'", indexed_replacements, archive_filename);
 	if (valid_replacements == 0)
-		DEV_LOG("Archive contained no valid replacement entries: '{}'", archive_filename);
-
-	return indexed_replacements;
+		DEV_LOG("Replacement texture archive '{}' contained no valid replacement entries.", archive_filename);
+	else if (indexed_replacements > 0)
+		DEV_LOG("Indexed {} replacement textures from archive '{}'.", indexed_replacements, archive_filename);
 }
 
-std::optional<std::vector<u8>> GSTextureReplacements::ReadReplacementTextureFromArchive(const ReplacementTextureSource& source, zip_stat_t* stat)
+std::optional<std::vector<u8>> GSTextureReplacements::ReadReplacementTextureFromArchive(const ReplacementTextureSource& source)
 {
-	if (!source.archive || !source.archive->zip)
-		return std::nullopt;
-
-	std::unique_lock<std::mutex> lock(source.archive->mutex);
-
-	zip_t* archive = source.archive->zip.get();
-	zip_uint64_t entry_index = static_cast<zip_uint64_t>(source.zip_entry_index);
-	const char* current_name = zip_get_name(archive, entry_index, ZIP_FL_ENC_GUESS);
-	if (!current_name || source.zip_entry_name != current_name)
+	zip_error_t ze = {};
+	auto zip = zip_open_managed(source.filename.c_str(), ZIP_RDONLY, &ze);
+	if (!zip)
 	{
-		const zip_int64_t relocated_index = zip_name_locate(archive, source.zip_entry_name.c_str(), 0);
-		if (relocated_index < 0)
-		{
-			Console.Warning("Failed to locate replacement texture archive entry '%s' in '%s'.",
-				source.zip_entry_name.c_str(), source.filename.c_str());
-			return std::nullopt;
-		}
-
-		entry_index = static_cast<zip_uint64_t>(relocated_index);
+		Console.WarningFmt("Failed to open replacement texture archive '{}': {}", source.filename, zip_error_strerror(&ze));
+		return std::nullopt;
 	}
 
-	zip_stat_init(stat);
-	if (zip_stat_index(archive, entry_index, 0, stat) != 0 ||
-		!IsValidZipReplacementTextureEntry(source.filename, source.zip_entry_name, *stat))
+	const zip_int64_t entry_index = zip_name_locate(zip.get(), source.zip_entry_name.c_str(), 0);
+	if (entry_index < 0)
+	{
+		Console.WarningFmt("Failed to locate replacement texture archive entry '{}' in '{}'.", source.zip_entry_name, source.filename);
+		return std::nullopt;
+	}
+
+	zip_stat_t stat;
+	zip_stat_init(&stat);
+	if (zip_stat_index(zip.get(), static_cast<zip_uint64_t>(entry_index), 0, &stat) != 0 ||
+		!IsValidZipReplacementTextureEntry(source.filename, source.zip_entry_name, stat))
 	{
 		return std::nullopt;
 	}
 
-	auto entry = zip_fopen_index_managed(archive, entry_index, 0);
+	auto entry = zip_fopen_index_managed(zip.get(), static_cast<zip_uint64_t>(entry_index), 0);
 	if (!entry)
 	{
-		Console.Warning("Failed to open replacement texture archive entry '%s' in '%s': %s",
-			source.zip_entry_name.c_str(), source.filename.c_str(), zip_strerror(archive));
+		Console.WarningFmt("Failed to open replacement texture archive entry '{}' in '{}': {}",
+			source.zip_entry_name, source.filename, zip_strerror(zip.get()));
 		return std::nullopt;
 	}
 
 	std::vector<u8> data;
-	data.resize(static_cast<size_t>(stat->size));
+	data.resize(static_cast<size_t>(stat.size));
 	size_t data_pos = 0;
 	while (data_pos < data.size())
 	{
 		const zip_int64_t read_size = zip_fread(entry.get(), data.data() + data_pos, data.size() - data_pos);
 		if (read_size <= 0)
 		{
-			Console.Warning("Failed to read replacement texture archive entry '%s' in '%s': expected %" PRIu64 " bytes, read %" PRIu64 " bytes.",
-				source.zip_entry_name.c_str(), source.filename.c_str(), static_cast<u64>(data.size()), static_cast<u64>(data_pos));
+			Console.WarningFmt("Failed to read replacement texture archive entry '{}' in '{}': expected {} bytes, read {} bytes.",
+				source.zip_entry_name, source.filename, static_cast<u64>(data.size()), static_cast<u64>(data_pos));
 			return std::nullopt;
 		}
 
@@ -789,8 +658,8 @@ std::optional<std::vector<u8>> GSTextureReplacements::ReadReplacementTextureFrom
 
 	if (data_pos != data.size())
 	{
-		Console.Warning("Failed to read replacement texture archive entry '%s' in '%s': expected %" PRIu64 " bytes, read %" PRId64 " bytes.",
-			source.zip_entry_name.c_str(), source.filename.c_str(), static_cast<u64>(data.size()), static_cast<s64>(data_pos));
+		Console.WarningFmt("Failed to read replacement texture archive entry '{}' in '{}': expected {} bytes, read {} bytes.",
+			source.zip_entry_name, source.filename, static_cast<u64>(data.size()), static_cast<u64>(data_pos));
 		return std::nullopt;
 	}
 
@@ -815,9 +684,6 @@ void GSTextureReplacements::UpdateConfig(Pcsx2Config::GSOptions& old_config)
 		ReloadReplacementMap();
 	else if (!GSConfig.LoadTextureReplacements && old_config.LoadTextureReplacements)
 		ClearReplacementTextures();
-	else if (GSConfig.LoadTextureReplacements &&
-			 GSConfig.LoadTextureReplacementsFromArchives != old_config.LoadTextureReplacementsFromArchives)
-		ReloadReplacementMap();
 
 	if (!GSConfig.DumpReplaceableTextures && old_config.DumpReplaceableTextures)
 		ClearDumpedTextureList();
@@ -980,7 +846,6 @@ void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture&
 
 std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(const TextureName& name, const ReplacementTextureSource& source, bool only_base_image)
 {
-	Common::Timer total_timer;
 	ReplacementTexture rtex;
 	bool loaded = false;
 	switch (source.type)
@@ -991,10 +856,7 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 			if (!loader)
 				return std::nullopt;
 
-			Common::Timer decode_timer;
 			loaded = loader(source.filename.c_str(), &rtex, only_base_image);
-			DEV_LOG("Replacement texture loose load '{}' decode={:.3f}ms total={:.3f}ms.",
-				source.filename, decode_timer.GetTimeMilliseconds(), total_timer.GetTimeMilliseconds());
 		}
 		break;
 
@@ -1004,31 +866,19 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 			if (!loader)
 				return std::nullopt;
 
-			DEV_LOG("Replacement texture archive lookup hit: '{}' entry '{}'.", source.filename, source.zip_entry_name);
-
-			zip_stat_t stat;
-			Common::Timer read_timer;
-			std::optional<std::vector<u8>> data = ReadReplacementTextureFromArchive(source, &stat);
-			const double read_time = read_timer.GetTimeMilliseconds();
+			std::optional<std::vector<u8>> data = ReadReplacementTextureFromArchive(source);
 			if (!data.has_value())
 				return std::nullopt;
 
-			Common::Timer decode_timer;
 			loaded = loader(data->data(), data->size(), source.zip_entry_name, &rtex, only_base_image);
-			const double decode_time = decode_timer.GetTimeMilliseconds();
-			const double total_time = total_timer.GetTimeMilliseconds();
-			DEV_LOG("Replacement texture archive load '{}' entry '{}' compressed={} bytes uncompressed={} bytes read={:.3f}ms decode={:.3f}ms total={:.3f}ms.",
-				source.filename, source.zip_entry_name,
-				(stat.valid & ZIP_STAT_COMP_SIZE) ? static_cast<u64>(stat.comp_size) : source.zip_entry_compressed_size,
-				static_cast<u64>(data->size()), read_time, decode_time, total_time);
 		}
 		break;
 	}
 
 	if (!loaded)
 	{
-		Console.Warning("Failed to load replacement texture %s",
-			source.type == ReplacementTextureSource::Type::ZipEntry ? source.zip_entry_name.c_str() : source.filename.c_str());
+		Console.WarningFmt("Failed to load replacement texture {}",
+			source.type == ReplacementTextureSource::Type::ZipEntry ? source.zip_entry_name : source.filename);
 		return std::nullopt;
 	}
 
