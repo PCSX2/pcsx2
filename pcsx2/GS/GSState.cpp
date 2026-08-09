@@ -474,7 +474,6 @@ void GSState::PushBuffer()
 		m_index = &m_index_buffers[m_used_buffers_idx];
 		m_vertex = &m_vertex_buffers[m_used_buffers_idx];
 		GSVertexBuff& vtx_buff = *m_vertex;
-		GSIndexBuff& idx_buff = *m_index;
 
 		const u32 base = m_vertex_buffers[m_current_buffer_idx].head;
 		u32 copy_amt = m_vertex_buffers[m_current_buffer_idx].tail - base;
