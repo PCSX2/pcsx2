@@ -3,6 +3,7 @@
 
 #include "Common.h"
 
+#include "common/Path.h"
 #include "common/StringUtil.h"
 #include "ps2/BiosTools.h"
 #include "R5900.h"
@@ -671,7 +672,8 @@ void eeloadHook()
 		const std::string& elf_override = VMManager::Internal::GetELFOverride();
 		if (!elf_override.empty())
 		{
-			elfname = fmt::format("host:{}", elf_override);
+			// The host: root should be directory containg the elf, so get only the filename part
+			elfname = fmt::format("host:{}", Path::GetFileName(elf_override));
 		}
 		else
 		{
