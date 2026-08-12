@@ -68,7 +68,7 @@ GLuint GLProgram::CompileShader(GLenum type, const std::string_view source)
 			Console.Error("Shader failed to compile:\n%s", info_log.c_str());
 
 			std::ofstream ofs(
-				Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
+				Path::CombineIntoFullPath(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
 				std::ofstream::out | std::ofstream::binary);
 			if (ofs.is_open())
 			{

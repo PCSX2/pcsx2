@@ -294,7 +294,7 @@ std::string Path::RealPath(const std::string_view path)
 	std::string buf;
 	if (!IsAbsolute(path))
 	{
-		buf = Path::Combine(FileSystem::GetWorkingDirectory(), path);
+		buf = Path::CombineIntoFullPath(FileSystem::GetWorkingDirectory(), path);
 		components = Path::SplitNativePath(buf);
 	}
 	else
@@ -845,7 +845,7 @@ std::string Path::BuildRelativePath(const std::string_view filename, const std::
 	return new_string;
 }
 
-std::string Path::Combine(const std::string_view base, const std::string_view next)
+std::string Path::CombineIntoFullPath(const std::string_view base, const std::string_view next)
 {
 	std::string ret;
 	ret.reserve(base.length() + next.length() + 1);

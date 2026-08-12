@@ -291,7 +291,7 @@ bool Patch::OpenPatchesZip()
 	if (s_patches_zip)
 		return true;
 
-	const std::string filename = Path::Combine(EmuFolders::Resources, PATCHES_ZIP_NAME);
+	const std::string filename = Path::CombineIntoFullPath(EmuFolders::Resources, PATCHES_ZIP_NAME);
 
 	zip_error ze = {};
 	zip_source_t* zs = zip_source_file_create(filename.c_str(), 0, 0, &ze);
@@ -579,7 +579,7 @@ std::vector<Patch::PatchInfo> Patch::GetPatchInfo(const std::string_view serial,
 
 std::string Patch::GetPnachFilename(const std::string_view serial, u32 crc, bool cheats)
 {
-	return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetPnachTemplate(serial, crc, true, false, false));
+	return Path::CombineIntoFullPath(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetPnachTemplate(serial, crc, true, false, false));
 }
 
 void Patch::ReloadEnabledLists()

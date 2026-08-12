@@ -556,7 +556,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 
 static std::string GetCacheFilename()
 {
-	return Path::Combine(EmuFolders::Cache, "gamelist.cache");
+	return Path::CombineIntoFullPath(EmuFolders::Cache, "gamelist.cache");
 }
 
 void GameList::LoadCache()
@@ -976,7 +976,7 @@ bool GameList::GetSerialAndCRCForFilename(const char* filename, std::string* ser
 
 std::string GameList::GetPlayedTimeFile()
 {
-	return Path::Combine(EmuFolders::Settings, "playtime.dat");
+	return Path::CombineIntoFullPath(EmuFolders::Settings, "playtime.dat");
 }
 
 bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry)
@@ -1274,7 +1274,7 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 			std::string cover_filename = fmt::format("{}{}", file_title, extension);
 			Path::SanitizeFileName(&cover_filename);
 
-			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			cover_path = Path::CombineIntoFullPath(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -1283,7 +1283,7 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 		if (!entry->serial.empty())
 		{
 			const std::string cover_filename(entry->serial + extension);
-			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			cover_path = Path::CombineIntoFullPath(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -1294,7 +1294,7 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 			std::string cover_filename = fmt::format("{}{}", entry->title, extension);
 			Path::SanitizeFileName(&cover_filename);
 
-			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			cover_path = Path::CombineIntoFullPath(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -1304,7 +1304,7 @@ std::string GameList::GetCoverImagePathForEntry(const Entry* entry)
 			std::string cover_filename = fmt::format("{}{}", entry->title_en, extension);
 			Path::SanitizeFileName(&cover_filename);
 
-			cover_path = Path::Combine(EmuFolders::Covers, cover_filename);
+			cover_path = Path::CombineIntoFullPath(EmuFolders::Covers, cover_filename);
 			if (FileSystem::FileExists(cover_path.c_str()))
 				return cover_path;
 		}
@@ -1330,7 +1330,7 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 
 	std::string cover_filename = fmt::format("{}.{}", use_serial ? entry->serial : entry->title, extension);
 	Path::SanitizeFileName(&cover_filename);
-	return Path::Combine(EmuFolders::Covers, cover_filename);
+	return Path::CombineIntoFullPath(EmuFolders::Covers, cover_filename);
 }
 
 bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, bool use_serial, ProgressCallback* progress,
@@ -1464,7 +1464,7 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 
 std::string GameList::GetCustomPropertiesFile()
 {
-	return Path::Combine(EmuFolders::Settings, "custom_properties.ini");
+	return Path::CombineIntoFullPath(EmuFolders::Settings, "custom_properties.ini");
 }
 
 void GameList::CheckCustomAttributesForPath(const std::string& path, bool& has_custom_title, bool& has_custom_region)

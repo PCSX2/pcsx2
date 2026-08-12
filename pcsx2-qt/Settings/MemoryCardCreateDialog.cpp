@@ -125,7 +125,7 @@ void MemoryCardCreateDialog::createCard()
 #ifdef _WIN32
 	if (m_type == MemoryCardType::File)
 	{
-		const std::string fullPath = Path::Combine(EmuFolders::MemoryCards, name_str);
+		const std::string fullPath = Path::CombineIntoFullPath(EmuFolders::MemoryCards, name_str);
 		FileSystem::SetPathCompression(fullPath.c_str(), m_ui.ntfsCompression->isChecked());
 	}
 #endif

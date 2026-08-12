@@ -523,7 +523,7 @@ void VMManager::UpdateLoggingSettings(SettingsInterface& si)
 	// Set the output level if file logging or trace logs have changed.
 	if (file_logging_enabled != Log::IsFileOutputEnabled() || (EmuConfig.Trace.Enabled && Log::GetMaxLevel() < LOGLEVEL_TRACE))
 	{
-		std::string path = Path::Combine(EmuFolders::Logs, "emulog.txt");
+		std::string path = Path::CombineIntoFullPath(EmuFolders::Logs, "emulog.txt");
 		Log::SetFileOutputLevel(file_logging_enabled ? EmuConfig.Trace.Enabled ? LOGLEVEL_TRACE : level : LOGLEVEL_NONE, std::move(path));
 	}
 }
@@ -814,8 +814,8 @@ std::string VMManager::GetGameSettingsPath(const std::string_view game_serial, u
 	std::string sanitized_serial(Path::SanitizeFileName(game_serial));
 
 	return game_serial.empty() ?
-	           Path::Combine(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
-	           Path::Combine(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
+	           Path::CombineIntoFullPath(EmuFolders::GameSettings, fmt::format("{:08X}.ini", game_crc)) :
+	           Path::CombineIntoFullPath(EmuFolders::GameSettings, fmt::format("{}_{:08X}.ini", sanitized_serial, game_crc));
 }
 
 std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_path)
@@ -842,7 +842,7 @@ std::string VMManager::GetDiscOverrideFromGameSettings(const std::string& elf_pa
 
 std::string VMManager::GetInputProfilePath(const std::string_view name)
 {
-	return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
+	return Path::CombineIntoFullPath(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
 }
 
 std::string VMManager::GetDebuggerSettingsFilePath(const std::string_view game_serial, u32 game_crc)
@@ -851,7 +851,7 @@ std::string VMManager::GetDebuggerSettingsFilePath(const std::string_view game_s
 	if (!game_serial.empty() && game_crc != 0)
 	{
 		auto lock = Host::GetSettingsLock();
-		return Path::Combine(EmuFolders::DebuggerSettings, fmt::format("{}_{:08X}.json", game_serial, game_crc));
+		return Path::CombineIntoFullPath(EmuFolders::DebuggerSettings, fmt::format("{}_{:08X}.json", game_serial, game_crc));
 	}
 	return path;
 }
@@ -1862,7 +1862,7 @@ std::string VMManager::GetSaveStateFileName(const char* game_serial, u32 game_cr
 		else
 			filename = fmt::format("{} ({:08X}).{:02d}.p2s", game_serial, game_crc, slot);
 
-		filename = Path::Combine(EmuFolders::Savestates, filename);
+		filename = Path::CombineIntoFullPath(EmuFolders::Savestates, filename);
 	}
 
 	return filename;

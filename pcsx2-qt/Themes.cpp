@@ -613,7 +613,7 @@ void QtHost::SetStyleFromSettings()
 		qApp->setStyle(QStyleFactory::create("Fusion"));
 
 		QString sheet_content;
-		QFile sheets(QString::fromStdString(Path::Combine(EmuFolders::DataRoot, "custom.qss")));
+		QFile sheets(QString::fromStdString(Path::CombineIntoFullPath(EmuFolders::DataRoot, "custom.qss")));
 
 		if (sheets.open(QFile::ReadOnly))
 		{

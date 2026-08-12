@@ -1107,10 +1107,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(Adapter);
 	SettingsWrapEntry(HWDumpDirectory);
 	if (!HWDumpDirectory.empty() && !Path::IsAbsolute(HWDumpDirectory))
-		HWDumpDirectory = Path::Combine(EmuFolders::DataRoot, HWDumpDirectory);
+		HWDumpDirectory = Path::CombineIntoFullPath(EmuFolders::DataRoot, HWDumpDirectory);
 	SettingsWrapEntry(SWDumpDirectory);
 	if (!SWDumpDirectory.empty() && !Path::IsAbsolute(SWDumpDirectory))
-		SWDumpDirectory = Path::Combine(EmuFolders::DataRoot, SWDumpDirectory);
+		SWDumpDirectory = Path::CombineIntoFullPath(EmuFolders::DataRoot, SWDumpDirectory);
 
 	// Sanity check: don't dump a bunch of crap in the current working directory.
 	if (DumpGSData && (HWDumpDirectory.empty() || SWDumpDirectory.empty()))
@@ -2080,13 +2080,13 @@ std::string Pcsx2Config::FullpathToBios() const
 {
 	std::string ret;
 	if (!BaseFilenames.Bios.empty())
-		ret = Path::Combine(EmuFolders::Bios, BaseFilenames.Bios);
+		ret = Path::CombineIntoFullPath(EmuFolders::Bios, BaseFilenames.Bios);
 	return ret;
 }
 
 std::string Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(EmuFolders::MemoryCards, Mcd[slot].Filename);
+	return Path::CombineIntoFullPath(EmuFolders::MemoryCards, Mcd[slot].Filename);
 }
 
 void Pcsx2Config::CopyRuntimeConfig(Pcsx2Config& cfg)
@@ -2158,7 +2158,7 @@ bool EmuFolders::SetResourcesDirectory()
 #ifndef __APPLE__
 #ifndef PCSX2_APP_DATADIR
 	// On Windows/Linux, these are in the binary directory.
-	Resources = Path::Combine(AppRoot, "resources");
+	Resources = Path::CombineIntoFullPath(AppRoot, "resources");
 #else
 	Resources = Path::Canonicalize(Path::Combine(AppRoot, PCSX2_APP_DATADIR "/resources"));
 #endif
@@ -2185,8 +2185,8 @@ bool EmuFolders::SetResourcesDirectory()
 bool EmuFolders::ShouldUsePortableMode()
 {
 	// Check whether portable.ini/txt exists in the program directory or the `-portable` launch arguments have been passed.
-	if (FileSystem::FileExists(Path::Combine(AppRoot, "portable.ini").c_str()) ||
-		FileSystem::FileExists(Path::Combine(AppRoot, "portable.txt").c_str()) ||
+	if (FileSystem::FileExists(Path::CombineIntoFullPath(AppRoot, "portable.ini").c_str()) ||
+		FileSystem::FileExists(Path::CombineIntoFullPath(AppRoot, "portable.txt").c_str()) ||
 		EmuConfig.IsPortableMode)
 	{
 		return true;
@@ -2197,7 +2197,7 @@ bool EmuFolders::ShouldUsePortableMode()
 
 std::string EmuFolders::GetPortableModePath()
 {
-	const auto portable_txt_path = Path::Combine(AppRoot, "portable.txt");
+	const auto portable_txt_path = Path::CombineIntoFullPath(AppRoot, "portable.txt");
 	const auto portable_path = FileSystem::ReadFileToString(portable_txt_path.c_str()).value_or("");
 	const auto trimmed_path = StringUtil::StripWhitespace(portable_path);
 	return std::string(trimmed_path);
@@ -2217,7 +2217,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 			if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
 			{
 				if (std::wcslen(documents_directory) > 0)
-					DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
+					DataRoot = Path::CombineIntoFullPath(StringUtil::WideStringToUTF8String(documents_directory), "PCSX2");
 				CoTaskMemFree(documents_directory);
 			}
 #elif defined(__linux__) || defined(__FreeBSD__)
@@ -2249,7 +2249,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 #endif
 			}
 			else // Otherwise use the custom path provided by the user
-				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "PCSX2"));
+				DataRoot = Path::RealPath(Path::CombineIntoFullPath(EmuConfig.CustomDataPath, "PCSX2"));
 		}
 
 	// Couldn't determine the data directory, or using portable mode? fallback to portable.
@@ -2267,12 +2267,12 @@ bool EmuFolders::SetDataDirectory(Error* error)
 		else
 			DataRoot = Path::Combine(AppRoot, GetPortableModePath());
 #else
-		DataRoot = Path::Combine(AppRoot, GetPortableModePath());
+		DataRoot = Path::CombineIntoFullPath(AppRoot, GetPortableModePath());
 #endif
 	}
 
 	// Inis is always below the data root
-	Settings = Path::Combine(DataRoot, "inis");
+	Settings = Path::CombineIntoFullPath(DataRoot, "inis");
 
 	// Make sure it exists
 	Console.WriteLnFmt("DataRoot Directory: {}", DataRoot);
@@ -2302,7 +2302,7 @@ static std::string LoadPathFromSettings(SettingsInterface& si, const std::string
 {
 	std::string value = si.GetStringValue("Folders", name, def);
 	if (!Path::IsAbsolute(value))
-		value = Path::Combine(root, value);
+		value = Path::CombineIntoFullPath(root, value);
 	return value;
 }
 
@@ -2371,13 +2371,13 @@ std::FILE* EmuFolders::OpenLogFile(std::string_view name, const char* mode)
 	if (name.empty())
 		return nullptr;
 
-	const std::string path(Path::Combine(Logs, name));
+	const std::string path(Path::CombineIntoFullPath(Logs, name));
 	return FileSystem::OpenCFile(path.c_str(), mode);
 }
 
 std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
 {
-	std::string upath = Path::Combine(UserResources, name);
+	std::string upath = Path::CombineIntoFullPath(UserResources, name);
 	if (FileSystem::FileExists(upath.c_str()))
 	{
 		if (UserResources != Resources)
@@ -2385,7 +2385,7 @@ std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
 	}
 	else
 	{
-		upath = Path::Combine(Resources, name);
+		upath = Path::CombineIntoFullPath(Resources, name);
 	}
 
 	return upath;

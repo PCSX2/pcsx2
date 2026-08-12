@@ -48,7 +48,7 @@ void Updater::SetupLogging(ProgressCallback* progress, const std::string& destin
 {
 	Log::SetDebugOutputLevel(LOGLEVEL_DEBUG);
 
-	std::string log_path = Path::Combine(destination_directory, "updater.log");
+	std::string log_path = Path::CombineIntoFullPath(destination_directory, "updater.log");
 	if (!Log::SetFileOutputLevel(LOGLEVEL_DEBUG, std::move(log_path)))
 		progress->DisplayFormattedModalError("Failed to open log file '%s'", log_path.c_str());
 }

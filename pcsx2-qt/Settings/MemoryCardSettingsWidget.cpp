@@ -68,7 +68,7 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 	m_ui.cardGroupBox->installEventFilter(this);
 
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders",
-		"MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
+		"MemoryCards", Path::CombineIntoFullPath(EmuFolders::DataRoot, "memcards"));
 
 	setupAdditionalUi();
 

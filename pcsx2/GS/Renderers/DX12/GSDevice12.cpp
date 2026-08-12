@@ -221,8 +221,8 @@ void GSDevice12::LoadAgilitySDK()
 		return;
 	}
 
-	std::string sdk_path = Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "\\D3D12\\");
-	std::string core_path = Path::Combine(sdk_path, "D3D12Core.dll");
+	std::string sdk_path = Path::CombineIntoFullPath(Path::GetDirectory(FileSystem::GetProgramPath()), "\\D3D12\\");
+	std::string core_path = Path::CombineIntoFullPath(sdk_path, "D3D12Core.dll");
 	if (!FileSystem::FileExists(core_path.c_str()))
 		return;
 

@@ -753,7 +753,7 @@ bool OSDFontPickerDialog::validateFontFile(const QString& path)
 QString OSDFontPickerDialog::getCatalogCachePath() const
 {
 	const QString dir = getCatalogFontCacheDir();
-	return QString::fromStdString(Path::Combine(dir.toStdString(), "font-catalog.json"));
+	return QString::fromStdString(Path::CombineIntoFullPath(dir.toStdString(), "font-catalog.json"));
 }
 
 void OSDFontPickerDialog::onSourceTabChanged(int index)
@@ -784,7 +784,7 @@ void OSDFontPickerDialog::onSourceTabChanged(int index)
 
 QString OSDFontPickerDialog::getCatalogFontCacheDir() const
 {
-	return QString::fromStdString(Path::Combine(EmuFolders::Cache, "fonts"));
+	return QString::fromStdString(Path::CombineIntoFullPath(EmuFolders::Cache, "fonts"));
 }
 
 void OSDFontPickerDialog::updateDownloadSelectedButton()

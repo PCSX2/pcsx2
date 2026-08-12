@@ -704,7 +704,7 @@ bool Achievements::Shutdown(bool allow_cancel)
 
 void Achievements::EnsureCacheDirectoriesExist()
 {
-	s_image_directory = Path::Combine(EmuFolders::Cache, "achievement_images");
+	s_image_directory = Path::CombineIntoFullPath(EmuFolders::Cache, "achievement_images");
 
 	if (!FileSystem::DirectoryExists(s_image_directory.c_str()) && !FileSystem::CreateDirectoryPath(s_image_directory.c_str(), false))
 	{
@@ -945,7 +945,7 @@ void Achievements::PlayAchievementSound(bool is_specific_sound_enabled, const st
 		return;
 
 	if (custom_sound_name.empty() || !FileSystem::FileExists(custom_sound_name.c_str()))
-		Common::PlaySoundAsync(Path::Combine(EmuFolders::Resources, default_sound_name).c_str());
+		Common::PlaySoundAsync(Path::CombineIntoFullPath(EmuFolders::Resources, default_sound_name).c_str());
 	else
 		Common::PlaySoundAsync(custom_sound_name.c_str());
 }
@@ -1087,7 +1087,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
 	if (const std::string_view badge_name = info->badge_name; !badge_name.empty())
 	{
-		s_game_icon = Path::Combine(s_image_directory, fmt::format("game_{}.png", badge_name));
+		s_game_icon = Path::CombineIntoFullPath(s_image_directory, fmt::format("game_{}.png", badge_name));
 		if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
 			DownloadImage(s_game_icon_url, s_game_icon);
 	}
@@ -1738,7 +1738,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
 
 	const std::string_view suffix = state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED ? "" : "_lock";
 
-	path = Path::Combine(s_image_directory,
+	path = Path::CombineIntoFullPath(s_image_directory,
 		TinyString::from_format("achievement_{}{}.png", badge_name, suffix));
 
 	if (!FileSystem::FileExists(path.c_str()))
@@ -1760,7 +1760,7 @@ std::string Achievements::GetUserBadgePath(const std::string_view username)
 	std::string path;
 	const std::string clean_username = Path::SanitizeFileName(username);
 	if (!clean_username.empty())
-		path = Path::Combine(s_image_directory, TinyString::from_format("user_{}.png", clean_username));
+		path = Path::CombineIntoFullPath(s_image_directory, TinyString::from_format("user_{}.png", clean_username));
 	return path;
 }
 
@@ -3749,7 +3749,7 @@ std::string Achievements::GetSubsetBadgePath(const rc_client_subset_t* subset)
 	if (!subset || !subset->badge_name[0])
 		return {};
 
-	std::string path = Path::Combine(s_image_directory, fmt::format("subset_{}.png", subset->badge_name));
+	std::string path = Path::CombineIntoFullPath(s_image_directory, fmt::format("subset_{}.png", subset->badge_name));
 	if (!path.empty() && subset->badge_url && !FileSystem::FileExists(path.c_str()))
 		DownloadImage(subset->badge_url, path);
 

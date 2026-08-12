@@ -194,7 +194,7 @@ void dyn_shaderc::Close()
 
 static void DumpBadShader(std::string_view code, std::string_view errors)
 {
-	const std::string filename = Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", ++s_next_bad_shader_id));
+	const std::string filename = Path::CombineIntoFullPath(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", ++s_next_bad_shader_id));
 	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
 	if (fp)
 	{
@@ -588,7 +588,7 @@ std::string VKShaderCache::GetShaderCacheBaseFileName(bool debug)
 	if (debug)
 		base_filename += "_debug";
 
-	return Path::Combine(EmuFolders::Cache, base_filename);
+	return Path::CombineIntoFullPath(EmuFolders::Cache, base_filename);
 }
 
 std::string VKShaderCache::GetPipelineCacheBaseFileName(bool debug)
@@ -600,7 +600,7 @@ std::string VKShaderCache::GetPipelineCacheBaseFileName(bool debug)
 
 	base_filename += ".bin";
 
-	return Path::Combine(EmuFolders::Cache, base_filename);
+	return Path::CombineIntoFullPath(EmuFolders::Cache, base_filename);
 }
 
 VKShaderCache::CacheIndexKey VKShaderCache::GetCacheKey(u32 type, const std::string_view shader_code)

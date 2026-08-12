@@ -1350,7 +1350,7 @@ bool QtHost::InitializeConfig()
 	CrashHandler::SetWriteDirectory(EmuFolders::DataRoot);
 
 	// Load main settings ini
-	const std::string path = Path::Combine(EmuFolders::Settings, "PCSX2.ini");
+	const std::string path = Path::CombineIntoFullPath(EmuFolders::Settings, "PCSX2.ini");
 	const bool settings_exists = FileSystem::FileExists(path.c_str());
 	Console.WriteLnFmt("Loading config from {}.", path);
 
@@ -1391,7 +1391,7 @@ bool QtHost::InitializeConfig()
 	}
 
 	// Layer secrets ini on top
-	const std::string secrets_path = Path::Combine(EmuFolders::Settings, "secrets.ini");
+	const std::string secrets_path = Path::CombineIntoFullPath(EmuFolders::Settings, "secrets.ini");
 	const bool secrets_settings_exists = FileSystem::FileExists(secrets_path.c_str());
 	Console.WriteLnFmt("Loading secrets from {}.", secrets_path);
 

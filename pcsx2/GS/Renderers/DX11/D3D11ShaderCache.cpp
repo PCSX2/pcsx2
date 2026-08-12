@@ -222,7 +222,7 @@ std::string D3D11ShaderCache::GetCacheBaseFileName(D3D::ShaderModel shader_model
 	if (debug)
 		base_filename += "_debug";
 
-	return Path::Combine(EmuFolders::Cache, base_filename);
+	return Path::CombineIntoFullPath(EmuFolders::Cache, base_filename);
 }
 
 D3D11ShaderCache::CacheIndexKey D3D11ShaderCache::GetCacheKey(

@@ -144,7 +144,7 @@ std::string GSState::GetDrawDumpPath(const char* format, ...)
 	std::va_list ap;
 	va_start(ap, format);
 	const std::string& base = GSIsHardwareRenderer() ? GSConfig.HWDumpDirectory : GSConfig.SWDumpDirectory;
-	std::string ret(Path::Combine(base, StringUtil::StdStringFromFormatV(format, ap)));
+	std::string ret(Path::CombineIntoFullPath(base, StringUtil::StdStringFromFormatV(format, ap)));
 	va_end(ap);
 	return ret;
 }

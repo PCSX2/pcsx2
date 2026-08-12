@@ -4191,7 +4191,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 
 										const bool lba48 = (custom_size_gb > 120);
 										const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", custom_size_gb, lba48 ? "LBA48" : "LBA28");
-										const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
+										const std::string filepath = Path::CombineIntoFullPath(EmuFolders::DataRoot, filename);
 
 										if (FileSystem::FileExists(filepath.c_str()))
 										{
@@ -4227,7 +4227,7 @@ void FullscreenUI::DrawNetworkHDDSettingsPage()
 							const bool lba48 = (size_gb > 120);
 
 							const std::string filename = fmt::format("DEV9hdd_{}GB_{}.raw", size_gb, lba48 ? "LBA48" : "LBA28");
-							const std::string filepath = Path::Combine(EmuFolders::DataRoot, filename);
+							const std::string filepath = Path::CombineIntoFullPath(EmuFolders::DataRoot, filename);
 
 							if (FileSystem::FileExists(filepath.c_str()))
 							{
@@ -4396,7 +4396,7 @@ void FullscreenUI::DoCreateMemoryCard(std::string name, MemoryCardType type, Mem
 #ifdef _WIN32
 	if (type == MemoryCardType::File && use_ntfs_compression)
 	{
-		const std::string full_path = Path::Combine(EmuFolders::MemoryCards, name_str);
+		const std::string full_path = Path::CombineIntoFullPath(EmuFolders::MemoryCards, name_str);
 		FileSystem::SetPathCompression(full_path.c_str(), true);
 	}
 #endif
@@ -4878,7 +4878,7 @@ void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& se
 	{
 		MenuHeading(FSUI_CSTR("Sound Effects"));
 		const auto draw_sound_setting = [bsi](const char* title, const char* key, const char* default_filename, const char* selector_title) {
-			const std::string default_path = Path::Combine(EmuFolders::Resources, default_filename);
+			const std::string default_path = Path::CombineIntoFullPath(EmuFolders::Resources, default_filename);
 			const std::optional<SmallString> custom_path = bsi->GetOptionalSmallStringValue("Achievements", key, std::nullopt);
 			const char* value = custom_path.has_value() ? custom_path->c_str() : default_path.c_str();
 			if (!MenuButton(title, value))

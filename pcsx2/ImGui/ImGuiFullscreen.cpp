@@ -297,7 +297,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(const char* path)
 	if (Path::IsAbsolute(path))
 		data = FileSystem::ReadBinaryFile(path);
 	else
-		data = FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, path).c_str());
+		data = FileSystem::ReadBinaryFile(Path::CombineIntoFullPath(EmuFolders::Resources, path).c_str());
 	if (data.has_value())
 	{
 		image = RGBA8Image();
@@ -393,7 +393,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadSvgTextureImage(const char* path,
 		if (Path::IsAbsolute(path))
 			data = FileSystem::ReadBinaryFile(path);
 		else
-			data = FileSystem::ReadBinaryFile(Path::Combine(EmuFolders::Resources, path).c_str());
+			data = FileSystem::ReadBinaryFile(Path::CombineIntoFullPath(EmuFolders::Resources, path).c_str());
 		if (data.has_value())
 			data_ptr = s_svg_data_cache.Insert(std::string(path), std::move(data.value()));
 	}
@@ -2326,7 +2326,7 @@ void ImGuiFullscreen::PopulateFileSelectorItems()
 
 		for (const FILESYSTEM_FIND_DATA& fd : results)
 		{
-			std::string full_path(Path::Combine(s_file_selector_current_directory, fd.FileName));
+			std::string full_path(Path::CombineIntoFullPath(s_file_selector_current_directory, fd.FileName));
 
 			if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
 			{

@@ -35,8 +35,8 @@ void MemoryCardConvertWorker::runAsync()
 
 bool MemoryCardConvertWorker::ConvertToFile(const std::string& srcFolderName, const std::string& destFileName, const MemoryCardFileType type)
 {
-	const std::string srcPath(Path::Combine(EmuFolders::MemoryCards, srcFolderName));
-	const std::string destPath(Path::Combine(EmuFolders::MemoryCards, destFileName));
+	const std::string srcPath(Path::CombineIntoFullPath(EmuFolders::MemoryCards, srcFolderName));
+	const std::string destPath(Path::CombineIntoFullPath(EmuFolders::MemoryCards, destFileName));
 	size_t sizeInMB = 0;
 
 	switch (type)
@@ -101,8 +101,8 @@ bool MemoryCardConvertWorker::ConvertToFile(const std::string& srcFolderName, co
 
 bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, const std::string& destFolderName, const MemoryCardFileType type)
 {
-	const std::string srcPath(Path::Combine(EmuFolders::MemoryCards, srcFileName));
-	const std::string destPath(Path::Combine(EmuFolders::MemoryCards, destFolderName));
+	const std::string srcPath(Path::CombineIntoFullPath(EmuFolders::MemoryCards, srcFileName));
+	const std::string destPath(Path::CombineIntoFullPath(EmuFolders::MemoryCards, destFolderName));
 
 	FolderMemoryCard targetFolderMemoryCard;
 	Pcsx2Config::McdOptions config;

@@ -254,14 +254,14 @@ void MemoryCardConvertDialog::ConvertCard()
 
 		// If a match is found, revert back to the base name, add a number and the extension, and try again.
 		// Keep incrementing the number until we get a unique result.
-		while (m_srcCardInfo.type == MemoryCardType::File ? FileSystem::DirectoryExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()) : FileSystem::FileExists(Path::Combine(EmuFolders::MemoryCards, destName.toStdString()).c_str()))
+		while (m_srcCardInfo.type == MemoryCardType::File ? FileSystem::DirectoryExists(Path::CombineIntoFullPath(EmuFolders::MemoryCards, destName.toStdString()).c_str()) : FileSystem::FileExists(Path::CombineIntoFullPath(EmuFolders::MemoryCards, destName.toStdString()).c_str()))
 		{
 			destName = baseName;
 			destName.append(StringUtil::StdStringFromFormat("_%02zd.ps2", ++num).c_str());
 		}
 
 		// Check if we have write permission in the memory card directory
-		const std::string destPath = Path::Combine(EmuFolders::MemoryCards, destName.toStdString());
+		const std::string destPath = Path::CombineIntoFullPath(EmuFolders::MemoryCards, destName.toStdString());
 		Error error;
 		FILE* tmpFile = FileSystem::OpenCFile(destPath.c_str(), "w", &error);
 		if (tmpFile == nullptr)

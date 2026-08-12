@@ -413,7 +413,7 @@ void SymbolImporter::ImportExtraSymbols(
 
 		std::string path = Path::ToNativePath(extra_symbol_file.Path);
 		if (!Path::IsAbsolute(path))
-			path = Path::Combine(EmuFolders::GameSettings, path);
+			path = Path::CombineIntoFullPath(EmuFolders::GameSettings, path);
 
 		if (!extra_symbol_file.Condition.empty())
 		{

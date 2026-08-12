@@ -1017,7 +1017,7 @@ void GameDatabaseSchema::GameEntry::applyGSHardwareFixes(Pcsx2Config::GSOptions&
 
 void GameDatabase::initDatabase()
 {
-	const std::string path(Path::Combine(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME));
+	const std::string path(Path::CombineIntoFullPath(EmuFolders::Resources, GAMEDB_YAML_FILE_NAME));
 	const std::string name(GAMEDB_YAML_FILE_NAME);
 
 	const std::optional<std::string> buffer = FileSystem::ReadFileToString(path.c_str());
@@ -1179,7 +1179,7 @@ bool GameDatabase::loadHashDatabase()
 
 	Common::Timer load_timer;
 
-	const std::string path(Path::Combine(EmuFolders::Resources, HASHDB_YAML_FILE_NAME));
+	const std::string path(Path::CombineIntoFullPath(EmuFolders::Resources, HASHDB_YAML_FILE_NAME));
 	const std::string name(HASHDB_YAML_FILE_NAME);
 
 	std::optional<std::string> buffer = FileSystem::ReadFileToString(path.c_str());

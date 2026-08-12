@@ -416,7 +416,7 @@ static std::span<const u8> TryLoadFont(FontSearchContext* ctx, const FontLoadInf
 	if (info.file_name)
 	{
 		SmallString path = GetFontPath(info.file_name);
-		std::string downloaded = Path::Combine(EmuFolders::UserResources, path);
+		std::string downloaded = Path::CombineIntoFullPath(EmuFolders::UserResources, path);
 		if (std::span<const u8> data = FileSystem::MapBinaryFileForRead(downloaded.c_str()); !data.empty())
 			return data;
 		std::string shipped = EmuFolders::GetOverridableResourcePath(path);
@@ -543,7 +543,7 @@ static void DownloadFontIfMissing(FontSearchContext* ctx, QWidget* dialog_parent
 	if (s_font_data[static_cast<size_t>(script)])
 		return;
 	const char* name = g_font_load_info[static_cast<size_t>(script)][0].file_name; // Downloadable font is always first
-	std::string path = Path::Combine(EmuFolders::UserResources, GetFontPath(name));
+	std::string path = Path::CombineIntoFullPath(EmuFolders::UserResources, GetFontPath(name));
 	if (QtHost::DownloadMissingFont(dialog_parent, name, path))
 		TryLoadFonts(ctx);
 }

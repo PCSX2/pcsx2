@@ -260,12 +260,12 @@ GLShaderCache::CacheIndexKey GLShaderCache::GetCacheKey(
 
 std::string GLShaderCache::GetIndexFileName() const
 {
-	return Path::Combine(EmuFolders::Cache, "gl_programs.idx");
+	return Path::CombineIntoFullPath(EmuFolders::Cache, "gl_programs.idx");
 }
 
 std::string GLShaderCache::GetBlobFileName() const
 {
-	return Path::Combine(EmuFolders::Cache, "gl_programs.bin");
+	return Path::CombineIntoFullPath(EmuFolders::Cache, "gl_programs.bin");
 }
 
 std::optional<GLProgram> GLShaderCache::GetProgram(

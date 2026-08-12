@@ -626,7 +626,7 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	// Create a temporary file first so that we don't corrupt an existing file
 	// in the case that we succeed in opening the file but fail to write our
 	// data to it.
-	std::string temp_file_path = Path::Combine(EmuFolders::DebuggerLayouts, safe_name + ".tmp");
+	std::string temp_file_path = Path::CombineIntoFullPath(EmuFolders::DebuggerLayouts, safe_name + ".tmp");
 
 	if (!FileSystem::WriteStringToFile(temp_file_path.c_str(), string_buffer.GetString()))
 	{
@@ -636,7 +636,7 @@ bool DockLayout::save(DockLayout::Index layout_index)
 	}
 
 	// Now move the layout to its final location.
-	std::string file_path = Path::Combine(EmuFolders::DebuggerLayouts, safe_name + ".json");
+	std::string file_path = Path::CombineIntoFullPath(EmuFolders::DebuggerLayouts, safe_name + ".json");
 
 	if (!FileSystem::RenamePath(temp_file_path.c_str(), file_path.c_str()))
 	{

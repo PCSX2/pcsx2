@@ -234,7 +234,7 @@ void FolderMemoryCard::LoadMemoryCardData(const u32 sizeInClusters, const bool e
 	bool formatted = false;
 
 	// read superblock if it exists
-	const std::string superBlockFileName(Path::Combine(m_folderName, "_pcsx2_superblock"));
+	const std::string superBlockFileName(Path::CombineIntoFullPath(m_folderName, "_pcsx2_superblock"));
 	if (FileSystem::FileExists(superBlockFileName.c_str()))
 	{
 		auto superBlockFile = FileSystem::OpenManagedCFile(superBlockFileName.c_str(), "rb");
@@ -489,7 +489,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 				}
 
 				// is a subdirectory
-				const std::string filePath(Path::Combine(dirPath, file.m_fileName));
+				const std::string filePath(Path::CombineIntoFullPath(dirPath, file.m_fileName));
 
 				// make sure we have enough space on the memcard for the directory
 				const u32 newNeededClusters = CalculateRequiredClustersOfDirectory(filePath) + ((dirEntry->entry.data.length % 2) == 0 ? 1 : 0);
@@ -504,7 +504,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 				dirEntry->entry.data.length++;
 
 				// set metadata
-				const std::string metaFileName(Path::Combine(Path::Combine(dirPath, file.m_fileName), "_pcsx2_meta_directory"));
+				const std::string metaFileName(Path::CombineIntoFullPath(Path::CombineIntoFullPath(dirPath, file.m_fileName), "_pcsx2_meta_directory"));
 				if (auto metaFile = FileSystem::OpenManagedCFile(metaFileName.c_str(), "rb"); metaFile)
 				{
 					if (std::fread(&newDirEntry->entry.raw, 1, sizeof(newDirEntry->entry.raw), metaFile.get()) < 0x60)
@@ -554,7 +554,7 @@ bool FolderMemoryCard::AddFolder(MemoryCardFileEntry* const dirEntry, const std:
 
 bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const std::string& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent)
 {
-	const std::string filePath(Path::Combine(dirPath, fileEntry.m_fileName));
+	const std::string filePath(Path::CombineIntoFullPath(dirPath, fileEntry.m_fileName));
 	pxAssertMsg(filePath.starts_with(m_folderName), "Full file path starts with MC folder path");
 	const std::string relativeFilePath(filePath.substr(m_folderName.length() + 1));
 
@@ -576,7 +576,7 @@ bool FolderMemoryCard::AddFile(MemoryCardFileEntry* const dirEntry, const std::s
 		// set file entry metadata
 		memset(newFileEntry->entry.raw, 0x00, sizeof(newFileEntry->entry.raw));
 
-		std::string metaFileName(Path::Combine(Path::Combine(dirPath, "_pcsx2_meta"), fileEntry.m_fileName));
+		std::string metaFileName(Path::CombineIntoFullPath(Path::CombineIntoFullPath(dirPath, "_pcsx2_meta"), fileEntry.m_fileName));
 		if (auto metaFile = FileSystem::OpenManagedCFile(metaFileName.c_str(), "rb"); metaFile)
 		{
 			size_t bytesRead = std::fread(&newFileEntry->entry.raw, 1, sizeof(newFileEntry->entry.raw), metaFile.get());
@@ -660,7 +660,7 @@ u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory(const std::string& di
 		}
 		else
 		{
-			requiredClusters += CalculateRequiredClustersOfDirectory(Path::Combine(dirPath, fd.FileName));
+			requiredClusters += CalculateRequiredClustersOfDirectory(Path::CombineIntoFullPath(dirPath, fd.FileName));
 		}
 	}
 
@@ -1197,7 +1197,7 @@ void FolderMemoryCard::FlushSuperBlock()
 {
 	if (FlushBlock(0) && m_performFileWrites)
 	{
-		const std::string superBlockFileName(Path::Combine(m_folderName, "_pcsx2_superblock"));
+		const std::string superBlockFileName(Path::CombineIntoFullPath(m_folderName, "_pcsx2_superblock"));
 		if (auto superBlockFile = FileSystem::OpenManagedCFile(superBlockFileName.c_str(), "wb"); superBlockFile)
 		{
 			std::fwrite(&m_superBlock.raw, sizeof(m_superBlock.raw), 1, superBlockFile.get());
@@ -1237,13 +1237,13 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 					char cleanName[sizeof(entry->entry.data.name)];
 					memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 					bool filenameCleaned = FileAccessHelper::CleanMemcardFilename(cleanName);
-					const std::string subDirPath(Path::Combine(dirPath, cleanName));
+					const std::string subDirPath(Path::CombineIntoFullPath(dirPath, cleanName));
 
 					if (m_performFileWrites)
 					{
 						// if this directory has nonstandard metadata, write that to the file system
-						const std::string fullSubDirPath(Path::Combine(m_folderName, subDirPath));
-						std::string metaFileName(Path::Combine(fullSubDirPath, "_pcsx2_meta_directory"));
+						const std::string fullSubDirPath(Path::CombineIntoFullPath(m_folderName, subDirPath));
+						std::string metaFileName(Path::CombineIntoFullPath(fullSubDirPath, "_pcsx2_meta_directory"));
 						if (!FileSystem::DirectoryExists(fullSubDirPath.c_str()))
 						{
 							FileSystem::CreateDirectoryPath(fullSubDirPath.c_str(), false);
@@ -1267,7 +1267,7 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						}
 
 						// write the directory index
-						metaFileName = Path::Combine(fullSubDirPath, "_pcsx2_index");
+						metaFileName = Path::CombineIntoFullPath(fullSubDirPath, "_pcsx2_index");
 						std::optional<ryml::Tree> yaml = loadYamlFile(metaFileName.c_str());
 
 						// if _pcsx2_index hasn't been made yet, start a new file
@@ -1331,8 +1331,8 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						char cleanName[sizeof(entry->entry.data.name)];
 						memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 						FileAccessHelper::CleanMemcardFilename(cleanName);
-						const std::string fullDirPath(Path::Combine(m_folderName, dirPath));
-						const std::string fn(Path::Combine(fullDirPath, cleanName));
+						const std::string fullDirPath(Path::CombineIntoFullPath(m_folderName, dirPath));
+						const std::string fn(Path::CombineIntoFullPath(fullDirPath, cleanName));
 
 						if (!FileSystem::FileExists(fn.c_str()))
 						{
@@ -1385,10 +1385,10 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const st
 				char cleanName[sizeof(entry->entry.data.name)];
 				memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 				FileAccessHelper::CleanMemcardFilename(cleanName);
-				const std::string fullDirPath(Path::Combine(m_folderName, dirPath));
-				const std::string filePath(Path::Combine(fullDirPath, cleanName));
+				const std::string fullDirPath(Path::CombineIntoFullPath(m_folderName, dirPath));
+				const std::string filePath(Path::CombineIntoFullPath(fullDirPath, cleanName));
 				m_lastAccessedFile.CloseMatching(filePath);
-				const std::string newFilePath(Path::Combine(Path::Combine(m_folderName, dirPath), fmt::format("_pcsx2_deleted_{}", cleanName)));
+				const std::string newFilePath(Path::CombineIntoFullPath(Path::CombineIntoFullPath(m_folderName, dirPath), fmt::format("_pcsx2_deleted_{}", cleanName)));
 				if (FileSystem::DirectoryExists(newFilePath.c_str()))
 				{
 					// wxRenameFile doesn't overwrite directories, so we have to remove the old one first
@@ -1403,7 +1403,7 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache(const st
 				char cleanName[sizeof(entry->entry.data.name)];
 				memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 				FileAccessHelper::CleanMemcardFilename(cleanName);
-				const std::string subDirPath(Path::Combine(dirPath, cleanName));
+				const std::string subDirPath(Path::CombineIntoFullPath(dirPath, cleanName));
 				FlushDeletedFilesAndRemoveUnchangedDataFromCache(it->subdir, newEntry->entry.data.cluster, newEntry->entry.data.length, subDirPath);
 			}
 			else if (entry->IsFile())
@@ -1716,8 +1716,8 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 		directory));
 
 	// This isn't full-proof, so we backup the broken index file
-	FileSystem::CopyFilePath(Path::Combine(directory, "_pcsx2_index").c_str(),
-		Path::Combine(directory, "_pcsx2_index.invalid.bak").c_str(), true);
+	FileSystem::CopyFilePath(Path::CombineIntoFullPath(directory, "_pcsx2_index").c_str(),
+		Path::CombineIntoFullPath(directory, "_pcsx2_index.invalid.bak").c_str(), true);
 
 	// Create everything relative to a point in time, with an artifical delay to minimize edge-cases
 	auto currTime = std::time(nullptr) - 1000;
@@ -1746,7 +1746,7 @@ void FolderMemoryCard::AttemptToRecreateIndexFile(const std::string& directory) 
 
 	root["$ROOT"]["timeModified"] << currTime;
 
-	auto file = FileSystem::OpenManagedCFile(Path::Combine(directory, "_pcsx2_index").c_str(), "w");
+	auto file = FileSystem::OpenManagedCFile(Path::CombineIntoFullPath(directory, "_pcsx2_index").c_str(), "w");
 	if (file)
 		ryml::emit_yaml(tree, file.get());
 }
@@ -1785,10 +1785,10 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 			if (fd.FileName.starts_with("_pcsx2_"))
 				continue;
 
-			std::string filePath(Path::Combine(dirPath, fd.FileName));
+			std::string filePath(Path::CombineIntoFullPath(dirPath, fd.FileName));
 			if (!(fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY))
 			{
-				std::optional<ryml::Tree> yaml = loadYamlFile(Path::Combine(dirPath, "_pcsx2_index").c_str());
+				std::optional<ryml::Tree> yaml = loadYamlFile(Path::CombineIntoFullPath(dirPath, "_pcsx2_index").c_str());
 
 				EnumeratedFileEntry entry{fd.FileName, fd.CreationTime, fd.ModificationTime, true};
 				int64_t newOrder = orderForLegacyFiles--;
@@ -1823,9 +1823,9 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 			}
 			else
 			{
-				std::string subDirPath(Path::Combine(dirPath, fd.FileName));
+				std::string subDirPath(Path::CombineIntoFullPath(dirPath, fd.FileName));
 
-				std::string subDirIndexPath(Path::Combine(subDirPath, "_pcsx2_index"));
+				std::string subDirIndexPath(Path::CombineIntoFullPath(subDirPath, "_pcsx2_index"));
 				std::optional<ryml::Tree> yaml = loadYamlFile(subDirIndexPath.c_str());
 
 				EnumeratedFileEntry entry{fd.FileName, fd.CreationTime, fd.ModificationTime, false};
@@ -1890,7 +1890,7 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 
 void FolderMemoryCard::DeleteFromIndex(const std::string& filePath, const std::string_view entry) const
 {
-	const std::string indexName(Path::Combine(filePath, "_pcsx2_index"));
+	const std::string indexName(Path::CombineIntoFullPath(filePath, "_pcsx2_index"));
 
 	std::optional<ryml::Tree> yaml = loadYamlFile(indexName.c_str());
 	if (yaml.has_value() && !yaml.value().empty())
@@ -2061,14 +2061,14 @@ void FileAccessHelper::WriteIndex(const std::string& baseFolderName, MemoryCardF
 	}
 	else
 	{
-		Console.Warning(fmt::format("(FileAccesHelper::WriteIndex()) '{}' has null parent", Path::Combine(baseFolderName, (const char*)entry->entry.data.name)));
+		Console.Warning(fmt::format("(FileAccesHelper::WriteIndex()) '{}' has null parent", Path::CombineIntoFullPath(baseFolderName, (const char*)entry->entry.data.name)));
 	}
 
 	char cleanName[sizeof(entry->entry.data.name)];
 	memcpy(cleanName, (const char*)entry->entry.data.name, sizeof(cleanName));
 	FileAccessHelper::CleanMemcardFilename(cleanName);
 
-	const std::string indexFileName(Path::Combine(folderName, "_pcsx2_index"));
+	const std::string indexFileName(Path::CombineIntoFullPath(folderName, "_pcsx2_index"));
 
 	// When length isn't passed explicitly, ryml::to_csubstr spans the entire array, incl. the trailing \0's
 	// due to a possible rapidyaml bug: https://github.com/biojppm/rapidyaml/issues/531
@@ -2253,7 +2253,7 @@ bool MemoryCardFileMetadataReference::GetPath(std::string* fileName) const
 
 	if (entry->IsDir() || entry->IsFile())
 	{
-		*fileName = Path::Combine(*fileName, cleanName);
+		*fileName = Path::CombineIntoFullPath(*fileName, cleanName);
 	}
 
 	return parentCleaned || localCleaned;

@@ -396,7 +396,7 @@ void GameListWidget::setCustomBackground()
 	// Get the path to the custom background
 	std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
 	if (!Path::IsAbsolute(path))
-		path = Path::Combine(EmuFolders::DataRoot, path);
+		path = Path::CombineIntoFullPath(EmuFolders::DataRoot, path);
 
 	// Only try to create background if path are valid
 	if (!path.empty() && FileSystem::FileExists(path.c_str()))

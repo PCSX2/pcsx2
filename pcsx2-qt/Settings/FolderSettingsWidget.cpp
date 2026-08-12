@@ -12,16 +12,16 @@ FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* settings_dialog, QWid
 
 	setupTab(m_ui);
 
-	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.cache, m_ui.cacheBrowse, m_ui.cacheOpen, m_ui.cacheReset, "Folders", "Cache", Path::Combine(EmuFolders::DataRoot, "cache"));
-	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.cheats, m_ui.cheatsBrowse, m_ui.cheatsOpen, m_ui.cheatsReset, "Folders", "Cheats", Path::Combine(EmuFolders::DataRoot, "cheats"));
-	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.covers, m_ui.coversBrowse, m_ui.coversOpen, m_ui.coversReset, "Folders", "Covers", Path::Combine(EmuFolders::DataRoot, "covers"));
-	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.snapshots, m_ui.snapshotsBrowse, m_ui.snapshotsOpen, m_ui.snapshotsReset, "Folders", "Snapshots", Path::Combine(EmuFolders::DataRoot, "snaps"));
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.cache, m_ui.cacheBrowse, m_ui.cacheOpen, m_ui.cacheReset, "Folders", "Cache", Path::CombineIntoFullPath(EmuFolders::DataRoot, "cache"));
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.cheats, m_ui.cheatsBrowse, m_ui.cheatsOpen, m_ui.cheatsReset, "Folders", "Cheats", Path::CombineIntoFullPath(EmuFolders::DataRoot, "cheats"));
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.covers, m_ui.coversBrowse, m_ui.coversOpen, m_ui.coversReset, "Folders", "Covers", Path::CombineIntoFullPath(EmuFolders::DataRoot, "covers"));
+	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.snapshots, m_ui.snapshotsBrowse, m_ui.snapshotsOpen, m_ui.snapshotsReset, "Folders", "Snapshots", Path::CombineIntoFullPath(EmuFolders::DataRoot, "snaps"));
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.organizeSnapshotsByGame, "EmuCore/GS", "OrganizeScreenshotsByGame", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.organizeVideoDumpByGame, "EmuCore/GS", "OrganizeVideoCaptureByGame", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.saveStates, m_ui.saveStatesBrowse, m_ui.saveStatesOpen, m_ui.saveStatesReset,
-		"Folders", "Savestates", Path::Combine(EmuFolders::DataRoot, "sstates"));
+		"Folders", "Savestates", Path::CombineIntoFullPath(EmuFolders::DataRoot, "sstates"));
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videoDumpingDirectory, m_ui.videoDumpingDirectoryBrowse, m_ui.videoDumpingDirectoryOpen, m_ui.videoDumpingDirectoryReset,
-		"Folders", "Videos", Path::Combine(EmuFolders::DataRoot, "videos"));
+		"Folders", "Videos", Path::CombineIntoFullPath(EmuFolders::DataRoot, "videos"));
 	dialog()->registerWidgetHelp(m_ui.organizeSnapshotsByGame, tr("Save Snapshots in Game-Specific Folders"), tr("Unchecked"),
 		tr("Saves snapshots to per-game subfolders instead of a shared folder."));
 	dialog()->registerWidgetHelp(m_ui.organizeVideoDumpByGame, tr("Save Video Recordings in Game-Specific Folders"), tr("Unchecked"),

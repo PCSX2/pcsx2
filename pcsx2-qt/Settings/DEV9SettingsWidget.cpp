@@ -681,7 +681,7 @@ void DEV9SettingsWidget::onHddCreateClicked()
 	}
 
 	if (!Path::IsAbsolute(hddPath))
-		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
+		hddPath = Path::CombineIntoFullPath(EmuFolders::Settings, hddPath);
 
 	if (FileSystem::FileExists(hddPath.c_str()))
 	{
@@ -736,7 +736,7 @@ void DEV9SettingsWidget::UpdateHddSizeUIValues()
 		hddPath = m_ui.hddFile->placeholderText().toStdString();
 
 	if (!Path::IsAbsolute(hddPath))
-		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
+		hddPath = Path::CombineIntoFullPath(EmuFolders::Settings, hddPath);
 
 	if (!FileSystem::FileExists(hddPath.c_str()))
 		return;

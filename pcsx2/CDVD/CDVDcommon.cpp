@@ -376,7 +376,7 @@ bool DoCDVDopen(Error* error)
 	if (EmuConfig.CurrentBlockdump.empty())
 		EmuConfig.CurrentBlockdump = FileSystem::GetWorkingDirectory();
 
-	std::string temp(Path::Combine(EmuConfig.CurrentBlockdump, dump_name));
+	std::string temp(Path::CombineIntoFullPath(EmuConfig.CurrentBlockdump, dump_name));
 
 #ifdef ENABLE_TIMESTAMPS
 	std::time_t curtime_t = std::time(nullptr);

@@ -861,7 +861,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 		if (StringUtil::EndsWithNoCase(title, ".gs"))
 			title = Path::GetFileTitle(title);
 
-		s_output_prefix = Path::Combine(s_output_prefix, StringUtil::StripWhitespace(title));
+		s_output_prefix = Path::CombineIntoFullPath(s_output_prefix, StringUtil::StripWhitespace(title));
 		Console.WriteLn(fmt::format("Saving dumps as {}_frameN.png", s_output_prefix));
 	}
 

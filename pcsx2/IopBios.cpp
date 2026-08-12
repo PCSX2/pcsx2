@@ -384,13 +384,13 @@ namespace R3000A
 			{
 				fxio_dirent_t* hostcontent = (fxio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::CombineIntoFullPath(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 			else
 			{
 				fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
 				StringUtil::Strlcpy(hostcontent->name, dir->FileName, sizeof(hostcontent->name));
-				host_stat(ioman::host_path(Path::Combine(basedir, dir->FileName), true), &hostcontent->stat);
+				host_stat(ioman::host_path(Path::CombineIntoFullPath(basedir, dir->FileName), true), &hostcontent->stat);
 			}
 
 			dir = std::next(dir);
@@ -547,7 +547,7 @@ namespace R3000A
 			if (!hostRoot.empty() && native_path.starts_with(hostRoot))
 				new_path = std::move(native_path);
 			else if (!hostRoot.empty()) // relative paths
-				new_path = Path::Combine(hostRoot, native_path);
+				new_path = Path::CombineIntoFullPath(hostRoot, native_path);
 
 			// Allow opening the ELF override.
 			if (new_path == VMManager::Internal::GetELFOverride())

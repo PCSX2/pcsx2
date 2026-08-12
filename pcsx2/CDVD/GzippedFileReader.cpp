@@ -122,7 +122,7 @@ static std::string ApplyTemplate(const std::string& name, const std::string& bas
 
 	StringUtil::ReplaceAll(&trimmedTemplate, INDEX_TEMPLATE_KEY, fname);
 	if (!Path::IsAbsolute(trimmedTemplate))
-		trimmedTemplate = Path::Combine(base, trimmedTemplate); // ignores appRoot if tem is absolute
+		trimmedTemplate = Path::CombineIntoFullPath(base, trimmedTemplate); // ignores appRoot if tem is absolute
 
 	return trimmedTemplate;
 }

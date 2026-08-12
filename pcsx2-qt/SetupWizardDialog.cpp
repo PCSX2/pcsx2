@@ -225,7 +225,7 @@ void SetupWizardDialog::setupBIOSPage()
 {
 	SettingWidgetBinder::BindWidgetToFolderSetting(nullptr, m_ui.biosSearchDirectory, m_ui.browseBiosSearchDirectory,
 		m_ui.openBiosSearchDirectory, m_ui.resetBiosSearchDirectory, "Folders", "Bios",
-		Path::Combine(EmuFolders::DataRoot, "bios"));
+		Path::CombineIntoFullPath(EmuFolders::DataRoot, "bios"));
 
 	refreshBiosList();
 

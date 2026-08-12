@@ -368,7 +368,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 
 std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
 {
-	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());
+	return FileSystem::ReadFileToString(Path::CombineIntoFullPath(EmuFolders::Resources, filename).c_str());
 }
 
 int GSDevice::GetMipmapLevelsForSize(int width, int height)

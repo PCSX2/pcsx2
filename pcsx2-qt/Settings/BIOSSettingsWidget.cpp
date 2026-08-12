@@ -25,7 +25,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "EmuCore", "EnableFastBoot", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBootFastForward, "EmuCore", "EnableFastBootFastForward", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, m_ui.openSearchDirectory,
-		m_ui.resetSearchDirectory, "Folders", "Bios", Path::Combine(EmuFolders::DataRoot, "bios"));
+		m_ui.resetSearchDirectory, "Folders", "Bios", Path::CombineIntoFullPath(EmuFolders::DataRoot, "bios"));
 
 	dialog()->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Checked"),
 		tr("Patches the BIOS to skip the console's boot animation."));

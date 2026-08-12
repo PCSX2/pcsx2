@@ -752,7 +752,7 @@ namespace QtUtils
 		}
 		else
 		{
-			final_icon_path = Path::ToNativePath(Path::Combine(Path::GetDirectory(FileSystem::GetProgramPath()), "resources/icons/AppIconLarge.ico"));
+			final_icon_path = Path::ToNativePath(Path::CombineIntoFullPath(Path::GetDirectory(FileSystem::GetProgramPath()), "resources/icons/AppIconLarge.ico"));
 		}
 
 		const std::wstring w_icon_path = StringUtil::UTF8StringToWideString(final_icon_path);

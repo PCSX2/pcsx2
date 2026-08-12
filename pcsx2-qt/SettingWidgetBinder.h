@@ -1170,7 +1170,7 @@ namespace SettingWidgetBinder
 		if (current_path.empty())
 			current_path = default_value;
 		else if (use_relative && !Path::IsAbsolute(current_path))
-			current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+			current_path = Path::Canonicalize(Path::CombineIntoFullPath(EmuFolders::DataRoot, current_path));
 
 		const QString value(QString::fromStdString(current_path));
 		Accessor::setStringValue(widget, value);
@@ -1224,7 +1224,7 @@ namespace SettingWidgetBinder
 			if (current_path.empty())
 				current_path = default_value;
 			else if (use_relative && !Path::IsAbsolute(current_path))
-				current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+				current_path = Path::Canonicalize(Path::CombineIntoFullPath(EmuFolders::DataRoot, current_path));
 
 			widget->setText(QString::fromStdString(current_path));
 		};
@@ -1272,7 +1272,7 @@ namespace SettingWidgetBinder
 		if (current_path.empty())
 			current_path = default_value;
 		else if (use_relative && !Path::IsAbsolute(current_path))
-			current_path = Path::Canonicalize(Path::Combine(EmuFolders::DataRoot, current_path));
+			current_path = Path::Canonicalize(Path::CombineIntoFullPath(EmuFolders::DataRoot, current_path));
 
 		const QString value(QString::fromStdString(current_path));
 		Accessor::setStringValue(widget, value);

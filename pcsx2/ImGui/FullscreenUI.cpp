@@ -221,7 +221,7 @@ void FullscreenUI::ApplyLayoutSettings(const SettingsInterface* bsi)
 		{
 			u32 bios_version, bios_region;
 			std::string bios_description, bios_zone;
-			if (IsBIOS(Path::Combine(EmuFolders::Bios, bios_selection).c_str(), bios_version, bios_description, bios_region, bios_zone))
+			if (IsBIOS(Path::CombineIntoFullPath(EmuFolders::Bios, bios_selection).c_str(), bios_version, bios_description, bios_region, bios_zone))
 			{
 				// Japan, Asia, China
 				if (bios_region == 0 || bios_region == 4 || bios_region == 6)
@@ -1075,7 +1075,7 @@ void FullscreenUI::LoadCustomBackground()
 	}
 
 	if (!Path::IsAbsolute(path))
-		path = Path::Combine(EmuFolders::DataRoot, path);
+		path = Path::CombineIntoFullPath(EmuFolders::DataRoot, path);
 
 	if (!FileSystem::FileExists(path.c_str()))
 	{

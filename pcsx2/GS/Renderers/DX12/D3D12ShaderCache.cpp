@@ -265,7 +265,7 @@ std::string D3D12ShaderCache::GetCacheBaseFileName(const std::string_view type, 
 	if (debug)
 		base_filename += "_debug";
 
-	return Path::Combine(EmuFolders::Cache, base_filename);
+	return Path::CombineIntoFullPath(EmuFolders::Cache, base_filename);
 }
 
 union MD5Hash

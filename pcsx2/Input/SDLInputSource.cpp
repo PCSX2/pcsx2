@@ -698,7 +698,7 @@ void SDLInputSource::ResetRGBForAllPlayers(SettingsInterface& si)
 
 void SDLInputSource::SetHints()
 {
-	if (const std::string upath = Path::Combine(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME); FileSystem::FileExists(upath.c_str()))
+	if (const std::string upath = Path::CombineIntoFullPath(EmuFolders::DataRoot, CONTROLLER_DB_FILENAME); FileSystem::FileExists(upath.c_str()))
 	{
 		Console.WriteLn(Color_StrongGreen, fmt::format("SDLInputSource: Using Controller DB from user directory: '{}'", upath));
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, upath.c_str());

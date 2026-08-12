@@ -591,7 +591,7 @@ void AutoUpdaterDialog::remindMeLaterClicked()
 bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_dir) const
 {
 	// Try to create a dummy text file in the PCSX2 updater directory. If it fails, we probably won't have write permission.
-	const std::string dummy_path = Path::Combine(application_dir, "update.txt");
+	const std::string dummy_path = Path::CombineIntoFullPath(application_dir, "update.txt");
 	auto fp = FileSystem::OpenManagedCFile(dummy_path.c_str(), "wb");
 	if (!fp)
 		return true;
@@ -604,8 +604,8 @@ bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_
 bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDialog&)
 {
 	const std::string& application_dir = EmuFolders::AppRoot;
-	const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
-	const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
+	const std::string update_zip_path = Path::CombineIntoFullPath(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
+	const std::string updater_path = Path::CombineIntoFullPath(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
 
 	if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFilePath(update_zip_path.c_str())))
 	{
@@ -668,7 +668,7 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
 	if (EmuFolders::AppRoot == EmuFolders::DataRoot)
 		return;
 
-	const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
+	const std::string updater_path = Path::CombineIntoFullPath(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
 	if (!FileSystem::FileExists(updater_path.c_str()))
 		return;
 

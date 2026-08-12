@@ -85,7 +85,7 @@ namespace usb_printer
 		const time_t cur_time = time(nullptr);
 		strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
 
-		s->print_filename = Path::Combine(EmuFolders::Snapshots, fmt::format("print_{}.bmp", cur_time_str));
+		s->print_filename = Path::CombineIntoFullPath(EmuFolders::Snapshots, fmt::format("print_{}.bmp", cur_time_str));
 		s->print_file = FileSystem::OpenCFile(s->print_filename.c_str(), "wb");
 		if (!s->print_file)
 		{

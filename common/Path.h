@@ -19,7 +19,7 @@ namespace Path
 	std::string BuildRelativePath(const std::string_view filename, const std::string_view new_filename);
 
 	/// Joins path components together, producing a new path.
-	std::string Combine(const std::string_view base, const std::string_view next);
+	std::string CombineIntoFullPath(const std::string_view base, const std::string_view next);
 
 	/// Removes all .. and . components from a path.
 	std::string Canonicalize(const std::string_view path);

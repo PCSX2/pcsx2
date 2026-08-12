@@ -917,15 +917,15 @@ std::string GSGetBaseSnapshotFilename()
 		if (!game_name.empty())
 		{
 			Path::SanitizeFileName(&game_name);
-			const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
+			const std::string game_dir = Path::CombineIntoFullPath(EmuFolders::Snapshots, game_name);
 
 			// Make sure the per-game directory exists or that we can successfully create it.
 			if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
-				return Path::Combine(game_dir, GSGetBaseFilename());
+				return Path::CombineIntoFullPath(game_dir, GSGetBaseFilename());
 		}
 	}
 
-	return Path::Combine(EmuFolders::Snapshots, GSGetBaseFilename());
+	return Path::CombineIntoFullPath(EmuFolders::Snapshots, GSGetBaseFilename());
 }
 
 std::string GSGetBaseVideoFilename()
@@ -938,15 +938,15 @@ std::string GSGetBaseVideoFilename()
 		if (!game_name.empty())
 		{
 			Path::SanitizeFileName(&game_name);
-			const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
+			const std::string game_dir = Path::CombineIntoFullPath(EmuFolders::Videos, game_name);
 
 			// Make sure the per-game directory exists or that we can successfully create it.
 			if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
-				return Path::Combine(game_dir, GSGetBaseFilename());
+				return Path::CombineIntoFullPath(game_dir, GSGetBaseFilename());
 		}
 	}
 	// prepend video directory
-	return Path::Combine(EmuFolders::Videos, GSGetBaseFilename());
+	return Path::CombineIntoFullPath(EmuFolders::Videos, GSGetBaseFilename());
 }
 
 void GSRenderer::StopGSDump()

@@ -44,7 +44,7 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog)
 	mVUbranch   = 0;
 
 	const std::string logname(fmt::format("microVU{} prog - {:02d}.html", mVU.index, prog.idx));
-	mVU.logFile = FileSystem::OpenCFile(Path::Combine(EmuFolders::Logs, logname).c_str(), "w");
+	mVU.logFile = FileSystem::OpenCFile(Path::CombineIntoFullPath(EmuFolders::Logs, logname).c_str(), "w");
 	if (!mVU.logFile)
 		return;
 

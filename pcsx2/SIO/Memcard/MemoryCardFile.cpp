@@ -857,7 +857,7 @@ static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
 
 static bool FileMcd_IsFolder(const std::string& path)
 {
-	const std::string superblock_path(Path::Combine(path, s_folder_mem_card_id_file));
+	const std::string superblock_path(Path::CombineIntoFullPath(path, s_folder_mem_card_id_file));
 	return FileSystem::FileExists(superblock_path.c_str());
 }
 
@@ -957,7 +957,7 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name)
 	std::optional<AvailableMcdInfo> ret;
 
 	std::string basename(name);
-	std::string path(Path::Combine(EmuFolders::MemoryCards, basename));
+	std::string path(Path::CombineIntoFullPath(EmuFolders::MemoryCards, basename));
 
 	FILESYSTEM_STAT_DATA sd;
 	if (!FileSystem::StatFile(path.c_str(), &sd))
@@ -987,7 +987,7 @@ std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name)
 
 bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, MemoryCardFileType file_type)
 {
-	const std::string full_path(Path::Combine(EmuFolders::MemoryCards, name));
+	const std::string full_path(Path::CombineIntoFullPath(EmuFolders::MemoryCards, name));
 
 	if (type == MemoryCardType::Folder)
 	{
@@ -1002,7 +1002,7 @@ bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, Mem
 		}
 
 		// write the superblock
-		auto fp = FileSystem::OpenManagedCFile(Path::Combine(full_path, s_folder_mem_card_id_file).c_str(), "wb", &error);
+		auto fp = FileSystem::OpenManagedCFile(Path::CombineIntoFullPath(full_path, s_folder_mem_card_id_file).c_str(), "wb", &error);
 		if (!fp)
 		{
 			Host::ReportErrorAsync("Memory Card Creation Failed", fmt::format("Failed to create superblock. The error was:\n{}", error.GetDescription()));
@@ -1082,8 +1082,8 @@ bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, Mem
 
 bool FileMcd_RenameCard(const std::string_view name, const std::string_view new_name)
 {
-	const std::string name_path(Path::Combine(EmuFolders::MemoryCards, name));
-	const std::string new_name_path(Path::Combine(EmuFolders::MemoryCards, new_name));
+	const std::string name_path(Path::CombineIntoFullPath(EmuFolders::MemoryCards, name));
+	const std::string new_name_path(Path::CombineIntoFullPath(EmuFolders::MemoryCards, new_name));
 
 	FILESYSTEM_STAT_DATA sd, new_sd;
 	if (!FileSystem::StatFile(name_path.c_str(), &sd) || FileSystem::StatFile(new_name_path.c_str(), &new_sd))
@@ -1107,7 +1107,7 @@ bool FileMcd_RenameCard(const std::string_view name, const std::string_view new_
 
 bool FileMcd_DeleteCard(const std::string_view name)
 {
-	const std::string name_path(Path::Combine(EmuFolders::MemoryCards, name));
+	const std::string name_path(Path::CombineIntoFullPath(EmuFolders::MemoryCards, name));
 
 	FILESYSTEM_STAT_DATA sd;
 	if (!FileSystem::StatFile(name_path.c_str(), &sd))

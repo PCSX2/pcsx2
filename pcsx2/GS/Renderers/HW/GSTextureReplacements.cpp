@@ -261,7 +261,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 
 std::string GSTextureReplacements::GetGameTextureDirectory()
 {
-	return Path::Combine(EmuFolders::Textures, s_current_serial);
+	return Path::CombineIntoFullPath(EmuFolders::Textures, s_current_serial);
 }
 
 std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 level)
@@ -271,14 +271,14 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 		return ret;
 
 	const std::string game_dir(GetGameTextureDirectory());
-	const std::string game_subdir(Path::Combine(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
+	const std::string game_subdir(Path::CombineIntoFullPath(game_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME));
 
 	if (!FileSystem::DirectoryExists(game_subdir.c_str()))
 	{
 		// create both dumps and replacements
 		if (!FileSystem::CreateDirectoryPath(game_dir.c_str(), false) ||
 			!FileSystem::EnsureDirectoryExists(game_subdir.c_str(), false) ||
-			!FileSystem::EnsureDirectoryExists(Path::Combine(game_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME).c_str(), false))
+			!FileSystem::EnsureDirectoryExists(Path::CombineIntoFullPath(game_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME).c_str(), false))
 		{
 			// if it fails to create, we're not going to be able to use it anyway
 			return ret;
@@ -325,7 +325,7 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 		}
 	}
 
-	ret = Path::Combine(game_subdir, filename);
+	ret = Path::CombineIntoFullPath(game_subdir, filename);
 
 	return ret;
 }
@@ -393,7 +393,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 		return;
 
 	const std::string texture_dir = GetGameTextureDirectory();
-	const std::string replacement_dir(Path::Combine(texture_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
+	const std::string replacement_dir(Path::CombineIntoFullPath(texture_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
 
 	FileSystem::FindResultsArray files;
 

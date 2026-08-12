@@ -187,7 +187,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		sif, m_texture.loadTextureReplacementsAsync, "EmuCore/GS", "LoadTextureReplacementsAsync", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_texture.precacheTextureReplacements, "EmuCore/GS", "PrecacheTextureReplacements", false);
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_texture.texturesDirectory, m_texture.texturesBrowse, m_texture.texturesOpen, m_texture.texturesReset,
-		"Folders", "Textures", Path::Combine(EmuFolders::DataRoot, "textures"));
+		"Folders", "Textures", Path::CombineIntoFullPath(EmuFolders::DataRoot, "textures"));
 	connect(m_texture.dumpReplaceableTextures, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTextureDumpChanged);
 	connect(m_texture.loadTextureReplacements, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTextureReplacementChanged);
 	onTextureDumpChanged();

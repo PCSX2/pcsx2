@@ -542,7 +542,7 @@ wil::com_ptr_nothrow<ID3DBlob> D3D::CompileShader(D3D::ShaderType type, D3D::Sha
 	{
 		Console.WriteLn("Failed to compile '%s':\n%s", target, error_string.c_str());
 
-		std::ofstream ofs(Path::Combine(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
+		std::ofstream ofs(Path::CombineIntoFullPath(EmuFolders::Logs, fmt::format("pcsx2_bad_shader_{}.txt", s_next_bad_shader_id++)),
 			std::ofstream::out | std::ofstream::binary);
 		if (ofs.is_open())
 		{

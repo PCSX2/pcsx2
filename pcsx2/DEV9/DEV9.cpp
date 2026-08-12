@@ -89,7 +89,7 @@ std::string GetHDDPath()
 		EmuConfig.DEV9.HddEnable = false;
 
 	if (!Path::IsAbsolute(hddPath))
-		hddPath = Path::Combine(EmuFolders::Settings, hddPath);
+		hddPath = Path::CombineIntoFullPath(EmuFolders::Settings, hddPath);
 
 	return hddPath;
 }

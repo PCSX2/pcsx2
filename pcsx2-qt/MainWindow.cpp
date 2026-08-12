@@ -3393,7 +3393,7 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
 		Path::SanitizeFileName(&game_name);
 
-		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
+		const std::string game_dir = Path::CombineIntoFullPath(EmuFolders::Snapshots, game_name);
 
 		// Make sure the per-game directory exists or that we can successfully create it.
 		if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
@@ -3412,7 +3412,7 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 void MainWindow::openTextureFolderForGame(const GameList::Entry& entry)
 {
 	const std::string serial = entry.serial;
-	const std::string game_texture_dir = Path::Combine(EmuFolders::Textures, serial);
+	const std::string game_texture_dir = Path::CombineIntoFullPath(EmuFolders::Textures, serial);
 
 	// Make sure the per-game directory exists or that we can successfully create it.
 	if (FileSystem::DirectoryExists(game_texture_dir.c_str()) || FileSystem::CreateDirectoryPath(game_texture_dir.c_str(), false))
@@ -3451,7 +3451,7 @@ void MainWindow::openVideoCaptureFolder(const GameList::Entry& entry)
 		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
 		Path::SanitizeFileName(&game_name);
 
-		const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
+		const std::string game_dir = Path::CombineIntoFullPath(EmuFolders::Videos, game_name);
 
 		// Make sure the per-game directory exists or that we can successfully create it.
 		if (FileSystem::DirectoryExists(game_dir.c_str()) || FileSystem::CreateDirectoryPath(game_dir.c_str(), false))
