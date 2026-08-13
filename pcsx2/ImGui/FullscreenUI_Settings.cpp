@@ -3598,6 +3598,10 @@ void FullscreenUI::DrawAudioSettingsPage()
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_BUCKET, "Buffer Size"),
 		FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
 		"SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Low-Latency Buffer"),
+		FSUI_CSTR("Larger buffers reduce underrun in exchange for latency."),
+		"SPU2/Output", "LowLatencyBufferMS", AudioStreamParameters::DEFAULT_LOW_LATENCY_BUFFER_MS, 10, 100,
+		FSUI_CSTR("%d ms"));
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
 		FSUI_CSTR("Requests the host output latency. The backend may adjust or reject subminimum values."),
 		"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
