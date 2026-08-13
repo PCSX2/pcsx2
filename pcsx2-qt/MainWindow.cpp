@@ -1202,6 +1202,21 @@ void MainWindow::updateDisplayRelatedActions(bool has_surface, bool render_to_ma
 		QSignalBlocker blocker(m_ui.actionToolbarFullscreen);
 		m_ui.actionToolbarFullscreen->setChecked(fullscreen);
 	}
+
+#ifdef __APPLE__
+	if (render_to_main && fullscreen)
+	{
+		m_ui.toolBar->setVisible(false);
+		m_ui.statusBar->setVisible(false);
+	}
+	else
+	{
+		m_ui.toolBar->setVisible(m_ui.actionViewToolbar->isChecked());
+		m_ui.statusBar->setVisible(m_ui.actionViewStatusBar->isChecked());
+	}
+	m_ui.actionViewToolbar->setEnabled(!(render_to_main && fullscreen));
+	m_ui.actionViewStatusBar->setEnabled(!(render_to_main && fullscreen));
+#endif
 }
 
 void MainWindow::updateStatusBarWidgetVisibility()
@@ -1376,6 +1391,12 @@ bool MainWindow::isRenderingFullscreen() const
 	if (!MTGS::IsOpen() || !m_display_surface)
 		return false;
 
+#ifdef __APPLE__
+	// When rendering to main, the main window is what goes fullscreen.
+	if (isRenderingToMain())
+		return isFullScreen();
+#endif
+
 	return m_display_surface->isFullScreen();
 }
 
@@ -1394,7 +1415,12 @@ bool MainWindow::shouldHideMainWindow() const
 {
 	// NOTE: We can't use isRenderingToMain() here, because this happens post-fullscreen-switch.
 	return (Host::GetBoolSettingValue("UI", "HideMainWindowWhenRunning", false) && !g_emu_thread->shouldRenderToMain()) ||
+#ifdef __APPLE__
+	       // macOS keeps fullscreen on the main window so don't hide it there.
+	       (g_emu_thread->shouldRenderToMain() && (g_emu_thread->isExclusiveFullscreen() || m_is_temporarily_windowed)) ||
+#else
 	       (g_emu_thread->shouldRenderToMain() && (isRenderingFullscreen() || g_emu_thread->isExclusiveFullscreen() || m_is_temporarily_windowed)) ||
+#endif
 	       Host::InNoGUIMode();
 }
 
@@ -2796,6 +2822,27 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 		return m_display_surface->getWindowInfo();
 	}
 
+#ifdef __APPLE__
+	// Skip recreating when toggling fullscreen if we're still rendering to main.
+	if (m_display_created && !recreate_window && is_rendering_to_main && render_to_main && !changing_surfaceless)
+	{
+		updateDisplayRelatedActions(true, true, fullscreen);
+
+		if (fullscreen)
+			showFullScreen();
+		else
+			showNormal();
+
+		while (!m_is_closing && isFullScreen() != fullscreen)
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+		updateDisplayWidgetCursor();
+		m_display_surface->setFocus();
+		updateWindowState();
+		return m_display_surface->getWindowInfo();
+	}
+#endif
+
 	destroyDisplayWidget(surfaceless);
 	m_display_created = true;
 
@@ -2835,14 +2882,23 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 {
 	// If we're rendering to main and were hidden (e.g. coming back from fullscreen),
 	// make sure we're visible before trying to add ourselves. Otherwise Wayland breaks.
+#ifdef __APPLE__
+	// On macOS the main window itself goes fullscreen so it needs to be visible then too.
+	if (render_to_main && !isVisible())
+#else
 	if (!fullscreen && render_to_main && !isVisible())
+#endif
 	{
 		setVisible(true);
 		QGuiApplication::sync();
 	}
 
 	m_display_surface = new DisplaySurface();
+#ifdef __APPLE__
+	if (!render_to_main)
+#else
 	if (fullscreen || !render_to_main)
+#endif
 	{
 #ifdef DISPLAY_SURFACE_WINDOW
 		m_display_surface->setTitle(windowTitle());
@@ -2858,7 +2914,11 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 		m_display_container = m_display_surface->createWindowContainer(getContentParent());
 	}
 
+#ifdef __APPLE__
+	if (!render_to_main && (fullscreen || g_emu_thread->isExclusiveFullscreen()))
+#else
 	if (fullscreen || g_emu_thread->isExclusiveFullscreen())
+#endif
 	{
 		// On Wayland, while move/restoreGeometry can't position the window, it can influence which screen they show up on.
 		// Other platforms can position windows fine, but the only thing that matters here is the screen.
@@ -2913,6 +2973,15 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main)
 	connect(m_display_surface, &DisplaySurface::dropEvent, this, &MainWindow::dropEvent);
 
 	updateDisplayRelatedActions(true, render_to_main, fullscreen);
+
+#ifdef __APPLE__
+	if (render_to_main && fullscreen)
+	{
+		showFullScreen();
+		while (!m_is_closing && !isFullScreen())
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	}
+#endif
 
 	// We need the surface visible.
 	QGuiApplication::sync();
@@ -3005,6 +3074,16 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
 	if (!(m_display_surface->isFullScreen() || m_display_is_exclusive_fullscreen) && !isRenderingToMain())
 		saveDisplayWindowGeometryToConfig();
+
+#ifdef __APPLE__
+	// Need to leave fullscreen before destroying otherwise we could get stuck in it.
+	if (isRenderingToMain() && isFullScreen())
+	{
+		showNormal();
+		while (isFullScreen())
+			QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+	}
+#endif
 
 	if (isRenderingToMain())
 	{
