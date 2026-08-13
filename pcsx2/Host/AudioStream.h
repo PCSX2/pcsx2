@@ -46,8 +46,9 @@ public:
 	virtual ~AudioStream();
 
 	static u32 GetAlignedBufferSize(u32 size);
-	static u32 GetBufferSizeForMS(u32 sample_rate, u32 ms);
-	static u32 GetMSForBufferSize(u32 sample_rate, u32 buffer_size);
+	static u32 GetFrameCountForMS(u32 sample_rate, u32 milliseconds);
+	static u32 GetMSForFrames(u32 sample_rate, u32 frames);
+	static u32 GetMSForFramesCeil(u32 sample_rate, u32 frames);
 
 	static std::optional<AudioBackend> ParseBackendName(const char* str);
 	static const char* GetBackendName(AudioBackend backend);

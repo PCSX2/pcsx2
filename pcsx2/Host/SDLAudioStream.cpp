@@ -102,8 +102,7 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 			READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
 	}};
 
-	uint samples = GetBufferSizeForMS(
-		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
+	uint samples = GetFrameCountForMS(m_sample_rate, m_parameters.output_latency_ms);
 
 	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", samples).c_str());
 

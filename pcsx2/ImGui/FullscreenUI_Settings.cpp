@@ -3598,17 +3598,9 @@ void FullscreenUI::DrawAudioSettingsPage()
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_BUCKET, "Buffer Size"),
 		FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
 		"SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
-	if (!GetEffectiveBoolSetting(bsi, "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL))
-	{
-		DrawIntRangeSetting(
-			bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
-			FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
-					  "played through speakers."),
-			"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
-	}
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Minimal Output Latency"),
-		FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
-		"SPU2/Output", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
+		FSUI_CSTR("Requests the host output latency. The backend may adjust or reject subminimum values."),
+		"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
 
 	EndMenuButtons();
 }
@@ -6712,7 +6704,6 @@ TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
 TRANSLATE_NOOP("FullscreenUI", "Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Output Latency");
-TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folder Memory Card Filter");
