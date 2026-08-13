@@ -25662,6 +25662,7 @@ SLES-54138:
     preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
+    limit24BitDepth: 2 # Fixes icon brightness.
 SLES-54139:
   name: "Earache - Extreme Metal Racing"
   region: "PAL-E"
@@ -26318,6 +26319,7 @@ SLES-54335:
     preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
+    limit24BitDepth: 2 # Fixes icon brightness.
 SLES-54336:
   name: "Lumines Plus"
   region: "PAL-M5"
@@ -71845,6 +71847,7 @@ SLUS-21344:
     preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
+    limit24BitDepth: 2 # Fixes icon brightness.
 SLUS-21345:
   name: "Grandia III [Disc 2 of 2]"
   region: "NTSC-U"
@@ -75403,6 +75406,7 @@ SLUS-28061:
     preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
+    limit24BitDepth: 2 # Fixes icon brightness.
 SLUS-28062:
   name: "Dance Factory [Trade Demo]"
   region: "NTSC-U"
@@ -76189,6 +76193,7 @@ SLUS-29188:
     preloadFrameData: 1 # Fixes menu graphics.
     autoFlush: 1 # Fixes motion blur.
     minimumBlendingLevel: 2 # Improves post effects.
+    limit24BitDepth: 2 # Fixes icon brightness.
 SLUS-29189:
   name: "FIFA World Cup - Germany 2006 [Demo]"
   region: "NTSC-U"
