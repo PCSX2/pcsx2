@@ -1215,9 +1215,15 @@ std::string GameList::FormatTimestamp(std::time_t timestamp)
 		}
 		else
 		{
+#ifdef _WIN32
+			wchar_t buf[128];
+			std::wcsftime(buf, std::size(buf), L"%x", &ttime);
+			ret = StringUtil::WideStringToUTF8String(buf);
+#else
 			char buf[128];
 			std::strftime(buf, std::size(buf), "%x", &ttime);
 			ret.assign(buf);
+#endif
 		}
 	}
 
