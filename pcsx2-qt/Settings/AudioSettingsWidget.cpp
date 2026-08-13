@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <bit>
 
+static constexpr int MINIMUM_LATENCY_FRAMES_ROLE = Qt::UserRole + 1;
+
 AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* settings_dialog, QWidget* parent)
 	: SettingsWidget(settings_dialog, parent)
 {
@@ -150,13 +152,17 @@ u32 AudioSettingsWidget::getEffectiveExpansionBlockSize() const
 	return std::has_single_bit(config_block_size) ? config_block_size : std::bit_ceil(config_block_size);
 }
 
-bool AudioSettingsWidget::isLowLatencyMode() const
+AudioSynchronizationMode AudioSettingsWidget::getEffectiveSyncMode() const
 {
 	const std::string sync_mode_name = dialog()->getEffectiveStringValue("SPU2/Output", "SyncMode",
 		Pcsx2Config::SPU2Options::GetSyncModeName(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE));
 	return Pcsx2Config::SPU2Options::ParseSyncMode(sync_mode_name.c_str())
-	           .value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE) ==
-	       Pcsx2Config::SPU2Options::SPU2SyncMode::LowLatency;
+		.value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
+}
+
+u32 AudioSettingsWidget::getMinimumOutputLatencyMS() const
+{
+	return AudioStream::GetMSForFramesCeil(SPU2::SAMPLE_RATE, m_minimum_output_latency_frames);
 }
 
 void AudioSettingsWidget::onExpansionModeChanged()
@@ -168,15 +174,9 @@ void AudioSettingsWidget::onExpansionModeChanged()
 
 void AudioSettingsWidget::onSyncModeChanged()
 {
-	const Pcsx2Config::SPU2Options::SPU2SyncMode sync_mode =
-		Pcsx2Config::SPU2Options::ParseSyncMode(
-			dialog()->getEffectiveStringValue("SPU2/Output", "SyncMode",
-						Pcsx2Config::SPU2Options::GetSyncModeName(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE))
-				.c_str())
-			.value_or(Pcsx2Config::SPU2Options::DEFAULT_SYNC_MODE);
-	const bool low_latency = (sync_mode == Pcsx2Config::SPU2Options::SPU2SyncMode::LowLatency);
-	m_ui.stretchSettings->setEnabled(
-		sync_mode == Pcsx2Config::SPU2Options::SPU2SyncMode::TimeStretch || low_latency);
+	const AudioSynchronizationMode sync_mode = getEffectiveSyncMode();
+	const bool low_latency = (sync_mode == AudioSynchronizationMode::LowLatency);
+	m_ui.stretchSettings->setEnabled(sync_mode == AudioSynchronizationMode::TimeStretch || low_latency);
 	m_ui.label_2->setText(low_latency ? tr("TimeStretch Fallback Buffer:") : tr("Buffer Size:"));
 	m_ui.lowLatencyBufferLabel->setVisible(low_latency);
 	m_ui.lowLatencyBufferMS->setVisible(low_latency);
@@ -228,6 +228,7 @@ void AudioSettingsWidget::updateDeviceNames()
 
 	QObject::disconnect(m_ui.outputDevice, &QComboBox::currentIndexChanged, nullptr, nullptr);
 	m_ui.outputDevice->clear();
+	m_minimum_output_latency_frames = 0;
 
 	if (devices.empty())
 	{
@@ -242,8 +243,11 @@ void AudioSettingsWidget::updateDeviceNames()
 		for (const AudioStream::DeviceInfo& di : devices)
 		{
 			m_ui.outputDevice->addItem(QString::fromStdString(di.display_name), QString::fromStdString(di.name));
+			m_ui.outputDevice->setItemData(
+				m_ui.outputDevice->count() - 1, di.minimum_latency_frames, MINIMUM_LATENCY_FRAMES_ROLE);
 			if (di.name == current_device)
 			{
+				m_minimum_output_latency_frames = di.minimum_latency_frames;
 				is_known_device = true;
 			}
 		}
@@ -256,8 +260,15 @@ void AudioSettingsWidget::updateDeviceNames()
 
 		SettingWidgetBinder::BindWidgetToStringSetting(dialog()->getSettingsInterface(), m_ui.outputDevice, "SPU2/Output",
 			"DeviceName", std::move(devices.front().name));
+		connect(m_ui.outputDevice, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onOutputDeviceChanged);
 	}
 
+	updateLatencyLabel();
+}
+
+void AudioSettingsWidget::onOutputDeviceChanged(int index)
+{
+	m_minimum_output_latency_frames = m_ui.outputDevice->itemData(index, MINIMUM_LATENCY_FRAMES_ROLE).toUInt();
 	updateLatencyLabel();
 }
 
@@ -268,13 +279,33 @@ void AudioSettingsWidget::updateLatencyLabel()
 	const u32 config_low_latency_buffer_ms = dialog()->getEffectiveIntValue(
 		"SPU2/Output", "LowLatencyBufferMS", AudioStreamParameters::DEFAULT_LOW_LATENCY_BUFFER_MS);
 	const u32 config_output_latency_ms = dialog()->getEffectiveIntValue("SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
-	const u32 selected_buffer_ms = isLowLatencyMode() ? config_low_latency_buffer_ms : config_buffer_ms;
+	const u32 selected_buffer_ms =
+		(getEffectiveSyncMode() == AudioSynchronizationMode::LowLatency) ? config_low_latency_buffer_ms : config_buffer_ms;
+	const u32 minimum_output_latency_ms = getMinimumOutputLatencyMS();
 
 	//: Preserve the %1 variable, adapt the latter ms (and/or any possible spaces in between) to your language's ruleset.
 	m_ui.outputLatencyLabel->setText(tr("%1 ms").arg(config_output_latency_ms));
 	m_ui.bufferMSLabel->setText(tr("%1 ms").arg(config_buffer_ms));
 	m_ui.lowLatencyBufferMSLabel->setText(tr("%1 ms").arg(config_low_latency_buffer_ms));
-
+	if (minimum_output_latency_ms > 0)
+	{
+		if (config_output_latency_ms < minimum_output_latency_ms)
+		{
+			m_ui.outputLatencyStatusLabel->setText(
+				tr("Reported minimum: %1 ms. Requested latency: %2 ms. If audio is poor, increase the requested latency.")
+					.arg(minimum_output_latency_ms)
+					.arg(config_output_latency_ms));
+		}
+		else
+		{
+			m_ui.outputLatencyStatusLabel->setText(tr("Backend minimum: %1 ms").arg(minimum_output_latency_ms));
+		}
+		m_ui.outputLatencyStatusLabel->show();
+	}
+	else
+	{
+		m_ui.outputLatencyStatusLabel->hide();
+	}
 	if (expand_buffer_ms > 0)
 	{
 		m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)")

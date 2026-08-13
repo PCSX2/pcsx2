@@ -834,9 +834,6 @@ void AudioStream::ResampleBlock(const float* block)
 
 void AudioStream::StretchAllocate()
 {
-	if (!IsStretchEnabled())
-		return;
-
 	m_soundtouch = std::make_unique<soundtouch::SoundTouch>();
 	m_soundtouch->setSampleRate(m_sample_rate);
 	m_soundtouch->setChannels(m_internal_channels);
@@ -1002,7 +999,6 @@ void AudioStream::StretchOverrun()
 {
 	// Produced more frames than can fit in the buffer.
 	m_stretch_reset++;
-	m_discontinuity_count.fetch_add(1, std::memory_order_relaxed);
 
 	// Drop two packets to give the time stretcher a bit more time to slow things down.
 	const u32 discard = CHUNK_SIZE * 2;

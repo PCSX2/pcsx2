@@ -6,16 +6,13 @@
 #include <algorithm>
 #include <cmath>
 
-namespace
-{
-	constexpr float CORRECTION_LIMIT = 0.01f;
-	constexpr float FILTER_TIME_CONSTANT_SECONDS = 0.025f;
-	constexpr float PROPORTIONAL_GAIN = 0.012f;
-	constexpr float INTEGRAL_GAIN_PER_SECOND = 0.040f;
-	constexpr float CORRECTION_SLEW_PER_SECOND = 0.040f;
-	constexpr float INTEGRAL_DECAY_SECONDS = 0.75f;
-	constexpr float SATURATION_RELEASE_MARGIN = 0.0005f;
-} // namespace
+constexpr float CORRECTION_LIMIT = 0.01f;
+constexpr float FILTER_TIME_CONSTANT_SECONDS = 0.025f;
+constexpr float PROPORTIONAL_GAIN = 0.012f;
+constexpr float INTEGRAL_GAIN_PER_SECOND = 0.040f;
+constexpr float CORRECTION_SLEW_PER_SECOND = 0.040f;
+constexpr float INTEGRAL_DECAY_SECONDS = 0.75f;
+constexpr float SATURATION_RELEASE_MARGIN = 0.0005f;
 
 AudioRateController::AudioRateController(u32 sample_rate, u32 target_frames)
 	: m_sample_rate(std::max(sample_rate, 1u))

@@ -9,6 +9,7 @@
 
 enum class AudioBackend : u8;
 enum class AudioExpansionMode : u8;
+enum class AudioSynchronizationMode : u8;
 
 class AudioSettingsWidget : public SettingsWidget
 {
@@ -24,6 +25,7 @@ private Q_SLOTS:
 
 	void updateDriverNames();
 	void updateDeviceNames();
+	void onOutputDeviceChanged(int index);
 	void updateLatencyLabel();
 	void updateVolumeLabel();
 	void onStandardVolumeChanged(const int new_value);
@@ -36,9 +38,11 @@ private Q_SLOTS:
 private:
 	AudioBackend getEffectiveBackend() const;
 	AudioExpansionMode getEffectiveExpansionMode() const;
+	AudioSynchronizationMode getEffectiveSyncMode() const;
 	u32 getEffectiveExpansionBlockSize() const;
-	bool isLowLatencyMode() const;
+	u32 getMinimumOutputLatencyMS() const;
 	void resetVolume(const bool fast_forward);
 
 	Ui::AudioSettingsWidget m_ui;
+	u32 m_minimum_output_latency_frames = 0;
 };

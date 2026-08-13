@@ -15,7 +15,7 @@ public:
 
 private:
 	u32 m_sample_rate;
-	u32 m_target_frames = 1;
+	u32 m_target_frames;
 	float m_filtered_buffered_frames = 0.0f;
 	float m_integral = 0.0f;
 	float m_correction = 1.0f;
