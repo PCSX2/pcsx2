@@ -828,11 +828,15 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/BiosDebugData.h)
 
 set(pcsx2HostSources
+	Host/AudioRateController.cpp
+	Host/AudioRateResampler.cpp
 	Host/AudioStream.cpp
 	Host/CubebAudioStream.cpp
 	Host/SDLAudioStream.cpp)
 
 set(pcsx2HostHeaders
+	Host/AudioRateController.h
+	Host/AudioRateResampler.h
 	Host/AudioStream.h
 	Host/AudioStreamTypes.h)
 
