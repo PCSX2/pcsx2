@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "Host/AudioStream.h"
+#include "Host/AudioRateController.h"
+#include "Host/AudioRateResampler.h"
 #include "FreeSurroundDecoder.h"
 #include "Host.h"
 #include "GS/GSVector.h"
@@ -67,7 +69,7 @@ std::unique_ptr<AudioStream> AudioStream::CreateNullStream(u32 sample_rate, u32 
 	params.buffer_ms = static_cast<u16>(buffer_ms);
 
 	std::unique_ptr<AudioStream> stream(new AudioStream(sample_rate, params));
-	stream->BaseInitialize(&StereoSampleReaderImpl, false);
+	stream->BaseInitialize(&StereoSampleReaderImpl, AudioSynchronizationMode::Disabled);
 	stream->SetOutputVolume(0);
 	return stream;
 }
@@ -105,19 +107,19 @@ std::vector<AudioStream::DeviceInfo> AudioStream::GetOutputDevices(AudioBackend 
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateStream(AudioBackend backend, u32 sample_rate, const AudioStreamParameters& parameters,
-	const char* driver_name, const char* device_name, bool stretch_enabled, Error* error)
+	const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error)
 {
-	INFO_LOG("Creating {} audio stream, sample rate = {}, expansion = {}, buffer = {}, latency = {}, stretching {}, driver = {}, device = {}",
-		GetBackendName(backend), sample_rate, GetExpansionModeName(parameters.expansion_mode), parameters.buffer_ms, parameters.output_latency_ms,
-		stretch_enabled ? "enabled" : "disabled", driver_name, device_name);
+	INFO_LOG("Creating {} audio stream, sample rate = {}, expansion = {}, buffer = {}, low latency buffer = {}, latency = {}, sync mode {}, driver = {}, device = {}",
+		GetBackendName(backend), sample_rate, GetExpansionModeName(parameters.expansion_mode), parameters.buffer_ms,
+		parameters.low_latency_buffer_ms, parameters.output_latency_ms, static_cast<u32>(sync_mode), driver_name, device_name);
 
 	switch (backend)
 	{
 		case AudioBackend::Cubeb:
-			return CreateCubebAudioStream(sample_rate, parameters, driver_name, device_name, stretch_enabled, error);
+			return CreateCubebAudioStream(sample_rate, parameters, driver_name, device_name, sync_mode, error);
 
 		case AudioBackend::SDL:
-			return CreateSDLAudioStream(sample_rate, parameters, stretch_enabled, error);
+			return CreateSDLAudioStream(sample_rate, parameters, sync_mode, error);
 
 		case AudioBackend::Null:
 			return CreateNullStream(sample_rate, parameters.buffer_ms);
@@ -234,6 +236,7 @@ u32 AudioStream::GetBufferedFramesRelaxed() const
 
 void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 {
+	m_callback_frames.store(num_frames, std::memory_order_relaxed);
 	const u32 available_frames = GetBufferedFramesRelaxed();
 	u32 frames_to_read = num_frames;
 	u32 silence_frames = 0;
@@ -260,6 +263,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
 		silence_frames = frames_to_read - available_frames;
 		frames_to_read = available_frames;
 		m_filling = true;
+		m_discontinuity_count.fetch_add(1, std::memory_order_relaxed);
 
 		if (IsStretchEnabled())
 			StretchUnderrun();
@@ -355,6 +359,7 @@ void AudioStream::InternalWriteFrames(const SampleType* data, u32 num_frames)
 		}
 		else
 		{
+			m_discontinuity_count.fetch_add(1, std::memory_order_relaxed);
 			LOG_UNDERRUN("Buffer overrun, chunk dropped");
 			return;
 		}
@@ -386,34 +391,72 @@ void AudioStream::InternalWriteFrames(const SampleType* data, u32 num_frames)
 	m_wpos.store(wpos, std::memory_order_release);
 }
 
-void AudioStream::BaseInitialize(SampleReader sample_reader, bool stretch_enabled)
+void AudioStream::BaseInitialize(SampleReader sample_reader, AudioSynchronizationMode sync_mode)
 {
-	m_stretch_enabled = stretch_enabled;
+	m_sync_mode = sync_mode;
+	switch (sync_mode)
+	{
+		case AudioSynchronizationMode::Disabled:
+			m_processing_mode = ProcessingMode::None;
+			break;
+
+		case AudioSynchronizationMode::TimeStretch:
+			m_processing_mode = ProcessingMode::TimeStretch;
+			break;
+
+		case AudioSynchronizationMode::LowLatency:
+			m_processing_mode = ProcessingMode::Resample;
+			break;
+
+		case AudioSynchronizationMode::Count:
+			break;
+	}
 	m_paused = false;
 	m_sample_reader = sample_reader;
 
 	AllocateBuffer();
 	ExpandAllocate();
-	StretchAllocate();
+	ProcessorAllocate();
+	if (m_processing_mode == ProcessingMode::Resample)
+		PrimeLowLatencyBuffer();
 }
 
 void AudioStream::AllocateBuffer()
 {
 	// use a larger buffer when time stretching, since we need more input
-	const u32 multiplier = IsStretchEnabled() ? 16 : 1;
-	m_buffer_size = GetAlignedBufferSize(((m_parameters.buffer_ms * multiplier) * m_sample_rate) / 1000);
-	m_target_buffer_size = GetAlignedBufferSize((m_sample_rate * m_parameters.buffer_ms) / 1000u);
+	u32 target_ms;
+	u32 multiplier;
+	switch (m_processing_mode)
+	{
+		case ProcessingMode::None:
+			target_ms = m_parameters.buffer_ms;
+			multiplier = 1;
+			break;
+
+		case ProcessingMode::Resample:
+			target_ms = m_parameters.low_latency_buffer_ms;
+			multiplier = 4;
+			break;
+
+		case ProcessingMode::TimeStretch:
+			target_ms = m_parameters.buffer_ms;
+			multiplier = 16;
+			break;
+	}
+	m_target_buffer_size = std::max(GetAlignedBufferSize((m_sample_rate * target_ms) / 1000u), CHUNK_SIZE);
+	m_buffer_size = GetAlignedBufferSize(((target_ms * multiplier) * m_sample_rate) / 1000u);
+	if (m_processing_mode == ProcessingMode::Resample)
+		m_buffer_size = std::max(m_buffer_size, m_target_buffer_size + CHUNK_SIZE);
 
 	m_buffer = std::make_unique<float[]>(m_buffer_size * m_internal_channels);
-	m_staging_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
+	m_staging_buffer = std::make_unique<float[]>(CHUNK_SIZE * 2 * m_internal_channels);
 
 	if (IsExpansionEnabled())
 		m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
 
-	DEV_LOG(
-		"Allocated buffer of {} frames for buffer of {} ms [expansion {} (block size {}), stretch {}, target size {}].",
-		m_buffer_size, m_parameters.buffer_ms, GetExpansionModeName(m_parameters.expansion_mode),
-		m_parameters.expand_block_size, m_stretch_enabled ? "enabled" : "disabled", m_target_buffer_size);
+	DEV_LOG("Allocated audio buffer: {} frames, {} ms, expansion {}, block size {}, mode {}, target {}.",
+		m_buffer_size, target_ms, GetExpansionModeName(m_parameters.expansion_mode), m_parameters.expand_block_size,
+		static_cast<u32>(m_processing_mode), m_target_buffer_size);
 }
 
 void AudioStream::DestroyBuffer()
@@ -435,6 +478,12 @@ void AudioStream::EmptyBuffer()
 		m_expand_buffer_pos = 0;
 	}
 
+	if (m_processing_mode == ProcessingMode::Resample)
+	{
+		ResetLowLatencyState(true);
+		return;
+	}
+
 	if (IsStretchEnabled())
 	{
 		m_soundtouch->clear();
@@ -445,9 +494,30 @@ void AudioStream::EmptyBuffer()
 	m_wpos.store(m_rpos.load(std::memory_order_acquire), std::memory_order_release);
 }
 
+void AudioStream::ResetForSavestateLoad()
+{
+	if (m_processing_mode == ProcessingMode::Resample)
+		ResetLowLatencyState(true);
+}
+
 void AudioStream::SetNominalRate(float tempo)
 {
 	m_nominal_rate = tempo;
+}
+
+AudioStream::ProcessingMode AudioStream::SelectProcessingMode(float speed) const
+{
+	// Hysteresis prevents mode changes near the fallback boundary.
+	const float minimum = (m_processing_mode == ProcessingMode::Resample) ? 0.95f : 0.97f;
+	const float maximum = (m_processing_mode == ProcessingMode::Resample) ? 1.05f : 1.03f;
+	return (speed >= minimum && speed <= maximum) ? ProcessingMode::Resample : ProcessingMode::TimeStretch;
+}
+
+void AudioStream::SetTargetSpeed(float speed)
+{
+	m_target_speed = speed;
+	if (m_sync_mode == AudioSynchronizationMode::LowLatency)
+		SetProcessingMode(SelectProcessingMode(speed));
 }
 
 void AudioStream::UpdateTargetTempo(float tempo)
@@ -469,22 +539,54 @@ void AudioStream::UpdateTargetTempo(float tempo)
 	m_dynamic_target_usage = static_cast<float>(m_target_buffer_size) * m_nominal_rate;
 }
 
-void AudioStream::SetStretchEnabled(bool enabled)
+void AudioStream::SetSynchronizationMode(AudioSynchronizationMode mode)
 {
-	if (m_stretch_enabled == enabled)
+	if (m_sync_mode == mode)
+		return;
+
+	m_sync_mode = mode;
+	switch (mode)
+	{
+		case AudioSynchronizationMode::Disabled:
+			SetProcessingMode(ProcessingMode::None);
+			break;
+
+		case AudioSynchronizationMode::TimeStretch:
+			SetProcessingMode(ProcessingMode::TimeStretch);
+			break;
+
+		case AudioSynchronizationMode::LowLatency:
+			SetProcessingMode(SelectProcessingMode(m_target_speed));
+			break;
+
+		case AudioSynchronizationMode::Count:
+			break;
+	}
+}
+
+void AudioStream::SetProcessingMode(ProcessingMode mode)
+{
+	if (m_processing_mode == mode)
 		return;
 
 	// can't resize the buffers while paused
 	const bool paused = m_paused;
 	if (!paused)
 		SetPaused(true);
+	if (IsExpansionEnabled())
+	{
+		m_expander->Flush();
+		m_expand_output_buffer = nullptr;
+		m_expand_buffer_pos = 0;
+	}
 
+	ProcessorDestroy();
 	DestroyBuffer();
-	StretchDestroy();
-	m_stretch_enabled = enabled;
-
+	m_processing_mode = mode;
 	AllocateBuffer();
-	StretchAllocate();
+	ProcessorAllocate();
+	if (mode == ProcessingMode::Resample)
+		ResetLowLatencyState(true);
 
 	if (!paused)
 		SetPaused(false);
@@ -492,7 +594,19 @@ void AudioStream::SetStretchEnabled(bool enabled)
 
 void AudioStream::SetPaused(bool paused)
 {
+	if (m_paused == paused)
+		return;
+
 	m_paused = paused;
+	if (m_processing_mode == ProcessingMode::Resample)
+	{
+		if (paused)
+			ResetLowLatencyState(false);
+		else if (GetBufferedFramesRelaxed() == 0)
+			ResetLowLatencyState(true);
+		else
+			m_rate_controller->Reset();
+	}
 }
 
 void AudioStream::SetOutputVolume(u32 volume)
@@ -562,7 +676,7 @@ void AudioStream::EndWrite(u32 num_frames)
 
 void AudioStream::WriteChunk(const SampleType* chunk)
 {
-	if (!IsExpansionEnabled() && !IsStretchEnabled())
+	if (!IsExpansionEnabled() && m_processing_mode == ProcessingMode::None)
 	{
 		InternalWriteFrames(chunk, CHUNK_SIZE);
 		return;
@@ -570,12 +684,12 @@ void AudioStream::WriteChunk(const SampleType* chunk)
 
 	if (IsExpansionEnabled())
 	{
-		// StretchWriteBlock() overwrites the staging buffer on output, so we need to copy into the expand buffer first.
+		// ProcessWriteBlock() overwrites the staging buffer on output, so we need to copy into the expand buffer first.
 		std::memcpy(m_expand_buffer.get() + m_expand_buffer_pos * NUM_INPUT_CHANNELS, chunk, CHUNK_SIZE * NUM_INPUT_CHANNELS * sizeof(SampleType));
 
 		// Output the corresponding block.
 		if (m_expand_output_buffer)
-			StretchWriteBlock(m_expand_output_buffer + m_expand_buffer_pos * m_internal_channels);
+			ProcessWriteBlock(m_expand_output_buffer + m_expand_buffer_pos * m_internal_channels);
 
 		// Decode the next block if we buffered enough.
 		m_expand_buffer_pos += CHUNK_SIZE;
@@ -587,7 +701,7 @@ void AudioStream::WriteChunk(const SampleType* chunk)
 	}
 	else
 	{
-		StretchWriteBlock(chunk);
+		ProcessWriteBlock(chunk);
 	}
 }
 
@@ -595,6 +709,127 @@ template <class T>
 __fi static bool IsInRange(const T& val, const T& min, const T& max)
 {
 	return (min <= val && val <= max);
+}
+
+void AudioStream::ProcessorAllocate()
+{
+	switch (m_processing_mode)
+	{
+		case ProcessingMode::None:
+			break;
+
+		case ProcessingMode::Resample:
+			ResampleAllocate();
+			break;
+
+		case ProcessingMode::TimeStretch:
+			StretchAllocate();
+			break;
+	}
+}
+
+void AudioStream::ProcessorDestroy()
+{
+	ResampleDestroy();
+	StretchDestroy();
+}
+
+void AudioStream::ProcessWriteBlock(const float* block)
+{
+	switch (m_processing_mode)
+	{
+		case ProcessingMode::None:
+			InternalWriteFrames(block, CHUNK_SIZE);
+			break;
+
+		case ProcessingMode::Resample:
+			ResampleBlock(block);
+			break;
+
+		case ProcessingMode::TimeStretch:
+			StretchWriteBlock(block);
+			break;
+	}
+}
+
+void AudioStream::ResampleAllocate()
+{
+	m_resampler = std::make_unique<AudioRateResampler>(m_internal_channels);
+	m_rate_controller = std::make_unique<AudioRateController>(m_sample_rate, m_target_buffer_size);
+	m_seen_discontinuity_count = m_discontinuity_count.load(std::memory_order_relaxed);
+	m_fade_in_frames_remaining = std::min(m_sample_rate / 200u, m_target_buffer_size);
+}
+
+void AudioStream::ResampleDestroy()
+{
+	m_rate_controller.reset();
+	m_resampler.reset();
+}
+
+void AudioStream::PrimeLowLatencyBuffer()
+{
+	pxAssert(m_processing_mode == ProcessingMode::Resample);
+	std::fill_n(m_staging_buffer.get(), CHUNK_SIZE * m_internal_channels, 0.0f);
+	for (u32 frames = 0; frames < m_target_buffer_size; frames += CHUNK_SIZE)
+		InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
+}
+
+void AudioStream::ResetLowLatencyState(bool prime_buffer)
+{
+	if (!m_resampler || !m_rate_controller)
+		return;
+
+	m_wpos.store(m_rpos.load(std::memory_order_acquire), std::memory_order_release);
+	if (IsExpansionEnabled())
+	{
+		m_expander->Flush();
+		m_expand_output_buffer = nullptr;
+		m_expand_buffer_pos = 0;
+	}
+	m_staging_buffer_pos = 0;
+	m_resampler->Reset();
+	m_rate_controller->Reset();
+	m_seen_discontinuity_count = m_discontinuity_count.load(std::memory_order_relaxed);
+	m_fade_in_frames_remaining = std::min(m_sample_rate / 200u, m_target_buffer_size);
+	m_filling = false;
+	if (prime_buffer)
+		PrimeLowLatencyBuffer();
+}
+
+void AudioStream::ResampleBlock(const float* block)
+{
+	const float* input = block;
+	if (m_fade_in_frames_remaining > 0)
+	{
+		const u32 fade_total = std::max(m_sample_rate / 200u, 1u);
+		for (u32 frame = 0; frame < CHUNK_SIZE; frame++)
+		{
+			const float gain =
+				1.0f - (static_cast<float>(m_fade_in_frames_remaining) / static_cast<float>(fade_total));
+			for (u32 channel = 0; channel < m_internal_channels; channel++)
+				m_staging_buffer[frame * m_internal_channels + channel] =
+					block[frame * m_internal_channels + channel] * gain;
+			if (m_fade_in_frames_remaining > 0)
+				m_fade_in_frames_remaining--;
+		}
+		input = m_staging_buffer.get();
+	}
+
+	const u32 discontinuity_count = m_discontinuity_count.load(std::memory_order_relaxed);
+	const float rate = m_rate_controller->Update(
+		GetBufferedFramesRelaxed(), m_callback_frames.load(std::memory_order_relaxed), CHUNK_SIZE, m_target_speed,
+		discontinuity_count != m_seen_discontinuity_count);
+	m_seen_discontinuity_count = discontinuity_count;
+	m_resampler->SetRate(rate);
+	m_resampler->PutFrames(input, CHUNK_SIZE);
+
+	while (m_resampler->GetAvailableFrames() > 0)
+	{
+		const u32 output_frames = m_resampler->ReceiveFrames(m_staging_buffer.get(), CHUNK_SIZE * 2);
+		if (output_frames == 0)
+			break;
+		InternalWriteFrames(m_staging_buffer.get(), output_frames);
+	}
 }
 
 void AudioStream::StretchAllocate()
@@ -632,23 +867,15 @@ void AudioStream::StretchDestroy()
 
 void AudioStream::StretchWriteBlock(const float* block)
 {
-	if (IsStretchEnabled())
-	{
-		m_soundtouch->putSamples(block, CHUNK_SIZE);
+	m_soundtouch->putSamples(block, CHUNK_SIZE);
 
-		u32 tempProgress;
-		while (tempProgress = m_soundtouch->receiveSamples(m_staging_buffer.get(), CHUNK_SIZE), tempProgress != 0)
-		{
-			InternalWriteFrames(m_staging_buffer.get(), tempProgress);
-		}
-
-		if (IsStretchEnabled())
-			UpdateStretchTempo();
-	}
-	else
+	u32 tempProgress;
+	while (tempProgress = m_soundtouch->receiveSamples(m_staging_buffer.get(), CHUNK_SIZE), tempProgress != 0)
 	{
-		InternalWriteFrames(block, CHUNK_SIZE);
+		InternalWriteFrames(m_staging_buffer.get(), tempProgress);
 	}
+
+	UpdateStretchTempo();
 }
 
 float AudioStream::AddAndGetAverageTempo(float val)
@@ -775,6 +1002,7 @@ void AudioStream::StretchOverrun()
 {
 	// Produced more frames than can fit in the buffer.
 	m_stretch_reset++;
+	m_discontinuity_count.fetch_add(1, std::memory_order_relaxed);
 
 	// Drop two packets to give the time stretcher a bit more time to slow things down.
 	const u32 discard = CHUNK_SIZE * 2;
@@ -785,6 +1013,9 @@ void AudioStreamParameters::LoadSave(SettingsWrapper& wrap, const char* section)
 {
 	wrap.EnumEntry(section, "ExpansionMode", expansion_mode, &AudioStream::ParseExpansionMode, &AudioStream::GetExpansionModeName, DEFAULT_EXPANSION_MODE);
 	buffer_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "BufferMS", buffer_ms, DEFAULT_BUFFER_MS), 0, std::numeric_limits<u16>::max()));
+	low_latency_buffer_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "LowLatencyBufferMS",
+																 low_latency_buffer_ms, DEFAULT_LOW_LATENCY_BUFFER_MS),
+		10, 100));
 	output_latency_ms = static_cast<u16>(std::clamp<int>(wrap.EntryBitfield(section, "OutputLatencyMS",
 															 output_latency_ms, DEFAULT_OUTPUT_LATENCY_MS),
 		1, std::numeric_limits<u16>::max()));

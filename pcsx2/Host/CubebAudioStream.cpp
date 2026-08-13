@@ -32,7 +32,7 @@ namespace
 
 		void SetPaused(bool paused) override;
 
-		bool Initialize(const char* driver_name, const char* device_name, bool stretch_enabled, Error* error);
+		bool Initialize(const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error);
 
 	private:
 		static void LogCallback(const char* fmt, ...);
@@ -117,7 +117,8 @@ void CubebAudioStream::DestroyContextAndStream()
 #endif
 }
 
-bool CubebAudioStream::Initialize(const char* driver_name, const char* device_name, bool stretch_enabled, Error* error)
+bool CubebAudioStream::Initialize(
+	const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error)
 {
 	cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 
@@ -237,13 +238,13 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 		}
 	}
 
-	BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second, stretch_enabled);
+	BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second, sync_mode);
 
 	char stream_name[32];
 	std::snprintf(stream_name, sizeof(stream_name), "%p", this);
 
-	rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params, latency_frames,
-		&CubebAudioStream::DataCallback, StateCallback, this);
+	rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params,
+		latency_frames, &CubebAudioStream::DataCallback, StateCallback, this);
 	// Verified subminimum requests have an effect on cubeb backends
 	if (rv != CUBEB_OK && below_minimum && !stream)
 	{
@@ -295,21 +296,33 @@ void CubebAudioStream::SetPaused(bool paused)
 	if (paused == m_paused || !stream)
 		return;
 
-	const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
-	if (rv != CUBEB_OK)
+	if (paused)
 	{
-		ERROR_LOG("Could not {} stream: {}", paused ? "pause" : "resume", GetCubebErrorString(rv));
+		const int rv = cubeb_stream_stop(stream);
+		if (rv != CUBEB_OK)
+		{
+			ERROR_LOG("Could not pause stream: {}", GetCubebErrorString(rv));
+			return;
+		}
+
+		AudioStream::SetPaused(true);
 		return;
 	}
 
-	m_paused = paused;
+	AudioStream::SetPaused(false);
+	const int rv = cubeb_stream_start(stream);
+	if (rv != CUBEB_OK)
+	{
+		AudioStream::SetPaused(true);
+		ERROR_LOG("Could not resume stream: {}", GetCubebErrorString(rv));
+	}
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-	const char* driver_name, const char* device_name, bool stretch_enabled, Error* error)
+	const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error)
 {
 	std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>(sample_rate, parameters);
-	if (!stream->Initialize(driver_name, device_name, stretch_enabled, error))
+	if (!stream->Initialize(driver_name, device_name, sync_mode, error))
 		stream.reset();
 	return stream;
 }

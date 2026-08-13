@@ -28,10 +28,19 @@ enum class AudioExpansionMode : u8
 	Count
 };
 
+enum class AudioSynchronizationMode : u8
+{
+	Disabled,
+	TimeStretch,
+	LowLatency,
+	Count
+};
+
 struct AudioStreamParameters
 {
 	AudioExpansionMode expansion_mode = DEFAULT_EXPANSION_MODE;
 	u16 buffer_ms = DEFAULT_BUFFER_MS;
+	u16 low_latency_buffer_ms = DEFAULT_LOW_LATENCY_BUFFER_MS;
 	u16 output_latency_ms = DEFAULT_OUTPUT_LATENCY_MS;
 
 	u16 stretch_sequence_length_ms = DEFAULT_STRETCH_SEQUENCE_LENGTH;
@@ -53,6 +62,7 @@ struct AudioStreamParameters
 
 	static constexpr AudioExpansionMode DEFAULT_EXPANSION_MODE = AudioExpansionMode::Disabled;
 	static constexpr u16 DEFAULT_BUFFER_MS = 50;
+	static constexpr u16 DEFAULT_LOW_LATENCY_BUFFER_MS = 20;
 	static constexpr u16 DEFAULT_OUTPUT_LATENCY_MS = 20;
 
 	static constexpr u16 DEFAULT_EXPAND_BLOCK_SIZE = 2048;

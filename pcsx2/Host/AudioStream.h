@@ -13,6 +13,8 @@
 #include <string_view>
 #include <vector>
 
+class AudioRateController;
+class AudioRateResampler;
 class Error;
 
 class FreeSurroundDecoder;
@@ -23,6 +25,13 @@ namespace soundtouch
 
 class AudioStream
 {
+	enum class ProcessingMode : u8
+	{
+		None,
+		Resample,
+		TimeStretch,
+	};
+
 public:
 	using SampleType = float;
 
@@ -45,8 +54,6 @@ public:
 public:
 	virtual ~AudioStream();
 
-	static u32 GetAlignedBufferSize(u32 size);
-	static u32 GetFrameCountForMS(u32 sample_rate, u32 milliseconds);
 	static u32 GetMSForFrames(u32 sample_rate, u32 frames);
 	static u32 GetMSForFramesCeil(u32 sample_rate, u32 frames);
 
@@ -61,16 +68,12 @@ public:
 	__fi u32 GetSampleRate() const { return m_sample_rate; }
 	__fi u32 GetInternalChannels() const { return m_internal_channels; }
 	__fi u32 GetOutputChannels() const { return m_internal_channels; }
-	__fi u32 GetBufferSize() const { return m_buffer_size; }
-	__fi u32 GetTargetBufferSize() const { return m_target_buffer_size; }
 	__fi u32 GetOutputVolume() const { return m_volume; }
-	__fi float GetNominalTempo() const { return m_nominal_rate; }
 	__fi AudioExpansionMode GetExpansionMode() const { return m_parameters.expansion_mode; }
 	__fi bool IsExpansionEnabled() const { return m_parameters.expansion_mode != AudioExpansionMode::Disabled; }
-	__fi bool IsStretchEnabled() const { return m_stretch_enabled; }
+	__fi bool IsStretchEnabled() const { return m_processing_mode == ProcessingMode::TimeStretch; }
+	__fi AudioSynchronizationMode GetSynchronizationMode() const { return m_sync_mode; }
 	__fi bool IsPaused() const { return m_paused; }
-
-	u32 GetBufferedFramesRelaxed() const;
 
 	/// Temporarily pauses the stream, preventing it from requesting data.
 	virtual void SetPaused(bool paused);
@@ -83,18 +86,20 @@ public:
 	void WriteFrame(const SampleType* frame);
 	void EndWrite(u32 num_frames);
 	void EmptyBuffer();
+	void ResetForSavestateLoad();
 
 	/// Nominal rate is used for both resampling and timestretching, input samples are assumed to be this amount faster
 	/// than the sample rate.
 	void SetNominalRate(float tempo);
+	void SetTargetSpeed(float speed);
 	void UpdateTargetTempo(float tempo);
 
-	void SetStretchEnabled(bool enabled);
+	void SetSynchronizationMode(AudioSynchronizationMode mode);
 
 	static std::vector<std::pair<std::string, std::string>> GetDriverNames(AudioBackend backend);
 	static std::vector<DeviceInfo> GetOutputDevices(AudioBackend backend, const char* driver);
 	static std::unique_ptr<AudioStream> CreateStream(AudioBackend backend, u32 sample_rate, const AudioStreamParameters& parameters,
-		const char* driver_name, const char* device_name, bool stretch_enabled, Error* error = nullptr);
+		const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error = nullptr);
 	static std::unique_ptr<AudioStream> CreateNullStream(u32 sample_rate, u32 buffer_ms);
 
 protected:
@@ -114,7 +119,8 @@ protected:
 	using SampleReader = void (*)(SampleType* dest, const SampleType* src, u32 num_frames);
 
 	AudioStream(u32 sample_rate, const AudioStreamParameters& parameters);
-	void BaseInitialize(SampleReader sample_reader, bool stretch_enabled);
+	void BaseInitialize(SampleReader sample_reader, AudioSynchronizationMode sync_mode);
+	static u32 GetFrameCountForMS(u32 sample_rate, u32 milliseconds);
 
 	void ReadFrames(SampleType* samples, u32 num_frames);
 
@@ -129,7 +135,8 @@ protected:
 	AudioStreamParameters m_parameters;
 	u8 m_internal_channels = 0;
 	u8 m_output_channels = 0;
-	bool m_stretch_enabled = false;
+	AudioSynchronizationMode m_sync_mode = AudioSynchronizationMode::Disabled;
+	ProcessingMode m_processing_mode = ProcessingMode::None;
 	bool m_stretch_inactive = false;
 	bool m_filling = false;
 	bool m_paused = false;
@@ -143,17 +150,30 @@ private:
 	static std::vector<std::pair<std::string, std::string>> GetCubebDriverNames();
 	static std::vector<DeviceInfo> GetCubebOutputDevices(const char* driver);
 	static std::unique_ptr<AudioStream> CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-		const char* driver_name, const char* device_name, bool stretch_enabled, Error* error);
+		const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error);
 
 	static std::unique_ptr<AudioStream> CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-		bool stretch_enabled, Error* error);
+		AudioSynchronizationMode sync_mode, Error* error);
 
 	void AllocateBuffer();
 	void DestroyBuffer();
+	static u32 GetAlignedBufferSize(u32 size);
+	u32 GetBufferedFramesRelaxed() const;
 
 	void InternalWriteFrames(const SampleType* samples, u32 num_frames);
 
 	void ExpandAllocate();
+
+	void ProcessorAllocate();
+	void ProcessorDestroy();
+	void ProcessWriteBlock(const float* block);
+	void SetProcessingMode(ProcessingMode mode);
+	ProcessingMode SelectProcessingMode(float speed) const;
+	void PrimeLowLatencyBuffer();
+	void ResetLowLatencyState(bool prime_buffer);
+	void ResampleAllocate();
+	void ResampleDestroy();
+	void ResampleBlock(const float* block);
 
 	void StretchAllocate();
 	void StretchDestroy();
@@ -170,7 +190,11 @@ private:
 
 	std::atomic<u32> m_rpos{0};
 	std::atomic<u32> m_wpos{0};
+	std::atomic<u32> m_callback_frames{0};
+	std::atomic<u32> m_discontinuity_count{0};
 
+	std::unique_ptr<AudioRateResampler> m_resampler;
+	std::unique_ptr<AudioRateController> m_rate_controller;
 	std::unique_ptr<soundtouch::SoundTouch> m_soundtouch;
 
 	u32 m_target_buffer_size = 0;
@@ -178,7 +202,10 @@ private:
 
 	u32 m_stretch_ok_count = 0;
 	float m_nominal_rate = 1.0f;
+	float m_target_speed = 1.0f;
 	float m_dynamic_target_usage = 0.0f;
+	u32 m_fade_in_frames_remaining = 0;
+	u32 m_seen_discontinuity_count = 0;
 
 	u32 m_average_position = 0;
 	u32 m_average_available = 0;
