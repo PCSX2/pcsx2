@@ -88,9 +88,6 @@
     <ShaderToCpp Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
       <VarName>vulkan_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\tfx.glsl">
-      <VarName>vulkan_tfx</VarName>
-    </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\convert.glsl">
       <VarName>opengl_convert</VarName>
     </ShaderToCpp>
@@ -105,12 +102,6 @@
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
       <VarName>opengl_shadeboost</VarName>
-    </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
-      <VarName>opengl_tfx_fs</VarName>
-    </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
-      <VarName>opengl_tfx_vgs</VarName>
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\present.glsl">
       <VarName>opengl_present</VarName>
@@ -127,9 +118,6 @@
     <ShaderToCpp Include="..\bin\resources\shaders\dx11\shadeboost.fx">
       <VarName>dx11_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\tfx.fx">
-      <VarName>dx11_tfx</VarName>
-    </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\dx11\imgui.fx">
       <VarName>dx11_imgui</VarName>
     </ShaderToCpp>
@@ -139,9 +127,65 @@
     <ShaderToCpp Include="..\bin\resources\shaders\common\fxaa.fx">
       <VarName>common_fxaa</VarName>
     </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_defs.inc">
+      <VarName>tfx_defs_inc</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_atst.inc" />
+      <VarName>tfx_ps_atst</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_blend.inc" />
+      <VarName>tfx_ps_blend</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_color.inc" />
+      <VarName>tfx_ps_color</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_fetch.inc" />
+      <VarName>tfx_ps_fetch</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_fog.inc" />
+      <VarName>tfx_ps_fog</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_header.inc" />
+      <VarName>tfx_ps_header</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_main.inc" />
+      <VarName>tfx_ps_main</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_post.inc" />
+      <VarName>tfx_ps_post</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_sample.inc" />
+      <VarName>tfx_ps_sample</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_sample_af.inc" />
+      <VarName>tfx_ps_sample_af</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_tfx.inc" />
+      <VarName>tfx_ps_tfx</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_ps_util.inc" />
+      <VarName>tfx_ps_util</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\tfx_vs.inc" />
+      <VarName>tfx_vs</VarName>
+    </ShaderToCpp>
     <None Include="..\bin\resources\shaders\common\fxaa.fx" />
     <None Include="..\bin\resources\shaders\opengl\cas.glsl" />
     <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
+    <None Include="..\bin\resources\shaders\common\tfx_defs.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_atst.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_blend.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_color.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fetch.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fog.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_header.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_main.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_post.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample_af.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_tfx.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_util.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_vs.inc" />
     <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
     <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
     <None Include="..\bin\resources\shaders\opengl\merge.glsl" />
