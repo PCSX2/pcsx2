@@ -1509,6 +1509,17 @@ protected:
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) = 0;
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
 
+	struct ShaderInclude
+	{
+		std::string_view file_name;
+		std::string_view file_source;
+	};
+
+	static void ResolveShaderIncludes(std::string* source, std::span<const ShaderInclude> includes);
+
+	/// Resolves TFX shader includes for the specified source.
+	static bool GetTFXShaderSource(std::string* source);
+
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);
 
