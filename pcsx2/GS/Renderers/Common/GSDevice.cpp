@@ -379,7 +379,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "vulkan_merge.cpp"
 #include "vulkan_present.cpp"
 #include "vulkan_shadeboost.cpp"
-#include "vulkan_tfx.cpp"
+#include "vulkan_opengl_tfx.cpp"
 #include "opengl_cas.cpp"
 #include "opengl_convert.cpp"
 #include "opengl_imgui.cpp"
@@ -387,50 +387,75 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "opengl_merge.cpp"
 #include "opengl_present.cpp"
 #include "opengl_shadeboost.cpp"
-#include "opengl_tfx_fs.cpp"
-#include "opengl_tfx_vgs.cpp"
+#include "common_tfx_defs.cpp"
+#include "common_tfx_ps_atst.cpp"
+#include "common_tfx_ps_blend.cpp"
+#include "common_tfx_ps_color.cpp"
+#include "common_tfx_ps_fetch.cpp"
+#include "common_tfx_ps_fog.cpp"
+#include "common_tfx_ps_header.cpp"
+#include "common_tfx_ps_main.cpp"
+#include "common_tfx_ps_post.cpp"
+#include "common_tfx_ps_sample_af.cpp"
+#include "common_tfx_ps_sample.cpp"
+#include "common_tfx_ps_tfx.cpp"
+#include "common_tfx_ps_util.cpp"
+#include "common_tfx_ps.cpp"
+#include "common_tfx_vs.cpp"
 #ifdef _WIN32
-#include "dx11_cas.cpp"
-#include "dx11_convert.cpp"
-#include "dx11_imgui.cpp"
-#include "dx11_interlace.cpp"
-#include "dx11_merge.cpp"
-#include "dx11_present.cpp"
-#include "dx11_shadeboost.cpp"
-#include "dx11_tfx.cpp"
+#include "dx_cas.cpp"
+#include "dx_convert.cpp"
+#include "dx_imgui.cpp"
+#include "dx_interlace.cpp"
+#include "dx_merge.cpp"
+#include "dx_present.cpp"
+#include "dx_shadeboost.cpp"
+#include "dx_tfx.cpp"
 #endif
 
 static const std::map<std::string, const unsigned char*> s_baked_shaders = {
-	{ "shaders/common/fxaa.fx"         , common_fxaa},
-	{ "shaders/common/fxaa.fx"         , common_fxaa },
-	{ "shaders/common/ffx_a.h"         , common_ffx_a },
-	{ "shaders/common/ffx_cas.h"       , common_ffx_cas },
-	{ "shaders/vulkan/cas.glsl"        , vulkan_cas },
-	{ "shaders/vulkan/convert.glsl"    , vulkan_convert},
-	{ "shaders/vulkan/imgui.glsl"      , vulkan_imgui},
-	{ "shaders/vulkan/interlace.glsl"  , vulkan_interlace},
-	{ "shaders/vulkan/merge.glsl"      , vulkan_merge },
-	{ "shaders/vulkan/present.glsl"    , vulkan_present },
-	{ "shaders/vulkan/shadeboost.glsl" , vulkan_shadeboost },
-	{ "shaders/vulkan/tfx.glsl"        , vulkan_tfx },
-	{ "shaders/opengl/cas.glsl"        , opengl_cas },
-	{ "shaders/opengl/convert.glsl"    , opengl_convert },
-	{ "shaders/opengl/imgui.glsl"      , opengl_imgui },
-	{ "shaders/opengl/interlace.glsl"  , opengl_interlace },
-	{ "shaders/opengl/merge.glsl"      , opengl_merge },
-	{ "shaders/opengl/present.glsl"    , opengl_present },
-	{ "shaders/opengl/shadeboost.glsl" , opengl_shadeboost },
-	{ "shaders/opengl/tfx_fs.glsl"     , opengl_tfx_fs },
-	{ "shaders/opengl/tfx_vgs.glsl"    , opengl_tfx_vgs },
+	{ "shaders/common/fxaa.fx"              , common_fxaa },
+	{ "shaders/common/ffx_a.h"              , common_ffx_a },
+	{ "shaders/common/ffx_cas.h"            , common_ffx_cas },
+	{ "shaders/vulkan/cas.glsl"             , vulkan_cas },
+	{ "shaders/vulkan/convert.glsl"         , vulkan_convert},
+	{ "shaders/vulkan/imgui.glsl"           , vulkan_imgui},
+	{ "shaders/vulkan/interlace.glsl"       , vulkan_interlace},
+	{ "shaders/vulkan/merge.glsl"           , vulkan_merge },
+	{ "shaders/vulkan/present.glsl"         , vulkan_present },
+	{ "shaders/vulkan/shadeboost.glsl"      , vulkan_shadeboost },
+	{ "shaders/vulkan_opengl/tfx.glsl"      , vulkan_opengl_tfx },
+	{ "shaders/opengl/cas.glsl"             , opengl_cas },
+	{ "shaders/opengl/convert.glsl"         , opengl_convert },
+	{ "shaders/opengl/imgui.glsl"           , opengl_imgui },
+	{ "shaders/opengl/interlace.glsl"       , opengl_interlace },
+	{ "shaders/opengl/merge.glsl"           , opengl_merge },
+	{ "shaders/opengl/present.glsl"         , opengl_present },
+	{ "shaders/opengl/shadeboost.glsl"      , opengl_shadeboost },
+	{ "shaders/common/tfx_defs.inc"         , common_tfx_defs},
+	{ "shaders/common/tfx_ps_atst.inc"      , common_tfx_ps_atst},
+	{ "shaders/common/tfx_ps_blend.inc"     , common_tfx_ps_blend},
+	{ "shaders/common/tfx_ps_color.inc"     , common_tfx_ps_color},
+	{ "shaders/common/tfx_ps_fetch.inc"     , common_tfx_ps_fetch},
+	{ "shaders/common/tfx_ps_fog.inc"       , common_tfx_ps_fog},
+	{ "shaders/common/tfx_ps_header.inc"    , common_tfx_ps_header},
+	{ "shaders/common/tfx_ps_main.inc"      , common_tfx_ps_main},
+	{ "shaders/common/tfx_ps_post.inc"      , common_tfx_ps_post},
+	{ "shaders/common/tfx_ps_sample_af.inc" , common_tfx_ps_sample_af},
+	{ "shaders/common/tfx_ps_sample.inc"    , common_tfx_ps_sample},
+	{ "shaders/common/tfx_ps_tfx.inc"       , common_tfx_ps_tfx},
+	{ "shaders/common/tfx_ps_util.inc"      , common_tfx_ps_util},
+	{ "shaders/common/tfx_ps.inc"           , common_tfx_ps},
+	{ "shaders/common/tfx_vs.inc"           , common_tfx_vs},
 #ifdef _WIN32
-	{ "shaders/dx11/cas.hlsl"          , dx11_cas },
-	{ "shaders/dx11/convert.fx"        , dx11_convert },
-	{ "shaders/dx11/imgui.fx"          , dx11_imgui },
-	{ "shaders/dx11/interlace.fx"      , dx11_interlace },
-	{ "shaders/dx11/merge.fx"          , dx11_merge },
-	{ "shaders/dx11/present.fx"        , dx11_present },
-	{ "shaders/dx11/shadeboost.fx"     , dx11_shadeboost },
-	{ "shaders/dx11/tfx.fx"            , dx11_tfx },
+	{ "shaders/dx/cas.hlsl"                 , dx_cas },
+	{ "shaders/dx/convert.fx"               , dx_convert },
+	{ "shaders/dx/imgui.fx"                 , dx_imgui },
+	{ "shaders/dx/interlace.fx"             , dx_interlace },
+	{ "shaders/dx/merge.fx"                 , dx_merge },
+	{ "shaders/dx/present.fx"               , dx_present },
+	{ "shaders/dx/shadeboost.fx"            , dx_shadeboost },
+	{ "shaders/dx/tfx.fx"                   , dx_tfx },
 #endif
 };
 #endif
@@ -1223,6 +1248,59 @@ void GSDevice::EndDSAsRT()
 #pragma GCC diagnostic pop
 #endif
 
+struct ShaderInclude
+{
+	std::string_view file_name;
+	std::string file_source;
+};
+
+static void ResolveShaderIncludes(std::string* source, std::span<const ShaderInclude> includes)
+{
+	// String replace includes for shader compilers that don't support includes.
+	for (const ShaderInclude& include : includes)
+	{
+		const std::string include_directive = fmt::format("#include \"{}\"", include.file_name);
+		StringUtil::ReplaceAll(source, include_directive, include.file_source);
+	}
+}
+
+bool GSDevice::GetTFXShaderSource(std::string* source)
+{
+	static constexpr const char* names[] = {
+		"tfx_defs.inc",
+		"tfx_vs.inc",
+		"tfx_ps.inc", // Must comes before other PS files since it includes them.
+		"tfx_ps_header.inc",
+		"tfx_ps_util.inc",
+		"tfx_ps_sample_af.inc",
+		"tfx_ps_fetch.inc",
+		"tfx_ps_sample.inc",
+		"tfx_ps_tfx.inc",
+		"tfx_ps_atst.inc",
+		"tfx_ps_fog.inc",
+		"tfx_ps_color.inc",
+		"tfx_ps_post.inc",
+		"tfx_ps_blend.inc",
+		"tfx_ps_main.inc",
+	};
+
+	std::array<ShaderInclude, std::size(names)> includes;
+
+	std::string tmp;
+	for (u32 i = 0; i < std::size(names); i++)
+	{
+		tmp.assign("shaders/common/");
+		tmp.append(names[i]);
+		std::optional<std::string> data = ReadShaderSource(tmp.c_str());
+		if (!data)
+			return false;
+		includes[i] = ShaderInclude(names[i], std::move(*data));
+	}
+
+	ResolveShaderIncludes(source, includes);
+	return true;
+}
+
 bool GSDevice::GetCASShaderSource(std::string* source)
 {
 	std::optional<std::string> ffx_a_source = ReadShaderSource("shaders/common/ffx_a.h");
@@ -1230,9 +1308,11 @@ bool GSDevice::GetCASShaderSource(std::string* source)
 	if (!ffx_a_source.has_value() || !ffx_cas_source.has_value())
 		return false;
 
-	// Since our shader compilers don't support includes, and OpenGL doesn't at all... we'll do a really cheeky string replace.
-	StringUtil::ReplaceAll(source, "#include \"ffx_a.h\"", ffx_a_source.value());
-	StringUtil::ReplaceAll(source, "#include \"ffx_cas.h\"", ffx_cas_source.value());
+	std::array<ShaderInclude, 2> includes = {
+		ShaderInclude{ "ffx_a.h", *ffx_a_source},
+		ShaderInclude{ "ffx_cas.h", *ffx_cas_source},
+	};
+	ResolveShaderIncludes(source, includes);
 	return true;
 }
 
