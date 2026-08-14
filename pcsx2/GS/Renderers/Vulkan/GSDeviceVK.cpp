@@ -2193,10 +2193,16 @@ bool GSDeviceVK::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	{
-		std::optional<std::string> shader = ReadShaderSource("shaders/vulkan/tfx.glsl");
+		std::optional<std::string> shader = ReadShaderSource("shaders/vulkan_opengl/tfx.glsl");
 		if (!shader.has_value())
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan/tfx.glsl.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan_opengl/tfx.glsl.");
+			return false;
+		}
+
+		if (!GetTFXShaderSource(&*shader))
+		{
+			Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
 			return false;
 		}
 
@@ -3850,14 +3856,17 @@ static void AddShaderHeader(std::stringstream& ss)
 	ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
 
 	if (!features.texture_barrier)
-		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";
+		AddMacro(ss, "DISABLE_TEXTURE_BARRIER", 1);
 	if (features.texture_barrier && dev->UseFeedbackLoopLayout())
-		ss << "#define HAS_FEEDBACK_LOOP_LAYOUT 1\n";
+		AddMacro(ss, "HAS_FEEDBACK_LOOP_LAYOUT", 1);
+	AddMacro(ss, "HAS_INDEX_BUFFER", features.aa1 ? 1 : 0);
 	if (features.rov)
 	{
 		ss << "#extension GL_ARB_fragment_shader_interlock : require\n";
 		ss << "#extension GL_ARB_shader_image_load_store : require\n";
 	}
+
+	AddMacro(ss, "PCSX2_VULKAN", 1);
 }
 
 static void AddShaderStageMacro(std::stringstream& ss, bool vs, bool gs, bool fs)
@@ -4932,8 +4941,7 @@ VkShaderModule GSDeviceVK::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	AddMacro(ss, "VS_FST", sel.fst);
 	AddMacro(ss, "VS_IIP", sel.iip);
 	AddMacro(ss, "VS_POINT_SIZE", sel.point_size);
-	AddMacro(ss, "VS_EXPAND", static_cast<int>(sel.expand));
-	AddMacro(ss, "VS_PROVOKING_VERTEX_LAST", static_cast<int>(m_features.provoking_vertex_last));
+	AddMacro(ss, "VS_EXPAND_TYPE", static_cast<int>(sel.expand));
 	ss << m_tfx_source;
 
 	VkShaderModule mod = g_vulkan_shader_cache->GetVertexShader(ss.str());
@@ -4953,6 +4961,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
+	AddMacro(ss, "PS_HAS_CONSERVATIVE_DEPTH", 1);
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);
@@ -4962,7 +4971,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_PAL_FMT", sel.pal_fmt);
 	AddMacro(ss, "PS_DST_FMT", sel.dst_fmt);
 	AddMacro(ss, "PS_DEPTH_FMT", sel.depth_fmt);
-	AddMacro(ss, "PS_CHANNEL_FETCH", sel.channel);
+	AddMacro(ss, "PS_CHANNEL", sel.channel);
 	AddMacro(ss, "PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 	AddMacro(ss, "PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 	AddMacro(ss, "PS_AEM", sel.aem);
@@ -5012,7 +5021,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	AddMacro(ss, "PS_ZTST", sel.ztst);
 	AddMacro(ss, "PS_AA1", static_cast<u32>(sel.aa1));
 	AddMacro(ss, "PS_ABE", sel.abe);
-	AddMacro(ss, "PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
+	AddMacro(ss, "PS_SW_ANISO", sel.sw_aniso);
 	AddMacro(ss, "PS_ROV_COLOR", sel.rov_color);
 	AddMacro(ss, "PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 	ss << m_tfx_source;

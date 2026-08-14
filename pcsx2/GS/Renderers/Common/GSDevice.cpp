@@ -1151,6 +1151,68 @@ void GSDevice::EndDSAsRT()
 #pragma GCC diagnostic pop
 #endif
 
+void GSDevice::ResolveShaderIncludes(std::string* source, std::span<const ShaderInclude> includes)
+{
+	// String replace includes for shader compilers that don't support includes.
+	for (const ShaderInclude& include : includes)
+	{
+		const std::string include_directive = fmt::format("#include \"{}\"", include.file_name);
+		StringUtil::ReplaceAll(source, include_directive, include.file_source);
+	}
+}
+
+bool GSDevice::GetTFXShaderSource(std::string* source)
+{
+	std::optional<std::string> tfx_defs = ReadShaderSource("shaders/common/tfx_defs.inc");
+	std::optional<std::string> tfx_vs = ReadShaderSource("shaders/common/tfx_vs.inc");
+	std::optional<std::string> tfx_ps_header = ReadShaderSource("shaders/common/tfx_ps_header.inc");
+	std::optional<std::string> tfx_ps_util = ReadShaderSource("shaders/common/tfx_ps_util.inc");
+	std::optional<std::string> tfx_ps_sample_af = ReadShaderSource("shaders/common/tfx_ps_sample_af.inc");
+	std::optional<std::string> tfx_ps_fetch = ReadShaderSource("shaders/common/tfx_ps_fetch.inc");
+	std::optional<std::string> tfx_ps_sample = ReadShaderSource("shaders/common/tfx_ps_sample.inc");
+	std::optional<std::string> tfx_ps_tfx = ReadShaderSource("shaders/common/tfx_ps_tfx.inc");
+	std::optional<std::string> tfx_ps_atst = ReadShaderSource("shaders/common/tfx_ps_atst.inc");
+	std::optional<std::string> tfx_ps_fog = ReadShaderSource("shaders/common/tfx_ps_fog.inc");
+	std::optional<std::string> tfx_ps_color = ReadShaderSource("shaders/common/tfx_ps_color.inc");
+	std::optional<std::string> tfx_ps_post = ReadShaderSource("shaders/common/tfx_ps_post.inc");
+	std::optional<std::string> tfx_ps_blend = ReadShaderSource("shaders/common/tfx_ps_blend.inc");
+	std::optional<std::string> tfx_ps_main = ReadShaderSource("shaders/common/tfx_ps_main.inc");
+
+	if (!tfx_defs.has_value()) return false;
+	if (!tfx_vs.has_value()) return false;
+	if (!tfx_ps_header.has_value()) return false;
+	if (!tfx_ps_util.has_value()) return false;
+	if (!tfx_ps_sample_af.has_value()) return false;
+	if (!tfx_ps_fetch.has_value()) return false;
+	if (!tfx_ps_sample.has_value()) return false;
+	if (!tfx_ps_tfx.has_value()) return false;
+	if (!tfx_ps_atst.has_value()) return false;
+	if (!tfx_ps_fog.has_value()) return false;
+	if (!tfx_ps_color.has_value()) return false;
+	if (!tfx_ps_post.has_value()) return false;
+	if (!tfx_ps_blend.has_value()) return false;
+	if (!tfx_ps_main.has_value()) return false;
+
+	std::array<ShaderInclude, 14> includes = {
+		ShaderInclude{ "tfx_defs.inc", *tfx_defs},
+		ShaderInclude{ "tfx_vs.inc", *tfx_vs},
+		ShaderInclude{ "tfx_ps_header.inc", *tfx_ps_header },
+		ShaderInclude{ "tfx_ps_util.inc", *tfx_ps_util },
+		ShaderInclude{ "tfx_ps_sample_af.inc", *tfx_ps_sample_af },
+		ShaderInclude{ "tfx_ps_fetch.inc", *tfx_ps_fetch },
+		ShaderInclude{ "tfx_ps_sample.inc", *tfx_ps_sample },
+		ShaderInclude{ "tfx_ps_tfx.inc", *tfx_ps_tfx },
+		ShaderInclude{ "tfx_ps_atst.inc", *tfx_ps_atst },
+		ShaderInclude{ "tfx_ps_fog.inc", *tfx_ps_fog },
+		ShaderInclude{ "tfx_ps_color.inc", *tfx_ps_color },
+		ShaderInclude{ "tfx_ps_post.inc", *tfx_ps_post },
+		ShaderInclude{ "tfx_ps_blend.inc", *tfx_ps_blend },
+		ShaderInclude{ "tfx_ps_main.inc", *tfx_ps_main },
+	};
+	ResolveShaderIncludes(source, includes);
+	return true;
+}
+
 bool GSDevice::GetCASShaderSource(std::string* source)
 {
 	std::optional<std::string> ffx_a_source = ReadShaderSource("shaders/common/ffx_a.h");
@@ -1158,9 +1220,11 @@ bool GSDevice::GetCASShaderSource(std::string* source)
 	if (!ffx_a_source.has_value() || !ffx_cas_source.has_value())
 		return false;
 
-	// Since our shader compilers don't support includes, and OpenGL doesn't at all... we'll do a really cheeky string replace.
-	StringUtil::ReplaceAll(source, "#include \"ffx_a.h\"", ffx_a_source.value());
-	StringUtil::ReplaceAll(source, "#include \"ffx_cas.h\"", ffx_cas_source.value());
+	std::array<ShaderInclude, 2> includes = {
+		ShaderInclude{ "ffx_a.h", *ffx_a_source},
+		ShaderInclude{ "ffx_cas.h", *ffx_cas_source},
+	};
+	ResolveShaderIncludes(source, includes);
 	return true;
 }
 

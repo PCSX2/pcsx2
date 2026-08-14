@@ -69,6 +69,20 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\bin\resources\shaders\common\tfx_defs.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_atst.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_blend.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_color.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fetch.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fog.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_header.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_main.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_post.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample_af.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_tfx.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_ps_util.inc" />
+    <None Include="..\bin\resources\shaders\common\tfx_vs.inc" />
     <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
     <None Include="..\bin\resources\shaders\opengl\present.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
