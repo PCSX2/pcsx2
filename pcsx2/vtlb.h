@@ -70,6 +70,7 @@ extern void vtlb_DynV2P();
 //virtual mappings
 extern void vtlb_VMap(u32 vaddr,u32 paddr,u32 sz);
 extern void vtlb_VMapBuffer(u32 vaddr,void* buffer,u32 sz);
+extern void vtlb_VMapWriteProtected(u32 vaddr,u32 sz);
 extern void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 extern bool vtlb_ResolveFastmemMapping(uptr* addr);
 extern bool vtlb_GetGuestAddress(uptr host_addr, u32* guest_addr);

@@ -509,10 +509,23 @@ void DSRLV(){ if (!_Rd_) return; cpuRegs.GPR.r[_Rd_].UD[0] = (u64)(cpuRegs.GPR.r
 
 __noinline static void RaiseAddressError(u32 addr, bool store)
 {
-	const std::string message(fmt::format("Address Error, addr=0x{:x} [{}]", addr, store ? "store" : "load"));
+	// Deliver the exception. EXC_CODE_AdEL/AdES were defined but never raised, so
+	// a misaligned access silently did nothing and left the destination register
+	// unchanged. Linux depends on the trap: MIPS emulates the access in do_ade(),
+	// which is how unaligned loads and stores are serviced at all.
+	//
+	// EPC must point at the faulting instruction, so back pc up first, as
+	// cpuTlbMiss() does.
+	static int spamStop = 0;
+	if (spamStop++ < 50 || IsDevBuild)
+	{
+		Console.Error(fmt::format("Address Error, addr=0x{:x} [{}] pc=0x{:x}",
+			addr, store ? "store" : "load", cpuRegs.pc));
+	}
 
-	// TODO: This doesn't actually get raised in the CPU yet.
-	Console.Error(message);
+	cpuRegs.CP0.n.BadVAddr = addr;
+	cpuRegs.pc -= 4;
+	cpuException(store ? EXC_CODE_AdES : EXC_CODE_AdEL, cpuRegs.branch);
 
 	Cpu->CancelInstruction();
 }
@@ -909,12 +922,37 @@ void SYSCALL()
 {
 	u8 call;
 
+	// The BIOS keys its syscalls on v1, which is correct for software calling the
+	// BIOS. Linux puts its number in v0 and treats v1 as scratch, so a Linux
+	// syscall also selects a handler here -- and GetOsdConfigParam(2) writes to
+	// the address in a0. bash calling connect(3, ...) put 3 in a0, so four bytes
+	// went to address 0x3 and the guest kernel killed it with SIGSEGV.
+	//
+	// v0 alone cannot separate them, and neither can the privilege mode (PS2
+	// threads run in user mode). Add where the call came from: the SBIOS runs
+	// from KSEG0/KSEG1, while Linux userspace is below 0x80000000 and the Linux
+	// kernel never executes a syscall itself. Both together are safe to apply to
+	// the whole switch; skipping it wholesale breaks the SBIOS.
+	const bool linuxSyscall =
+		cpuRegs.GPR.n.v0.UL[0] >= 4000 && cpuRegs.GPR.n.v0.UL[0] < 5000 &&
+		cpuRegs.pc < 0x80000000;
+
 	if (cpuRegs.GPR.n.v1.SL[0] < 0)
 		call = (u8)(-cpuRegs.GPR.n.v1.SL[0]);
 	else
 		call = cpuRegs.GPR.n.v1.UC[0];
 
 	BIOS_LOG("Bios call: %s (%x)", R5900::bios[call], call);
+
+	if (linuxSyscall)
+	{
+		// Run no handler at all: deliver the exception to the guest kernel and
+		// nothing else. Falling through the switch is not enough, because
+		// several handlers touch guest memory before any case is rejected.
+		cpuRegs.pc -= 4;
+		cpuException(0x20, cpuRegs.branch);
+		return;
+	}
 
 
 	switch (static_cast<Syscall>(call))
@@ -999,7 +1037,7 @@ void SYSCALL()
 			AllowParams1 = true;
 			break;
 		case Syscall::GetOsdConfigParam:
-			if (!NoOSD && !AllowParams1)
+			if (!NoOSD && !AllowParams1 && !linuxSyscall)
 			{
 				ReadOSDConfigParames();
 
@@ -1038,7 +1076,7 @@ void SYSCALL()
 			}
 			break;
 		case Syscall::GetOsdConfigParam2:
-			if (!NoOSD && !AllowParams2)
+			if (!NoOSD && !AllowParams2 && !linuxSyscall)
 			{
 				ReadOSDConfigParames();
 
@@ -1046,8 +1084,20 @@ void SYSCALL()
 				u32 size = cpuRegs.GPR.n.a1.UL[0];
 				u32 offset = cpuRegs.GPR.n.a2.UL[0];
 
+				// Rate-limited: PS2 Linux's ps2sysconf reads this on every boot
+				// and floods the log, which buries everything else. The caveat
+				// is worth stating once, not hundreds of times. Same idiom as
+				// vtlb_Miss().
 				if (offset + size > 2)
-					Console.Warning("Warning: GetOsdConfigParam2 Reading extended language/version configs, may be incorrect!");
+				{
+					static int spamStop = 0;
+					if (spamStop++ < 3)
+					{
+						Console.Warning("Warning: GetOsdConfigParam2 Reading extended "
+							"language/version configs, may be incorrect!%s",
+							spamStop == 3 ? " (further instances suppressed)" : "");
+					}
+				}
 
 				for (u32 i = 0; i < size; i++)
 				{

@@ -53,6 +53,7 @@ static vtlbHandler vtlbHandlerCount = 0;
 
 static vtlbHandler DefaultPhyHandler;
 static vtlbHandler UnmappedVirtHandler;
+static vtlbHandler WriteProtectedVirtHandler;
 static vtlbHandler UnmappedPhyHandler;
 
 struct FastmemVirtualMapping
@@ -575,6 +576,76 @@ static RETURNS_R128 vtlbUnmappedVReadLg(u32 addr) { vtlb_Miss(addr, 0); return r
 template <typename OperandType>
 static void vtlbUnmappedVWriteSm(u32 addr, OperandType data) { vtlb_Miss(addr, 1); }
 static void TAKES_R128 vtlbUnmappedVWriteLg(u32 addr, r128 data) { vtlb_Miss(addr, 1); }
+
+// A page the guest mapped with EntryLo.D clear is readable but must raise TLB
+// Modified on a store. The vtlb has no read-only state of its own -- a virtual
+// page is either a direct pointer, which serves reads and writes alike, or a
+// handler -- so write protection has to be a handler that serves the reads
+// itself.
+//
+// Copy-on-write is built on this exception. Without it a store to a page
+// shared by fork() lands in the shared page and parent and child quietly
+// scribble over each other.
+static __ri void vtlb_Modified(u32 addr)
+{
+	if (Cpu == &intCpu)
+	{
+		cpuTlbModified(addr, cpuRegs.branch);
+		Cpu->CancelInstruction();
+		return;
+	}
+
+	static int spamStop = 0;
+	if (spamStop++ < 50 || IsDevBuild)
+		Console.Error("TLB Modified, pc=0x%x addr=0x%x", cpuRegs.pc, addr);
+}
+
+// These pages are mapped vaddr->vaddr so the handler is given the virtual
+// address, which the exception needs; the physical side is resolved here.
+static void* vtlb_WriteProtectedSource(u32 vaddr)
+{
+	for (int i = 0; i < 48; i++)
+	{
+		const u32 pageSize = (tlb[i].Mask() + 1) << 12;
+		const u32 base = tlb[i].VPN2();
+
+		if (vaddr < base || vaddr >= base + pageSize * 2)
+			continue;
+		if (!tlb[i].isGlobal() && (tlb[i].EntryHi.ASID != (cpuRegs.CP0.n.EntryHi & 0xff)))
+			continue;
+
+		const bool odd = (vaddr - base) >= pageSize;
+		const EntryLo_t& lo = odd ? tlb[i].EntryLo1 : tlb[i].EntryLo0;
+		if (!lo.V)
+			return nullptr;
+
+		const u32 paddr = (odd ? tlb[i].PFN1() : tlb[i].PFN0()) + ((vaddr - base) & (pageSize - 1));
+		if (!eeMem || (paddr + 16) > Ps2MemSize::ExposedRam)
+			return nullptr;
+
+		return &eeMem->Main[paddr];
+	}
+	return nullptr;
+}
+
+template <typename OperandType>
+static OperandType vtlbWriteProtReadSm(u32 addr)
+{
+	OperandType value = 0;
+	if (const void* src = vtlb_WriteProtectedSource(addr))
+		std::memcpy(&value, src, sizeof(OperandType));
+	return value;
+}
+static RETURNS_R128 vtlbWriteProtReadLg(u32 addr)
+{
+	if (const void* src = vtlb_WriteProtectedSource(addr))
+		return r128_load(src);
+	return r128_zero();
+}
+
+template <typename OperandType>
+static void vtlbWriteProtWriteSm(u32 addr, OperandType data) { vtlb_Modified(addr); }
+static void TAKES_R128 vtlbWriteProtWriteLg(u32 addr, r128 data) { vtlb_Modified(addr); }
 
 template <typename OperandType>
 static OperandType vtlbUnmappedPReadSm(u32 addr) {
@@ -1220,6 +1291,24 @@ void vtlb_VMapBuffer(u32 vaddr, void* buffer, u32 size)
 	}
 }
 
+void vtlb_VMapWriteProtected(u32 vaddr, u32 size)
+{
+	verify(0 == (vaddr & VTLB_PAGE_MASK));
+	verify(0 == (size & VTLB_PAGE_MASK) && size > 0);
+
+	// Fastmem hands stores straight to host memory with no handler in the way,
+	// so a page that must trap on write cannot have a fastmem mapping.
+	vtlb_RemoveFastmemMappings(vaddr, size);
+
+	while (size > 0)
+	{
+		vtlbdata.vmap[vaddr >> VTLB_PAGE_BITS] =
+			VTLBVirtual(VTLBPhysical::fromHandler(WriteProtectedVirtHandler), vaddr, vaddr);
+		vaddr += VTLB_PAGE_SIZE;
+		size -= VTLB_PAGE_SIZE;
+	}
+}
+
 void vtlb_VMapUnmap(u32 vaddr, u32 size)
 {
 	verify(0 == (vaddr & VTLB_PAGE_MASK));
@@ -1255,6 +1344,7 @@ void vtlb_Init()
 
 	UnmappedVirtHandler = vtlb_RegisterHandler(VTLB_BuildUnmappedHandler(vtlbUnmappedV));
 	UnmappedPhyHandler = vtlb_RegisterHandler(VTLB_BuildUnmappedHandler(vtlbUnmappedP));
+	WriteProtectedVirtHandler = vtlb_RegisterHandler(VTLB_BuildUnmappedHandler(vtlbWriteProt));
 	DefaultPhyHandler = vtlb_RegisterHandler(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	//done !

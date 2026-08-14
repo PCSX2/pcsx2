@@ -23,6 +23,7 @@ BIOS
 */
 
 #include "DEV9/DEV9.h"
+#include <cstdlib>
 #include "IopHw.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS.h"
@@ -969,6 +970,11 @@ void memSetPageAddr(u32 vaddr, u32 paddr)
 
 }
 
+void memSetPageAddrReadOnly(u32 vaddr)
+{
+	vtlb_VMapWriteProtected(vaddr, 0x1000);
+}
+
 void memClearPageAddr(u32 vaddr)
 {
 	//Console.WriteLn("memClearPageAddr: %8.8x", vaddr);
@@ -1140,8 +1146,23 @@ void memReset()
 	memMapUserMem();
 	memSetKernelMode();
 
-	vtlb_VMap(0x00000000,0x00000000,0x20000000);
-	vtlb_VMapUnmap(0x20000000,0x60000000);
+	// The user segment is identity-mapped onto physical memory, so an address the
+	// guest never mapped still resolves instead of raising a TLB refill. PS2 Linux
+	// depends on that fault: /sbin/init is linked at 0x00400000 with data at
+	// 0x10000000, both inside this window, so its first userspace fetch would read
+	// whatever physical memory sits there rather than faulting the page in.
+	//
+	// Opt-in, since the identity map is long-standing behaviour for game titles.
+	if (std::getenv("PCSX2_STRICT_USEG"))
+	{
+		Console.WriteLn("memReset: strict user segment, 0-2GB faults unless the guest TLB maps it");
+		vtlb_VMapUnmap(0x00000000, 0x80000000);
+	}
+	else
+	{
+		vtlb_VMap(0x00000000,0x00000000,0x20000000);
+		vtlb_VMapUnmap(0x20000000,0x60000000);
+	}
 
 	std::memset(s_ba, 0, sizeof(s_ba));
 

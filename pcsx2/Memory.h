@@ -162,6 +162,8 @@ namespace SysMemory
 extern void memSetKernelMode();
 //extern void memSetSupervisorMode();
 extern void memSetUserMode();
+// Map a page readable but not writable, so a store raises TLB Modified.
+extern void memSetPageAddrReadOnly(u32 vaddr);
 extern void memSetPageAddr(u32 vaddr, u32 paddr);
 extern void memClearPageAddr(u32 vaddr);
 extern void memBindConditionalHandlers();
