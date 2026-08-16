@@ -339,8 +339,8 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 			for (int i = 0; i < vlen; i++)
 			{
-				VectorI r = (VectorI(dr * load_shift(i)) & mask16).ps32();
-				VectorI b = (VectorI(db * load_shift(i)) & mask16).ps32();
+				VectorI r = (VectorI(dr * load_shift(i)) & mask16).pu32();
+				VectorI b = (VectorI(db * load_shift(i)) & mask16).pu32();
 
 				local.d[i].rb = r.upl16(b);
 			}
@@ -350,8 +350,8 @@ void GSDrawScanline::CSetupPrim(const GSVertexSW* vertex, const u16* index, cons
 
 			for (int i = 0; i < vlen; i++)
 			{
-				VectorI g = (VectorI(dg * load_shift(i)) & mask16).ps32();
-				VectorI a = (VectorI(da * load_shift(i)) & mask16).ps32();
+				VectorI g = (VectorI(dg * load_shift(i)) & mask16).pu32();
+				VectorI a = (VectorI(da * load_shift(i)) & mask16).pu32();
 
 				local.d[i].ga = g.upl16(a);
 			}
