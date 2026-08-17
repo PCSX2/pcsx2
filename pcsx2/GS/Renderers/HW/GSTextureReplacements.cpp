@@ -102,7 +102,7 @@ namespace GSTextureReplacements
 {
 	static TextureName CreateTextureName(const GSTextureCache::HashCacheKey& hash, u32 miplevel);
 	static GSTextureCache::HashCacheKey HashCacheKeyFromTextureName(const TextureName& tn);
-	static std::optional<TextureName> ParseReplacementName(const std::string& filename);
+	static std::optional<TextureName> ParseReplacementName(const char* filename);
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
 	template <GSTexture::Format format>
@@ -189,7 +189,7 @@ GSTextureCache::HashCacheKey GSTextureReplacements::HashCacheKeyFromTextureName(
 	return key;
 }
 
-std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std::string& filename)
+std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const char* filename)
 {
 	TextureName ret;
 	ret.miplevel = 0;
@@ -197,7 +197,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 	GSTextureCache::SourceRegion full_region;
 
 	char extension_dot;
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash,
+	if (std::sscanf(filename, TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash,
 			&ret.region_width, &ret.region_height, &ret.bits, &extension_dot) == 6 &&
 		extension_dot == '.')
 	{
@@ -205,7 +205,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 		return ret;
 	}
 
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_REGION_FORMAT_STRING "%c", &ret.TEX0Hash,
+	if (std::sscanf(filename, TEXTURE_FILENAME_REGION_FORMAT_STRING "%c", &ret.TEX0Hash,
 			&ret.region_width, &ret.region_height, &ret.bits, &extension_dot) == 5 &&
 		extension_dot == '.')
 	{
@@ -215,7 +215,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 	}
 
 	// Allow loading of dumped textures from older versions that included the full region bits.
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_OLD_REGION_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash,
+	if (std::sscanf(filename, TEXTURE_FILENAME_OLD_REGION_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash,
 			&full_region.bits, &ret.bits, &extension_dot) == 5 &&
 		extension_dot == '.')
 	{
@@ -225,7 +225,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 		return ret;
 	}
 
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_OLD_REGION_FORMAT_STRING "%c", &ret.TEX0Hash, &full_region.bits,
+	if (std::sscanf(filename, TEXTURE_FILENAME_OLD_REGION_FORMAT_STRING "%c", &ret.TEX0Hash, &full_region.bits,
 			&ret.bits, &extension_dot) == 4 &&
 		extension_dot == '.')
 	{
@@ -239,7 +239,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 	ret.region_width = 0;
 	ret.region_height = 0;
 
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash, &ret.bits,
+	if (std::sscanf(filename, TEXTURE_FILENAME_CLUT_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.CLUTHash, &ret.bits,
 			&extension_dot) == 4 &&
 		extension_dot == '.')
 	{
@@ -247,8 +247,7 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 		return ret;
 	}
 
-	if (std::sscanf(filename.c_str(), TEXTURE_FILENAME_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.bits, &extension_dot) ==
-			3 &&
+	if (std::sscanf(filename, TEXTURE_FILENAME_FORMAT_STRING "%c", &ret.TEX0Hash, &ret.bits, &extension_dot) == 3 &&
 		extension_dot == '.')
 	{
 		ret.RemoveUnusedBits();
@@ -416,11 +415,10 @@ void GSTextureReplacements::ReloadReplacementMap()
 	if (!FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
 		return;
 
-	std::string filename;
 	for (FILESYSTEM_FIND_DATA& fd : files)
 	{
 		// file format we can handle?
-		filename = Path::GetFileName(fd.FileName);
+		const char* filename = Path::GetFileName(fd.FileName).data(); // GetFileName takes a substring from the end, so the null terminator is preserved
 		if (!GetLoader(filename))
 			continue;
 
@@ -429,7 +427,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 		if (!name.has_value())
 			continue;
 
-		DbgCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
+		DbgCon.WriteLn("Found %ux%u replacement '%s'", name->Width(), name->Height(), filename);
 		s_replacement_texture_filenames.emplace(name.value(), std::move(fd.FileName));
 
 		// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
