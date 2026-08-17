@@ -9,6 +9,7 @@
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
 #include "common/TextureDecompress.h"
+#include "common/ZipHelpers.h"
 
 #include "Config.h"
 #include "Host.h"
@@ -100,6 +101,12 @@ namespace std
 
 namespace GSTextureReplacements
 {
+	struct ReplacementFile
+	{
+		std::string path; ///< Path to archive or file
+		s64 archive_idx;  ///< If archive, index into archive, otherwise -1
+		bool IsArchive() const { return archive_idx >= 0; }
+	};
 	static TextureName CreateTextureName(const GSTextureCache::HashCacheKey& hash, u32 miplevel);
 	static GSTextureCache::HashCacheKey HashCacheKeyFromTextureName(const TextureName& tn);
 	static std::optional<TextureName> ParseReplacementName(const char* filename);
@@ -108,8 +115,8 @@ namespace GSTextureReplacements
 	template <GSTexture::Format format>
 	std::pair<u8, u8> GetBCAlphaMinMax(ReplacementTexture& rtex);
 	static void SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex);
-	static std::optional<ReplacementTexture> LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image);
-	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap, bool cache_only);
+	static std::optional<ReplacementTexture> LoadReplacementTexture(const ReplacementFile& file, bool only_base_image);
+	static void QueueAsyncReplacementTextureLoad(const TextureName& name, const ReplacementFile& filename, bool mipmap, bool cache_only);
 	static void PrecacheReplacementTextures();
 	static void ClearReplacementTextures();
 
@@ -127,7 +134,7 @@ namespace GSTextureReplacements
 	static std::mutex s_dumped_textures_mutex;
 
 	/// Lookup map of texture names to replacements, if they exist.
-	static std::unordered_map<TextureName, std::string> s_replacement_texture_filenames;
+	static std::unordered_map<TextureName, ReplacementFile> s_replacement_texture_filenames;
 
 	/// Lookup map of texture names without CLUT hash, to know when we need to disable paltex.
 	static std::unordered_set<TextureName> s_replacement_textures_without_clut_hash;
@@ -372,6 +379,18 @@ static bool GetWrongCasePath(std::string* output, const char* dir, std::string_v
 	return false;
 }
 
+static void AddReplacementTexture(TextureName key, const char* filename, std::string path, s64 archive_idx = -1)
+{
+	using namespace GSTextureReplacements;
+
+	DbgCon.WriteLn("Found %ux%u replacement '%s'", key.Width(), key.Height(), filename);
+	s_replacement_texture_filenames.emplace(key, ReplacementFile { std::move(path), archive_idx });
+
+	// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
+	key.CLUTHash = 0;
+	s_replacement_textures_without_clut_hash.insert(key);
+}
+
 void GSTextureReplacements::ReloadReplacementMap()
 {
 	SyncWorkerThread();
@@ -419,20 +438,32 @@ void GSTextureReplacements::ReloadReplacementMap()
 	{
 		// file format we can handle?
 		const char* filename = Path::GetFileName(fd.FileName).data(); // GetFileName takes a substring from the end, so the null terminator is preserved
+		std::string_view ext = Path::GetExtension(filename);
+		if (ext.size() == 3 && 0 == StringUtil::Strncasecmp(ext.data(), "zip", 3))
+		{
+			zip_error_t ze = {};
+			auto zf = zip_open_managed(fd.FileName.c_str(), ZIP_RDONLY, &ze);
+			zip_int64_t count = zip_get_num_entries(zf.get(), 0);
+			if (count < 0)
+				continue;
+			for (zip_int64_t i = 0; i < count; i++)
+			{
+				const char* entry = zip_get_name(zf.get(), i, 0);
+				std::string_view entry_sv;
+				if (!entry || !GetLoader((entry_sv = entry)))
+					continue;
+				const char* entry_filename = Path::GetFileName(entry_sv).data();
+				if (std::optional<TextureName> name = ParseReplacementName(entry_filename))
+					AddReplacementTexture(*name, entry_filename, fd.FileName, i);
+			}
+			continue;
+		}
 		if (!GetLoader(filename))
 			continue;
 
 		// parse the name if it's valid
-		std::optional<TextureName> name = ParseReplacementName(filename);
-		if (!name.has_value())
-			continue;
-
-		DbgCon.WriteLn("Found %ux%u replacement '%s'", name->Width(), name->Height(), filename);
-		s_replacement_texture_filenames.emplace(name.value(), std::move(fd.FileName));
-
-		// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
-		name->CLUTHash = 0;
-		s_replacement_textures_without_clut_hash.insert(name.value());
+		if (std::optional<TextureName> name = ParseReplacementName(filename))
+			AddReplacementTexture(*name, filename, std::move(fd.FileName));
 	}
 
 	if (!s_replacement_texture_filenames.empty())
@@ -536,7 +567,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 	else
 	{
 		// synchronous load
-		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(name, fnit->second, !mipmap));
+		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(fnit->second, !mipmap));
 		if (!replacement.has_value())
 			return nullptr;
 
@@ -627,17 +658,60 @@ void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture&
 	}
 }
 
-std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image)
+std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(const ReplacementFile& file, bool only_base_image)
 {
-	ReplacementTextureLoader loader = GetLoader(filename);
-	if (!loader)
-		return std::nullopt;
-
 	ReplacementTexture rtex;
-	if (!loader(filename.c_str(), &rtex, only_base_image))
+
+	if (file.IsArchive())
 	{
-		Console.Warning("Failed to load replacement texture %s", filename.c_str());
-		return std::nullopt;
+		zip_error_t ze = {};
+		auto zf = zip_open_managed(file.path.c_str(), ZIP_RDONLY, &ze);
+		if (!zf)
+		{
+			Console.Warning("Failed to open replacement texture zip file %s: %s", file.path.c_str(), zip_error_strerror(&ze));
+			return std::nullopt;
+		}
+		zip_stat_t stat;
+		if (0 != zip_stat_index(zf.get(), file.archive_idx, 0, &stat))
+		{
+			Console.Warning("Replacement texture " PRId64 " missing from zip %s: %s", file.archive_idx, file.path.c_str(), zip_strerror(zf.get()));
+			return std::nullopt;
+		}
+		ReplacementTextureLoader loader = GetLoader(stat.name);
+		if (!loader)
+			return std::nullopt;
+		void* buf = malloc(stat.size);
+		ScopedGuard cleanup([buf]{ free(buf); });
+		auto zff = zip_fopen_index_managed(zf.get(), file.archive_idx, 0);
+		if (!zff || static_cast<u64>(zip_fread(zff.get(), buf, stat.size)) != stat.size)
+		{
+			if (!zff && zip_get_error(zf.get())->zip_err == ZIP_ER_COMPNOTSUPP)
+				Host::AddKeyedOSDMessage("ZipCompressionNotSupported",
+					fmt::format(TRANSLATE_FS("TextureReplacement", "Zip file {} contains replacement textures with an unsupported compression type.\n"
+					                                               "Unzip the file to use its replacement textures."), file.path),
+					Host::OSD_WARNING_DURATION);
+			Console.Warning("Failed to load replacement texture %s from zip file %s: %s", stat.name, file.path.c_str(), zip_strerror(zf.get()));
+			return std::nullopt;
+		}
+		MemoryFile memfile(buf, stat.size);
+		if (!loader(memfile, stat.name, &rtex, only_base_image))
+		{
+			Console.Warning("Failed to load replacement texture %s", stat.name);
+			return std::nullopt;
+		}
+	}
+	else
+	{
+		ReplacementTextureLoader loader = GetLoader(file.path);
+		if (!loader)
+			return std::nullopt;
+		FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(file.path.c_str(), "rb");
+		CFile cfile(fp.get());
+		if (!loader(cfile, file.path.c_str(), &rtex, only_base_image))
+		{
+			Console.Warning("Failed to load replacement texture %s", file.path.c_str());
+			return std::nullopt;
+		}
 	}
 
 	SetReplacementTextureAlphaMinMax(rtex);
@@ -645,7 +719,7 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 	return rtex;
 }
 
-void GSTextureReplacements::QueueAsyncReplacementTextureLoad(const TextureName& name, const std::string& filename, bool mipmap, bool cache_only)
+void GSTextureReplacements::QueueAsyncReplacementTextureLoad(const TextureName& name, const ReplacementFile& filename, bool mipmap, bool cache_only)
 {
 	// check the pending list, so we don't queue it up multiple times
 	auto it = s_pending_async_load_textures.find(name);
@@ -666,7 +740,7 @@ void GSTextureReplacements::QueueAsyncReplacementTextureLoad(const TextureName& 
 	s_pending_async_load_textures.emplace(name, cache_only);
 	QueueWorkerThreadItem([name, filename, mipmap]() {
 		// actually load the file, this is what will take the time
-		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(name, filename, !mipmap));
+		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(filename, !mipmap));
 
 		// check the pending set, there's a race here if we disable replacements while loading otherwise
 		// also check the full replacement list, if async loading is off, it might already be in there
@@ -974,4 +1048,39 @@ void GSTextureReplacements::CancelPendingLoadsAndDumps()
 		s_worker_thread_queue.pop_back();
 	s_async_loaded_textures.clear();
 	s_pending_async_load_textures.clear();
+}
+
+bool GSTextureReplacements::CFile::Read(void* data, size_t amt)
+{
+	return std::fread(data, amt, 1, file);
+}
+
+bool GSTextureReplacements::CFile::Seek(size_t offset)
+{
+	return std::fseek(file, offset, SEEK_SET) == 0;
+}
+
+s64 GSTextureReplacements::CFile::Size()
+{
+	return FileSystem::FSize64(file);
+}
+
+bool GSTextureReplacements::MemoryFile::Read(void* data, size_t amt)
+{
+	if (amt > len - pos)
+		return false;
+	memcpy(data, static_cast<const u8*>(buffer) + pos, amt);
+	pos += amt;
+	return true;
+}
+
+bool GSTextureReplacements::MemoryFile::Seek(size_t offset)
+{
+	pos = std::min(offset, len);
+	return true;
+}
+
+s64 GSTextureReplacements::MemoryFile::Size()
+{
+	return len;
 }
