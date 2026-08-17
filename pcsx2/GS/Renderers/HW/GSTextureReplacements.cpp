@@ -451,7 +451,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 		// file format we can handle?
 		const char* filename = Path::GetFileName(fd.FileName).data(); // GetFileName takes a substring from the end, so the null terminator is preserved
 		std::string_view ext = Path::GetExtension(filename);
-		if (ext.size() == 3 && 0 == StringUtil::Strncasecmp(ext.data(), "zip", 3))
+		if (StringUtil::compareNoCase(ext, "zip"))
 		{
 			zip_error_t ze = {};
 			auto zf = zip_open_managed(fd.FileName.c_str(), ZIP_RDONLY, &ze);
