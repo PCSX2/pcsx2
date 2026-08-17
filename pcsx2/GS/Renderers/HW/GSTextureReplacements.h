@@ -54,7 +54,7 @@ namespace GSTextureReplacements
 	u32 GetLoadedTextureCount();
 
 	/// Loader will take a filename and interpret the format (e.g. DDS, PNG, etc).
-	using ReplacementTextureLoader = bool (*)(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+	using ReplacementTextureLoader = bool (*)(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 	ReplacementTextureLoader GetLoader(const std::string_view filename);
 
 	/// Saves an image buffer to a PNG file (for dumping).

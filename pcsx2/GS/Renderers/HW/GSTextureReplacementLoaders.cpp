@@ -19,8 +19,8 @@ struct LoaderDefinition
 	GSTextureReplacements::ReplacementTextureLoader loader;
 };
 
-static bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
-static bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+static bool PNGLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+static bool DDSLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 
 static constexpr LoaderDefinition s_loaders[] = {
 	{"png", PNGLoader},
@@ -146,7 +146,7 @@ static void ConvertTexture_R8G8B8(u32 width, u32 height, std::vector<u8>& data, 
 // PNG Handlers
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+bool PNGLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
 {
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png_ptr)
@@ -163,7 +163,7 @@ bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	});
 
-	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
 	if (!fp)
 		return false;
 
@@ -568,7 +568,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 	return true;
 }
 
-static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
+static bool ReadDDSMipLevel(std::FILE* fp, const char* filename, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
 {
 	// D3D11 cannot handle block compressed textures where the first mip level is
 	// not a multiple of the block size.
@@ -578,7 +578,7 @@ static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_
 		Console.Error(
 			"Invalid dimensions for DDS texture %s. For compressed textures of this format, "
 			"the width/height of the first mip level must be a multiple of %u.",
-			filename.c_str(), info.block_size);
+			filename, info.block_size);
 		return false;
 	}
 
@@ -593,9 +593,9 @@ static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_
 	return true;
 }
 
-bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+bool DDSLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
 {
-	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
+	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
 	if (!fp)
 		return false;
 
