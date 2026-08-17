@@ -9,6 +9,7 @@
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
 #include "common/TextureDecompress.h"
+#include "common/ZipHelpers.h"
 
 #include "Config.h"
 #include "Host.h"
@@ -187,6 +188,30 @@ GSTextureCache::HashCacheKey GSTextureReplacements::HashCacheKeyFromTextureName(
 	key.region_width = tn.region_width;
 	key.region_height = tn.region_height;
 	return key;
+}
+
+static std::string NormalizeReplacementEntryName(std::string path_or_name)
+{
+	std::replace(path_or_name.begin(), path_or_name.end(), '\\', '/');
+
+	const std::size_t archive_sep = path_or_name.find("!");
+	if (archive_sep != std::string::npos)
+		path_or_name = path_or_name.substr(archive_sep + 1);
+
+	const std::size_t slash = path_or_name.find_last_of('/');
+	if (slash != std::string::npos)
+		path_or_name = path_or_name.substr(slash + 1);
+
+	return path_or_name;
+}
+
+static std::pair<std::string, std::string> SplitArchiveReference(const std::string& value)
+{
+	const std::size_t archive_sep = value.find('!');
+	if (archive_sep == std::string::npos)
+		return {value, {}};
+
+	return {value.substr(0, archive_sep), value.substr(archive_sep + 1)};
 }
 
 std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std::string& filename)
@@ -408,33 +433,64 @@ void GSTextureReplacements::ReloadReplacementMap()
 	{
 		Host::AddKeyedOSDMessage("TextureReplacementDirCaseMismatch",
 			fmt::format(TRANSLATE_FS("TextureReplacement", "Texture replacement directory {} will not work on case sensitive filesystems.\n"
-			                                               "Rename it to {} to remove this warning."),
-			            wrong_case_path, *right_case_path),
+														   "Rename it to {} to remove this warning."),
+				wrong_case_path, *right_case_path),
 			Host::OSD_WARNING_DURATION);
 	}
 
-	if (!FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
-		return;
+	auto process_file = [&](const std::string& path) {
+		const auto entries = ListArchiveEntryNames(path);
+		if (!entries.empty())
+		{
+			for (const std::string& entry : entries)
+			{
+				const std::string entry_name = NormalizeReplacementEntryName(entry);
+				if (!GetLoader(entry_name))
+					continue;
 
-	std::string filename;
-	for (FILESYSTEM_FIND_DATA& fd : files)
-	{
-		// file format we can handle?
-		filename = Path::GetFileName(fd.FileName);
+				auto name = ParseReplacementName(entry_name);
+				if (!name.has_value())
+					continue;
+
+				s_replacement_texture_filenames.emplace(name.value(), path + "!" + entry);
+				name->CLUTHash = 0;
+				s_replacement_textures_without_clut_hash.insert(name.value());
+			}
+			return;
+		}
+
+		const std::string filename(std::string(Path::GetFileName(path)));
 		if (!GetLoader(filename))
-			continue;
+			return;
 
-		// parse the name if it's valid
 		std::optional<TextureName> name = ParseReplacementName(filename);
 		if (!name.has_value())
-			continue;
+			return;
 
-		DbgCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
-		s_replacement_texture_filenames.emplace(name.value(), std::move(fd.FileName));
+		s_replacement_texture_filenames.emplace(name.value(), path);
 
-		// zero out the CLUT hash, because we need this for checking if there's any replacements with this hash when using paltex
 		name->CLUTHash = 0;
 		s_replacement_textures_without_clut_hash.insert(name.value());
+	};
+
+	const std::string texture_zip = texture_dir + ".zip";
+
+	if (FileSystem::FileExists(texture_zip.c_str()))
+	{
+		process_file(texture_zip);
+	}
+	else if (FileSystem::FindFiles(texture_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
+	{
+		const std::string dump_dir = Path::Combine(texture_dir, TEXTURE_DUMP_SUBDIRECTORY_NAME);
+
+		for (const FILESYSTEM_FIND_DATA& fd : files)
+		{
+
+			if (fd.FileName.rfind(dump_dir, 0) == 0)
+				continue;
+
+			process_file(fd.FileName);
+		}
 	}
 
 	if (!s_replacement_texture_filenames.empty())
@@ -629,21 +685,34 @@ void GSTextureReplacements::SetReplacementTextureAlphaMinMax(ReplacementTexture&
 	}
 }
 
-std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(const TextureName& name, const std::string& filename, bool only_base_image)
+std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::LoadReplacementTexture(
+	const TextureName& name, const std::string& filename, bool only_base_image)
 {
-	ReplacementTextureLoader loader = GetLoader(filename);
+	std::string archive_path;
+	std::string entry_name;
+	std::tie(archive_path, entry_name) = SplitArchiveReference(filename);
+
+	const std::string normalized = entry_name.empty() ? NormalizeReplacementEntryName(filename) : NormalizeReplacementEntryName(entry_name);
+	ReplacementTextureLoader loader = GetLoader(normalized);
 	if (!loader)
 		return std::nullopt;
 
 	ReplacementTexture rtex;
-	if (!loader(filename.c_str(), &rtex, only_base_image))
+	if (!entry_name.empty())
+	{
+		if (!LoadImageFromArchiveEntry(archive_path, entry_name, &rtex, only_base_image))
+		{
+			Console.Warning("Failed to load replacement texture %s", entry_name.c_str());
+			return std::nullopt;
+		}
+	}
+	else if (!loader(filename, &rtex, only_base_image))
 	{
 		Console.Warning("Failed to load replacement texture %s", filename.c_str());
 		return std::nullopt;
 	}
 
 	SetReplacementTextureAlphaMinMax(rtex);
-
 	return rtex;
 }
 

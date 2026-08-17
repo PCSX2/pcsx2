@@ -7,9 +7,11 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
+#include "common/ZipHelpers.h"
 
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 
+#include <cstdio>
 #include <csetjmp>
 #include <png.h>
 
@@ -146,7 +148,8 @@ static void ConvertTexture_R8G8B8(u32 width, u32 height, std::vector<u8>& data, 
 // PNG Handlers
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+template <typename InitIoFunc>
+static bool PNGLoaderInternal(InitIoFunc&& init_io, GSTextureReplacements::ReplacementTexture* tex)
 {
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png_ptr)
@@ -163,14 +166,11 @@ bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	});
 
-	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
-	if (!fp)
-		return false;
-
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_init_io(png_ptr, fp.get());
+	init_io(png_ptr);
+
 	png_read_info(png_ptr, info_ptr);
 
 	png_uint_32 width = 0;
@@ -206,7 +206,7 @@ bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 				u32 pixel = static_cast<u32>(*(row_ptr)++);
 				pixel |= static_cast<u32>(*(row_ptr)++) << 8;
 				pixel |= static_cast<u32>(*(row_ptr)++) << 16;
-				pixel |= 0x80000000u; // make opaque
+				pixel |= 0x80000000u;
 				std::memcpy(out_ptr, &pixel, sizeof(pixel));
 				out_ptr += sizeof(pixel);
 			}
@@ -218,6 +218,48 @@ bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 	}
 
 	return true;
+}
+
+static bool PNGLoaderFromFile(FILE* fp, const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+{
+	return PNGLoaderInternal([fp](png_structp png_ptr) {
+		png_init_io(png_ptr, fp);
+	},
+		tex);
+}
+
+bool PNGLoader(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+{
+	auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
+	if (!fp)
+		return false;
+
+	return PNGLoaderFromFile(fp.get(), filename, tex, only_base_image);
+}
+
+static void PNGReadFromMemory(png_structp png_ptr, png_bytep out, png_size_t count)
+{
+	auto* src = static_cast<std::vector<u8>*>(png_get_io_ptr(png_ptr));
+	if (src->empty())
+	{
+		png_error(png_ptr, "unexpected end of PNG data");
+		return;
+	}
+
+	const size_t available = std::min<size_t>(count, src->size());
+	std::memcpy(out, src->data(), available);
+	src->erase(src->begin(), src->begin() + static_cast<std::ptrdiff_t>(available));
+	if (available < count)
+		png_error(png_ptr, "unexpected end of PNG data");
+}
+
+static bool PNGLoaderFromBuffer(const std::vector<u8>& data, const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+{
+	std::vector<u8> buffer = data;
+	return PNGLoaderInternal([&buffer](png_structp png_ptr) {
+		png_set_read_fn(png_ptr, &buffer, PNGReadFromMemory);
+	},
+		tex);
 }
 
 bool GSTextureReplacements::SavePNGImage(const std::string& filename, u32 width, u32 height, const u8* buffer, u32 pitch)
@@ -392,12 +434,16 @@ struct DDSLoadInfo
 	u32 height = 0;
 	u32 mip_count = 0;
 	GSTexture::Format format = GSTexture::Format::Color;
-	s64 base_image_offset = 0;
+	size_t base_image_offset = 0;
 	u32 base_image_size = 0;
 	u32 base_image_pitch = 0;
 
 	std::function<void(u32 width, u32 height, std::vector<u8>& data, u32& pitch)> conversion_function;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions for reading from a file
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 {
@@ -410,25 +456,20 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 	if (std::fread(&header, header_size, 1, fp) != 1 || header.dwSize < header_size)
 		return false;
 
-	// We should check for DDS_HEADER_FLAGS_TEXTURE here, but some tools don't seem
-	// to set it (e.g. compressonator). But we can still validate the size.
 	if (header.dwWidth == 0 || header.dwWidth >= DDS_MAX_TEXTURE_SIZE ||
 		header.dwHeight == 0 || header.dwHeight >= DDS_MAX_TEXTURE_SIZE)
 	{
 		return false;
 	}
 
-	// Image should be 2D.
 	if (header.dwFlags & DDS_HEADER_FLAGS_VOLUME)
 		return false;
 
-	// Presence of width/height fields is already tested by DDS_HEADER_FLAGS_TEXTURE.
 	info->width = header.dwWidth;
 	info->height = header.dwHeight;
 	if (info->width == 0 || info->height == 0)
 		return false;
 
-	// Check for mip levels.
 	if (header.dwFlags & DDS_HEADER_FLAGS_MIPMAP)
 	{
 		info->mip_count = header.dwMipMapCount;
@@ -442,11 +483,9 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		info->mip_count = 1;
 	}
 
-	// Handle fourcc formats vs uncompressed formats.
 	const bool has_fourcc = (header.ddspf.dwFlags & DDS_FOURCC) != 0;
 	if (has_fourcc)
 	{
-		// Handle DX10 extension header.
 		u32 dxt10_format = 0;
 		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0'))
 		{
@@ -454,7 +493,6 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 			if (std::fread(&dxt10_header, sizeof(dxt10_header), 1, fp) != 1)
 				return false;
 
-			// Can't handle array textures here. Doesn't make sense to use them, anyway.
 			if (dxt10_header.resourceDimension != DDS_DIMENSION_TEXTURE2D || dxt10_header.arraySize != 1)
 				return false;
 
@@ -463,7 +501,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		}
 
 		const GSDevice::FeatureSupport features(g_gs_device->Features());
-		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71 /*DXGI_FORMAT_BC1_UNORM*/)
+		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71)
 		{
 			info->format = GSTexture::Format::BC1;
 			info->block_size = 4;
@@ -471,7 +509,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 			if (!features.dxt_textures)
 				return false;
 		}
-		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74 /*DXGI_FORMAT_BC2_UNORM*/)
+		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74)
 		{
 			info->format = GSTexture::Format::BC2;
 			info->block_size = 4;
@@ -479,7 +517,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 			if (!features.dxt_textures)
 				return false;
 		}
-		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77 /*DXGI_FORMAT_BC3_UNORM*/)
+		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77)
 		{
 			info->format = GSTexture::Format::BC3;
 			info->block_size = 4;
@@ -487,7 +525,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 			if (!features.dxt_textures)
 				return false;
 		}
-		else if (dxt10_format == 98 /*DXGI_FORMAT_BC7_UNORM*/)
+		else if (dxt10_format == 98)
 		{
 			info->format = GSTexture::Format::BC7;
 			info->block_size = 4;
@@ -497,70 +535,44 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		}
 		else
 		{
-			// Leave all remaining formats to SOIL.
 			return false;
 		}
 	}
 	else
 	{
 		if (DDSPixelFormatMatches(header.ddspf, DDSPF_A8R8G8B8))
-		{
 			info->conversion_function = ConvertTexture_A8R8G8B8;
-		}
 		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8R8G8B8))
-		{
 			info->conversion_function = ConvertTexture_X8R8G8B8;
-		}
 		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8B8G8R8))
-		{
 			info->conversion_function = ConvertTexture_X8B8G8R8;
-		}
 		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_R8G8B8))
-		{
 			info->conversion_function = ConvertTexture_R8G8B8;
-		}
-		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_A8B8G8R8))
-		{
-			// This format is already in RGBA order, so no conversion necessary.
-		}
-		else
-		{
+		else if (!DDSPixelFormatMatches(header.ddspf, DDSPF_A8B8G8R8))
 			return false;
-		}
 
-		// All these formats are RGBA, just with byte swapping.
 		info->format = GSTexture::Format::Color;
 		info->block_size = 1;
 		info->bytes_per_block = header.ddspf.dwRGBBitCount / 8;
 	}
 
-	// Mip levels smaller than the block size are padded to multiples of the block size.
 	const u32 blocks_wide = GetBlockCount(info->width, info->block_size);
 	const u32 blocks_high = GetBlockCount(info->height, info->block_size);
 
-	// Pitch can be specified in the header, otherwise we can derive it from the dimensions. For
-	// compressed formats, both DDS_HEADER_FLAGS_LINEARSIZE and DDS_HEADER_FLAGS_PITCH should be
-	// set. See https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
 	if (header.dwFlags & DDS_HEADER_FLAGS_PITCH && header.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE)
 	{
-		// Convert pitch (in bytes) to texels/row length.
 		if (header.dwPitchOrLinearSize < info->bytes_per_block)
-		{
-			// Likely a corrupted or invalid file.
 			return false;
-		}
 
 		info->base_image_pitch = header.dwPitchOrLinearSize;
 		info->base_image_size = info->base_image_pitch * blocks_high;
 	}
 	else
 	{
-		// Assume no padding between rows of blocks.
 		info->base_image_pitch = blocks_wide * info->bytes_per_block;
 		info->base_image_size = info->base_image_pitch * blocks_high;
 	}
 
-	// Check for truncated or corrupted files.
 	info->base_image_offset = sizeof(magic) + header_size;
 	if (info->base_image_offset >= FileSystem::FSize64(fp))
 		return false;
@@ -570,8 +582,6 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 
 static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
 {
-	// D3D11 cannot handle block compressed textures where the first mip level is
-	// not a multiple of the block size.
 	if (mip_level == 0 && info.block_size > 1 &&
 		((width % info.block_size) != 0 || (height % info.block_size) != 0))
 	{
@@ -586,9 +596,244 @@ static bool ReadDDSMipLevel(std::FILE* fp, const std::string& filename, u32 mip_
 	if (std::fread(data.data(), size, 1, fp) != 1)
 		return false;
 
-	// Apply conversion function for uncompressed textures.
 	if (info.conversion_function)
 		info.conversion_function(width, height, data, pitch);
+
+	return true;
+}
+
+static bool DDSLoaderFromFile(FILE* fp, const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+{
+	DDSLoadInfo info;
+	if (!ParseDDSHeader(fp, &info))
+		return false;
+
+	if (FileSystem::FSeek64(fp, info.base_image_offset, SEEK_SET) != 0)
+		return false;
+
+	tex->format = info.format;
+	tex->width = info.width;
+	tex->height = info.height;
+	tex->pitch = info.base_image_pitch;
+	if (!ReadDDSMipLevel(fp, filename, 0, info, tex->width, tex->height, tex->data, tex->pitch, info.base_image_size))
+		return false;
+
+	if (!only_base_image)
+	{
+		for (u32 level = 1; level <= info.mip_count; level++)
+		{
+			GSTextureReplacements::ReplacementTexture::MipData md;
+			u32 mip_size;
+			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, md.width, md.height, md.pitch, mip_size);
+			if (!ReadDDSMipLevel(fp, filename, level, info, md.width, md.height, md.data, md.pitch, mip_size))
+				break;
+
+			tex->mips.push_back(std::move(md));
+		}
+	}
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions for reading from a memory buffer (e.g., from a zip file)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static bool ParseDDSHeaderFromBuffer(const u8* buffer_data, size_t buffer_size, DDSLoadInfo* info)
+{
+	size_t offset = 0;
+
+	if (buffer_size < sizeof(u32) + sizeof(DDS_HEADER))
+		return false;
+
+	u32 magic;
+	std::memcpy(&magic, buffer_data + offset, sizeof(magic));
+	offset += sizeof(magic);
+
+	if (magic != DDS_MAGIC)
+		return false;
+
+	DDS_HEADER header;
+	u32 header_size = sizeof(header);
+	std::memcpy(&header, buffer_data + offset, header_size);
+	offset += header_size;
+
+	if (header.dwSize < sizeof(DDS_HEADER))
+		return false;
+
+	if (header.dwWidth == 0 || header.dwWidth >= DDS_MAX_TEXTURE_SIZE ||
+		header.dwHeight == 0 || header.dwHeight >= DDS_MAX_TEXTURE_SIZE)
+	{
+		return false;
+	}
+
+	if (header.dwFlags & DDS_HEADER_FLAGS_VOLUME)
+		return false;
+
+	info->width = header.dwWidth;
+	info->height = header.dwHeight;
+
+	if (header.dwFlags & DDS_HEADER_FLAGS_MIPMAP)
+	{
+		info->mip_count = (header.dwMipMapCount != 0) ?
+		                      header.dwMipMapCount :
+		                      GSTextureReplacements::CalcMipmapLevelsForReplacement(info->width, info->height);
+	}
+	else
+	{
+		info->mip_count = 1;
+	}
+
+	const bool has_fourcc = (header.ddspf.dwFlags & DDS_FOURCC) != 0;
+	if (has_fourcc)
+	{
+		u32 dxt10_format = 0;
+		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0'))
+		{
+			if (buffer_size < offset + sizeof(DDS_HEADER_DXT10))
+				return false;
+
+			DDS_HEADER_DXT10 dxt10_header;
+			std::memcpy(&dxt10_header, buffer_data + offset, sizeof(dxt10_header));
+			offset += sizeof(dxt10_header);
+
+			if (dxt10_header.resourceDimension != DDS_DIMENSION_TEXTURE2D || dxt10_header.arraySize != 1)
+				return false;
+
+			dxt10_format = dxt10_header.dxgiFormat;
+		}
+
+		const GSDevice::FeatureSupport features(g_gs_device->Features());
+		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71)
+		{
+			info->format = GSTexture::Format::BC1;
+			info->block_size = 4;
+			info->bytes_per_block = 8;
+			if (!features.dxt_textures)
+				return false;
+		}
+		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74)
+		{
+			info->format = GSTexture::Format::BC2;
+			info->block_size = 4;
+			info->bytes_per_block = 16;
+			if (!features.dxt_textures)
+				return false;
+		}
+		else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') || header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77)
+		{
+			info->format = GSTexture::Format::BC3;
+			info->block_size = 4;
+			info->bytes_per_block = 16;
+			if (!features.dxt_textures)
+				return false;
+		}
+		else if (dxt10_format == 98)
+		{
+			info->format = GSTexture::Format::BC7;
+			info->block_size = 4;
+			info->bytes_per_block = 16;
+			if (!features.bptc_textures)
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		if (DDSPixelFormatMatches(header.ddspf, DDSPF_A8R8G8B8))
+			info->conversion_function = ConvertTexture_A8R8G8B8;
+		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8R8G8B8))
+			info->conversion_function = ConvertTexture_X8R8G8B8;
+		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8B8G8R8))
+			info->conversion_function = ConvertTexture_X8B8G8R8;
+		else if (DDSPixelFormatMatches(header.ddspf, DDSPF_R8G8B8))
+			info->conversion_function = ConvertTexture_R8G8B8;
+		else if (!DDSPixelFormatMatches(header.ddspf, DDSPF_A8B8G8R8))
+			return false;
+
+		info->format = GSTexture::Format::Color;
+		info->block_size = 1;
+		info->bytes_per_block = header.ddspf.dwRGBBitCount / 8;
+	}
+
+	const u32 blocks_wide = GetBlockCount(info->width, info->block_size);
+	const u32 blocks_high = GetBlockCount(info->height, info->block_size);
+
+	if (header.dwFlags & DDS_HEADER_FLAGS_PITCH && header.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE)
+	{
+		if (header.dwPitchOrLinearSize < info->bytes_per_block)
+			return false;
+
+		info->base_image_pitch = header.dwPitchOrLinearSize;
+		info->base_image_size = info->base_image_pitch * blocks_high;
+	}
+	else
+	{
+		info->base_image_pitch = blocks_wide * info->bytes_per_block;
+		info->base_image_size = info->base_image_pitch * blocks_high;
+	}
+
+	info->base_image_offset = offset;
+	if (info->base_image_offset >= buffer_size)
+		return false;
+
+	return true;
+}
+
+static bool ReadDDSMipLevelFromBuffer(const u8* buffer_data, size_t buffer_size, size_t& offset, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
+{
+	if (mip_level == 0 && info.block_size > 1 &&
+		((width % info.block_size) != 0 || (height % info.block_size) != 0))
+	{
+		return false;
+	}
+
+	if (offset + size > buffer_size)
+		return false;
+
+	data.resize(size);
+	std::memcpy(data.data(), buffer_data + offset, size);
+	offset += size;
+
+	if (info.conversion_function)
+		info.conversion_function(width, height, data, pitch);
+
+	return true;
+}
+
+static bool DDSLoaderFromBuffer(const std::vector<u8>& data, const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+{
+	DDSLoadInfo info;
+	if (!ParseDDSHeaderFromBuffer(data.data(), data.size(), &info))
+		return false;
+
+	size_t current_offset = info.base_image_offset;
+
+	tex->format = info.format;
+	tex->width = info.width;
+	tex->height = info.height;
+	tex->pitch = info.base_image_pitch;
+
+	if (!ReadDDSMipLevelFromBuffer(data.data(), data.size(), current_offset, 0, info, tex->width, tex->height, tex->data, tex->pitch, info.base_image_size))
+		return false;
+
+	if (!only_base_image)
+	{
+		for (u32 level = 1; level <= info.mip_count; level++)
+		{
+			GSTextureReplacements::ReplacementTexture::MipData md;
+			u32 mip_size;
+			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, md.width, md.height, md.pitch, mip_size);
+
+			if (!ReadDDSMipLevelFromBuffer(data.data(), data.size(), current_offset, level, info, md.width, md.height, md.data, md.pitch, mip_size))
+				break;
+
+			tex->mips.push_back(std::move(md));
+		}
+	}
 
 	return true;
 }
@@ -599,35 +844,23 @@ bool DDSLoader(const std::string& filename, GSTextureReplacements::ReplacementTe
 	if (!fp)
 		return false;
 
-	DDSLoadInfo info;
-	if (!ParseDDSHeader(fp.get(), &info))
+	return DDSLoaderFromFile(fp.get(), filename, tex, only_base_image);
+}
+
+bool GSTextureReplacements::LoadImageFromArchiveEntry(const std::string& archive_path,
+	const std::string& normalized_name,
+	GSTextureReplacements::ReplacementTexture* tex,
+	bool only_base_image)
+{
+	const auto data = ReadArchiveEntryBytes(archive_path, normalized_name);
+	if (!data.has_value())
 		return false;
 
-	// always load the base image
-	if (FileSystem::FSeek64(fp.get(), info.base_image_offset, SEEK_SET) != 0)
-		return false;
+	const std::string_view ext = Path::GetExtension(normalized_name);
+	if (StringUtil::Strncasecmp(ext.data(), "png", ext.size()) == 0)
+		return PNGLoaderFromBuffer(*data, normalized_name, tex, only_base_image);
+	if (StringUtil::Strncasecmp(ext.data(), "dds", ext.size()) == 0)
+		return DDSLoaderFromBuffer(*data, normalized_name, tex, only_base_image);
 
-	tex->format = info.format;
-	tex->width = info.width;
-	tex->height = info.height;
-	tex->pitch = info.base_image_pitch;
-	if (!ReadDDSMipLevel(fp.get(), filename, 0, info, tex->width, tex->height, tex->data, tex->pitch, info.base_image_size))
-		return false;
-
-	// Read in any remaining mip levels in the file.
-	if (!only_base_image)
-	{
-		for (u32 level = 1; level <= info.mip_count; level++)
-		{
-			GSTextureReplacements::ReplacementTexture::MipData md;
-			u32 mip_size;
-			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, md.width, md.height, md.pitch, mip_size);
-			if (!ReadDDSMipLevel(fp.get(), filename, level, info, md.width, md.height, md.data, md.pitch, mip_size))
-				break;
-
-			tex->mips.push_back(std::move(md));
-		}
-	}
-
-	return true;
+	return false;
 }

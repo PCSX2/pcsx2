@@ -56,6 +56,7 @@ namespace GSTextureReplacements
 	/// Loader will take a filename and interpret the format (e.g. DDS, PNG, etc).
 	using ReplacementTextureLoader = bool (*)(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 	ReplacementTextureLoader GetLoader(const std::string_view filename);
+	bool LoadImageFromArchiveEntry(const std::string& archive_path, const std::string& entry_name, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 
 	/// Saves an image buffer to a PNG file (for dumping).
 	bool SavePNGImage(const std::string& filename, u32 width, u32 height, const u8* buffer, u32 pitch);
