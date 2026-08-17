@@ -412,6 +412,8 @@ void GSTextureReplacements::ReloadReplacementMap()
 
 	const std::string texture_dir = GetGameTextureDirectory();
 	const std::string replacement_dir(Path::Combine(texture_dir, TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME));
+	const std::string replacement_zip_name = s_current_serial + ".zip";
+	const std::string replacement_zip = Path::Combine(EmuFolders::Textures, replacement_zip_name);
 
 	FileSystem::FindResultsArray files;
 
@@ -422,6 +424,8 @@ void GSTextureReplacements::ReloadReplacementMap()
 		right_case_path = &texture_dir;
 	else if (GetWrongCasePath(&wrong_case_path, texture_dir.c_str(), TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME, &files))
 		right_case_path = &replacement_dir;
+	else if (GetWrongCasePath(&wrong_case_path, EmuFolders::Textures.c_str(), replacement_zip_name, &files))
+		right_case_path = &replacement_zip;
 	if (right_case_path)
 	{
 		Host::AddKeyedOSDMessage("TextureReplacementDirCaseMismatch",
@@ -431,7 +435,15 @@ void GSTextureReplacements::ReloadReplacementMap()
 			Host::OSD_WARNING_DURATION);
 	}
 
-	if (!FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
+	files.clear();
+	FileSystem::FindFiles(replacement_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files);
+	if (FileSystem::FileExists(replacement_zip.c_str()))
+	{
+		FILESYSTEM_FIND_DATA extra = {};
+		extra.FileName = replacement_zip;
+		files.push_back(std::move(extra));
+	}
+	if (files.empty())
 		return;
 
 	for (FILESYSTEM_FIND_DATA& fd : files)
