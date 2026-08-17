@@ -19,8 +19,8 @@ struct LoaderDefinition
 	GSTextureReplacements::ReplacementTextureLoader loader;
 };
 
-static bool PNGLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
-static bool DDSLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+static bool PNGLoader(GSTextureReplacements::File& file, const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+static bool DDSLoader(GSTextureReplacements::File& file, const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 
 static constexpr LoaderDefinition s_loaders[] = {
 	{"png", PNGLoader},
@@ -146,7 +146,13 @@ static void ConvertTexture_R8G8B8(u32 width, u32 height, std::vector<u8>& data, 
 // PNG Handlers
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PNGLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+static void PNGFileReader(png_structp png, png_bytep data, size_t amt)
+{
+	GSTextureReplacements::File* file = static_cast<GSTextureReplacements::File*>(png_get_io_ptr(png));
+	file->Read(data, amt);
+}
+
+bool PNGLoader(GSTextureReplacements::File& file, const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
 {
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!png_ptr)
@@ -163,14 +169,10 @@ bool PNGLoader(const char* filename, GSTextureReplacements::ReplacementTexture* 
 		png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 	});
 
-	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
-	if (!fp)
-		return false;
-
 	if (setjmp(png_jmpbuf(png_ptr)))
 		return false;
 
-	png_init_io(png_ptr, fp.get());
+	png_set_read_fn(png_ptr, &file, PNGFileReader);
 	png_read_info(png_ptr, info_ptr);
 
 	png_uint_32 width = 0;
@@ -399,15 +401,15 @@ struct DDSLoadInfo
 	std::function<void(u32 width, u32 height, std::vector<u8>& data, u32& pitch)> conversion_function;
 };
 
-static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
+static bool ParseDDSHeader(GSTextureReplacements::File& file, DDSLoadInfo* info)
 {
 	u32 magic;
-	if (std::fread(&magic, sizeof(magic), 1, fp) != 1 || magic != DDS_MAGIC)
+	if (!file.ReadRawStruct(&magic) || magic != DDS_MAGIC)
 		return false;
 
 	DDS_HEADER header;
 	u32 header_size = sizeof(header);
-	if (std::fread(&header, header_size, 1, fp) != 1 || header.dwSize < header_size)
+	if (!file.ReadRawStruct(&header) || header.dwSize < header_size)
 		return false;
 
 	// We should check for DDS_HEADER_FLAGS_TEXTURE here, but some tools don't seem
@@ -451,7 +453,7 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 		if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0'))
 		{
 			DDS_HEADER_DXT10 dxt10_header;
-			if (std::fread(&dxt10_header, sizeof(dxt10_header), 1, fp) != 1)
+			if (!file.ReadRawStruct(&dxt10_header))
 				return false;
 
 			// Can't handle array textures here. Doesn't make sense to use them, anyway.
@@ -562,13 +564,13 @@ static bool ParseDDSHeader(std::FILE* fp, DDSLoadInfo* info)
 
 	// Check for truncated or corrupted files.
 	info->base_image_offset = sizeof(magic) + header_size;
-	if (info->base_image_offset >= FileSystem::FSize64(fp))
+	if (info->base_image_offset >= file.Size())
 		return false;
 
 	return true;
 }
 
-static bool ReadDDSMipLevel(std::FILE* fp, const char* filename, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
+static bool ReadDDSMipLevel(GSTextureReplacements::File& file, const char* filename, u32 mip_level, const DDSLoadInfo& info, u32 width, u32 height, std::vector<u8>& data, u32& pitch, u32 size)
 {
 	// D3D11 cannot handle block compressed textures where the first mip level is
 	// not a multiple of the block size.
@@ -583,7 +585,7 @@ static bool ReadDDSMipLevel(std::FILE* fp, const char* filename, u32 mip_level, 
 	}
 
 	data.resize(size);
-	if (std::fread(data.data(), size, 1, fp) != 1)
+	if (!file.Read(data.data(), size))
 		return false;
 
 	// Apply conversion function for uncompressed textures.
@@ -593,25 +595,21 @@ static bool ReadDDSMipLevel(std::FILE* fp, const char* filename, u32 mip_level, 
 	return true;
 }
 
-bool DDSLoader(const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
+bool DDSLoader(GSTextureReplacements::File& file, const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image)
 {
-	auto fp = FileSystem::OpenManagedCFile(filename, "rb");
-	if (!fp)
-		return false;
-
 	DDSLoadInfo info;
-	if (!ParseDDSHeader(fp.get(), &info))
+	if (!ParseDDSHeader(file, &info))
 		return false;
 
 	// always load the base image
-	if (FileSystem::FSeek64(fp.get(), info.base_image_offset, SEEK_SET) != 0)
+	if (!file.Seek(info.base_image_offset))
 		return false;
 
 	tex->format = info.format;
 	tex->width = info.width;
 	tex->height = info.height;
 	tex->pitch = info.base_image_pitch;
-	if (!ReadDDSMipLevel(fp.get(), filename, 0, info, tex->width, tex->height, tex->data, tex->pitch, info.base_image_size))
+	if (!ReadDDSMipLevel(file, filename, 0, info, tex->width, tex->height, tex->data, tex->pitch, info.base_image_size))
 		return false;
 
 	// Read in any remaining mip levels in the file.
@@ -622,7 +620,7 @@ bool DDSLoader(const char* filename, GSTextureReplacements::ReplacementTexture* 
 			GSTextureReplacements::ReplacementTexture::MipData md;
 			u32 mip_size;
 			CalcBlockMipmapSize(info.block_size, info.bytes_per_block, info.width, info.height, level, md.width, md.height, md.pitch, mip_size);
-			if (!ReadDDSMipLevel(fp.get(), filename, level, info, md.width, md.height, md.data, md.pitch, mip_size))
+			if (!ReadDDSMipLevel(file, filename, level, info, md.width, md.height, md.data, md.pitch, mip_size))
 				break;
 
 			tex->mips.push_back(std::move(md));
