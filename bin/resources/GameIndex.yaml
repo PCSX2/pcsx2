@@ -9458,7 +9458,7 @@ SCPS-15097:
     - "SCPS-55001"
 SCPS-15098:
   name: "Formula One 2005"
-  name-sort: "ふぉみゅらー わん 2005"
+  name-sort: "ふぉーみゅら わん 2005"
   name-en: "Formula One 2005"
   region: "NTSC-J"
 SCPS-15099:
@@ -38039,7 +38039,7 @@ SLPM-62185:
   name-en: "Sangokushi VII"
   region: "NTSC-J"
 SLPM-62186:
-  name: "ゲットバッカーズ奪還屋 奪われた無限城"
+  name: "GetBackers奪還屋 奪われた無限城"
   name-sort: "げっとばっかーずだっかんや うばわれたむげんじょう"
   name-en: "Get Backers - The Stolen City of Infinite"
   region: "NTSC-J"
@@ -38985,7 +38985,7 @@ SLPM-62375:
   name-en: "Simple 2000 Series Vol. 36 - The Musume Ikusei Simulation"
   region: "NTSC-J"
 SLPM-62376:
-  name: "GetBackers奪還屋 奪還だョ！全員集合！ [KONAMI The BEST]"
+  name: "GetBackers奪還屋 奪還だヨ！全員集合！！ [KONAMI The BEST]"
   name-sort: "げっとばっかーずだっかんや だっかんだよ！ぜんいんしゅうごう！！ [KONAMI The BEST]"
   name-en: "Get Backers - All Members Gather [KONAMI The BEST]"
   region: "NTSC-J"
@@ -41345,7 +41345,7 @@ SLPM-65014:
     - GoemonTlbHack
 SLPM-65015:
   name: "決戦II"
-  name-sort: "けっせんII"
+  name-sort: "けっせん2"
   name-en: "Kessen II"
   region: "NTSC-J"
   patches:
@@ -41444,7 +41444,7 @@ SLPM-65030:
   region: "NTSC-J"
 SLPM-65031:
   name: "決戦&決戦II スーパーバリューセット [決戦Ⅱディスク]"
-  name-sort: "けっせん&けっせんII すーぱーばりゅーせっと [けっせん2でぃすく]"
+  name-sort: "けっせん&けっせん2 すーぱーばりゅーせっと [けっせん2でぃすく]"
   name-en: "Kesse & Kessen II Super Value Set [Kessen II Disc]"
   region: "NTSC-J"
   patches:
@@ -42428,7 +42428,7 @@ SLPM-65207:
   region: "NTSC-J"
 SLPM-65208:
   name: "ポップンミュージック 7"
-  name-sort: "ぽっぷんみゅーじっく 7"
+  name-sort: "ぽっぷんみゅーじっく07"
   name-en: "Pop'n music 7"
   region: "NTSC-J"
 SLPM-65209:
@@ -43131,7 +43131,7 @@ SLPM-65315:
   compat: 5
 SLPM-65316:
   name: "ポップンミュージック 8"
-  name-sort: "ぽっぷんみゅーじっく 8"
+  name-sort: "ぽっぷんみゅーじっく08"
   name-en: "Pop'n music 8"
   region: "NTSC-J"
 SLPM-65317:
@@ -44248,7 +44248,7 @@ SLPM-65507:
     nativeScaling: 2 # Fixes post-processing intensity.
 SLPM-65508:
   name: "ポップンミュージック 9"
-  name-sort: "ぽっぷんみゅーじっく 9"
+  name-sort: "ぽっぷんみゅーじっく09"
   name-en: "Pop'n music 9"
   region: "NTSC-J"
 SLPM-65509:
@@ -45747,13 +45747,13 @@ SLPM-65768:
   name-en: "Beatmania IIDX 8th Style"
   region: "NTSC-J"
 SLPM-65769:
-  name: "pop'n music コントローラセット"
-  name-sort: "ぽっぷんみゅーじっく [こんとろーらせっと]"
+  name: "ポップンミュージック10 コントローラセット"
+  name-sort: "ぽっぷんみゅーじっく10 [こんとろーらせっと]"
   name-en: "Pop'n music 10 [Controller Set]"
   region: "NTSC-J"
 SLPM-65770:
-  name: "ポップンミュージック 10"
-  name-sort: "ぽっぷんみゅーじっく 10"
+  name: "ポップンミュージック10"
+  name-sort: "ぽっぷんみゅーじっく10"
   name-en: "Pop'n music 10"
   region: "NTSC-J"
 SLPM-65771:
@@ -47465,8 +47465,8 @@ SLPM-66064:
   name-en: "Tough Dark Fight"
   region: "NTSC-J"
 SLPM-66065:
-  name: "ポップンミュージック 11"
-  name-sort: "ぽっぷんみゅーじっく 11"
+  name: "ポップンミュージック11"
+  name-sort: "ぽっぷんみゅーじっく11"
   name-en: "Pop'n music 11"
   region: "NTSC-J"
 SLPM-66066:
@@ -48242,12 +48242,12 @@ SLPM-66177:
     nativeScaling: 2 # Fixes post effects.
 SLPM-66178:
   name: "ポップンミュージック 7 [KONAMI The BEST]"
-  name-sort: "ぽっぷんみゅーじっく 7 [KONAMI The BEST]"
+  name-sort: "ぽっぷんみゅーじっく07 [KONAMI The BEST]"
   name-en: "Pop'n music 7 [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-66179:
   name: "ポップンミュージック 8 [KONAMI The BEST]"
-  name-sort: "ぽっぷんみゅーじっく 8 [KONAMI The BEST]"
+  name-sort: "ぽっぷんみゅーじっく08 [KONAMI The BEST]"
   name-en: "Pop'n music 8 [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-66180:
@@ -48437,12 +48437,12 @@ SLPM-66208:
   region: "NTSC-J"
 SLPM-66209:
   name: "ポップンミュージック 9 [KONAMI The BEST]"
-  name-sort: "ぽっぷんみゅーじっく 9 [KONAMI The BEST]"
+  name-sort: "ぽっぷんみゅーじっく09 [KONAMI The BEST]"
   name-en: "Pop'n music 9 [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-66210:
-  name: "ポップンミュージック 10 [KONAMI The BEST]"
-  name-sort: "ぽっぷんみゅーじっく 10 [KONAMI The BEST]"
+  name: "ポップンミュージック10 [KONAMI The BEST]"
+  name-sort: "ぽっぷんみゅーじっく10 [KONAMI The BEST]"
   name-en: "Pop'n music 10 [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-66211:
@@ -49145,8 +49145,8 @@ SLPM-66313:
   region: "NTSC-J"
   compat: 5
 SLPM-66314:
-  name: "ポップンミュージック 12 いろは"
-  name-sort: "ぽっぷんみゅーじっく 12 いろは"
+  name: "ポップンミュージック12 いろは"
+  name-sort: "ぽっぷんみゅーじっく12 いろは"
   name-en: "Pop'n music 12 Iroha"
   region: "NTSC-J"
   compat: 5
@@ -50530,8 +50530,8 @@ SLPM-66532:
   name-en: "Mizu no Senritsu 2 - Hi no Kioku"
   region: "NTSC-J"
 SLPM-66533:
-  name: "ポップンミュージック 13 カーニバル"
-  name-sort: "ぽっぷんみゅーじっく 13 かーにばる"
+  name: "ポップンミュージック13 カーニバル"
+  name-sort: "ぽっぷんみゅーじっく13 かーにばる"
   name-en: "Pop'n music 13 Carnival"
   region: "NTSC-J"
 SLPM-66534:
@@ -51851,8 +51851,8 @@ SLPM-66741:
   name-en: "Sentou Kokka Kai - Legend [Standard Edition]"
   region: "NTSC-J"
 SLPM-66742:
-  name: "ポップンミュージック 14 FEVER！"
-  name-sort: "ぽっぷんみゅーじっく 14 FEVER！"
+  name: "ポップンミュージック14 FEVER！"
+  name-sort: "ぽっぷんみゅーじっく14 FEVER！"
   name-en: "Pop'n music 14 FEVER!"
   region: "NTSC-J"
   compat: 5
