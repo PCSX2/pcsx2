@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "common/AlignedMalloc.h"
+#include "common/Buffer.h"
 #include "common/Console.h"
 #include "common/HashCombine.h"
 #include "common/FileSystem.h"
@@ -692,10 +693,9 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 		ReplacementTextureLoader loader = GetLoader(stat.name);
 		if (!loader)
 			return std::nullopt;
-		void* buf = malloc(stat.size);
-		ScopedGuard cleanup([buf]{ free(buf); });
+		Common::Buffer buf(stat.size);
 		auto zff = zip_fopen_index_managed(zf.get(), file.archive_idx, 0);
-		if (!zff || static_cast<u64>(zip_fread(zff.get(), buf, stat.size)) != stat.size)
+		if (!zff || static_cast<u64>(zip_fread(zff.get(), buf.get(), stat.size)) != stat.size)
 		{
 			if (!zff && zip_get_error(zf.get())->zip_err == ZIP_ER_COMPNOTSUPP)
 				Host::AddKeyedOSDMessage("ZipCompressionNotSupported",
@@ -705,7 +705,7 @@ std::optional<GSTextureReplacements::ReplacementTexture> GSTextureReplacements::
 			Console.Warning("Failed to load replacement texture %s from zip file %s: %s", stat.name, file.path.c_str(), zip_strerror(zf.get()));
 			return std::nullopt;
 		}
-		MemoryFile memfile(buf, stat.size);
+		MemoryFile memfile(buf.get(), stat.size);
 		if (!loader(memfile, stat.name, &rtex, only_base_image))
 		{
 			Console.Warning("Failed to load replacement texture %s", stat.name);
