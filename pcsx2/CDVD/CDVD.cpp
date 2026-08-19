@@ -468,7 +468,7 @@ u32 cdvdGetElfCRC(const std::string& path)
 	return elfo.GetCRC();
 }
 
-static CDVDDiscType GetPS2ElfName(IsoReader& isor, std::string* name, std::string* version, Error* error)
+static CDVDDiscType GetPS2ElfName(IsoReader& isor, std::string* name, std::string* version, std::string* vmode, Error* error)
 {
 	CDVDDiscType retype = CDVDDiscType::Other;
 	name->clear();
@@ -510,6 +510,7 @@ static CDVDDiscType GetPS2ElfName(IsoReader& isor, std::string* name, std::strin
 		else if (key == "VMODE")
 		{
 			DevCon.WriteLn(Color_Blue, fmt::format("(SYSTEM.CNF) Disc region type = {}", value));
+			*vmode = value;
 		}
 		else if (key == "VER")
 		{
@@ -574,15 +575,15 @@ static std::string ExecutablePathToSerial(const std::string& path)
 	return serial;
 }
 
-void cdvdGetDiscInfo(std::string* out_serial, std::string* out_elf_path, std::string* out_version, u32* out_crc,
+void cdvdGetDiscInfo(std::string* out_serial, std::string* out_elf_path, std::string* out_version, std::string* out_region, u32* out_crc,
 	CDVDDiscType* out_disc_type)
 {
 	Error error;
 	IsoReader isor;
 
-	std::string elfpath, version;
+	std::string elfpath, version, vmode;
 	CDVDDiscType disc_type = CDVDDiscType::Other;
-	if (!isor.Open(&error) || (disc_type = GetPS2ElfName(isor, &elfpath, &version, &error)) == CDVDDiscType::Other)
+	if (!isor.Open(&error) || (disc_type = GetPS2ElfName(isor, &elfpath, &version, &vmode, &error)) == CDVDDiscType::Other)
 		Console.Error(fmt::format("Failed to get ELF name: {}", error.GetDescription()));
 
 	// Don't bother parsing it if we don't need the CRC.
@@ -616,6 +617,8 @@ void cdvdGetDiscInfo(std::string* out_serial, std::string* out_elf_path, std::st
 		*out_version = std::move(version);
 	if (out_disc_type)
 		*out_disc_type = disc_type;
+	if (out_region)
+		*out_region = vmode;
 }
 
 void cdvdReadKey(u8, u16, u32 arg2, u8* key)

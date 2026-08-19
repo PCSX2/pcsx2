@@ -307,10 +307,12 @@ double GetVerticalFrequency()
 	// https://web.archive.org/web/20120629231826fw_/http://ntsc-tv.com/index.html
 	// https://web.archive.org/web/20200831051302/https://www.hdretrovision.com/240p/
 
+	std::string cur_region = VMManager::Internal::GetCurrentRegion();
+
 	switch (gsVideoMode)
 	{
 		case GS_VideoMode::Uninitialized: // SetGsCrt hasn't executed yet, give some temporary values.
-			return 60.00;
+			return (cur_region == "PAL") ? 50.00 : 60.00;
 		case GS_VideoMode::PAL:
 		case GS_VideoMode::DVD_PAL:
 			return (IsProgressiveVideoMode() == false) ? EmuConfig.GS.FrameratePAL : EmuConfig.GS.FrameratePAL - 0.24f;
@@ -352,9 +354,9 @@ void UpdateVSyncRate(bool force)
 		{
 			case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
 				if (gsIsInterlaced)
-					total_scanlines = SCANLINES_TOTAL_NTSC_I;
+					total_scanlines = (vertical_frequency == 50.00) ? SCANLINES_TOTAL_PAL_I : SCANLINES_TOTAL_NTSC_I;
 				else
-					total_scanlines = SCANLINES_TOTAL_NTSC_NI;
+					total_scanlines = (vertical_frequency == 50.00) ? SCANLINES_TOTAL_PAL_NI : SCANLINES_TOTAL_NTSC_NI;
 				break;
 			case GS_VideoMode::PAL:
 			case GS_VideoMode::DVD_PAL:

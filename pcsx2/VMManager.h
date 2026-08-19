@@ -306,6 +306,9 @@ namespace VMManager
 		/// Returns true if fast booting is active (requested but ELF not started).
 		bool IsFastBootInProgress();
 
+		// Returns the current disc/BIOS region, if set.
+		std::string GetCurrentRegion();
+
 		/// Disables fast boot if it was requested, and found to be incompatible.
 		void DisableFastBoot();
 
