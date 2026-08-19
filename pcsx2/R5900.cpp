@@ -679,7 +679,7 @@ void eeloadHook()
 		{
 			CDVDDiscType disc_type;
 			std::string disc_elf;
-			cdvdGetDiscInfo(nullptr, &disc_elf, nullptr, nullptr, &disc_type);
+			cdvdGetDiscInfo(nullptr, &disc_elf, nullptr, nullptr, nullptr, &disc_type);
 			if (disc_type == CDVDDiscType::PS2Disc)
 			{
 				// only allow fast boot for PS2 games
