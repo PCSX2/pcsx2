@@ -275,7 +275,7 @@ template <typename... T>
 void Achievements::ReportFmtError(fmt::format_string<T...> fmt, T&&... args)
 {
 	SmallString str;
-	fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(str), fmt.get(), fmt::make_format_args(args...));
 	ReportError(str);
 }
 
@@ -283,7 +283,7 @@ template <typename... T>
 void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args)
 {
 	SmallString str;
-	fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(str), fmt.get(), fmt::make_format_args(args...));
 	str.append_format("{} ({})", rc_error_str(err), err);
 	ReportError(str);
 }

@@ -86,7 +86,7 @@ public:
 	static void SetStringFmt(Error* errptr, fmt::format_string<T...> fmt, T&&... args)
 	{
 		if (errptr)
-			Error::SetString(errptr, fmt::vformat(fmt, fmt::make_format_args(args...)));
+			Error::SetString(errptr, fmt::vformat(fmt.get(), fmt::make_format_args(args...)));
 	}
 
 	void AddPrefix(std::string_view prefix);

@@ -106,7 +106,7 @@ namespace Log
 	{
 		// Avoid arg packing if filtered.
 		if (level <= GetMaxLevel())
-			return WriteFmtArgs(level, color, fmt, fmt::make_format_args(args...));
+			return WriteFmtArgs(level, color, fmt.get(), fmt::make_format_args(args...));
 	}
 } // namespace Log
 
@@ -143,7 +143,7 @@ struct ConsoleLogWriter
 #define MAKE_FMT_CONSOLE_WRITER(color) do \
 	{ \
 		if (level <= Log::GetMaxLevel()) \
-			Log::WriteFmtArgs(level, color, fmt, fmt::make_format_args(args...)); \
+			Log::WriteFmtArgs(level, color, fmt.get(), fmt::make_format_args(args...)); \
 } \
 	while (0)
 
