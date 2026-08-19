@@ -215,7 +215,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, double framesPerSecond, u32 sca
 	// Dynasty Warriors 3 Xtreme Legends - fake save corruption when loading save
 	// Jak II - random speedups
 	// Shadow of Rome - FMV audio issues
-	const bool ntsc_hblank = gsVideoMode != GS_VideoMode::PAL && gsVideoMode != GS_VideoMode::DVD_PAL && (gsVideoMode != GS_VideoMode::Uninitialized || framesPerSecond != 25.00);
+	const bool ntsc_hblank = gsVideoMode != GS_VideoMode::PAL && gsVideoMode != GS_VideoMode::DVD_PAL && (gsVideoMode != GS_VideoMode::Uninitialized || framesPerSecond != (Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL / 2));
 	const u64 HalfFrame = Frame / 2;
 	const float extra_scanlines = static_cast<float>(IsProgressiveVideoMode()) * (ntsc_hblank ? 0.5f : 1.5f);
 	const u64 Blank = Scanline * ((ntsc_hblank ? 22.5f : 24.5f) + extra_scanlines);
@@ -312,7 +312,7 @@ double GetVerticalFrequency()
 	switch (gsVideoMode)
 	{
 		case GS_VideoMode::Uninitialized: // SetGsCrt hasn't executed yet, give some temporary values.
-			return (cur_region == "PAL") ? 50.00 : 60.00;
+			return (cur_region == "PAL") ? Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL : Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_NTSC;
 		case GS_VideoMode::PAL:
 		case GS_VideoMode::DVD_PAL:
 			return (IsProgressiveVideoMode() == false) ? EmuConfig.GS.FrameratePAL : EmuConfig.GS.FrameratePAL - 0.24f;
@@ -354,9 +354,9 @@ void UpdateVSyncRate(bool force)
 		{
 			case GS_VideoMode::Uninitialized: // SYSCALL instruction hasn't executed yet, give some temporary values.
 				if (gsIsInterlaced)
-					total_scanlines = (vertical_frequency == 50.00) ? SCANLINES_TOTAL_PAL_I : SCANLINES_TOTAL_NTSC_I;
+					total_scanlines = (vertical_frequency == Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL) ? SCANLINES_TOTAL_PAL_I : SCANLINES_TOTAL_NTSC_I;
 				else
-					total_scanlines = (vertical_frequency == 50.00) ? SCANLINES_TOTAL_PAL_NI : SCANLINES_TOTAL_NTSC_NI;
+					total_scanlines = (vertical_frequency == Pcsx2Config::GSOptions::DEFAULT_FRAME_RATE_PAL) ? SCANLINES_TOTAL_PAL_NI : SCANLINES_TOTAL_NTSC_NI;
 				break;
 			case GS_VideoMode::PAL:
 			case GS_VideoMode::DVD_PAL:
