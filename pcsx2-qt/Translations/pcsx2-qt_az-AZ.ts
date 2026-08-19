@@ -10117,7 +10117,7 @@ This action cannot be undone.</source>
 
 İndiki oyun vaxtınız: {}.
 
-Bu eyləm geridönülməzdir.</translation>
+Bu eyləm qaytarılmazdır.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4105"/>
