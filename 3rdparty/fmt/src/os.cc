@@ -1,6 +1,6 @@
 // Formatting library for C++ - optional OS-specific functionality
 //
-// Copyright (c) 2012 - 2016, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -13,7 +13,6 @@
 #include "fmt/os.h"
 
 #ifndef FMT_MODULE
-#  include <climits>
 
 #  if FMT_USE_FCNTL
 #    include <sys/stat.h>
@@ -35,6 +34,8 @@
 
 #  ifdef _WIN32
 #    include <windows.h>
+
+#    include <climits>  // CHAR_BIT
 #  endif
 #endif
 
@@ -61,6 +62,7 @@
 
 namespace {
 #ifdef _WIN32
+
 // Return type of read and write functions.
 using rwresult = int;
 
@@ -69,18 +71,6 @@ using rwresult = int;
 inline unsigned convert_rwcount(size_t count) {
   return count <= UINT_MAX ? static_cast<unsigned>(count) : UINT_MAX;
 }
-#elif FMT_USE_FCNTL
-// Return type of read and write functions.
-using rwresult = ssize_t;
-
-inline auto convert_rwcount(size_t count) -> size_t { return count; }
-#endif
-}  // namespace
-
-FMT_BEGIN_NAMESPACE
-
-#ifdef _WIN32
-namespace detail {
 
 class system_message {
   system_message(const system_message&) = delete;
@@ -109,8 +99,8 @@ class system_message {
   }
   ~system_message() { LocalFree(message_); }
   explicit operator bool() const noexcept { return result_ != 0; }
-  operator basic_string_view<wchar_t>() const noexcept {
-    return basic_string_view<wchar_t>(message_, result_);
+  operator fmt::basic_string_view<wchar_t>() const noexcept {
+    return fmt::basic_string_view<wchar_t>(message_, result_);
   }
 };
 
@@ -120,7 +110,7 @@ class utf8_system_category final : public std::error_category {
   std::string message(int error_code) const override {
     auto&& msg = system_message(error_code);
     if (msg) {
-      auto utf8_message = to_utf8<wchar_t>();
+      auto utf8_message = fmt::detail::to_utf8<wchar_t>();
       if (utf8_message.convert(msg)) {
         return utf8_message.str();
       }
@@ -129,10 +119,22 @@ class utf8_system_category final : public std::error_category {
   }
 };
 
-}  // namespace detail
+#elif FMT_USE_FCNTL
+
+// Return type of read and write functions.
+using rwresult = ssize_t;
+
+inline auto convert_rwcount(size_t count) -> size_t { return count; }
+
+#endif
+}  // namespace
+
+FMT_BEGIN_NAMESPACE
+
+#ifdef _WIN32
 
 FMT_API const std::error_category& system_category() noexcept {
-  static const detail::utf8_system_category category;
+  static const utf8_system_category category;
   return category;
 }
 
@@ -162,6 +164,7 @@ void detail::format_windows_error(detail::buffer<char>& out, int error_code,
 void report_windows_error(int error_code, const char* message) noexcept {
   do_report_error(detail::format_windows_error, error_code, message);
 }
+
 #endif  // _WIN32
 
 buffered_file::~buffered_file() noexcept {
