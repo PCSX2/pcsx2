@@ -2006,12 +2006,12 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="282"/>
       <source>Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)</source>
-      <translation>Максимална латенција: 1% ms (2 ms проширење, минимална излазна латенција непозната)</translation>
+      <translation>Максимална латенција: %1 ms (%2 ms проширење, минимална излазна латенција непозната)</translation>
     </message>
     <message>
       <location filename="../Settings/AudioSettingsWidget.cpp" line="288"/>
       <source>Maximum Latency: %1 ms (minimum output latency unknown)</source>
-      <translation>Максимално кашњење: 1 % ms (минимално излазно кашњење непознато)</translation>
+      <translation>Максимално кашњење: %1 ms (минимално излазно кашњење непознато)</translation>
     </message>
   </context>
   <context>
@@ -18120,7 +18120,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../Settings/InputBindingWidget.cpp" line="495"/>
       <source>Select vibration motor for %1.</source>
-      <translation>Изаберите вибрациони мотор за 1%.</translation>
+      <translation>Изаберите вибрациони мотор за %1.</translation>
     </message>
   </context>
   <context>

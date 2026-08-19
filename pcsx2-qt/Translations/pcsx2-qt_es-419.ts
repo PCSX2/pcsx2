@@ -20052,9 +20052,9 @@ Do you want to load this state, or start from a fresh boot?</source>
 Your current play time is %3.
 
 This action cannot be undone.</source>
-      <translation>¿Estás seguro de que quieres reiniciar el tiempo de juego para &apos;{}&apos; ({})?
+      <translation>¿Estás seguro de que quieres reiniciar el tiempo de juego para &apos;%1&apos; (%2)?
 
-El tiempo de juego actual es {}.
+El tiempo de juego actual es %3.
 
 Esta acción no se puede deshacer.</translation>
     </message>
