@@ -362,7 +362,7 @@ template <typename... T>
 __fi SmallStackString<L> SmallStackString<L>::from_format(fmt::format_string<T...> fmt, T&&... args)
 {
 	SmallStackString<L> ret;
-	fmt::vformat_to(std::back_inserter(ret), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(ret), fmt.get(), fmt::make_format_args(args...));
 	return ret;
 }
 
@@ -381,14 +381,14 @@ using SmallString = SmallStackString<256>;
 template <typename... T>
 __fi void SmallStringBase::append_format(fmt::format_string<T...> fmt, T&&... args)
 {
-	fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(*this), fmt.get(), fmt::make_format_args(args...));
 }
 
 template <typename... T>
 __fi void SmallStringBase::prepend_format(fmt::format_string<T...> fmt, T&&... args)
 {
 	TinyString str;
-	fmt::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(str), fmt.get(), fmt::make_format_args(args...));
 	prepend(str);
 }
 
@@ -396,7 +396,7 @@ template <typename... T>
 __fi void SmallStringBase::format(fmt::format_string<T...> fmt, T&&... args)
 {
 	clear();
-	fmt::vformat_to(std::back_inserter(*this), fmt, fmt::make_format_args(args...));
+	fmt::vformat_to(std::back_inserter(*this), fmt.get(), fmt::make_format_args(args...));
 }
 
 #ifdef _MSC_VER
