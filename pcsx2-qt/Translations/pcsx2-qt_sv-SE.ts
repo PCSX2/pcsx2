@@ -14284,7 +14284,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
       <location filename="../Settings/GameSummaryWidget.cpp" line="258"/>
       <location filename="../Settings/GameSummaryWidget.cpp" line="259"/>
       <source>%1</source>
-      <translation>-1</translation>
+      <translation>%1</translation>
     </message>
     <message>
       <location filename="../Settings/GameSummaryWidget.cpp" line="252"/>
@@ -18055,7 +18055,7 @@ Högerklicka för att tömma bindning</translation>
     <message>
       <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="37"/>
       <source>%1</source>
-      <translation>-1</translation>
+      <translation>%1</translation>
     </message>
     <message>
       <location filename="../Tools/InputRecording/InputRecordingViewer.cpp" line="43"/>
