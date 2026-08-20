@@ -180,7 +180,7 @@ Do you want to enable hardcore mode?</source>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="137"/>
       <source>Successfully logged in to RetroAchievements as %1.</source>
-      <translation>.</translation>
+      <translation type="unfinished">Successfully logged in to RetroAchievements as %1.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementLoginDialog.cpp" line="139"/>
@@ -25794,7 +25794,7 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-gametrak.cpp" line="411"/>
       <source>%d</source>
-      <translation>[нула]</translation>
+      <translation type="unfinished">%d</translation>
     </message>
     <message>
       <location filename="../../pcsx2/USB/usb-pad/usb-realplay.cpp" line="281"/>
