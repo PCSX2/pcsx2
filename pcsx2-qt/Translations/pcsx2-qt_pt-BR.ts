@@ -11341,12 +11341,12 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6229"/>
       <source>Toggles scanning cheat files for all CRCs of the game. With this enabled available cheats for the game serial with different CRCs will also be loaded.</source>
-      <translation>Alterna a verificação de arquivos de códigos de trapaças para todos os CRCs do jogo. Com essa opção ativada, também serão carregados os códigos disponíveis para o número de série do jogo com CRCs diferentes.</translation>
+      <translation>Alterna a exploração de arquivos de códigos de trapaças para todos os CRCs do jogo. Com essa opção ativada, também serão carregados os códigos disponíveis para o número de série do jogo com CRCs diferentes.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6230"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
-      <translation>Alterna a verificação de arquivos de patch para todos os CRCs do jogo. Com essa opção ativada, patches disponíveis para o serial do jogo com CRCs diferentes também serão carregados.</translation>
+      <translation>Alterna a exploração de arquivos de patch para todos os CRCs do jogo. Com essa opção ativada, patches disponíveis para o serial do jogo com CRCs diferentes também serão carregados.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6283"/>
@@ -11641,7 +11641,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4028"/>
       <source>Scanning for new games...</source>
-      <translation>Escaneando por novos jogos...</translation>
+      <translation>Explorar por novos jogos...</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4064"/>
@@ -21171,7 +21171,7 @@ Slot 2: {}</translation>
     <message>
       <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="284"/>
       <source>No next symbol found.</source>
-      <translation>Nenhum símbolo próximo achado.</translation>
+      <translation>Nenhum próximo símbolo encontrado.</translation>
     </message>
     <message>
       <location filename="../Debugger/SymbolTree/NewSymbolDialogs.cpp" line="301"/>
@@ -23017,13 +23017,13 @@ Ejetando o {3} e substituindo-o pelo {2}.</translation>
     <message>
       <location filename="../Debugger/RegisterView.ui" line="26"/>
       <source>Register View</source>
-      <translation>Visualização do Registro</translation>
+      <translation>Visualização do Registrador</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="258"/>
       <location filename="../Debugger/RegisterView.cpp" line="271"/>
       <source>Show as Float</source>
-      <translation>Mostrar como Flutuante</translation>
+      <translation>Mostrar como Ponto Flutuante</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="284"/>
@@ -23075,27 +23075,27 @@ Ejetando o {3} e substituindo-o pelo {2}.</translation>
       <location filename="../Debugger/RegisterView.cpp" line="378"/>
       <location filename="../Debugger/RegisterView.cpp" line="388"/>
       <source>Invalid register value</source>
-      <translation>Valor do registro inválido</translation>
+      <translation>Valor do registrador inválido</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="378"/>
       <source>Invalid hexadecimal register value.</source>
-      <translation>Valor do registro hexadecimal inválido.</translation>
+      <translation>Valor do registrador hexadecimal inválido.</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="388"/>
       <source>Invalid floating-point register value.</source>
-      <translation>Valor do registro de ponto flutuante inválido.</translation>
+      <translation>Valor do registrador de ponto flutuante inválido.</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="468"/>
       <source>Invalid target address</source>
-      <translation>Endereço do alvo inválido</translation>
+      <translation>Endereço de destino inválido</translation>
     </message>
     <message>
       <location filename="../Debugger/RegisterView.cpp" line="469"/>
       <source>This register holds an invalid address.</source>
-      <translation>Este registro contém um endereço inválido.</translation>
+      <translation>Este registrador contém um endereço inválido.</translation>
     </message>
   </context>
   <context>
