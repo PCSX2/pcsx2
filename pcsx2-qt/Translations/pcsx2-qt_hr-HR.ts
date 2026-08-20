@@ -5859,7 +5859,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../QtHost.cpp" line="1084"/>
       <source>FPS: %1</source>
-      <translation>FPS: 1%</translation>
+      <translation>FPS: %1</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1001"/>
@@ -18125,7 +18125,7 @@ Desni klik za poništavanje veze</translation>
     <message>
       <location filename="../Settings/InputBindingWidget.cpp" line="495"/>
       <source>Select vibration motor for %1.</source>
-      <translation>Odaberite vibracijski motor za 1%.</translation>
+      <translation>Odaberite vibracijski motor za %1.</translation>
     </message>
   </context>
   <context>
