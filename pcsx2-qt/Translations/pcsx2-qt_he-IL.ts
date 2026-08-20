@@ -604,7 +604,7 @@ Login token generated on %2.</source>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1149"/>
       <source>{0}, {1}.</source>
-      <translation>.</translation>
+      <translation type="unfinished">{0}, {1}.</translation>
     </message>
     <message numerus="yes">
       <location filename="../../pcsx2/Achievements.cpp" line="1150"/>
@@ -643,7 +643,7 @@ Login token generated on %2.</source>
       <location filename="../../pcsx2/Achievements.cpp" line="1232"/>
       <location filename="../../pcsx2/Achievements.cpp" line="1257"/>
       <source>{0}, {1}</source>
-      <translation/>
+      <translation type="unfinished">{0}, {1}</translation>
     </message>
     <message numerus="yes">
       <location filename="../../pcsx2/Achievements.cpp" line="1233"/>
@@ -814,7 +814,8 @@ Login token generated on %2.</source>
       <location filename="../../pcsx2/Achievements.cpp" line="1356"/>
       <source>{0}
 Leaderboard Position: {1} of {2}</source>
-      <translation>מקום בטבלת השיאים: {1} מתוך {2}</translation>
+      <translation>{0}
+מקום בטבלת השיאים: {1} מתוך {2}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Achievements.cpp" line="1478"/>
