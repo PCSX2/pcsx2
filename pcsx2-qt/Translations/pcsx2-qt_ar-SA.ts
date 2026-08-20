@@ -2621,7 +2621,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../../pcsx2/CDVD/ThreadedFileReader.cpp" line="278"/>
       <source>Not enough memory available for precaching ({:.2f} GB required).</source>
-      <translation>.</translation>
+      <translation type="unfinished">Not enough memory available for precaching ({:.2f} GB required).</translation>
     </message>
   </context>
   <context>
