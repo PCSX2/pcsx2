@@ -12976,7 +12976,7 @@ Por favor consulte a documentação oficial para mais informação.</translation
     <message>
       <location filename="../Settings/GameCheatSettingsWidget.cpp" line="289"/>
       <source>%1 unlabelled patch codes will automatically activate.</source>
-      <translation>{} Os códigos dos patches sem rótulo ativarão automaticamente.</translation>
+      <translation>%1 Os códigos dos patches sem rótulo ativarão automaticamente.</translation>
     </message>
   </context>
   <context>
@@ -17768,7 +17768,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1408"/>
       <source>Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}</source>
-      <translation>Salvo à {0} dias às {1:%H:%M} em {1:%a} {1:%Y/%m/%d}</translation>
+      <translation type="unfinished">Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1410"/>
@@ -19631,12 +19631,12 @@ Deseja desligar mesmo assim e CORROMPER IRREVERSIVELMENTE SEU CARTÃO DE MEMÓRI
     <message>
       <location filename="../MainWindow.cpp" line="1572"/>
       <source>Failed to Load State From Backup Slot %1</source>
-      <translation>Erro ao carregar estado da ranhura de cópia de segurança {}</translation>
+      <translation>Erro ao carregar estado da ranhura de cópia de segurança %1</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="1574"/>
       <source>Failed to Load State From Slot %1</source>
-      <translation>Erro ao carregar estado da ranhura {}</translation>
+      <translation>Erro ao carregar estado da ranhura %1</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="1578"/>
@@ -20055,9 +20055,9 @@ Deseja carregar este estado ou iniciar desde um arranque novo?</translation>
 Your current play time is %3.
 
 This action cannot be undone.</source>
-      <translation>Tem a certeza que quer reiniciar o tempo de jogo pro &apos;{}&apos; ({})?
+      <translation>Tem a certeza que quer reiniciar o tempo de jogo pro &apos;%1&apos; (%2)?
 
-O tempo de jogo atual é {}.
+O tempo de jogo atual é %3.
 
 Esta ação não pode ser desfeita.</translation>
     </message>
@@ -20948,7 +20948,7 @@ Slot 2: {}</translation>
     <message>
       <location filename="../Debugger/Memory/MemorySearchView.cpp" line="553"/>
       <source>%0 results found</source>
-      <translation>%s resultados encontrados</translation>
+      <translation>%0 resultados encontrados</translation>
     </message>
     <message>
       <location filename="../Debugger/Memory/MemorySearchView.cpp" line="571"/>
