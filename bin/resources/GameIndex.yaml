@@ -7336,6 +7336,44 @@ SCKA-20027:
     halfPixelOffset: 2 # Aligns post effects.
     nativeScaling: 1 # Fixes post effects.
     textureInsideRT: 1 # Fixes post shuffles.
+  patches:
+    A3643EB1:
+      content: |-
+        comment=Rearranging COP2 ops to avoid macflag bad stuff.
+        // Solves door problems, possibly other issues later on.
+        patch=0,EE,0010bc88,word,48468800
+        patch=0,EE,0010bc8c,word,4BEC682C
+        patch=0,EE,0010bc94,word,4B8D617D
+        patch=0,EE,0010bc98,word,4A0002FF
+        patch=0,EE,0012a358,word,48468800
+        patch=0,EE,0012a35c,word,4BEC682C
+        patch=0,EE,0012a364,word,4B8D617D
+        patch=0,EE,0012a368,word,4A0002FF
+        patch=0,EE,0012a680,word,48468800
+        patch=0,EE,0012a684,word,4BEC682C
+        patch=0,EE,0012a68c,word,4B8D617D
+        patch=0,EE,0012a690,word,4A0002FF
+        patch=0,EE,0012aafc,word,48468800
+        patch=0,EE,0012ab00,word,4BEC682C
+        patch=0,EE,0012ab04,word,4B8D617D
+        patch=0,EE,0012ab08,word,4A6D617C
+        patch=0,EE,0012ab0c,word,4A0002FF
+        patch=0,EE,001644cc,word,48468800
+        patch=0,EE,001644d0,word,4BEC682C
+        patch=0,EE,001644d8,word,4B8D617D
+        patch=0,EE,001644dc,word,4A0002FF
+        patch=0,EE,001ae958,word,48468800
+        patch=0,EE,001ae95c,word,4BEC682C
+        patch=0,EE,001ae960,word,4BED617D
+        patch=0,EE,001ae968,word,4A0002FF
+        patch=0,EE,001bd410,word,48588800
+        patch=0,EE,001bd41c,word,4A5DEF40
+        patch=0,EE,001bd62c,word,48588800
+        patch=0,EE,001bd638,word,4A5DEF40
+        patch=0,EE,001bd9cc,word,48588800
+        patch=0,EE,001bd9d8,word,4A5DEF40
+        patch=0,EE,001bdf90,word,48588800
+        patch=0,EE,001bdf9c,word,4A5DEF40
 SCKA-20028:
   name: "이코 [PlayStation 2 BigHit Series]"
   name-en: "Ico [PlayStation 2 BigHit Series]"
