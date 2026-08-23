@@ -331,7 +331,7 @@ STATIC bool any_nonzero(INT3 val)
 	// Metal defines it's own version of these.
 
 	#define PS_PRIM_CHECKING_INIT (PS_DATE == 1 || PS_DATE == 2)
-	#define PS_TEX_IS_DEPTH (PS_URBAN_CHAOS_HLE != FALSE || PS_TALES_OF_ABYSS_HLE != FALSE || PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2)
+	#define PS_TEX_IS_DEPTH (PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2)
 
 	#define SW_BLEND (PS_BLEND_A != 0 || PS_BLEND_B != 0 || PS_BLEND_D != 0)
 	#define SW_BLEND_NEEDS_RT (SW_BLEND && (PS_BLEND_A == 1 || PS_BLEND_B == 1 || PS_BLEND_C == 1 || PS_BLEND_D == 1))

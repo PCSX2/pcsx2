@@ -6482,6 +6482,9 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 				return ChannelFetch_RGB;
 
 			m_conf.ps.tales_of_abyss_hle = 1;
+
+			// Here the pixel shader only handles sampling from real depth (format 1 or 2)
+			pxAssert(m_conf.ps.depth_fmt == 1 || m_conf.ps.depth_fmt == 2);
 		}
 		else
 		{
@@ -6490,6 +6493,9 @@ __ri u32 GSRendererHW::EmulateChannelShuffle(GSTextureCache::Target* src, bool t
 				return ChannelFetch_RGB;
 
 			m_conf.ps.urban_chaos_hle = 1;
+
+			// Here the pixel shader only handles sampling from real depth (format 1 or 2)
+			pxAssert(m_conf.ps.depth_fmt == 1 || m_conf.ps.depth_fmt == 2);
 		}
 	}
 	else if (m_cached_ctx.CLAMP.WMS == 3 && ((m_cached_ctx.CLAMP.MAXU & 0x8) == 8))
