@@ -66,7 +66,7 @@ static bool s_data_shm_name_valid = false;
 
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
-	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+	int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (fd < 0 && errno == EEXIST)
 	{
 		// Stale object left by a crashed instance that reused our pid
