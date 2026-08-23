@@ -63,15 +63,13 @@ std::string HostSys::GetFileMappingName(const char* prefix)
 
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
+	// We don't close this mapping, so a user with the same UID can use it for modding and patches
 	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
 	if (fd < 0)
 	{
 		std::fprintf(stderr, "shm_open failed: %d\n", errno);
 		return nullptr;
 	}
-
-	// we're not going to be opening this mapping in other processes, so remove the file
-	shm_unlink(name);
 
 	// ensure it's the correct size
 	if (ftruncate(fd, static_cast<off_t>(size)) < 0)
