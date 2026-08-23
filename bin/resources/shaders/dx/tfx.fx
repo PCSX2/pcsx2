@@ -252,28 +252,17 @@ struct PS_INPUT
 // Pixel shader output
 struct PS_OUTPUT
 {
-#define NUM_RTS 0
-
 #if PS_RETURN_COLOR
-	#if PS_DATE == 1 || PS_DATE == 2
-		float c0 : SV_Target;
-	#else
-		
-		float4 c0 : SV_Target0;
-
-		#undef NUM_RTS
-		#define NUM_RTS 1
-		
-		#if !PS_NO_COLOR1
-			float4 c1 : SV_Target1;
-		#endif
+	float4 c0 : SV_Target0;
+	#if !PS_NO_COLOR1
+		float4 c1 : SV_Target1;
 	#endif
 #endif
 
 #if PS_RETURN_DEPTH
 	// In DX12 we do depth feedback loops with a color copy.
 	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
-		#if NUM_RTS > 0
+		#if PS_RETURN_COLOR
 			float depth_color : SV_Target1;
 		#else
 			float depth_color : SV_Target0;
@@ -285,8 +274,6 @@ struct PS_OUTPUT
 		float depth : SV_Depth;
 	#endif
 #endif
-
-#undef NUM_RTS
 };
 
 // Pixel shader resources
