@@ -146,6 +146,12 @@
 #define PS_RETURN_DEPTH (ZWRITE && !PS_ROV_DEPTH)
 #define PS_ROV_EARLYDEPTHSTENCIL (PS_ROV_COLOR && !PS_ROV_DEPTH && !ZWRITE)
 
+#ifdef __hlsl_dx_compiler
+#define SELECT(cond, pass, fail) select(cond, pass, fail)
+#else
+#define SELECT(cond, pass, fail) ((cond) ? (pass) : (fail))
+#endif
+
 struct VS_INPUT
 {
 	float2 st : TEXCOORD0;
@@ -1585,7 +1591,7 @@ if (bad)
 
 	// SW channel masking
 #if !PS_NO_COLOR && PS_CMASK
-	o_col0 = (FbMask == 0xFFu) ? RtLoad(input.p.xy) : o_col0; // channel masking
+	o_col0 = SELECT(FbMask == 0xFFu, RtLoad(input.p.xy), o_col0); // channel masking
 #endif
 
 	// SW depth masking
