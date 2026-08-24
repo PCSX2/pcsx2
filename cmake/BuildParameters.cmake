@@ -14,6 +14,13 @@ option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(BUNDLE_EMOJI_FONT "Bundles Noto Color Emoji for systems whose system emoji font isn't usable by freetype" ON)
 option(POSITION_INDEPENDENT_CODE "Generate position-independent code. It is recommended that you leave this on." ON)
+option(BUILD_DEPENDENCIES "Enables building dependencies" OFF)
+
+if(BUILD_DEPENDENCIES)
+	option(BUILD_DEPENDENCIES_AS_SHARED_LIBS "Build dependencies as shared libraries" ON)
+else()
+	set(BUILD_DEPENDENCIES_AS_SHARED_LIBS OFF)
+endif()
 
 #-------------------------------------------------------------------------------
 # Graphical option

@@ -1,10 +1,13 @@
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.16...3.25)
+cmake_minimum_required(VERSION 3.5)
 
 # Enabling this cmake policy gets rid of warnings regarding LTO.
 cmake_policy(SET CMP0069 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+
+cmake_policy(SET CMP0083 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0083 NEW)
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 	message(FATAL_ERROR "PCSX2 does not support in-tree builds.  Please make a build directory that is not the PCSX2 source directory and generate your CMake project there using either `cmake -B build_directory` or by running cmake from the build directory.")
@@ -36,6 +39,12 @@ detect_compiler()
 #-------------------------------------------------------------------------------
 # Include specific module
 include(BuildParameters)
+
+# Build third-party dependencies
+if (BUILD_DEPENDENCIES)
+	include(BuildDependencies)
+endif()
+
 include(SearchForStuff)
 
 # Must be done after SearchForStuff

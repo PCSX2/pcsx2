@@ -214,6 +214,10 @@ target_link_libraries(common PUBLIC
 	ryml::ryml
 )
 
+if(TARGET WebP::libwebp AND SHARPYUV_LIBRARY)
+	target_link_libraries(common PRIVATE ${SHARPYUV_LIBRARY})
+endif()
+
 fixup_file_properties(common)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
