@@ -1280,7 +1280,7 @@ Mensajes sin leer: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
       <source>Determines the algorithm to be used when compressing savestates.</source>
-      <translation>Determina el algoritmo a ser usado cuando se comprimen los estados guardados.</translation>
+      <translation>Determina el algoritmo que se utilizará para comprimir los estados de guardado.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="141"/>
@@ -3749,7 +3749,7 @@ Esta acción no puede deshacer.</translation>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="56"/>
       <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;En la caja debajo, especifica la(s) URL(s) de donde se descargaran las carátulas, con una plantila de URL por línea. Las siguientes variables están disponibles:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Título del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Fragmento del nombre del archivo del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Número de serie del juego.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ejemplo:&lt;/span&gt; https://www.ejemplo-de-un-dominio.com/caratulas/${número-de-serie}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+      <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;En la caja debajo, especifica la(s) URL(s) de donde se descargaran las carátulas, con una plantila de URL por línea. Las siguientes variables están disponibles:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Título del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Fragmento del nombre del archivo del juego.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Número de serie del juego.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Ejemplo:&lt;/span&gt; https://www.ejemplo-de-un-dominio.com/caratulas/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
       <location filename="../CoverDownloadDialog.ui" line="79"/>
@@ -7982,7 +7982,7 @@ Error: {}
 
 Please check your username and password, and try again.</source>
       <translation>No se ha podido iniciar sesión.
-Error: %1
+Error: {}
 
 Por favor comprueba tu nombre de usuario y contraseña e intenta otra vez.</translation>
     </message>

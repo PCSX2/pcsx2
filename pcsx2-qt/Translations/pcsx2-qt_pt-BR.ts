@@ -369,7 +369,7 @@ Você quer ativar o modo hardcore?</translation>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="399"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
       <source>Enable In-Game Leaderboard Overlays</source>
-      <translation>Ativar as Sobreposições da Tabela de Classificação Dentro do Jogo</translation>
+      <translation>Ativar Sobreposições de Classificação Dentro do Jogo</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="409"/>
@@ -1202,7 +1202,7 @@ Mensagens não lidas: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="115"/>
       <source>Enable Instant VU1</source>
-      <translation>Habilitar VU1 Instantâneo</translation>
+      <translation>Ativar VU1 instantânea</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="116"/>
@@ -1300,7 +1300,7 @@ Mensagens não lidas: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="144"/>
       <source>Save State On Shutdown</source>
-      <translation>Salvar o State ao Desligar</translation>
+      <translation>Salvar State ao Desligar</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="145"/>
@@ -1523,7 +1523,7 @@ Mensagens não lidas: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="390"/>
       <source>Enable Game Fixes</source>
-      <translation>Ativar os Consertos dos Jogos</translation>
+      <translation>Ativar Consertos de Jogos</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="397"/>
@@ -1538,7 +1538,7 @@ Mensagens não lidas: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="464"/>
       <source>Save State On Shutdown</source>
-      <translation>Salvar o State ao Desligar</translation>
+      <translation>Salvar State ao Desligar</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="407"/>
@@ -3324,7 +3324,7 @@ Mensagens não lidas: {2}</translation>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="82"/>
       <source>Enable DualSense Player LED</source>
-      <translation>Ativar LED do Jogador com DualSense</translation>
+      <translation>Habilitar LED do Jogador com DualSense</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="44"/>
@@ -3959,7 +3959,7 @@ Você não pode desfazer esta ação.</translation>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="329"/>
       <source>Enable 48-Bit LBA</source>
-      <translation>Ativar o LBA de 48 bits:</translation>
+      <translation>Habilitar LBA de 48 bits</translation>
     </message>
     <message>
       <location filename="../Settings/DEV9SettingsWidget.ui" line="388"/>
@@ -4186,7 +4186,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="69"/>
       <source>If Debugger Is Open</source>
-      <translation>Se o Debugger Estiver Aberto</translation>
+      <translation>Caso Depurador Esteja Aberto</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsTab.ui" line="74"/>
@@ -4264,7 +4264,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="284"/>
       <source>Scan Mode:</source>
-      <translation>Modo de Escaneamento:</translation>
+      <translation>Modo de Varredura:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="295"/>
@@ -4275,7 +4275,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="300"/>
       <source>Scan Memory</source>
-      <translation>Memória do Escaneamento</translation>
+      <translation>Memória da Varredura</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.ui" line="305"/>
@@ -4346,7 +4346,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="126"/>
       <source>Scan Mode</source>
-      <translation>Modo de Escaneamento</translation>
+      <translation>Modo de Varredura</translation>
     </message>
     <message>
       <location filename="../Settings/DebugAnalysisSettingsWidget.cpp" line="127"/>
@@ -4429,7 +4429,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="49"/>
       <source>Save Texture</source>
-      <translation>Salvar Textura</translation>
+      <translation>Salvar Texturas</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="56"/>
@@ -4449,17 +4449,17 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="77"/>
       <source>Save Draw Stats</source>
-      <translation>Salvar as Estatísticas do Desenho</translation>
+      <translation>Salvar Estatísticas de Desenho</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="84"/>
       <source>Save Frame Stats</source>
-      <translation>Salvar as Estatísticas do Frame</translation>
+      <translation>Salvar Estatísticas de Quadros</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="91"/>
       <source>Save Transfer Image Data</source>
-      <translation>Salvar os Dados da Imagem da Transferência</translation>
+      <translation>Salvar Dados da Imagem de Transferência</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="98"/>
@@ -4479,7 +4479,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="144"/>
       <source>Save Frame Start:</source>
-      <translation>Salvar o Início do Frame:</translation>
+      <translation>Salvar Início do Quadro:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="161"/>
@@ -4694,7 +4694,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="90"/>
       <source>If Debugger Is Open</source>
-      <translation>Se o Debugger Estiver Aberto</translation>
+      <translation>Caso Depurador Esteja Aberto</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="30"/>
@@ -4814,17 +4814,17 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="53"/>
       <source>Open the debugger window automatically when PCSX2 starts.</source>
-      <translation>Abrir a janela do debugger automaticamente ao iniciar o PCSX2.</translation>
+      <translation>Abrir a janela do depurador automaticamente ao iniciar o PCSX2.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="58"/>
       <source>Save Window Geometry</source>
-      <translation>Salvar a Geometria da Janela</translation>
+      <translation>Salvar Geometria da Janela</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="59"/>
       <source>Save the position and size of the debugger window when it is closed so that it can be restored later.</source>
-      <translation>Salvar a posição e o tamanho da janela do debugger quando ela for fechada pra que ela possa ser restaurada depois.</translation>
+      <translation>Salva a posição e o tamanho da janela do depurador ao ser fechada, para que possa ser restaurada posteriormente.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
@@ -4839,7 +4839,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <source>Globally enable / disable trace logging.</source>
-      <translation>Ativa / desativa rastreio de monitoramento globalmente.</translation>
+      <translation>Ativa / desativa o rastreio de monitoramento globalmente.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="136"/>
@@ -5151,7 +5151,7 @@ Você quer sobrescrever?</translation>
     <message>
       <location filename="../Settings/DebugUserInterfaceSettingsTab.ui" line="26"/>
       <source>Debugger Window</source>
-      <translation>Janela do Debugger</translation>
+      <translation>Janela de Depuração</translation>
     </message>
     <message>
       <location filename="../Settings/DebugUserInterfaceSettingsTab.ui" line="38"/>
@@ -6122,13 +6122,13 @@ Você quer sobrescrever?</translation>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="255"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="150"/>
       <source>Use Host VSync Timing</source>
-      <translation>Usar a Cronometragem do VSync do Hospedeiro</translation>
+      <translation>Usar Cronometragem do VSync do Hospedeiro</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="290"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="164"/>
       <source>Use System Locale Format</source>
-      <translation>Usar o Formato de Localização do Sistema</translation>
+      <translation>Usar Formato de Localidade do Sistema</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="234"/>
@@ -6589,7 +6589,7 @@ A URL era: %1</translation>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="254"/>
       <source>Video Recording Directory</source>
-      <translation>Diretório de gravação de vídeo</translation>
+      <translation>Diretório de Gravação de Vídeo</translation>
     </message>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="277"/>
@@ -6600,7 +6600,7 @@ A URL era: %1</translation>
       <location filename="../Settings/FolderSettingsWidget.ui" line="297"/>
       <location filename="../Settings/FolderSettingsWidget.cpp" line="27"/>
       <source>Save Video Recordings in Game-Specific Folders</source>
-      <translation>Salvar gravações de vídeo em pastas específicas por jogo</translation>
+      <translation>Salvar Gravações de Vídeo em Pastas Específicas por Jogo</translation>
     </message>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="109"/>
@@ -7097,7 +7097,7 @@ A URL era: %1</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6591"/>
       <source>FMV Aspect Ratio Override</source>
-      <translation>Substituir a Proporção do Aspecto do FMV</translation>
+      <translation>Sobrescrita de Proporção do Tela de FMV</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5974"/>
@@ -7895,7 +7895,7 @@ Insira o nome para o novo perfil de entrada:</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4036"/>
       <source>Failed to Save State</source>
-      <translation>Falhou em Savar o State</translation>
+      <translation>Falha ao Salvar State</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5913"/>
@@ -8145,7 +8145,7 @@ Por favor, verifique o nome de usuário e senha e tente novamente.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6478"/>
       <source>Enabled (Exact Match)</source>
-      <translation>Ativado (Combinação Exata)</translation>
+      <translation>Habilitado (Combinação Exata)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6479"/>
@@ -8272,7 +8272,7 @@ Por favor, verifique o nome de usuário e senha e tente novamente.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6692"/>
       <source>Show Hardware Info</source>
-      <translation>Mostrar as Informações do Hardware</translation>
+      <translation>Mostrar Informações do Hardware</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6716"/>
@@ -9084,7 +9084,7 @@ Você quer carregar este save e continuar?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6577"/>
       <source>Enable CDVD Precaching</source>
-      <translation>Ativar o Pré-cache do CDVD</translation>
+      <translation>Ativar Pré-Cache do CDVD</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5955"/>
@@ -9104,7 +9104,7 @@ Você quer carregar este save e continuar?</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6589"/>
       <source>Use Host VSync Timing</source>
-      <translation>Usar a Cronometragem do VSync do Hospedeiro</translation>
+      <translation>Usar Cronometragem do VSync do Hospedeiro</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5969"/>
@@ -9749,7 +9749,7 @@ Você quer desligar de qualquer forma e CORROMPER IRREVERSIVELMENTE SEU CARTÃO 
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6074"/>
       <source>Determines where on-screen display messages are positioned.</source>
-      <translation>Determina onde as mensagens exibidas na tela são posicionadas.</translation>
+      <translation>Determina onde as mensagens de exibição na tela estão posicionadas.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5856"/>
@@ -9839,7 +9839,7 @@ Você quer desligar de qualquer forma e CORROMPER IRREVERSIVELMENTE SEU CARTÃO 
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6072"/>
       <source>Determines how large the on-screen messages and monitors are.</source>
-      <translation>Determina o tamanho das mensagens e do monitor na tela.</translation>
+      <translation>Determina o tamanho das mensagens na tela e no monitor.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6075"/>
@@ -10536,7 +10536,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6615"/>
       <source>Rasterizer Ordered View</source>
-      <translation>Vizualização Ordenada do Rasterizador - ROV</translation>
+      <translation>Visualização Ordenada do Rasterizador - ROV</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6562"/>
@@ -10556,7 +10556,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6572"/>
       <source>Enable Multithreaded VU1 (MTVU)</source>
-      <translation>Ativar VU1 com Múltiplas Threads (MTVU)</translation>
+      <translation>Ativar VU1 Multi-Threads (MTVU)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6573"/>
@@ -10916,7 +10916,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6840"/>
       <source>Use Debug Blend</source>
-      <translation>Usar Depurar Mesclagem</translation>
+      <translation>Usar Mesclagem de Depuração</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6841"/>
@@ -11041,7 +11041,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6540"/>
       <source>Use Save State Selector</source>
-      <translation>Usar o Seletor dos Save States</translation>
+      <translation>Usar Seletor de Save States</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6556"/>
@@ -11987,7 +11987,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6720"/>
       <source>Enable Network Adapter</source>
-      <translation>Ativar o Adaptador de Rede</translation>
+      <translation>Habilitar Adaptador de Rede</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6721"/>
@@ -12052,7 +12052,7 @@ Esta ação não pode ser desfeita.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6733"/>
       <source>Enable HDD</source>
-      <translation>Ativar HDD</translation>
+      <translation>Habilitar HDD</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6734"/>
@@ -14387,7 +14387,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="130"/>
       <source>Disable Mailbox Presentation</source>
       <extracomment>Mailbox Presentation: a type of graphics-rendering technique that has not been exposed to the public that often, so chances are you will need to keep the word mailbox in English. It does not have anything to do with postal mailboxes or email inboxes/outboxes.</extracomment>
-      <translation>Desativar a Apresentação do Mailbox</translation>
+      <translation>Desabilitar Apresentação Mailbox</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="116"/>
@@ -14486,7 +14486,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="280"/>
       <source>Override Texture Barriers:</source>
-      <translation>Substituir as Barreiras das Texturas:</translation>
+      <translation>Sobrescrever Barreiras de Textura:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="296"/>
@@ -14501,17 +14501,17 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="311"/>
       <source>Disable Framebuffer Fetch</source>
-      <translation>Desativar Busca do Buffer de Quadros</translation>
+      <translation>Desabilitar Busca do Buffer de Quadros</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="318"/>
       <source>Disable Shader Cache</source>
-      <translation>Desativar o Cache do Shader</translation>
+      <translation>Desabilitar Cache do Shader</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="325"/>
       <source>Disable Vertex Shader Expand</source>
-      <translation>Desativar a Expansão do Shader do Vértice</translation>
+      <translation>Desativar Expansão do Shader de Vértices</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="332"/>
@@ -14521,7 +14521,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsAdvancedSettingsTab.ui" line="339"/>
       <source>Use Debug Blend</source>
-      <translation>Usar Depurar Mesclagem</translation>
+      <translation>Usar Mesclagem de Depuração</translation>
     </message>
   </context>
   <context>
@@ -14559,7 +14559,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="72"/>
       <source>Disable Interlace Offset</source>
-      <translation>Desativar Deslocamento Entrelaçado</translation>
+      <translation>Desabilitar Deslocamento Entrelaçado</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="79"/>
@@ -14574,7 +14574,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="95"/>
       <source>FMV Aspect Ratio Override:</source>
-      <translation>Substituir a Proporção do Aspecto do FMV:</translation>
+      <translation>Sobrescrita de Proporção do Tela de FMV:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="106"/>
@@ -14905,7 +14905,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="291"/>
       <source>Disable Render Fixes</source>
-      <translation>Desativar Correções de Renderização</translation>
+      <translation>Desabilitar Correções de Renderização</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="298"/>
@@ -14925,7 +14925,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="319"/>
       <source>Disable Depth Conversion</source>
-      <translation>Desativar a Conversão de Profundidade</translation>
+      <translation>Desabilitar Conversão de Profundidade</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="326"/>
@@ -15019,7 +15019,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="77"/>
       <source>Rasterizer Ordered View</source>
-      <translation>Vizualização Ordenada do Rasterizador - ROV</translation>
+      <translation>Visualização Ordenada do Rasterizador - ROV</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="93"/>
@@ -15258,12 +15258,12 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="50"/>
       <source>Sharpen Only (Internal Resolution)</source>
-      <translation>Só Tornar Mais Nítido (Resolução Interna)</translation>
+      <translation>Apenas Nitidez (Resolução Interna)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="55"/>
       <source>Sharpen and Resize (Display Resolution)</source>
-      <translation>Tornar Mais Nítido e Re-dimensionar (Exibir Resolução)</translation>
+      <translation>Nitidez e Redimensionamento (Resolução da Tela)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="65"/>
@@ -15289,7 +15289,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="108"/>
       <source>Shade Boost</source>
-      <translation>Aumentar o Shade</translation>
+      <translation>Intensificar Shade</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="117"/>
@@ -15459,7 +15459,7 @@ O escaneamento recursivamente leva mais tempo mas identificará os arquivos nos 
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="588"/>
       <source>Disable Depth Conversion</source>
-      <translation>Desativar a Conversão de Profundidade</translation>
+      <translation>Desabilitar Conversão de Profundidade</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="537"/>
@@ -15791,7 +15791,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="437"/>
       <source>FMV Aspect Ratio Override</source>
-      <translation>Substituir a Proporção do Aspecto do FMV</translation>
+      <translation>Sobrescrita de Proporção do Tela de FMV</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="555"/>
@@ -16117,7 +16117,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="503"/>
       <source>Rasterizer Ordered View</source>
-      <translation>Vizualização Ordenada do Rasterizador -  ROV</translation>
+      <translation>Visualização Ordenada do Rasterizador -  ROV</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="503"/>
@@ -16806,7 +16806,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="778"/>
       <source>Use Debug Blend</source>
-      <translation>Usar Depurar Mesclagem</translation>
+      <translation>Usar Mesclagem de Depuração</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="781"/>
@@ -16906,7 +16906,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="26"/>
       <source>Precache Textures</source>
-      <translation>Colocar as Texturas no Cache Primeiro</translation>
+      <translation>Pré-Cache das Texturas</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="33"/>
@@ -17158,7 +17158,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1247"/>
       <source>Toggle On-Screen Display</source>
-      <translation>Alternar a Exibição na Tela</translation>
+      <translation>Alternar Exibição em Tela</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1252"/>
@@ -18231,7 +18231,7 @@ Clique com o botão direito pra remover a associação</translation>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="98"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="222"/>
       <source>Enable Mouse Lock</source>
-      <translation>Ativar Bloqueio do Mouse</translation>
+      <translation>Habilitar Bloqueio do Mouse</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
@@ -18249,7 +18249,7 @@ Clique com o botão direito pra remover a associação</translation>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="56"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="210"/>
       <source>Use Save State Selector</source>
-      <translation>Usar o Seletor dos Save States</translation>
+      <translation>Usar Seletor de Save States</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="91"/>
@@ -19302,17 +19302,17 @@ Clique com o botão direito pra remover a associação</translation>
     <message>
       <location filename="../MainWindow.ui" line="901"/>
       <source>E&amp;nable System Console</source>
-      <translation>Ativar o Co&amp;nsole do Sistema</translation>
+      <translation>Ativar Co&amp;nsole do Sistema</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="909"/>
       <source>Enable &amp;Debug Console</source>
-      <translation>Ativar o Console de &amp;Depuração</translation>
+      <translation>Ativar Console de &amp;Depuração</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="917"/>
       <source>Enable &amp;Log Window</source>
-      <translation>Ativar a &amp;Janela de Log</translation>
+      <translation>Ativar &amp;Janela de Log</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="925"/>
@@ -20911,7 +20911,7 @@ Slot 2: {}</translation>
       <location filename="../Debugger/Memory/MemorySearchView.cpp" line="527"/>
       <location filename="../Debugger/Memory/MemorySearchView.cpp" line="540"/>
       <source>Debugger</source>
-      <translation>Debugger</translation>
+      <translation>Depurador</translation>
     </message>
     <message>
       <location filename="../Debugger/Memory/MemorySearchView.cpp" line="440"/>
@@ -21701,7 +21701,7 @@ Velocidade do alvo definida para 120%.</translation>
       <location filename="../Settings/OSDSettingsWidget.ui" line="20"/>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="37"/>
       <source>On-Screen Display</source>
-      <translation>Exibição na Tela</translation>
+      <translation>Exibição na Tela (OSD)</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="26"/>
@@ -21831,12 +21831,12 @@ Velocidade do alvo definida para 120%.</translation>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="291"/>
       <source>Select All</source>
-      <translation>Selecionar tudo</translation>
+      <translation>Selecionar Todos</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="304"/>
       <source>Deselect All</source>
-      <translation>Desmarcar tudo</translation>
+      <translation>Desmarcar Todos</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="344"/>
@@ -21878,7 +21878,7 @@ Velocidade do alvo definida para 120%.</translation>
       <location filename="../Settings/OSDSettingsWidget.ui" line="337"/>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="122"/>
       <source>Show GPU Usage</source>
-      <translation>Mostrar o Uso da GPU</translation>
+      <translation>Mostrar Uso da GPU</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="463"/>
@@ -21890,7 +21890,7 @@ Velocidade do alvo definida para 120%.</translation>
       <location filename="../Settings/OSDSettingsWidget.ui" line="428"/>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="116"/>
       <source>Show GS Statistics</source>
-      <translation>Mostrar as Estatísticas do GS</translation>
+      <translation>Mostrar Estatísticas do GS</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="435"/>
@@ -22031,7 +22031,7 @@ Velocidade do alvo definida para 120%.</translation>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="98"/>
       <source>Position of on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
-      <translation>Posição das mensagens na tela exibida quando ocorrem eventos como a criação e/ou carregamento de save states, capturas de telas, etc.</translation>
+      <translation>Posição das mensagens na exibição na tela quando ocorrem eventos como a criação e/ou carregamento de save states, capturas de telas, etc.</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="101"/>
@@ -23433,7 +23433,7 @@ Você quer criar este diretório?</translation>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="161"/>
       <source>On-Screen Display</source>
-      <translation>Exibição em tela</translation>
+      <translation>Exibição na Tela (OSD)</translation>
     </message>
     <message>
       <location filename="../Settings/SettingsWindow.cpp" line="163"/>
@@ -23731,12 +23731,12 @@ Você quer continuar?</translation>
     <message>
       <location filename="../SetupWizardDialog.ui" line="789"/>
       <source>Enable Achievements</source>
-      <translation>Habilitar Conquistas</translation>
+      <translation>Ativar Conquistas</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="796"/>
       <source>Enable Hardcore Mode</source>
-      <translation>Habilitar Modo Hardcore</translation>
+      <translation>Ativar Modo Hardcore</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="819"/>
@@ -23783,7 +23783,7 @@ Você quer continuar?</translation>
     <message>
       <location filename="../SetupWizardDialog.ui" line="491"/>
       <source>Controller Port 1</source>
-      <translation>Porta do Controle %1</translation>
+      <translation>Porta do Controle 1</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="500"/>
@@ -26989,7 +26989,7 @@ Os toca-discos do Xbox 360 requerem um multiplicador de 256x, a maioria dos outr
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="1304"/>
       <source>CDVD precaching failed: {}</source>
-      <translation>Falha no pré-carregamento de CDVD: {}</translation>
+      <translation>Falha no pré-cache do CDVD: {}</translation>
     </message>
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="1324"/>
