@@ -151,18 +151,19 @@ void psxDma6(u32 madr, u32 bcr, u32 chcr)
 
 void psxDma8(u32 madr, u32 bcr, u32 chcr)
 {
-	const int size = (bcr >> 16) * (bcr & 0xFFFF) * 8;
+	const int size = (bcr >> 16) * (bcr & 0xFFFF);
 
 	switch (chcr & 0x01000201)
 	{
 		case 0x01000201: //cpu to dev9 transfer
 			PSXDMA_LOG("*** DMA 8 - DEV9 mem2dev9 *** %lx addr = %lx size = %lx", chcr, madr, bcr);
-			DEV9writeDMA8Mem((u32*)iopPhysMem(madr), size);
+			DEV9writeDMA8Mem((u32*)iopPhysMem(madr), size * 8);
 			break;
 
 		case 0x01000200: //dev9 to cpu transfer
 			PSXDMA_LOG("*** DMA 8 - DEV9 dev9mem *** %lx addr = %lx size = %lx", chcr, madr, bcr);
-			DEV9readDMA8Mem((u32*)iopPhysMem(madr), size);
+			DEV9readDMA8Mem((u32*)iopPhysMem(madr), size * 8);
+			psxCpu->Clear(madr, size);
 			break;
 
 		default:
