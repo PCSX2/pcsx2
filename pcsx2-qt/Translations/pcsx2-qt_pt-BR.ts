@@ -23783,7 +23783,7 @@ Você quer continuar?</translation>
     <message>
       <location filename="../SetupWizardDialog.ui" line="491"/>
       <source>Controller Port 1</source>
-      <translation>Porta do Controle %1</translation>
+      <translation>Porta do Controle 1</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="500"/>
