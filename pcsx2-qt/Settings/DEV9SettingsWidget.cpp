@@ -4,11 +4,13 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
+#include <random>
 
 #include "common/FileSystem.h"
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include "pcsx2/DEV9/AdapterUtils.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/INISettingsInterface.h"
 
@@ -112,6 +114,47 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	connect(m_ui.ethDNS1Addr,    &QLineEdit::editingFinished, this, [&]() { onEthIPChanged(m_ui.ethDNS1Addr,    "DEV9/Eth", "DNS1"   ); });
 	connect(m_ui.ethDNS2Addr,    &QLineEdit::editingFinished, this, [&]() { onEthIPChanged(m_ui.ethDNS2Addr,    "DEV9/Eth", "DNS2"   ); });
 	// clang-format on
+
+	// MAC address. Blank means "generate one on first boot and keep it", which
+	// is what stops every install sharing the built-in default.
+	m_ui.ethMacAddr->setText(QString::fromUtf8(dialog()->getStringValue("DEV9/Eth", "Mac", "").value().c_str()));
+	connect(m_ui.ethMacAddr, &QLineEdit::editingFinished, this, [&]() { onEthMacChanged(); });
+	connect(m_ui.ethMacGenerate, &QPushButton::clicked, this, [&]() {
+		u8 mac[6];
+		std::random_device rd;
+		for (int i = 0; i < 6; i++)
+			mac[i] = static_cast<u8>(rd() & 0xFF);
+
+		// unicast + locally administered, so a generated address can never be
+		// mistaken for, or collide with, real vendor-assigned hardware
+		mac[0] = static_cast<u8>((mac[0] & 0xFC) | 0x02);
+
+		m_ui.ethMacAddr->setText(QString::fromUtf8(StringUtil::StdStringFromFormat(
+			"%02X:%02X:%02X:%02X:%02X:%02X",
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]).c_str()));
+		onEthMacChanged();
+	});
+
+	// Reroll only the host octet, keeping the subnet. A fully random address
+	// would land off-subnet or on the router, which is never what you want.
+	connect(m_ui.ethPS2AddrGenerate, &QPushButton::clicked, this, [&]() {
+		u8 ip[4] = {192, 168, 1, 2};
+		const std::string cur = m_ui.ethPS2Addr->text().toStdString();
+		sscanf(cur.c_str(), "%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
+
+		std::random_device rd;
+		const u8 was = ip[3];
+		do
+		{
+			ip[3] = static_cast<u8>(2 + (rd() % 253));	// skip .0, .1 and .255
+		} while (ip[3] == was);
+
+		m_ui.ethPS2Addr->setText(QString::fromUtf8(StringUtil::StdStringFromFormat(
+			"%u.%u.%u.%u", ip[0], ip[1], ip[2], ip[3]).c_str()));
+		onEthIPChanged(m_ui.ethPS2Addr, "DEV9/Eth", "PS2IP");
+	});
+
+	refreshAdapterInfo();
 
 	//Auto
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.ethNetMaskAuto, "DEV9/Eth", "AutoMask", true);
@@ -284,6 +327,57 @@ void DEV9SettingsWidget::onEthDeviceChanged(int index)
 		dialog()->setStringSettingValue("DEV9/Eth", "EthApi", std::nullopt);
 		dialog()->setStringSettingValue("DEV9/Eth", "EthDevice", std::nullopt);
 	}
+
+	refreshAdapterInfo();
+}
+
+/*
+    Show what the selected host adapter actually is.
+
+    DEV9 stores the adapter by GUID, so when a NIC changes or a VPN/virtual
+    adapter appears the config can silently point at something that no longer
+    exists and bridging fails opaquely. This reads the adapter's own details --
+    address, MAC, gateway -- locally via AdapterUtils. Nothing is sent anywhere;
+    an emulator settings page has no business making outbound requests.
+*/
+void DEV9SettingsWidget::refreshAdapterInfo()
+{
+    const std::string guid = dialog()->getStringValue("DEV9/Eth", "EthDevice", "").value();
+    if (guid.empty())
+    {
+        m_ui.ethAdapterInfo->setText(tr("No adapter selected."));
+        return;
+    }
+
+    AdapterUtils::Adapter adapter;
+    AdapterUtils::AdapterBuffer buffer;
+    if (!AdapterUtils::GetAdapter(guid, &adapter, &buffer))
+    {
+        m_ui.ethAdapterInfo->setText(
+            tr("Selected adapter not found on this system - bridging will fail. "
+               "Pick one from the list above."));
+        return;
+    }
+
+    QStringList bits;
+
+    const std::optional<PacketReader::IP::IP_Address> ip = AdapterUtils::GetAdapterIP(&adapter);
+    bits << tr("IP: %1").arg(ip.has_value()
+        ? QString::asprintf("%u.%u.%u.%u", ip->bytes[0], ip->bytes[1], ip->bytes[2], ip->bytes[3])
+        : tr("none"));
+
+    const std::optional<PacketReader::MAC_Address> mac = AdapterUtils::GetAdapterMAC(&adapter);
+    if (mac.has_value())
+        bits << QString::asprintf("MAC: %02X:%02X:%02X:%02X:%02X:%02X",
+            mac->bytes[0], mac->bytes[1], mac->bytes[2],
+            mac->bytes[3], mac->bytes[4], mac->bytes[5]);
+
+    const std::vector<PacketReader::IP::IP_Address> gws = AdapterUtils::GetGateways(&adapter);
+    if (!gws.empty())
+        bits << tr("Gateway: %1").arg(QString::asprintf("%u.%u.%u.%u",
+            gws[0].bytes[0], gws[0].bytes[1], gws[0].bytes[2], gws[0].bytes[3]));
+
+    m_ui.ethAdapterInfo->setText(bits.join(QStringLiteral("    ")));
 }
 
 void DEV9SettingsWidget::onEthDHCPInterceptChanged(Qt::CheckState state)
@@ -315,6 +409,36 @@ void DEV9SettingsWidget::onEthDHCPInterceptChanged(Qt::CheckState state)
 	m_ui.ethDNS2AddrLabel->setEnabled(enabled);
 	m_ui.ethDNS2Mode->setEnabled(enabled);
 	onEthDNSModeChanged(m_ui.ethDNS2Mode, m_ui.ethDNS2Mode->currentIndex(), m_ui.ethDNS2Addr, "DEV9/Eth", "ModeDNS2");
+}
+
+void DEV9SettingsWidget::onEthMacChanged()
+{
+	const QString text = m_ui.ethMacAddr->text().trimmed();
+
+	// empty is meaningful: it clears the setting so DEV9 generates one
+	if (text.isEmpty())
+	{
+		if (dialog()->getStringValue("DEV9/Eth", "Mac", std::nullopt).has_value())
+			dialog()->setStringSettingValue("DEV9/Eth", "Mac", std::nullopt);
+		return;
+	}
+
+	u8 mac[6];
+	if (6 != sscanf(text.toUtf8().constData(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+					&mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]))
+	{
+		QMessageBox::critical(this, tr("Invalid MAC Address"),
+			tr("MAC addresses look like 00:11:22:33:44:55."));
+		m_ui.ethMacAddr->setText(QString::fromUtf8(
+			dialog()->getStringValue("DEV9/Eth", "Mac", "").value().c_str()));
+		return;
+	}
+
+	const std::string neat = StringUtil::StdStringFromFormat(
+		"%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+	m_ui.ethMacAddr->setText(QString::fromUtf8(neat.c_str()));
+	dialog()->setStringSettingValue("DEV9/Eth", "Mac", neat.c_str());
 }
 
 void DEV9SettingsWidget::onEthIPChanged(QLineEdit* sender, const char* section, const char* key)

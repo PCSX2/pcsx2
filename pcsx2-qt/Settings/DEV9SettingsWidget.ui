@@ -53,6 +53,49 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="3">
+       <widget class="QLabel" name="ethAdapterInfo">
+        <property name="toolTip">
+         <string>Live details of the selected host adapter. Everything here is read locally from the adapter itself; nothing is sent anywhere.</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="ethMacLabel">
+        <property name="text">
+         <string>MAC Address:</string>
+        </property>
+        <property name="buddy">
+         <cstring>ethMacAddr</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="ethMacAddr">
+        <property name="toolTip">
+         <string>MAC address the emulated PS2 presents on the network. Leave blank to generate a unique one, which is then saved and reused. Ignored if you supply your own eeprom.dat.</string>
+        </property>
+        <property name="placeholderText">
+         <string>Generated automatically</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QPushButton" name="ethMacGenerate">
+        <property name="toolTip">
+         <string>Generate a new random MAC address.</string>
+        </property>
+        <property name="text">
+         <string>Generate</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="3">
        <widget class="QTabWidget" name="ethTabWidget">
         <property name="currentIndex">
          <number>0</number>
@@ -119,6 +162,16 @@
             </property>
             <property name="buddy">
              <cstring>ethInterceptDHCP</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="ethPS2AddrGenerate">
+            <property name="toolTip">
+             <string>Pick a different address on the same subnet. Useful when running more than one instance against a local server.</string>
+            </property>
+            <property name="text">
+             <string>Generate</string>
             </property>
            </widget>
           </item>

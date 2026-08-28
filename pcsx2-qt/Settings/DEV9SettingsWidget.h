@@ -22,6 +22,8 @@ private Q_SLOTS:
 	void onEthDeviceTypeChanged(int index);
 	void onEthDeviceChanged(int index);
 	void onEthDHCPInterceptChanged(Qt::CheckState state);
+	void refreshAdapterInfo();
+	void onEthMacChanged();
 	void onEthIPChanged(QLineEdit* sender, const char* section, const char* key);
 	void onEthAutoChanged(QCheckBox* sender, Qt::CheckState state, QLineEdit* input, const char* section, const char* key);
 	void onEthDNSModeChanged(QComboBox* sender, int index, QLineEdit* input, const char* section, const char* key);
