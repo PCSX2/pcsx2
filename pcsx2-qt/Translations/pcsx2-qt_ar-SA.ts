@@ -368,7 +368,7 @@ Do you want to enable hardcore mode?</source>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="399"/>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="61"/>
       <source>Enable In-Game Leaderboard Overlays</source>
-      <translation>تمكين تراكب المتصدرين في اللعبة</translation>
+      <translation>تفعيل تراكب المتصدرين في اللعبة</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.ui" line="409"/>
@@ -462,7 +462,7 @@ Login token generated at:</source>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="66"/>
       <source>When enabled, PCSX2 will list achievements from unofficial sets. Please note that these achievements are not tracked by RetroAchievements, so they unlock every time.</source>
-      <translation>عند التمكين، سوف يعرض PCSX2 الإنجازات من مجموعات الإنجازات الغير رسمية. يرجى ملاحظة أن هذه الإنجازات لا يتم تتبعها بواسطة "RetroAchievements"، لذلك يتم فتحها من جديد في كل مرة.</translation>
+      <translation>عند التفعيل، سوف يعرض PCSX2 الإنجازات من مجموعات الإنجازات الغير رسمية. يرجى ملاحظة أن هذه الإنجازات لا يتم تتبعها بواسطة "RetroAchievements"، لذلك يتم فتحها من جديد في كل مرة.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
@@ -486,7 +486,7 @@ Login token generated at:</source>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
       <source>When enabled and logged in, PCSX2 will scan for achievements on startup.</source>
-      <translation>عند التمكين وتسجيل الدخول، سيقوم PCSX2 بالبحث عن الإنجازات عند بدء التشغيل.</translation>
+      <translation>عند التفعيل وتسجيل الدخول، سيقوم PCSX2 بالبحث عن الإنجازات عند بدء التشغيل.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="20"/>
@@ -541,7 +541,7 @@ Login token generated at:</source>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="64"/>
       <source>When enabled, each session will behave as if no achievements have been unlocked.</source>
-      <translation>عند التمكين، ستعمل كل جلسة كما لو لم يتم فتح أي إنجازات.</translation>
+      <translation>عند التفعيل، ستعمل كل جلسة كما لو لم يتم فتح أي إنجازات.</translation>
     </message>
     <message>
       <location filename="../Settings/AchievementSettingsWidget.cpp" line="184"/>
@@ -1073,7 +1073,7 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="108"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="111"/>
       <source>Normal (Default)</source>
-      <translation>عادي (إفتراضي)</translation>
+      <translation>قياسي (افتراضي)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="74"/>
@@ -1084,7 +1084,7 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="129"/>
       <source>Enable Recompiler</source>
-      <translation>تمكين مُعيد البناء</translation>
+      <translation>تفعيل مُعيد البناء</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="77"/>
@@ -1121,7 +1121,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
       <source>Enable Cache (Slow)</source>
-      <translation>تمكين ذاكرة التخزين المؤقت (بطيء)</translation>
+      <translation>تفعيل ذاكرة التخزين المؤقت (بطيء)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="84"/>
@@ -1150,7 +1150,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="90"/>
       <source>Enable Fast Memory Access</source>
-      <translation>تمكين الوصول السريع للذاكرة</translation>
+      <translation>تفعيل الوصول السريع للذاكرة</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="92"/>
@@ -1232,7 +1232,7 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="120"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
       <extracomment>VU0 = Vector Unit 0. One of the PS2&apos;s processors.</extracomment>
-      <translation>تمكين مُعيد بناء برامج VU0 (في وضع المايكرو)</translation>
+      <translation>تفعيل مُعيد بناء برامج VU0 (في وضع المايكرو)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="120"/>
@@ -1243,7 +1243,7 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="123"/>
       <source>Enable VU1 Recompiler</source>
       <extracomment>VU1 = Vector Unit 1. One of the PS2&apos;s processors.</extracomment>
-      <translation>تمكين مُعيد بناء برامج VU1</translation>
+      <translation>تفعيل مُعيد بناء برامج VU1</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="123"/>
@@ -1402,7 +1402,7 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="269"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="347"/>
       <source>Normal (Default)</source>
-      <translation>عادي (إفتراضي)</translation>
+      <translation>قياسي (افتراضي)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="59"/>
@@ -1455,17 +1455,17 @@ Unread messages: {2}</translation>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="144"/>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="374"/>
       <source>Enable Recompiler</source>
-      <translation>تمكين مُعيد البناء</translation>
+      <translation>تفعيل مُعيد البناء</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="151"/>
       <source>Enable Fast Memory Access</source>
-      <translation>تمكين الوصول السريع للذاكرة</translation>
+      <translation>تفعيل الوصول السريع للذاكرة</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="158"/>
       <source>Enable Cache (Slow)</source>
-      <translation>تمكين ذاكرة التخزين المؤقت (بطيء)</translation>
+      <translation>تفعيل ذاكرة التخزين المؤقت (بطيء)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="165"/>
@@ -1496,12 +1496,12 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="240"/>
       <source>Enable VU1 Recompiler</source>
-      <translation>تمكين مُعيد بناء برامج VU1</translation>
+      <translation>تفعيل مُعيد بناء برامج VU1</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="247"/>
       <source>Enable VU0 Recompiler (Micro Mode)</source>
-      <translation>تمكين مُعيد بناء برامج VU0 (في وضع المايكرو)</translation>
+      <translation>تفعيل مُعيد بناء برامج VU0 (في وضع المايكرو)</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="254"/>
@@ -1607,7 +1607,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="477"/>
       <source>Deflate</source>
-      <translation type="unfinished">Deflate</translation>
+      <translation>Deflate</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="493"/>
@@ -1617,7 +1617,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="515"/>
       <source>Slot:</source>
-      <translation>خانة:</translation>
+      <translation>الفتحة:</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.ui" line="525"/>
@@ -3262,17 +3262,17 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="183"/>
       <source>Enable SDL Raw Input</source>
-      <translation>تمكين المدخل الخام لـ SDL</translation>
+      <translation>تفعيل المدخل الخام لـ SDL</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="190"/>
       <source>Enable IOKit Driver</source>
-      <translation>تمكين مشغل IOKit</translation>
+      <translation>تفعيل مشغل IOKit</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="197"/>
       <source>Enable MFI Driver</source>
-      <translation>تمكين مشغل MFI</translation>
+      <translation>تفعيل مشغل MFI</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="259"/>
@@ -3292,12 +3292,12 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="48"/>
       <source>Multitap on Console Port 1</source>
-      <translation>تمكين المشترك في المنفذ: 1</translation>
+      <translation>تفعيل المشترك في المنفذ: 1</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="55"/>
       <source>Multitap on Console Port 2</source>
-      <translation>تمكين المشترك في المنفذ: 2</translation>
+      <translation>تفعيل المشترك في المنفذ: 2</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="207"/>
@@ -3317,7 +3317,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="231"/>
       <source>Enable Mouse Mapping</source>
-      <translation>تمكين تخصيص أزرار الماوس</translation>
+      <translation>تفعيل تخصيص أزرار الماوس</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="282"/>
@@ -3345,7 +3345,7 @@ Unread messages: {2}</translation>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="82"/>
       <source>Enable DualSense Player LED</source>
-      <translation>تمكين مشغل DualSense LED</translation>
+      <translation>تفعيل مشغل DualSense LED</translation>
     </message>
     <message>
       <location filename="../Settings/ControllerLEDSettingsDialog.ui" line="44"/>
@@ -4492,22 +4492,22 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="107"/>
       <source>Save Draw Start:</source>
-      <translation type="unfinished">Save Draw Start:</translation>
+      <translation>حفظ بداية السحب:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="124"/>
       <source>Save Draw Count:</source>
-      <translation type="unfinished">Save Draw Count:</translation>
+      <translation>حفظ عدد السحب:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="144"/>
       <source>Save Frame Start:</source>
-      <translation type="unfinished">Save Frame Start:</translation>
+      <translation>حفظ بداية الإطار:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="161"/>
       <source>Save Frame Count:</source>
-      <translation type="unfinished">Save Frame Count:</translation>
+      <translation>حفظ عدد الإطار:</translation>
     </message>
     <message>
       <location filename="../Settings/DebugGSSettingsTab.ui" line="181"/>
@@ -4564,7 +4564,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="37"/>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="273"/>
       <source>DMA Control</source>
-      <translation type="unfinished">DMA Control</translation>
+      <translation>تحكم DMA</translation>
     </message>
     <message>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="44"/>
@@ -4659,7 +4659,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="163"/>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="245"/>
       <source>DMA Registers</source>
-      <translation type="unfinished">DMA Registers</translation>
+      <translation>سجلات DMA</translation>
     </message>
     <message>
       <location filename="../Settings/DebugLoggingSettingsTab.ui" line="170"/>
@@ -4754,7 +4754,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <source>Enable Trace Logging</source>
-      <translation>تمكين تسجيل التتبع</translation>
+      <translation>تفعيل تسجيل التتبع</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="52"/>
@@ -4853,17 +4853,17 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="71"/>
       <source>Drop Indicator Style</source>
-      <translation type="unfinished">Drop Indicator Style</translation>
+      <translation>نمط مؤشر الانخفاض</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="72"/>
       <source>Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. You will have to restart the debugger for this option to take effect.</source>
-      <translation type="unfinished">Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. You will have to restart the debugger for this option to take effect.</translation>
+      <translation>اختر نمط عرض مؤشرات السحب التي تظهر عند سحب نوافذ الإرساء في أداة التصحيح. سيتعين عليك إعادة تشغيل أداة التصحيح حتى يدخل هذا الخيار حيز التنفيذ.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="133"/>
       <source>Globally enable / disable trace logging.</source>
-      <translation type="unfinished">Globally enable / disable trace logging.</translation>
+      <translation>تفعيل/تعطيل تسجيل التتبع على مستوى النظام.</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="136"/>
@@ -4981,7 +4981,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="158"/>
       <source>EE GIF Tags</source>
-      <translation type="unfinished">EE GIF Tags</translation>
+      <translation>علامات EE GIF</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="158"/>
@@ -4991,7 +4991,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="160"/>
       <source>EE VIF Codes</source>
-      <translation type="unfinished">EE VIF Codes</translation>
+      <translation>رموز EE VIF</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="160"/>
@@ -5021,7 +5021,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="166"/>
       <source>EE DMA Controller</source>
-      <translation type="unfinished">EE DMA Controller</translation>
+      <translation>وحدة التحكم EE DMA</translation>
     </message>
     <message>
       <location filename="../Settings/DebugSettingsWidget.cpp" line="166"/>
@@ -5566,23 +5566,23 @@ Do you want to overwrite?</source>
       <location filename="../Debugger/DisassemblyView.cpp" line="311"/>
       <location filename="../Debugger/DisassemblyView.cpp" line="322"/>
       <source>Rename Function Error</source>
-      <translation type="unfinished">Rename Function Error</translation>
+      <translation>خطأ في إعادة تسمية الدالة</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="311"/>
       <source>No function / symbol is currently selected.</source>
-      <translation type="unfinished">No function / symbol is currently selected.</translation>
+      <translation>لا توجد دالة / رمز محدد حاليا.</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="315"/>
       <location filename="../Debugger/DisassemblyView.cpp" line="847"/>
       <source>Rename Function</source>
-      <translation type="unfinished">Rename Function</translation>
+      <translation>إعادة تسمية الدالة</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="316"/>
       <source>Function name</source>
-      <translation type="unfinished">Function name</translation>
+      <translation>اسم الدالة</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="322"/>
@@ -5592,12 +5592,12 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="378"/>
       <source>Restore Function Error</source>
-      <translation type="unfinished">Restore Function Error</translation>
+      <translation>خطأ في استعادة الدالة</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="378"/>
       <source>Unable to stub selected address.</source>
-      <translation type="unfinished">Unable to stub selected address.</translation>
+      <translation>تعذر إنشاء نسخة بديلة للعنوان المحدد.</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="774"/>
@@ -5642,7 +5642,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="810"/>
       <source>Run to Cursor</source>
-      <translation type="unfinished">Run to Cursor</translation>
+      <translation>الانتقال إلى موقع المؤشر</translation>
     </message>
     <message>
       <location filename="../Debugger/DisassemblyView.cpp" line="813"/>
@@ -5741,7 +5741,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Debugger/Docking/DockManager.cpp" line="111"/>
       <source>No Layouts</source>
-      <translation type="unfinished">No Layouts</translation>
+      <translation>لا توجد تخطيطات</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/DockManager.cpp" line="212"/>
@@ -5756,12 +5756,12 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Debugger/Docking/DockManager.cpp" line="599"/>
       <source>Edit Layout</source>
-      <translation type="unfinished">Edit Layout</translation>
+      <translation>تحرير التخطيط</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/DockManager.cpp" line="604"/>
       <source>Reset Layout</source>
-      <translation type="unfinished">Reset Layout</translation>
+      <translation>إعادة تعيين التخطيط</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/DockManager.cpp" line="662"/>
@@ -5795,12 +5795,12 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Debugger/Docking/DockMenuBar.cpp" line="146"/>
       <source>Layout Locked</source>
-      <translation type="unfinished">Layout Locked</translation>
+      <translation>التخطيط مقفل</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/DockMenuBar.cpp" line="151"/>
       <source>Layout Unlocked</source>
-      <translation type="unfinished">Layout Unlocked</translation>
+      <translation>تم فتح التخطيط</translation>
     </message>
   </context>
   <context>
@@ -5909,42 +5909,42 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../QtHost.cpp" line="1038"/>
       <source>Volume: %1%</source>
-      <translation type="unfinished">Volume: %1%</translation>
+      <translation>الصوت: %1%</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1040"/>
       <source>Volume: Muted</source>
-      <translation type="unfinished">Volume: Muted</translation>
+      <translation>الصوت: مكتوم</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1051"/>
       <source>Auto (%1)</source>
-      <translation type="unfinished">Auto (%1)</translation>
+      <translation>تلقائي (1%)</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1064"/>
       <source>%1x%2 (%3x)</source>
-      <translation type="unfinished">%1x%2 (%3x)</translation>
+      <translation>%1x%2 (%3x)</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1077"/>
       <source>GPU: %1%</source>
-      <translation type="unfinished">GPU: %1%</translation>
+      <translation>GPU: %1%</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1091"/>
       <source>VPS: N/A</source>
-      <translation type="unfinished">VPS: N/A</translation>
+      <translation>VPS: N/A</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1091"/>
       <source>VPS: %1</source>
-      <translation type="unfinished">VPS: %1</translation>
+      <translation>VPS: %1</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1098"/>
       <source>Speed: %1%</source>
-      <translation type="unfinished">Speed: %1%</translation>
+      <translation>السرعة: %1%</translation>
     </message>
     <message>
       <location filename="../QtHost.cpp" line="1162"/>
@@ -6007,7 +6007,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="39"/>
       <source>Normal Speed:</source>
-      <translation>السرعة العادية:</translation>
+      <translation>السرعة القياسية:</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="65"/>
@@ -6039,7 +6039,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="150"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="133"/>
       <source>Enable Host Filesystem</source>
-      <translation>تمكين نظام ملفات المضيف</translation>
+      <translation>تفعيل نظام ملفات المضيف</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="157"/>
@@ -6051,13 +6051,13 @@ Do you want to overwrite?</source>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="164"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="128"/>
       <source>Enable CDVD Precaching</source>
-      <translation>تمكين التحقق من CDVD</translation>
+      <translation>تفعيل التحقق من CDVD</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="171"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="119"/>
       <source>Enable Thread Pinning</source>
-      <translation>تمكين تثبيت الموضوع</translation>
+      <translation>تفعيل تثبيت الموضوع</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="190"/>
@@ -6109,7 +6109,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="87"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="112"/>
       <source>100% (Normal Speed)</source>
-      <translation>100% (سرعة عادية)</translation>
+      <translation>100% (سرعة قياسية)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="92"/>
@@ -6152,7 +6152,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="290"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="164"/>
       <source>Use System Locale Format</source>
-      <translation type="unfinished">Use System Locale Format</translation>
+      <translation>استخدام تنسيق الإعدادات المحلية للنظام</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="234"/>
@@ -6176,7 +6176,7 @@ Do you want to overwrite?</source>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="262"/>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="153"/>
       <source>Skip Presenting Duplicate Frames</source>
-      <translation type="unfinished">Skip Presenting Duplicate Frames</translation>
+      <translation>تخطي عرض الإطارات المكررة</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.ui" line="274"/>
@@ -6198,7 +6198,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="102"/>
       <source>Normal Speed</source>
-      <translation>السرعة العادية</translation>
+      <translation>السرعة القياسية</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="103"/>
@@ -6294,7 +6294,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="123"/>
       <source>Enable Multithreaded VU1 (MTVU1)</source>
-      <translation>تمكين تعدد مهام وحدة VU1 (MTVU1)</translation>
+      <translation>تفعيل تعدد مهام وحدة VU1 (MTVU1)</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="124"/>
@@ -6359,7 +6359,7 @@ Do you want to overwrite?</source>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="154"/>
       <source>Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag. Helps when using frame generation on 25/30fps games.</source>
-      <translation type="unfinished">Detects when idle frames are being presented in 25/30fps games, and skips presenting those frames. The frame is still rendered, it just means the GPU has more time to complete it (this is NOT frame skipping). Can smooth out frame time fluctuations when the CPU/GPU are near maximum utilization, but makes frame pacing more inconsistent and can increase input lag. Helps when using frame generation on 25/30fps games.</translation>
+      <translation>يكتشف ظهور الإطارات الخاملة في الألعاب التي تعمل بمعدل 25/30 إطارًا في الثانية، ويتخطى عرض تلك الإطارات. لا يزال الإطار يتم عرضه، ولكن هذا يعني أن وحدة معالجة الرسومات لديها المزيد من الوقت لإكماله (وهذا ليس تخطيًا للإطارات). يمكن أن يخفف من تقلبات زمن الإطارات عندما تكون وحدة المعالجة المركزية أو وحدة معالجة الرسومات قريبة من الحد الأقصى للاستخدام، ولكنه يجعل وتيرة الإطارات أقل اتساقًا وقد يزيد من تأخر الاستجابة. يساعد عند استخدام ميزة «توليد الإطارات» في الألعاب التي تعمل بمعدل 25/30 إطارًا في الثانية.</translation>
     </message>
     <message>
       <location filename="../Settings/EmulationSettingsWidget.cpp" line="159"/>
@@ -6583,7 +6583,7 @@ The URL was: %1</source>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="47"/>
       <source>Used for storing shaders, game list, and achievement data.</source>
-      <translation>تستخدم لتخزين الشادرز، وقائمة اللعبة، وبيانات الإنجاز.</translation>
+      <translation>يُستخدم لتخزين المظلات وقائمة الألعاب وبيانات الإنجازات.</translation>
     </message>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="63"/>
@@ -6635,7 +6635,7 @@ The URL was: %1</source>
       <location filename="../Settings/FolderSettingsWidget.ui" line="152"/>
       <location filename="../Settings/FolderSettingsWidget.cpp" line="25"/>
       <source>Save Snapshots in Game-Specific Folders</source>
-      <translation type="unfinished">Save Snapshots in Game-Specific Folders</translation>
+      <translation>حفظ اللقطات في مجلدات خاصة بكل لعبة</translation>
     </message>
     <message>
       <location filename="../Settings/FolderSettingsWidget.ui" line="162"/>
@@ -6656,7 +6656,7 @@ The URL was: %1</source>
     <message>
       <location filename="../Settings/FolderSettingsWidget.cpp" line="26"/>
       <source>Saves snapshots to per-game subfolders instead of a shared folder.</source>
-      <translation type="unfinished">Saves snapshots to per-game subfolders instead of a shared folder.</translation>
+      <translation>يحفظ اللقطات في مجلدات فرعية خاصة بكل لعبة بدلاً من مجلد مشترك.</translation>
     </message>
     <message>
       <location filename="../Settings/FolderSettingsWidget.cpp" line="28"/>
@@ -10515,12 +10515,12 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6510"/>
       <source>Nearest (Default)</source>
-      <translation type="unfinished">Nearest (Default)</translation>
+      <translation>Nearest (Default)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6511"/>
       <source>Chop/Zero</source>
-      <translation type="unfinished">Chop/Zero</translation>
+      <translation>Chop/Zero</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6512"/>
@@ -10545,17 +10545,17 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6566"/>
       <source>Fast Forward Boot</source>
-      <translation type="unfinished">Fast Forward Boot</translation>
+      <translation>Fast Forward Boot</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6593"/>
       <source>Disable Interlace Offset</source>
-      <translation type="unfinished">Disable Interlace Offset</translation>
+      <translation>Disable Interlace Offset</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6635"/>
       <source>Draw Buffering</source>
-      <translation type="unfinished">Draw Buffering</translation>
+      <translation>Draw Buffering</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6615"/>
@@ -10565,187 +10565,187 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6562"/>
       <source>Start In Big Picture Mode</source>
-      <translation type="unfinished">Start In Big Picture Mode</translation>
+      <translation>Start In Big Picture Mode</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6568"/>
       <source>Fast-Forward Speed</source>
-      <translation type="unfinished">Fast-Forward Speed</translation>
+      <translation>Fast-Forward Speed</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6569"/>
       <source>Slow-Motion Speed</source>
-      <translation type="unfinished">Slow-Motion Speed</translation>
+      <translation>Slow-Motion Speed</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6572"/>
       <source>Enable Multithreaded VU1 (MTVU)</source>
-      <translation type="unfinished">Enable Multithreaded VU1 (MTVU)</translation>
+      <translation>Enable Multithreaded VU1 (MTVU)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6573"/>
       <source>Enable Thread Pinning</source>
-      <translation type="unfinished">Enable Thread Pinning</translation>
+      <translation>Enable Thread Pinning</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6578"/>
       <source>Manually Set Real-Time Clock</source>
-      <translation type="unfinished">Manually Set Real-Time Clock</translation>
+      <translation>Manually Set Real-Time Clock</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6579"/>
       <source>Year</source>
-      <translation type="unfinished">Year</translation>
+      <translation>Year</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6580"/>
       <source>Month</source>
-      <translation type="unfinished">Month</translation>
+      <translation>Month</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6581"/>
       <source>Day</source>
-      <translation type="unfinished">Day</translation>
+      <translation>Day</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6582"/>
       <source>Hour</source>
-      <translation type="unfinished">Hour</translation>
+      <translation>Hour</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6583"/>
       <source>Minute</source>
-      <translation type="unfinished">Minute</translation>
+      <translation>Minute</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6584"/>
       <source>Second</source>
-      <translation type="unfinished">Second</translation>
+      <translation>Second</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6594"/>
       <source>Screenshot Resolution</source>
-      <translation type="unfinished">Screenshot Resolution</translation>
+      <translation>Screenshot Resolution</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6599"/>
       <source>Apply Widescreen Patches</source>
-      <translation type="unfinished">Apply Widescreen Patches</translation>
+      <translation>Apply Widescreen Patches</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6600"/>
       <source>Apply No-Interlacing Patches</source>
-      <translation type="unfinished">Apply No-Interlacing Patches</translation>
+      <translation>Apply No-Interlacing Patches</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6602"/>
       <source>Integer Scaling</source>
-      <translation type="unfinished">Integer Scaling</translation>
+      <translation>Integer Scaling</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6607"/>
       <source>Texture Filtering</source>
-      <translation type="unfinished">Texture Filtering</translation>
+      <translation>Texture Filtering</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6612"/>
       <source>AA1</source>
-      <translation type="unfinished">AA1</translation>
+      <translation>AA1</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6613"/>
       <source>Accurate Alpha Test</source>
-      <translation type="unfinished">Accurate Alpha Test</translation>
+      <translation>Accurate Alpha Test</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6617"/>
       <source>Auto Flush</source>
-      <translation type="unfinished">Auto Flush</translation>
+      <translation>Auto Flush</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6618"/>
       <source>Manual Hardware Renderer Fixes</source>
-      <translation type="unfinished">Manual Hardware Renderer Fixes</translation>
+      <translation>Manual Hardware Renderer Fixes</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6623"/>
       <source>Skip Draw Range Start</source>
-      <translation type="unfinished">Skip Draw Range Start</translation>
+      <translation>Skip Draw Range Start</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6624"/>
       <source>Skip Draw Range End</source>
-      <translation type="unfinished">Skip Draw Range End</translation>
+      <translation>Skip Draw Range End</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6625"/>
       <source>Framebuffer Conversion</source>
-      <translation type="unfinished">Framebuffer Conversion</translation>
+      <translation>Framebuffer Conversion</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6630"/>
       <source>Disable Partial Source Invalidation</source>
-      <translation type="unfinished">Disable Partial Source Invalidation</translation>
+      <translation>Disable Partial Source Invalidation</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6636"/>
       <source>Limit Depth to 24 Bits</source>
-      <translation type="unfinished">Limit Depth to 24 Bits</translation>
+      <translation>Limit Depth to 24 Bits</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6641"/>
       <source>Texture Offsets X</source>
-      <translation type="unfinished">Texture Offsets X</translation>
+      <translation>Texture Offsets X</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6642"/>
       <source>Texture Offsets Y</source>
-      <translation type="unfinished">Texture Offsets Y</translation>
+      <translation>Texture Offsets Y</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6649"/>
       <source>Precache Textures</source>
-      <translation type="unfinished">Precache Textures</translation>
+      <translation>Precache Textures</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6650"/>
       <source>Search Directory</source>
-      <translation type="unfinished">Search Directory</translation>
+      <translation>Search Directory</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6656"/>
       <source>Sharpness</source>
-      <translation type="unfinished">Sharpness</translation>
+      <translation>Sharpness</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6658"/>
       <source>Brightness</source>
-      <translation type="unfinished">Brightness</translation>
+      <translation>Brightness</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6659"/>
       <source>Contrast</source>
-      <translation type="unfinished">Contrast</translation>
+      <translation>Contrast</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6660"/>
       <source>Gamma</source>
-      <translation type="unfinished">Gamma</translation>
+      <translation>Gamma</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6661"/>
       <source>Saturation</source>
-      <translation type="unfinished">Saturation</translation>
+      <translation>Saturation</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6662"/>
       <source>TV Shader</source>
-      <translation type="unfinished">TV Shader</translation>
+      <translation>TV Shader</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6665"/>
       <source>Use Blit Swap Chain</source>
-      <translation type="unfinished">Use Blit Swap Chain</translation>
+      <translation>Use Blit Swap Chain</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6674"/>
@@ -10755,12 +10755,12 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6675"/>
       <source>Spin CPU During Readbacks</source>
-      <translation type="unfinished">Spin CPU During Readbacks</translation>
+      <translation>Spin CPU During Readbacks</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6676"/>
       <source>Spin GPU During Readbacks</source>
-      <translation type="unfinished">Spin GPU During Readbacks</translation>
+      <translation>Spin GPU During Readbacks</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6681"/>
@@ -10780,7 +10780,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6688"/>
       <source>Show Speed Percentages</source>
-      <translation type="unfinished">Show Speed Percentages</translation>
+      <translation>Show Speed Percentages</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6697"/>
@@ -10790,27 +10790,27 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6698"/>
       <source>Show GPU Pipeline Statistics</source>
-      <translation type="unfinished">Show GPU Pipeline Statistics</translation>
+      <translation>Show GPU Pipeline Statistics</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6710"/>
       <source>Backend</source>
-      <translation type="unfinished">Backend</translation>
+      <translation>Backend</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6711"/>
       <source>Expansion Mode</source>
-      <translation type="unfinished">Expansion Mode</translation>
+      <translation>Expansion Mode</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6719"/>
       <source>Swap Memory Cards</source>
-      <translation type="unfinished">Swap Memory Cards</translation>
+      <translation>Swap Memory Cards</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6747"/>
       <source>Enable Spectator Mode</source>
-      <translation type="unfinished">Enable Spectator Mode</translation>
+      <translation>Enable Spectator Mode</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6748"/>
@@ -10885,7 +10885,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6807"/>
       <source>Save Snapshots in Game-Specific Folders</source>
-      <translation type="unfinished">Save Snapshots in Game-Specific Folders</translation>
+      <translation>Save Snapshots in Game-Specific Folders</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6808"/>
@@ -11140,12 +11140,12 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5854"/>
       <source>Both slots must have a card selected to swap.</source>
-      <translation type="unfinished">Both slots must have a card selected to swap.</translation>
+      <translation>يجب أن تكون هناك بطاقة محددة في كلتا الفتحتين حتى يتم التبديل.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5855"/>
       <source>Swapped Slot 1 and Slot 2 memory cards.</source>
-      <translation type="unfinished">Swapped Slot 1 and Slot 2 memory cards.</translation>
+      <translation>تم تبديل بطاقتي الذاكرة في الفتحة 1 والفتحة 2.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5927"/>
@@ -11175,42 +11175,42 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5956"/>
       <source>Real-Time Clock</source>
-      <translation type="unfinished">Real-Time Clock</translation>
+      <translation>ساعة الوقت الفعلي</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5957"/>
       <source>Uses a fixed date/time for the virtual PS2 instead of the host clock. Applied on boot only.</source>
-      <translation type="unfinished">Uses a fixed date/time for the virtual PS2 instead of the host clock. Applied on boot only.</translation>
+      <translation>يستخدم تاريخًا ووقتًا ثابتين لجهاز PS2 الافتراضي بدلاً من ساعة الجهاز المضيف. يتم تطبيق هذا الإعداد عند بدء التشغيل فقط.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5958"/>
       <source>Calendar year for the virtual PS2 RTC.</source>
-      <translation type="unfinished">Calendar year for the virtual PS2 RTC.</translation>
+      <translation>السنة التقويمية لجهاز PS2 RTC الافتراضي.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5959"/>
       <source>Month of the year (1-12).</source>
-      <translation type="unfinished">Month of the year (1-12).</translation>
+      <translation>الشهر من السنة (1-12).</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5960"/>
       <source>Day of the month (1-31).</source>
-      <translation type="unfinished">Day of the month (1-31).</translation>
+      <translation>اليوم من الشهر (1-31).</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5961"/>
       <source>Hour of the day (0-23).</source>
-      <translation type="unfinished">Hour of the day (0-23).</translation>
+      <translation>الساعة من اليوم (0-23).</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5962"/>
       <source>Minute of the hour (0-59).</source>
-      <translation type="unfinished">Minute of the hour (0-59).</translation>
+      <translation>الدقيقة من الساعة (0-59).</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5963"/>
       <source>Second of the minute (0-59).</source>
-      <translation type="unfinished">Second of the minute (0-59).</translation>
+      <translation>الثانية من الدقيقة (0-59).</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="5964"/>
@@ -11265,7 +11265,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6114"/>
       <source>Swaps the selected memory cards in Slot 1 and Slot 2.</source>
-      <translation type="unfinished">Swaps the selected memory cards in Slot 1 and Slot 2.</translation>
+      <translation>يُبدل بين بطاقتي الذاكرة المحددتين في الفتحة 1 والفتحة 2.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6117"/>
@@ -11275,27 +11275,27 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6148"/>
       <source>Game Info</source>
-      <translation type="unfinished">Game Info</translation>
+      <translation>معلومات اللعبة</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6155"/>
       <source>Notifications</source>
-      <translation type="unfinished">Notifications</translation>
+      <translation>Notifications</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6160"/>
       <source>Determines the display duration for achievement unlock popups.</source>
-      <translation type="unfinished">Determines the display duration for achievement unlock popups.</translation>
+      <translation>Determines the display duration for achievement unlock popups.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6161"/>
       <source>Determines the display duration for leaderboard popups.</source>
-      <translation type="unfinished">Determines the display duration for leaderboard popups.</translation>
+      <translation>Determines the display duration for leaderboard popups.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6162"/>
       <source>Overlay Settings</source>
-      <translation type="unfinished">Overlay Settings</translation>
+      <translation>Overlay Settings</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6182"/>
@@ -11305,42 +11305,42 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6188"/>
       <source>Organization</source>
-      <translation type="unfinished">Organization</translation>
+      <translation>Organization</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6189"/>
       <source>Saves snapshots to per-game subfolders instead of a shared folder.</source>
-      <translation type="unfinished">Saves snapshots to per-game subfolders instead of a shared folder.</translation>
+      <translation>Saves snapshots to per-game subfolders instead of a shared folder.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6190"/>
       <source>Saves video recordings to per-game subfolders instead of a shared folder.</source>
-      <translation type="unfinished">Saves video recordings to per-game subfolders instead of a shared folder.</translation>
+      <translation>Saves video recordings to per-game subfolders instead of a shared folder.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6209"/>
       <source>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing.</source>
-      <translation type="unfinished">Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing.</translation>
+      <translation>Pauses the virtual machine when a TLB miss occurs, instead of ignoring it and continuing.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6210"/>
       <source>Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively.</source>
-      <translation type="unfinished">Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively.</translation>
+      <translation>Exposes additional memory to the virtual machine, expanding the EE and IOP memory to 128MB and 8MB respectively.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6217"/>
       <source>Compatibility</source>
-      <translation type="unfinished">Compatibility</translation>
+      <translation>Compatibility</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6218"/>
       <source>Automatically loads and applies fixes to known problematic games on game start.</source>
-      <translation type="unfinished">Automatically loads and applies fixes to known problematic games on game start.</translation>
+      <translation>Automatically loads and applies fixes to known problematic games on game start.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6219"/>
       <source>Automatically loads and applies compatibility patches to known problematic games.</source>
-      <translation type="unfinished">Automatically loads and applies compatibility patches to known problematic games.</translation>
+      <translation>Automatically loads and applies compatibility patches to known problematic games.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6225"/>
@@ -11350,27 +11350,27 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6226"/>
       <source>PINE Settings</source>
-      <translation type="unfinished">PINE Settings</translation>
+      <translation>PINE Settings</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6227"/>
       <source>Enables the PINE Inter-Process Communication system, allowing external programs to interact with the emulator.</source>
-      <translation type="unfinished">Enables the PINE Inter-Process Communication system, allowing external programs to interact with the emulator.</translation>
+      <translation>Enables the PINE Inter-Process Communication system, allowing external programs to interact with the emulator.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6228"/>
       <source>The network port slot used for PINE IPC connections.</source>
-      <translation type="unfinished">The network port slot used for PINE IPC connections.</translation>
+      <translation>The network port slot used for PINE IPC connections.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6229"/>
       <source>Toggles scanning cheat files for all CRCs of the game. With this enabled available cheats for the game serial with different CRCs will also be loaded.</source>
-      <translation type="unfinished">Toggles scanning cheat files for all CRCs of the game. With this enabled available cheats for the game serial with different CRCs will also be loaded.</translation>
+      <translation>Toggles scanning cheat files for all CRCs of the game. With this enabled available cheats for the game serial with different CRCs will also be loaded.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6230"/>
       <source>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</source>
-      <translation type="unfinished">Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</translation>
+      <translation>Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6283"/>
@@ -11385,7 +11385,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6327"/>
       <source>Generic</source>
-      <translation type="unfinished">Generic</translation>
+      <translation>Generic</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6375"/>
@@ -11395,7 +11395,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6418"/>
       <source>Force 32bit</source>
-      <translation>فرض نظام 32 بت</translation>
+      <translation>Force 32bit</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6443"/>
@@ -11540,12 +11540,12 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6480"/>
       <source>Prioritize Upper Bits</source>
-      <translation type="unfinished">Prioritize Upper Bits</translation>
+      <translation>Prioritize Upper Bits</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6481"/>
       <source>Prioritize Lower Bits</source>
-      <translation type="unfinished">Prioritize Lower Bits</translation>
+      <translation>Prioritize Lower Bits</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6482"/>
@@ -11665,7 +11665,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4028"/>
       <source>Scanning for new games...</source>
-      <translation type="unfinished">Scanning for new games...</translation>
+      <translation>Scanning for new games...</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4064"/>
@@ -12373,7 +12373,7 @@ This action cannot be undone.</translation>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4132"/>
       <source>Refresh List</source>
-      <translation type="unfinished">Refresh List</translation>
+      <translation>Refresh List</translation>
     </message>
     <message>
       <location filename="../../pcsx2/ImGui/FullscreenUI.cpp" line="4159"/>
@@ -12872,27 +12872,27 @@ Please see our official documentation for more information.</source>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="119"/>
       <source>Failed to read real state data</source>
-      <translation type="unfinished">Failed to read real state data</translation>
+      <translation>فشل قراءة بيانات الحالة الفعلية</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="127"/>
       <source>Failed to read regs data.</source>
-      <translation type="unfinished">Failed to read regs data.</translation>
+      <translation>فشل قراءة بيانات السجل.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="144"/>
       <source>Failed to read packet.</source>
-      <translation type="unfinished">Failed to read packet.</translation>
+      <translation>فشل قراءة الحزمة.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="162"/>
       <source>Failed to read byte.</source>
-      <translation type="unfinished">Failed to read byte.</translation>
+      <translation>فشل قراءة البايت.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="174"/>
       <source>Failed to read word.</source>
-      <translation type="unfinished">Failed to read word.</translation>
+      <translation>فشل قراءة الكلمة.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GSLzma.cpp" line="205"/>
@@ -13819,13 +13819,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../GameList/GameListWidget.ui" line="57"/>
       <location filename="../GameList/GameListWidget.ui" line="60"/>
       <source>Game List</source>
-      <translation>قائمة الألعاب</translation>
+      <translation>عرض قائمة</translation>
     </message>
     <message>
       <location filename="../GameList/GameListWidget.ui" line="82"/>
       <location filename="../GameList/GameListWidget.ui" line="85"/>
       <source>Game Grid</source>
-      <translation>شبكة الألعاب</translation>
+      <translation>عرض شبكة</translation>
     </message>
     <message>
       <location filename="../GameList/GameListWidget.ui" line="107"/>
@@ -13837,7 +13837,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../GameList/GameListWidget.ui" line="132"/>
       <location filename="../GameList/GameListWidget.ui" line="135"/>
       <source>Show Full Titles</source>
-      <translation type="unfinished">Show Full Titles</translation>
+      <translation>عرض العناوين بالكامل</translation>
     </message>
     <message>
       <location filename="../GameList/GameListWidget.ui" line="197"/>
@@ -13857,7 +13857,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../GameList/GameListWidget.cpp" line="687"/>
       <source>Reset All Columns</source>
-      <translation type="unfinished">Reset All Columns</translation>
+      <translation>إعادة تعيين جميع الأعمدة</translation>
     </message>
   </context>
   <context>
@@ -14605,7 +14605,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="86"/>
       <source>Show Overscan</source>
-      <translation>عرض Overscan</translation>
+      <translation>عرض تجاوز الشاشة</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsDisplaySettingsTab.ui" line="95"/>
@@ -14826,7 +14826,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="233"/>
       <source>1 (Normal)</source>
-      <translation>1 (عادي)</translation>
+      <translation>1 (قياسي)</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareFixesSettingsTab.ui" line="238"/>
@@ -15010,7 +15010,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="20"/>
       <source>Texture Filtering:</source>
-      <translation type="unfinished">Texture Filtering:</translation>
+      <translation>تصفية النسيج:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="31"/>
@@ -15060,7 +15060,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="93"/>
       <source>Anisotropic Filtering:</source>
-      <translation type="unfinished">Anisotropic Filtering:</translation>
+      <translation>التصفية غير المتجانسة:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="106"/>
@@ -15145,12 +15145,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="211"/>
       <source>Blending Accuracy:</source>
-      <translation type="unfinished">Blending Accuracy:</translation>
+      <translation>دقة المزج:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsHardwareRenderingSettingsTab.ui" line="221"/>
       <source>Trilinear Filtering:</source>
-      <translation type="unfinished">Trilinear Filtering:</translation>
+      <translation>التصفية ثلاثية الخطوط:</translation>
     </message>
   </context>
   <context>
@@ -15277,13 +15277,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="20"/>
       <source>Sharpening/Anti-Aliasing</source>
-      <translation type="unfinished">Sharpening/Anti-Aliasing</translation>
+      <translation>التحسين/إزالة التعرج</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="26"/>
       <source>Contrast Adaptive Sharpening:</source>
       <extracomment>You might find an official translation for this on AMD&apos;s website (Spanish version linked): https://www.amd.com/es/technologies/radeon-software-fidelityfx</extracomment>
-      <translation type="unfinished">Contrast Adaptive Sharpening:</translation>
+      <translation>التحسين التلقائي للحدة وفقًا للتباين:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="45"/>
@@ -15325,7 +15325,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="108"/>
       <source>Shade Boost</source>
-      <translation type="unfinished">Shade Boost</translation>
+      <translation>تعزيز التظليل</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="117"/>
@@ -15350,7 +15350,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="199"/>
       <source>TV Shader:</source>
-      <translation type="unfinished">TV Shader:</translation>
+      <translation>ظلال التلفاز:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsPostProcessingSettingsTab.ui" line="215"/>
@@ -15407,7 +15407,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="64"/>
       <source>Display</source>
-      <translation>العرض</translation>
+      <translation>الشاشة</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="49"/>
@@ -15439,7 +15439,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="433"/>
       <source>Show Overscan</source>
-      <translation>عرض Overscan</translation>
+      <translation>عرض تجاوز الشاشة</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="441"/>
@@ -15465,7 +15465,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="65"/>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="66"/>
       <source>Rendering</source>
-      <translation>معالجة الرسم</translation>
+      <translation>العرض</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="506"/>
@@ -15628,7 +15628,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="679"/>
       <source>Precache Textures</source>
-      <translation>التخزين المؤقت المسبق للإكساءات</translation>
+      <translation>التخزين المسبق للنسيج</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="70"/>
@@ -15649,7 +15649,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="689"/>
       <source>Shade Boost</source>
-      <translation>تعزيز الظل</translation>
+      <translation>تعزيز التظليل</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="702"/>
@@ -16121,7 +16121,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="741"/>
       <source>Enable Extra Audio Arguments</source>
-      <translation>تمكين وسائط صوت إضافية</translation>
+      <translation>تفعيل وسائط صوت إضافية</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSettingsWidget.cpp" line="741"/>
@@ -16893,7 +16893,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsSoftwareRenderingSettingsTab.ui" line="30"/>
       <source>Texture Filtering:</source>
-      <translation type="unfinished">Texture Filtering:</translation>
+      <translation>تصفية النسيج:</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsSoftwareRenderingSettingsTab.ui" line="42"/>
@@ -16941,32 +16941,32 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="26"/>
       <source>Precache Textures</source>
-      <translation type="unfinished">Precache Textures</translation>
+      <translation>التخزين المسبق للنسيج</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="33"/>
       <source>Asynchronous Texture Loading</source>
-      <translation type="unfinished">Asynchronous Texture Loading</translation>
+      <translation>التحميل غير المتزامن للنسيج</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="40"/>
       <source>Load Textures</source>
-      <translation>تحميل النُسج (Textures)</translation>
+      <translation>تحميل النسيج</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="47"/>
       <source>Dump Textures</source>
-      <translation type="unfinished">Dump Textures</translation>
+      <translation>تفريغ الأنسجة</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="54"/>
       <source>Dump Mipmaps</source>
-      <translation type="unfinished">Dump Mipmaps</translation>
+      <translation>تفريغ خرائط Mipmap</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="61"/>
       <source>Dump FMV Textures</source>
-      <translation type="unfinished">Dump FMV Textures</translation>
+      <translation>تفريغ نسيج FMV</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsTextureReplacementSettingsTab.ui" line="71"/>
@@ -17080,7 +17080,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../Settings/GraphicsUpscalingFixesSettingsTab.ui" line="131"/>
       <source>Normal</source>
-      <translation>عادي</translation>
+      <translation>قياسي</translation>
     </message>
     <message>
       <location filename="../Settings/GraphicsUpscalingFixesSettingsTab.ui" line="136"/>
@@ -17338,7 +17338,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1349"/>
       <source>Blending Accuracy set to {}.</source>
-      <translation type="unfinished">Blending Accuracy set to {}.</translation>
+      <translation>دقة المزج مضبوطة على {}.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/GS/GS.cpp" line="1355"/>
@@ -17433,7 +17433,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="181"/>
       <source>Toggle Frame Limit</source>
-      <translation>تمكين/تعطيل محدد السرعة</translation>
+      <translation>تفعيل/تعطيل محدد السرعة</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="191"/>
@@ -17530,7 +17530,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="243"/>
       <source>Reload Patches</source>
-      <translation type="unfinished">Reload Patches</translation>
+      <translation>إعادة تحميل التعديلات</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="265"/>
@@ -17566,7 +17566,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="286"/>
       <source>Load Backup State From Selected Slot</source>
-      <translation type="unfinished">Load Backup State From Selected Slot</translation>
+      <translation>تحميل حالة النسخ الاحتياطي من الفتحة المحددة</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Hotkeys.cpp" line="291"/>
@@ -18042,12 +18042,12 @@ Right click to clear binding</source>
       <location filename="../../pcsx2/Recording/InputRecordingControls.cpp" line="39"/>
       <location filename="../../pcsx2/Recording/InputRecordingControls.cpp" line="56"/>
       <source>Record Mode Enabled</source>
-      <translation>تم تمكين وضع التسجيل</translation>
+      <translation>تم تفعيل وضع التسجيل</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Recording/InputRecordingControls.cpp" line="49"/>
       <source>Replay Mode Enabled</source>
-      <translation>تمكين وضع إعادة العرض</translation>
+      <translation>تفعيل وضع إعادة العرض</translation>
     </message>
   </context>
   <context>
@@ -18267,7 +18267,7 @@ Right click to clear binding</source>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="98"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="222"/>
       <source>Enable Mouse Lock</source>
-      <translation>تمكين قفل الماوس</translation>
+      <translation>تفعيل قفل الماوس</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="77"/>
@@ -18384,12 +18384,12 @@ Right click to clear binding</source>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="297"/>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="244"/>
       <source>Fit</source>
-      <translation type="unfinished">Fit</translation>
+      <translation>مناسب</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="302"/>
       <source>Fill</source>
-      <translation type="unfinished">Fill</translation>
+      <translation>ملء</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="307"/>
@@ -18404,7 +18404,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="317"/>
       <source>Tile</source>
-      <translation type="unfinished">Tile</translation>
+      <translation>مربع</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.ui" line="330"/>
@@ -18576,7 +18576,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="211"/>
       <source>Show a save state selector UI when switching slots instead of showing a notification bubble.</source>
-      <translation type="unfinished">Show a save state selector UI when switching slots instead of showing a notification bubble.</translation>
+      <translation>اعرض واجهة مستخدم لاختيار حالة الحفظ عند التبديل بين الفتحات بدلاً من عرض فقاعة إشعار.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="214"/>
@@ -18601,7 +18601,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="232"/>
       <source>Automatically starts Big Picture Mode instead of the regular Qt interface when PCSX2 launches.</source>
-      <translation>تشغيل وضع الصورة الكبيرة تلقائياً بدلاً من واجهة Qt العادية عند تشغيل PCSX2.</translation>
+      <translation>يُشغّل تلقائيًا «وضع الصورة الكبيرة» بدلاً من واجهة Qt القياسية عند تشغيل برنامج PCSX2.</translation>
     </message>
     <message>
       <location filename="../Settings/InterfaceSettingsWidget.cpp" line="234"/>
@@ -18777,17 +18777,17 @@ Right click to clear binding</source>
     <message>
       <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="28"/>
       <source>Name:</source>
-      <translation type="unfinished">Name:</translation>
+      <translation>الاسم:</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="38"/>
       <source>Target:</source>
-      <translation type="unfinished">Target:</translation>
+      <translation>الهدف:</translation>
     </message>
     <message>
       <location filename="../Debugger/Docking/LayoutEditorDialog.ui" line="48"/>
       <source>Initial State:</source>
-      <translation type="unfinished">Initial State:</translation>
+      <translation>الحالة الأولية:</translation>
     </message>
   </context>
   <context>
@@ -19313,7 +19313,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.ui" line="823"/>
       <source>Show F&amp;ull Titles (Grid View)</source>
-      <translation type="unfinished">Show F&amp;ull Titles (Grid View)</translation>
+      <translation>عرض العناوين بالكامل (عرض الشبكة)</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="869"/>
@@ -19338,22 +19338,22 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.ui" line="901"/>
       <source>E&amp;nable System Console</source>
-      <translation>تمكين وحدة التحكم بالنظام</translation>
+      <translation>تفعيل وحدة التحكم بالنظام</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="909"/>
       <source>Enable &amp;Debug Console</source>
-      <translation>تمكين وحدة تحكم التصحيح</translation>
+      <translation>تفعيل وحدة تحكم التصحيح</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="917"/>
       <source>Enable &amp;Log Window</source>
-      <translation>تمكين نافذة السجل</translation>
+      <translation>تفعيل نافذة السجل</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="925"/>
       <source>Enable &amp;Verbose Logging</source>
-      <translation>تمكين السجلات التفصيلية</translation>
+      <translation>تفعيل السجلات التفصيلية</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="933"/>
@@ -19411,7 +19411,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.ui" line="1026"/>
       <source>&amp;Enable Log Timestamps</source>
-      <translation>تمكين الطوابع الزمنية للسجلات</translation>
+      <translation>تفعيل الطوابع الزمنية للسجلات</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="1034"/>
@@ -19459,7 +19459,7 @@ Right click to clear binding</source>
       <location filename="../MainWindow.ui" line="610"/>
       <location filename="../MainWindow.ui" line="765"/>
       <source>Game &amp;List</source>
-      <translation>قائمة الألعاب</translation>
+      <translation>عرض قائمة</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="735"/>
@@ -19485,7 +19485,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.ui" line="795"/>
       <source>Game &amp;Grid</source>
-      <translation>شبكة الألعاب</translation>
+      <translation>عرض شبكة</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="831"/>
@@ -19525,7 +19525,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.ui" line="1002"/>
       <source>Enable &amp;File Logging</source>
-      <translation>تمكين ملف التسجيل</translation>
+      <translation>تفعيل ملف التسجيل</translation>
     </message>
     <message>
       <location filename="../MainWindow.ui" line="1042"/>
@@ -19563,24 +19563,24 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.cpp" line="329"/>
       <source>Toggle Mute</source>
-      <translation type="unfinished">Toggle Mute</translation>
+      <translation>تشغيل/إيقاف كتم الصوت</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="353"/>
       <location filename="../MainWindow.cpp" line="473"/>
       <source>Volume: Muted</source>
-      <translation type="unfinished">Volume: Muted</translation>
+      <translation>الصوت: مكتوم</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="353"/>
       <location filename="../MainWindow.cpp" line="473"/>
       <source>Volume: %1%</source>
-      <translation type="unfinished">Volume: %1%</translation>
+      <translation>الصوت: %1%</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="386"/>
       <source>Unlimited</source>
-      <translation type="unfinished">Unlimited</translation>
+      <translation>غير محدود</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="387"/>
@@ -19595,7 +19595,7 @@ Right click to clear binding</source>
     <message>
       <location filename="../MainWindow.cpp" line="389"/>
       <source>Normal</source>
-      <translation type="unfinished">Normal</translation>
+      <translation>قياسي</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="841"/>
@@ -20122,7 +20122,7 @@ Opening default directory.</source>
     <message>
       <location filename="../MainWindow.cpp" line="3521"/>
       <source>Failed to open memory card directory.</source>
-      <translation type="unfinished">Failed to open memory card directory.</translation>
+      <translation>فشل فتح مجلد بطاقة الذاكرة.</translation>
     </message>
     <message>
       <location filename="../MainWindow.cpp" line="3543"/>
@@ -20524,34 +20524,34 @@ Savestates should not be used in place of in-game saves.</translation>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="133"/>
       <source>Slot %1</source>
-      <translation type="unfinished">Slot %1</translation>
+      <translation>الفتحة 1%</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
       <source>Reset</source>
-      <translation type="unfinished">Reset</translation>
+      <translation>إعادة تعيين</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
       <source>Eject Memory Card</source>
-      <translation type="unfinished">Eject Memory Card</translation>
+      <translation>إخراج بطاقة الذاكرة</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
       <source>Error</source>
-      <translation type="unfinished">Error</translation>
+      <translation>خطأ</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
       <source>This Memory Card cannot be recognized or is not a valid file type.</source>
-      <translation type="unfinished">This Memory Card cannot be recognized or is not a valid file type.</translation>
+      <translation>لا يمكن التعرف على بطاقة الذاكرة هذه أو أن نوع الملف غير صالح.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="240"/>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="250"/>
       <source>Delete Memory Card</source>
-      <translation type="unfinished">Delete Memory Card</translation>
+      <translation>حذف بطاقة الذاكرة</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
@@ -20573,22 +20573,22 @@ This action cannot be reversed, and you will lose any saves on the card.</transl
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="279"/>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
       <source>Rename Memory Card</source>
-      <translation type="unfinished">Rename Memory Card</translation>
+      <translation>إعادة تسمية بطاقة الذاكرة</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
       <source>New Card Name</source>
-      <translation type="unfinished">New Card Name</translation>
+      <translation>اسم البطاقة الجديدة</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
       <source>New name is invalid, it must end with .ps2</source>
-      <translation type="unfinished">New name is invalid, it must end with .ps2</translation>
+      <translation>الاسم الجديد غير صالح، يجب أن ينتهي بـ .ps2</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="280"/>
       <source>New name is invalid, a card with this name already exists.</source>
-      <translation type="unfinished">New name is invalid, a card with this name already exists.</translation>
+      <translation>الاسم الجديد غير صالح، فهناك بطاقة تحمل هذا الاسم بالفعل.</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
@@ -20603,22 +20603,22 @@ This action cannot be reversed, and you will lose any saves on the card.</transl
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="322"/>
       <source>Use for Slot %1</source>
-      <translation type="unfinished">Use for Slot %1</translation>
+      <translation>استخدام الفتحة 1%</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
       <source>Rename</source>
-      <translation type="unfinished">Rename</translation>
+      <translation>إعادة التسمية</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="328"/>
       <source>Convert</source>
-      <translation type="unfinished">Convert</translation>
+      <translation>تحويل</translation>
     </message>
     <message>
       <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="329"/>
       <source>Delete</source>
-      <translation type="unfinished">Delete</translation>
+      <translation>حذف</translation>
     </message>
   </context>
   <context>
@@ -21900,7 +21900,7 @@ Target speed set to 120%.</translation>
       <location filename="../Settings/OSDSettingsWidget.ui" line="498"/>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="131"/>
       <source>Show GPU Pipeline Statistics</source>
-      <translation type="unfinished">Show GPU Pipeline Statistics</translation>
+      <translation>عرض إحصائيات خط أنابيب معالجة وحدة معالجة الرسومات</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.ui" line="386"/>
@@ -22165,7 +22165,7 @@ Target speed set to 120%.</translation>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="132"/>
       <source>Shows GPU vertex shader and pixels shader invocations.</source>
-      <translation type="unfinished">Shows GPU vertex shader and pixels shader invocations.</translation>
+      <translation>يعرض عمليات استدعاء مُظلِّل الرؤوس ومُظلِّل البكسلات في وحدة معالجة الرسومات </translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="134"/>
@@ -22175,7 +22175,7 @@ Target speed set to 120%.</translation>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="137"/>
       <source>Shows the current system CPU and GPU information.</source>
-      <translation type="unfinished">Shows the current system CPU and GPU information.</translation>
+      <translation>يعرض معلومات وحدة المعالجة المركزية (CPU) ووحدة معالجة الرسومات (GPU) الحالية للنظام.</translation>
     </message>
     <message>
       <location filename="../Settings/OSDSettingsWidget.cpp" line="140"/>
@@ -22852,7 +22852,7 @@ Ejecting {2} and replacing it with {3}.</translation>
       <comment>OSD Message</comment>
       <translation>
         <numerusform>%n game patches are active.</numerusform>
-        <numerusform>%n تعديلات اللعبة نشطة.</numerusform>
+        <numerusform>game patches are active%n.</numerusform>
         <numerusform>%n تعديلات اللعبة نشطة.</numerusform>
         <numerusform>%n تعديلات اللعبة نشطة.</numerusform>
         <numerusform>%n تعديلات اللعبة نشطة.</numerusform>
@@ -22905,7 +22905,7 @@ Ejecting {2} and replacing it with {3}.</translation>
       <location filename="../../pcsx2/Patch.cpp" line="1847"/>
       <source>On Startup &amp; When Enabled</source>
       <extracomment>Time when a patch is applied.</extracomment>
-      <translation>عند بدء التشغيل وعند التمكين</translation>
+      <translation>عند بدء التشغيل وعند التفعيل</translation>
     </message>
   </context>
   <context>
@@ -22913,7 +22913,7 @@ Ejecting {2} and replacing it with {3}.</translation>
     <message>
       <location filename="../../pcsx2/Pcsx2Config.cpp" line="1195"/>
       <source>Disabled (Noisy)</source>
-      <translation type="unfinished">Disabled (Noisy)</translation>
+      <translation>معطل (صاخب)</translation>
     </message>
     <message>
       <location filename="../../pcsx2/Pcsx2Config.cpp" line="1196"/>
@@ -23782,12 +23782,12 @@ Do you want to continue?</source>
     <message>
       <location filename="../SetupWizardDialog.ui" line="789"/>
       <source>Enable Achievements</source>
-      <translation type="unfinished">Enable Achievements</translation>
+      <translation>تفعيل الإنجازات</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="796"/>
       <source>Enable Hardcore Mode</source>
-      <translation type="unfinished">Enable Hardcore Mode</translation>
+      <translation>تفعيل وضع شديد الصعوبة</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="819"/>
@@ -23869,12 +23869,12 @@ Do you want to continue?</source>
     <message>
       <location filename="../SetupWizardDialog.ui" line="926"/>
       <source>Create Desktop shortcut</source>
-      <translation type="unfinished">Create Desktop shortcut</translation>
+      <translation>إنشاء اختصار على سطح المكتب</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="933"/>
       <source>Add PCSX2 to the Application Menu</source>
-      <translation type="unfinished">Add PCSX2 to the Application Menu</translation>
+      <translation>إضافة PCSX2 إلى قائمة التطبيقات</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.ui" line="962"/>
@@ -23964,14 +23964,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
       <location filename="../SetupWizardDialog.cpp" line="448"/>
       <source>Add PCSX2 to the Start Menu</source>
-      <translation type="unfinished">Add PCSX2 to the Start Menu</translation>
+      <translation>إضافة PCSX2 إلى قائمة ابدأ</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.cpp" line="470"/>
       <source>Username: %1
 Login token generated on %2.</source>
-      <translation type="unfinished">Username: %1
-Login token generated on %2.</translation>
+      <translation>اسم المستخدم: 1%
+تم إنشاء رمز تسجيل الدخول في 2%.</translation>
     </message>
     <message>
       <location filename="../SetupWizardDialog.cpp" line="473"/>
@@ -24019,7 +24019,7 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="77"/>
       <source>Force Enable</source>
-      <translation>تمكين إجباري</translation>
+      <translation>تفعيل إجباري</translation>
     </message>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="82"/>
@@ -24064,7 +24064,7 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="369"/>
       <source>Reset to default application icon</source>
-      <translation type="unfinished">Reset to default application icon</translation>
+      <translation>إعادة تعيين رمز التطبيق إلى الإعداد الافتراضي</translation>
     </message>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="372"/>
@@ -24121,7 +24121,7 @@ Login token generated on %2.</translation>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="131"/>
       <source>Portable Mode (Stores data in local PCSX2 directory)</source>
-      <translation type="unfinished">Portable Mode (Stores data in local PCSX2 directory)</translation>
+      <translation>الوضع المحمول (يخزن البيانات في الدليل المحلي لـ PCSX2)</translation>
     </message>
     <message>
       <location filename="../ShortcutCreationDialog.ui" line="290"/>
@@ -27315,12 +27315,12 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="3286"/>
       <source>Accurate Alpha Test is enabled, this may reduce performance.</source>
-      <translation type="unfinished">Accurate Alpha Test is enabled, this may reduce performance.</translation>
+      <translation>تم تمكين Accurate Alpha Test، وقد يؤدي ذلك إلى انخفاض الأداء.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="3291"/>
       <source>AA1 is enabled, this may severely degrade performance.</source>
-      <translation type="unfinished">AA1 is enabled, this may severely degrade performance.</translation>
+      <translation>إذا تم تفعيل AA1، فقد يؤدي ذلك إلى انخفاض شديد في الأداء.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="3296"/>
@@ -27455,7 +27455,7 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="2324"/>
       <source>Cannot frame advance while RetroAchievements Hardcore Mode is active.</source>
-      <translation type="unfinished">Cannot frame advance while RetroAchievements Hardcore Mode is active.</translation>
+      <translation>لا يمكن تغيير الإطار أثناء تفعيل وضع «Hardcore» في RetroAchievements.</translation>
     </message>
     <message>
       <location filename="../../pcsx2/VMManager.cpp" line="3261"/>
