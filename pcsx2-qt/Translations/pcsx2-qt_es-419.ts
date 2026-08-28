@@ -1280,7 +1280,7 @@ Mensajes sin leer: {2}</translation>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="139"/>
       <source>Determines the algorithm to be used when compressing savestates.</source>
-      <translation>Determina el algoritmo a ser usado cuando se comprimen los estados guardados.</translation>
+      <translation>Determina el algoritmo que se utilizará para comprimir los estados de guardado.</translation>
     </message>
     <message>
       <location filename="../Settings/AdvancedSettingsWidget.cpp" line="141"/>
