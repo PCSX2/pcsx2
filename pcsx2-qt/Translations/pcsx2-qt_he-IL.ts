@@ -558,7 +558,6 @@ Login token generated at:</source>
         <numerusform>שניה %n</numerusform>
         <numerusform>%n שניות</numerusform>
         <numerusform>%n שניות</numerusform>
-        <numerusform>%n שניות</numerusform>
       </translation>
     </message>
     <message>
@@ -613,7 +612,6 @@ Login token generated on %2.</source>
       <translation>
         <numerusform>יש לכם {} מתוך %n מההישגים</numerusform>
         <numerusform>השגתם {} מתוך %n הישגים</numerusform>
-        <numerusform>צברתם {} מתוך %n הישגים</numerusform>
         <numerusform>פתחתם {} מתוך %n הישגים</numerusform>
       </translation>
     </message>
@@ -624,7 +622,6 @@ Login token generated on %2.</source>
       <translation>
         <numerusform>זכיתם ב{} מתוך %n נקודות</numerusform>
         <numerusform>צברתם {} מתוך %n נקודות</numerusform>
-        <numerusform>השגתם {} מתוך %n נקודות</numerusform>
         <numerusform>השגתם {} מתוך %n נקודות</numerusform>
       </translation>
     </message>
@@ -654,7 +651,6 @@ Login token generated on %2.</source>
         <numerusform>הישג %n</numerusform>
         <numerusform>%n הישגים</numerusform>
         <numerusform>%n הישגים</numerusform>
-        <numerusform>%n הישגים</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -664,7 +660,6 @@ Login token generated on %2.</source>
       <comment>Mastery popup</comment>
       <translation>
         <numerusform>נקודה %n</numerusform>
-        <numerusform>%n נקודות</numerusform>
         <numerusform>%n נקודות</numerusform>
         <numerusform>%n נקודות</numerusform>
       </translation>
@@ -13607,7 +13602,6 @@ accuracy, but this may increase system requirements.</translation>
         <numerusform>%n seconds</numerusform>
         <numerusform>%n seconds</numerusform>
         <numerusform>%n seconds</numerusform>
-        <numerusform>%n seconds</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -13618,7 +13612,6 @@ accuracy, but this may increase system requirements.</translation>
         <numerusform>%n hours</numerusform>
         <numerusform>%n hours</numerusform>
         <numerusform>%n hours</numerusform>
-        <numerusform>%n hours</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -13626,7 +13619,6 @@ accuracy, but this may increase system requirements.</translation>
       <location filename="../../pcsx2/GameList.cpp" line="1252"/>
       <source>%n minutes</source>
       <translation type="unfinished">
-        <numerusform>%n minutes</numerusform>
         <numerusform>%n minutes</numerusform>
         <numerusform>%n minutes</numerusform>
         <numerusform>%n minutes</numerusform>
@@ -17953,7 +17945,6 @@ Right click to clear binding</translation>
         <numerusform>%n bindings</numerusform>
         <numerusform>%n bindings</numerusform>
         <numerusform>%n bindings</numerusform>
-        <numerusform>%n bindings</numerusform>
       </translation>
     </message>
     <message>
@@ -20040,7 +20031,6 @@ Do you want to load this state, or start from a fresh boot?</translation>
       <location filename="../MainWindow.cpp" line="3709"/>
       <source>%n save states deleted.</source>
       <translation type="unfinished">
-        <numerusform>%n save states deleted.</numerusform>
         <numerusform>%n save states deleted.</numerusform>
         <numerusform>%n save states deleted.</numerusform>
         <numerusform>%n save states deleted.</numerusform>
@@ -22820,7 +22810,6 @@ Ejecting {2} and replacing it with {3}.</translation>
         <numerusform>%n GameDB patches are active.</numerusform>
         <numerusform>%n GameDB patches are active.</numerusform>
         <numerusform>%n GameDB patches are active.</numerusform>
-        <numerusform>%n GameDB patches are active.</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -22831,7 +22820,6 @@ Ejecting {2} and replacing it with {3}.</translation>
         <numerusform>%n game patches are active.</numerusform>
         <numerusform>%n game patches are active.</numerusform>
         <numerusform>%n game patches are active.</numerusform>
-        <numerusform>%n game patches are active.</numerusform>
       </translation>
     </message>
     <message numerus="yes">
@@ -22839,7 +22827,6 @@ Ejecting {2} and replacing it with {3}.</translation>
       <source>%n cheat patches are active.</source>
       <comment>OSD Message</comment>
       <translation type="unfinished">
-        <numerusform>%n cheat patches are active.</numerusform>
         <numerusform>%n cheat patches are active.</numerusform>
         <numerusform>%n cheat patches are active.</numerusform>
         <numerusform>%n cheat patches are active.</numerusform>
