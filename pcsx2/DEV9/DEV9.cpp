@@ -5,6 +5,10 @@
 #include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include <cstring>
+#include <random>
+
+#include "Host.h"
 #include "IopDma.h"
 
 #ifdef _WIN32
@@ -69,6 +73,36 @@ u8 eeprom[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 // clang-format on
+
+// The MAC occupies EEPROM words 0-2, with word 3 holding their 16-bit sum.
+// Verified against the default above: 0x6D76 + 0x6361 + 0x3130 == 0x10207,
+// truncated to 0x0207, which is exactly the 0x07,0x02 stored there.
+static u16 DEV9MacChecksum(const u8* mac)
+{
+	const u16 w0 = static_cast<u16>(mac[0] | (mac[1] << 8));
+	const u16 w1 = static_cast<u16>(mac[2] | (mac[3] << 8));
+	const u16 w2 = static_cast<u16>(mac[4] | (mac[5] << 8));
+	return static_cast<u16>(w0 + w1 + w2);
+}
+
+static void DEV9SetEepromMac(u8* ee, const u8* mac)
+{
+	std::memcpy(ee, mac, 6);
+	const u16 sum = DEV9MacChecksum(ee);
+	ee[6] = static_cast<u8>(sum & 0xFF);
+	ee[7] = static_cast<u8>(sum >> 8);
+}
+
+// A generated address must never be mistakable for a vendor-assigned one:
+// clear the multicast bit and set the locally-administered bit.
+static void DEV9GenerateMac(u8* mac)
+{
+	std::random_device rd;
+	for (int i = 0; i < 6; i++)
+		mac[i] = static_cast<u8>(rd() & 0xFF);
+
+	mac[0] = static_cast<u8>((mac[0] & 0xFC) | 0x02);
+}
 
 #ifdef _WIN32
 HANDLE hEeprom;
@@ -158,6 +192,36 @@ s32 DEV9init()
 		}
 	}
 #endif
+
+	// Only ever touch the built-in image. If the user supplied an eeprom.dat
+	// it is theirs, MAC included, and must be left exactly as found.
+	if (dev9.eeprom == reinterpret_cast<u16*>(eeprom))
+	{
+		u8 mac[6];
+		std::memcpy(mac, EmuConfig.DEV9.Mac, 6);
+
+		const bool unset = (mac[0] | mac[1] | mac[2] | mac[3] | mac[4] | mac[5]) == 0;
+		if (unset && EmuConfig.DEV9.AutoMac)
+		{
+			DEV9GenerateMac(mac);
+			std::memcpy(EmuConfig.DEV9.Mac, mac, 6);
+
+			// EmuConfig is a runtime copy populated FROM the settings store, so
+			// writing it alone is discarded on exit and a fresh MAC would be
+			// generated every boot. Persist through the host settings instead,
+			// which is what makes this stable across restarts.
+			const std::string macStr = StringUtil::StdStringFromFormat(
+				"%02X:%02X:%02X:%02X:%02X:%02X",
+				mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+			Host::SetBaseStringSettingValue("DEV9/Eth", "Mac", macStr.c_str());
+			Host::CommitBaseSettingChanges();
+
+			Console.WriteLn("DEV9: generated MAC %s", macStr.c_str());
+		}
+
+		if (!unset || EmuConfig.DEV9.AutoMac)
+			DEV9SetEepromMac(eeprom, mac);
+	}
 
 	for (int rxbi = 0; rxbi < (SMAP_BD_SIZE / 8); rxbi++)
 	{

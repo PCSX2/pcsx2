@@ -1323,6 +1323,14 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(EthLogDHCP);
 		SettingsWrapEntry(EthLogDNS);
 
+		// Persisted so a generated MAC is stable across restarts. Rotating it
+		// every boot would break DHCP leases and switch MAC tables.
+		SettingsWrapEntry(AutoMac);
+		std::string macStr = SaveMacHelper(Mac);
+		SettingsWrapEntryEx(macStr, "Mac");
+		if (wrap.IsLoading())
+			LoadMacHelper(Mac, macStr);
+
 		SettingsWrapEntry(InterceptDHCP);
 
 		std::string ps2IPStr = "0.0.0.0";
@@ -1444,6 +1452,31 @@ void Pcsx2Config::DEV9Options::LoadIPHelper(u8* field, const std::string& settin
 std::string Pcsx2Config::DEV9Options::SaveIPHelper(u8* field)
 {
 	return StringUtil::StdStringFromFormat("%u.%u.%u.%u", field[0], field[1], field[2], field[3]);
+}
+
+void Pcsx2Config::DEV9Options::LoadMacHelper(u8* field, const std::string& setting)
+{
+	if (setting.empty())
+	{
+		std::fill(field, field + 6, 0);		// unset; DEV9 will generate one
+		return;
+	}
+
+	if (6 == sscanf(setting.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+			&field[0], &field[1], &field[2], &field[3], &field[4], &field[5]))
+		return;
+
+	Console.Error("Invalid MAC address in settings file");
+	std::fill(field, field + 6, 0);
+}
+
+std::string Pcsx2Config::DEV9Options::SaveMacHelper(u8* field)
+{
+	if ((field[0] | field[1] | field[2] | field[3] | field[4] | field[5]) == 0)
+		return std::string();				// keep "unset" out of the ini
+
+	return StringUtil::StdStringFromFormat("%02X:%02X:%02X:%02X:%02X:%02X",
+		field[0], field[1], field[2], field[3], field[4], field[5]);
 }
 
 bool Pcsx2Config::DEV9Options::HostEntry::operator==(const HostEntry& right) const

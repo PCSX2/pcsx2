@@ -1066,6 +1066,14 @@ struct Pcsx2Config
 
 		std::vector<HostEntry> EthHosts;
 
+		// PS2 SMAP MAC. All-zero means "not set yet"; with AutoMac a unique
+		// address is generated once and persisted, so each install is
+		// distinguishable on the network instead of sharing the built-in
+		// default. Generated once rather than per boot: a MAC that changes
+		// every launch breaks DHCP leases and switch MAC tables.
+		u8 Mac[6]{};
+		bool AutoMac{true};
+
 		bool HddEnable{false};
 		std::string HddFile;
 
@@ -1079,6 +1087,8 @@ struct Pcsx2Config
 	protected:
 		static void LoadIPHelper(u8* field, const std::string& setting);
 		static std::string SaveIPHelper(u8* field);
+		static void LoadMacHelper(u8* field, const std::string& setting);
+		static std::string SaveMacHelper(u8* field);
 	};
 
 	// ------------------------------------------------------------------------
