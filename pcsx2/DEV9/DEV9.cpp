@@ -1068,8 +1068,6 @@ void DEV9readDMA8Mem(u32* pMem, int size)
 	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
 		return;
 
-	size >>= 1;
-
 	DevCon.WriteLn("DEV9: *DEV9readDMA8Mem: size %x", size);
 
 	if (dev9.dma_ctrl & SPD_DMA_TO_SMAP)
@@ -1097,8 +1095,6 @@ void DEV9writeDMA8Mem(u32* pMem, int size)
 {
 	if (!EmuConfig.DEV9.EthEnable && !EmuConfig.DEV9.HddEnable)
 		return;
-
-	size >>= 1;
 
 	DevCon.WriteLn("DEV9: *DEV9writeDMA8Mem: size %x", size);
 
