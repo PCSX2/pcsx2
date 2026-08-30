@@ -22,7 +22,7 @@ find_package(Freetype 2.10 REQUIRED) # 2.10 is the first with COLRv0 support, wh
 find_package(plutovg 1.1.0 REQUIRED)
 find_package(plutosvg 0.0.7 REQUIRED)
 find_package(ryml REQUIRED)
-find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample swscale REQUIRED)
+find_package(FFMPEG 7.1 COMPONENTS avcodec avformat avutil swresample swscale REQUIRED)
 if (WIN32)
 	find_package(DirectX-Headers 1.618.1 REQUIRED)
 endif()
