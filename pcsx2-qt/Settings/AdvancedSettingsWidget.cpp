@@ -75,13 +75,14 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 		   "The default value handles the vast majority of games; <b>modifying this setting when a game is not having a visible problem can cause instability.</b>"));
 
 	dialog()->registerWidgetHelp(m_ui.eeRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."));
+		tr("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to native code."));
 
 	//: Wait loop: When the game makes the CPU do nothing (loop/spin) while it waits for something to happen (usually an interrupt).
 	dialog()->registerWidgetHelp(m_ui.eeWaitLoopDetection, tr("Wait Loop Detection"), tr("Checked"),
 		tr("Moderate speedup for some games, with no known side effects."));
 
-	dialog()->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"), tr("Interpreter only, provided for diagnostic."));
+	dialog()->registerWidgetHelp(m_ui.eeCache, tr("Enable Cache (Slow)"), tr("Unchecked"),
+		tr("Enables emulation of the EE's hardware cache. Interpreter only, provided for diagnostics."));
 
 	//: INTC = Name of a PS2 register, leave as-is. "spin" = to make a cpu (or gpu) actively do nothing while you wait for something.  Like spinning in a circle, you're moving but not actually going anywhere.
 	dialog()->registerWidgetHelp(m_ui.eeINTCSpinDetection, tr("INTC Spin Detection"), tr("Checked"),
@@ -117,17 +118,19 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 		   "Safe for most games, but a few games may exhibit graphical errors."));
 
 	//: VU0 = Vector Unit 0. One of the PS2's processors.
-	dialog()->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"), tr("Enables VU0 Recompiler."));
+	dialog()->registerWidgetHelp(m_ui.vu0Recompiler, tr("Enable VU0 Recompiler (Micro Mode)"), tr("Checked"),
+		tr("Performs just-in-time binary translation of Vector Unit 0 (VU0) microprograms to native code."));
 
 	//: VU1 = Vector Unit 1. One of the PS2's processors.
-	dialog()->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"), tr("Enables VU1 Recompiler."));
+	dialog()->registerWidgetHelp(m_ui.vu1Recompiler, tr("Enable VU1 Recompiler"), tr("Checked"),
+		tr("Performs just-in-time binary translation of Vector Unit 1 (VU1) microprograms to native code."));
 
 	dialog()->registerWidgetHelp(
 		//: mVU = PCSX2's recompiler for VU (Vector Unit) code (full name: microVU)
 		m_ui.vuFlagHack, tr("mVU Flag Hack"), tr("Checked"), tr("Good speedup and high compatibility, may cause graphical errors."));
 
 	dialog()->registerWidgetHelp(m_ui.iopRecompiler, tr("Enable Recompiler"), tr("Checked"),
-		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."));
+		tr("Performs just-in-time binary translation of 32-bit MIPS-I machine code to native code."));
 
 	dialog()->registerWidgetHelp(m_ui.gameFixes, tr("Enable Game Fixes"), tr("Checked"),
 		tr("Automatically loads and applies fixes to known problematic games on game start."));
