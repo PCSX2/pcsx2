@@ -121,7 +121,10 @@ jobs:
 
       - name: Build Dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: BUILD_FFMPEG=1 .github/workflows/scripts/linux/build-dependencies-qt.sh "$HOME/deps"
+        env:
+          BUILD_FFMPEG: 1
+          BUILD_LIBRASHADER: 1
+        run: .github/workflows/scripts/linux/build-dependencies-qt.sh "$HOME/deps"
 
       - name: Download patches
         run: |
@@ -145,6 +148,7 @@ jobs:
             -DENABLE_SETCAP=OFF \
             -DDISABLE_ADVANCE_SIMD=TRUE \
             -DUSE_LINKED_FFMPEG=ON \
+            -DUSE_LIBRASHADER=ON \
             -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
             $ADDITIONAL_CMAKE_ARGS
 

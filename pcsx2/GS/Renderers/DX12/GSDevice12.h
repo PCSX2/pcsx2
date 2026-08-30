@@ -640,6 +640,13 @@ public:
 	void SetScissor(const GSVector4i& scissor);
 	void SetPipeline(const ID3D12PipelineState* pipeline);
 
+#ifdef ENABLE_LIBRASHADER
+	bool CreateLibrashaderFilterChain(const std::string& preset_path) override;
+	void DestroyLibrashaderFilterChain() override;
+	bool DoLibrashader(GSTexture* sTex, GSTexture* dTex) override;
+	void ApplyLibrashaderChainParams(const std::vector<std::pair<std::string, float>>& params) override;
+#endif
+
 private:
 	enum DIRTY_FLAG : u32
 	{
@@ -735,4 +742,8 @@ private:
 
 	// current pipeline selector - we save this in the struct to avoid re-zeroing it every draw
 	PipelineSelector m_pipeline_selector = {};
+
+#ifdef ENABLE_LIBRASHADER
+	void* m_librashader_chain = nullptr;
+#endif
 };

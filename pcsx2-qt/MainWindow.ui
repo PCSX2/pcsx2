@@ -99,6 +99,7 @@
     <addaction name="actionBIOSSettings"/>
     <addaction name="actionEmulationSettings"/>
     <addaction name="actionGraphicsSettings"/>
+    <addaction name="actionPostProcessingSettings"/>
     <addaction name="actionOSDSettings"/>
     <addaction name="actionAudioSettings"/>
     <addaction name="actionMemoryCardSettings"/>
@@ -487,8 +488,11 @@
    </property>
   </action>
   <action name="actionPostProcessingSettings">
+    <property name="icon">
+     <iconset theme="graphics-line"/>
+    </property>
    <property name="text">
-    <string>&amp;Post-Processing Settings...</string>
+    <string>&amp;Post-Processing</string>
    </property>
   </action>
   <action name="actionFullscreen">
