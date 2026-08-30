@@ -33,6 +33,9 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	dialog()->registerWidgetHelp(m_ui.fastBootFastForward, tr("Fast Forward Boot"), tr("Unchecked"),
 		tr("Removes emulation speed throttle until the game starts to reduce startup time."));
 
+	dialog()->registerWidgetHelp(m_ui.searchDirectory, tr("BIOS Directory"), tr("Default"),
+		tr("The directory searched by PCSX2 to detect valid PlayStation 2 BIOS ROM images."));
+
 	refreshList();
 
 	connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);

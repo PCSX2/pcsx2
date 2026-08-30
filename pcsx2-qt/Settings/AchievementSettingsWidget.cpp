@@ -54,9 +54,17 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* settings_di
 	dialog()->registerWidgetHelp(m_ui.enable, tr("Enable Achievements"), tr("Unchecked"), tr("When enabled and logged in, PCSX2 will scan for achievements on startup."));
 	dialog()->registerWidgetHelp(m_ui.hardcoreMode, tr("Enable Hardcore Mode"), tr("Unchecked"), tr("\"Challenge\" mode for achievements, including leaderboard tracking. Disables save state, cheats, and slowdown functions."));
 	dialog()->registerWidgetHelp(m_ui.achievementNotifications, tr("Show Achievement Notifications"), tr("Checked"), tr("Displays popup messages on events such as achievement unlocks and game completion."));
+	dialog()->registerWidgetHelp(m_ui.achievementNotificationsDuration, tr("Unlock Notification Duration"), tr("3 Seconds"), tr("Determines the display duration for achievement unlock popups."));
 	dialog()->registerWidgetHelp(m_ui.leaderboardNotifications, tr("Show Leaderboard Notifications"), tr("Checked"), tr("Displays popup messages when starting, submitting, or failing a leaderboard challenge."));
+	dialog()->registerWidgetHelp(m_ui.leaderboardNotificationsDuration, tr("Leaderboard Notification Duration"), tr("3 Seconds"), tr("Determines the display duration for leaderboard notification popups."));
 	dialog()->registerWidgetHelp(m_ui.soundEffects, tr("Enable Sound Effects"), tr("Checked"), tr("Plays sound effects for events such as achievement unlocks and leaderboard submissions."));
 	dialog()->registerWidgetHelp(m_ui.soundEffectsBox, tr("Custom Sound Effect"), tr("Any"), tr("Customize the sound effect that are played whenever you received a notification, earned an achievement or submitted an entry to the leaderboard."));
+	dialog()->registerWidgetHelp(m_ui.notificationSound, tr("Notification Sound"), tr("Checked"), tr("Plays a sound effect when achievement notifications appear."));
+	dialog()->registerWidgetHelp(m_ui.notificationSoundPath, tr("Notification Sound Path"), tr("Default"), tr("Custom audio file to play for achievement notification alerts."));
+	dialog()->registerWidgetHelp(m_ui.unlockSound, tr("Unlock Sound"), tr("Checked"), tr("Plays a sound effect when an achievement is unlocked."));
+	dialog()->registerWidgetHelp(m_ui.unlockSoundPath, tr("Unlock Sound Path"), tr("Default"), tr("Custom audio file to play when an achievement is unlocked."));
+	dialog()->registerWidgetHelp(m_ui.lbSound, tr("Leaderboard Sound"), tr("Checked"), tr("Plays a sound effect when submitting a leaderboard entry."));
+	dialog()->registerWidgetHelp(m_ui.lbSoundPath, tr("Leaderboard Sound Path"), tr("Default"), tr("Custom audio file to play when submitting a leaderboard score."));
 	dialog()->registerWidgetHelp(m_ui.overlays, tr("Enable In-Game Overlays"), tr("Checked"), tr("Shows icons in the screen when a challenge/primed achievement is active."));
 	dialog()->registerWidgetHelp(m_ui.leaderboardOverlays, tr("Enable In-Game Leaderboard Overlays"), tr("Checked"), tr("Shows icons in the screen when leaderboard tracking is active."));
 	dialog()->registerWidgetHelp(m_ui.overlayPosition, tr("Overlay Position"), tr("Bottom Right"), tr("Determines where achievement/leaderboard overlays are positioned on the screen."));

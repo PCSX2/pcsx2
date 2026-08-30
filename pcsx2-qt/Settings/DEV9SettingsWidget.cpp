@@ -190,6 +190,43 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsWindow* settings_dialog, QWidget*
 	SettingWidgetBinder::SettingAccessor<QSpinBox>::connectValueChanged(m_ui.hddSizeSpinBox, [&]() { onHddSizeAccessorSpin(); });
 
 	connect(m_ui.hddCreate, &QPushButton::clicked, this, &DEV9SettingsWidget::onHddCreateClicked);
+
+	dialog()->registerWidgetHelp(m_ui.ethEnabled, tr("Enable Network Adapter"), tr("Unchecked"),
+		tr("Enables the network adapter for online functionality and LAN play."));
+	dialog()->registerWidgetHelp(m_ui.ethDevType, tr("Device Type"), tr("Sockets"),
+		tr("Selects the network emulation backend API (e.g. Sockets, TAP, PCAP Bridged, or PCAP Switched)."));
+	dialog()->registerWidgetHelp(m_ui.ethDev, tr("Adapter / Interface"), tr("Default"),
+		tr("Selects the host network adapter interface to bind emulated network traffic to."));
+	dialog()->registerWidgetHelp(m_ui.ethInterceptDHCP, tr("Intercept DHCP"), tr("Unchecked"),
+		tr("When enabled, DHCP packets will be intercepted and replaced with internal responses."));
+	dialog()->registerWidgetHelp(m_ui.ethPS2Addr, tr("PS2 IP Address"), tr("N/A"),
+		tr("IP address for the PS2 virtual network adapter."));
+	dialog()->registerWidgetHelp(m_ui.ethNetMask, tr("Subnet Mask"), tr("N/A"),
+		tr("Subnet mask for the PS2 virtual network adapter."));
+	dialog()->registerWidgetHelp(m_ui.ethNetMaskAuto, tr("Auto Subnet Mask"), tr("Checked"),
+		tr("Automatically determine the subnet mask based on the IP address class."));
+	dialog()->registerWidgetHelp(m_ui.ethGatewayAddr, tr("Gateway Address"), tr("N/A"),
+		tr("Gateway address for the PS2 virtual network adapter."));
+	dialog()->registerWidgetHelp(m_ui.ethGatewayAuto, tr("Auto Gateway"), tr("Checked"),
+		tr("Automatically determine the gateway address based on the IP address."));
+	dialog()->registerWidgetHelp(m_ui.ethDNS1Mode, tr("DNS1 Mode"), tr("Auto"),
+		tr("Determines how primary DNS requests are handled."));
+	dialog()->registerWidgetHelp(m_ui.ethDNS1Addr, tr("DNS1 Address"), tr("N/A"),
+		tr("Primary DNS server address for the PS2 virtual network adapter."));
+	dialog()->registerWidgetHelp(m_ui.ethDNS2Mode, tr("DNS2 Mode"), tr("Auto"),
+		tr("Determines how secondary DNS requests are handled."));
+	dialog()->registerWidgetHelp(m_ui.ethDNS2Addr, tr("DNS2 Address"), tr("N/A"),
+		tr("Secondary DNS server address for the PS2 virtual network adapter."));
+	dialog()->registerWidgetHelp(m_ui.hddEnabled, tr("Enable HDD"), tr("Unchecked"),
+		tr("Enables the internal Hard Disk Drive for expanded storage."));
+	dialog()->registerWidgetHelp(m_ui.hddFile, tr("HDD Image File"), tr("DEV9hdd.raw"),
+		tr("Path to the raw virtual hard disk image file on disk."));
+	dialog()->registerWidgetHelp(m_ui.hddLBA48, tr("Enable 48-Bit LBA"), tr("Unchecked"),
+		tr("Enables 48-bit Logical Block Addressing support for virtual hard drives larger than 128 GB."));
+	dialog()->registerWidgetHelp(m_ui.hddSizeSlider, tr("HDD Size"), tr("40 GB"),
+		tr("Specifies the capacity in gigabytes when creating a new virtual PS2 hard disk image."));
+	dialog()->registerWidgetHelp(m_ui.hddSizeSpinBox, tr("HDD Size"), tr("40 GB"),
+		tr("Specifies the capacity in gigabytes when creating a new virtual PS2 hard disk image."));
 }
 
 void DEV9SettingsWidget::onEthEnabledChanged(Qt::CheckState state)

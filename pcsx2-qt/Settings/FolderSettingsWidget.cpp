@@ -22,8 +22,20 @@ FolderSettingsWidget::FolderSettingsWidget(SettingsWindow* settings_dialog, QWid
 		"Folders", "Savestates", Path::Combine(EmuFolders::DataRoot, "sstates"));
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.videoDumpingDirectory, m_ui.videoDumpingDirectoryBrowse, m_ui.videoDumpingDirectoryOpen, m_ui.videoDumpingDirectoryReset,
 		"Folders", "Videos", Path::Combine(EmuFolders::DataRoot, "videos"));
+	dialog()->registerWidgetHelp(m_ui.cache, tr("Cache Directory"), tr("Default"),
+		tr("Location used for caching compiled shaders, game covers, and temporary files."));
+	dialog()->registerWidgetHelp(m_ui.cheats, tr("Cheats Directory"), tr("Default"),
+		tr("Location where user pnach cheat files are stored."));
+	dialog()->registerWidgetHelp(m_ui.covers, tr("Covers Directory"), tr("Default"),
+		tr("Location where game box art and cover images are saved."));
+	dialog()->registerWidgetHelp(m_ui.snapshots, tr("Snapshots Directory"), tr("Default"),
+		tr("Location where screenshots taken during gameplay are saved."));
 	dialog()->registerWidgetHelp(m_ui.organizeSnapshotsByGame, tr("Save Snapshots in Game-Specific Folders"), tr("Unchecked"),
 		tr("Saves snapshots to per-game subfolders instead of a shared folder."));
+	dialog()->registerWidgetHelp(m_ui.saveStates, tr("Save States Directory"), tr("Default"),
+		tr("Location where save state files are saved and loaded from."));
+	dialog()->registerWidgetHelp(m_ui.videoDumpingDirectory, tr("Video Captures Directory"), tr("Default"),
+		tr("Location where video recordings captured from the emulator are saved."));
 	dialog()->registerWidgetHelp(m_ui.organizeVideoDumpByGame, tr("Save Video Recordings in Game-Specific Folders"), tr("Unchecked"),
 		tr("Saves video recordings to per-game subfolders instead of a shared folder."));
 }

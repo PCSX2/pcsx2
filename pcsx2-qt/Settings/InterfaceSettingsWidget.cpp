@@ -164,6 +164,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.autoUpdateTag->addItems(AutoUpdaterDialog::getTagList());
 		SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
 			AutoUpdaterDialog::getDefaultTag());
+		dialog()->registerWidgetHelp(m_ui.autoUpdateTag, tr("Update Channel"), tr("stable"),
+			tr("Selects whether the automatic updater checks for stable or nightly builds."));
 
 		//: Variable %1 shows the version number and variable %2 shows a timestamp.
 		m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(AutoUpdaterDialog::getCurrentVersion()).arg(AutoUpdaterDialog::getCurrentVersionDate()));
@@ -244,6 +246,14 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 		m_ui.backgroundScale, tr("Background Image Scaling"), tr("Fit"),
 		tr("Select how to display the background image: <br><br>Fit (Preserve aspect ratio, fit to screen)"
 		   "<br>Fill (Preserve aspect ratio, fill the screen) <br>Stretch (Ignore aspect ratio) <br>Center (Centers the image without any scaling) <br>Tile (Repeat the image to fill the screen)"));
+
+	if (!dialog()->isPerGameSettings())
+	{
+		dialog()->registerWidgetHelp(m_ui.theme, tr("Theme"), tr("N/A"),
+			tr("Selects the color theme and styling for the PCSX2 user interface."));
+		dialog()->registerWidgetHelp(m_ui.language, tr("Language"), tr("System Default"),
+			tr("Selects the display language for the PCSX2 interface, menus, and setting descriptions."));
+	}
 
 	onRenderToSeparateWindowChanged();
 }

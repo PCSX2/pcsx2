@@ -148,6 +148,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* settings_dialog, 
 	dialog()->registerWidgetHelp(m_ui.backupSaveStates, tr("Create Save State Backups"), tr("Checked"),
 		//: Do not translate the ".backup" extension.
 		tr("Creates a backup copy of a save state if it already exists when the save is created. The backup copy has a .backup suffix."));
+
+	dialog()->registerWidgetHelp(m_ui.pineEnable, tr("Enable PINE"), tr("Unchecked"),
+		tr("Enables the PINE Inter-Process Communication system, allowing external programs to interact with the emulator."));
+	dialog()->registerWidgetHelp(m_ui.pineSlot, tr("PINE Slot"), tr("28011"),
+		tr("The network port slot used for PINE IPC connections."));
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
