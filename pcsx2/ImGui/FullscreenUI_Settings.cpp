@@ -15,6 +15,7 @@
 #include "Input/InputManager.h"
 #include "MTGS.h"
 #include "Patch.h"
+#include "SPU2/spu2.h"
 #include "USB/USB.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
@@ -49,6 +50,40 @@
 
 namespace FullscreenUI
 {
+	static u32 s_audio_output_minimum_latency_frames = 0;
+
+	static std::string GetEffectiveAudioStringSetting(
+		SettingsInterface* bsi, const char* key, const char* default_value)
+	{
+		if (IsEditingGameSettings(bsi))
+		{
+			std::optional<std::string> value = bsi->GetOptionalStringValue("SPU2/Output", key);
+			if (value.has_value())
+				return std::move(value.value());
+		}
+
+		return Host::Internal::GetBaseSettingsLayer()->GetStringValue("SPU2/Output", key, default_value);
+	}
+
+	static void RefreshAudioOutputMinimumLatency(SettingsInterface* bsi)
+	{
+		const AudioBackend backend = AudioStream::ParseBackendName(
+			GetEffectiveAudioStringSetting(
+				bsi, "Backend", AudioStream::GetBackendName(Pcsx2Config::SPU2Options::DEFAULT_BACKEND))
+				.c_str())
+			                                 .value_or(Pcsx2Config::SPU2Options::DEFAULT_BACKEND);
+		const std::string driver_name = GetEffectiveAudioStringSetting(bsi, "DriverName", "");
+		const std::string device_name = GetEffectiveAudioStringSetting(bsi, "DeviceName", "");
+
+		s_audio_output_minimum_latency_frames = 0;
+		const std::vector<AudioStream::DeviceInfo> devices = AudioStream::GetOutputDevices(backend, driver_name.c_str());
+		const auto device = std::find_if(devices.begin(), devices.end(), [&device_name](const AudioStream::DeviceInfo& info) {
+			return info.name == device_name;
+		});
+		if (device != devices.end())
+			s_audio_output_minimum_latency_frames = device->minimum_latency_frames;
+	}
+
 	class HddCreateInProgress : public HddCreate
 	{
 	private:
@@ -1353,7 +1388,8 @@ template <typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
 	const char* key, DataType default_value, std::optional<DataType> (*from_string_function)(const char* str),
 	const char* (*to_string_function)(DataType value), const char* (*to_display_string_function)(DataType value), SizeType option_count,
-	bool enabled, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
+	void (*change_callback)(SettingsInterface*), bool enabled, float height, std::pair<ImFont*, float> font,
+	std::pair<ImFont*, float> summary_font)
 {
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
@@ -1375,7 +1411,7 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 				(typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
 		OpenChoiceDialog(
 			title, false, std::move(cd_options),
-			[section, key, to_string_function, game_settings](s32 index, const std::string& title, bool checked) {
+			[section, key, to_string_function, change_callback, game_settings](s32 index, const std::string& title, bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1393,6 +1429,8 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 					}
 
 					SetSettingsChanged(bsi);
+					if (change_callback)
+						change_callback(bsi);
 				}
 
 				CloseChoiceDialog();
@@ -1761,6 +1799,7 @@ void FullscreenUI::DoClearGameSettings()
 
 void FullscreenUI::DrawSettingsWindow()
 {
+	const SettingsPage initial_settings_page = s_settings_page;
 	ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
 		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
@@ -1940,6 +1979,8 @@ void FullscreenUI::DrawSettingsWindow()
 			ReturnToPreviousWindow();
 
 		auto lock = Host::GetSettingsLock();
+		if (s_settings_page == SettingsPage::Audio && initial_settings_page != SettingsPage::Audio)
+			RefreshAudioOutputMinimumLatency(bsi);
 
 		switch (s_settings_page)
 		{
@@ -3563,6 +3604,28 @@ void FullscreenUI::DrawOSDSettingsPage()
 void FullscreenUI::DrawAudioSettingsPage()
 {
 	SettingsInterface* bsi = GetEditingSettingsInterface();
+	const u32 minimum_latency_ms =
+		AudioStream::GetMSForFramesCeil(SPU2::SAMPLE_RATE, s_audio_output_minimum_latency_frames);
+	const int output_latency_ms = GetEffectiveIntSetting(
+		bsi, "SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS);
+	const bool has_minimum_latency = (minimum_latency_ms > 0);
+	SmallString output_latency_summary;
+	if (!has_minimum_latency)
+	{
+		output_latency_summary =
+			FSUI_CSTR("Requests the host output latency. The backend may adjust or reject subminimum values.");
+	}
+	else if (output_latency_ms < static_cast<int>(minimum_latency_ms))
+	{
+		output_latency_summary.format(FSUI_FSTR(
+			"Reported minimum: {} ms. Requested latency: {} ms. If audio is poor, increase the requested latency."),
+			minimum_latency_ms, output_latency_ms);
+	}
+	else
+	{
+		output_latency_summary.format(
+			FSUI_FSTR("Backend minimum: {} ms. The backend may adjust the requested latency."), minimum_latency_ms);
+	}
 
 	BeginMenuButtons();
 
@@ -3584,7 +3647,7 @@ void FullscreenUI::DrawAudioSettingsPage()
 		bsi, FSUI_ICONSTR(ICON_FA_VOLUME_OFF, "Backend"),
 		FSUI_CSTR("Determines how audio frames produced by the emulator are submitted to the host."), "SPU2/Output",
 		"Backend", Pcsx2Config::SPU2Options::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
-		&AudioStream::GetBackendDisplayName, AudioBackend::Count);
+		&AudioStream::GetBackendDisplayName, AudioBackend::Count, &RefreshAudioOutputMinimumLatency);
 	DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_PF_SPEAKER_ALT, "Expansion Mode"),
 		FSUI_CSTR("Determines how audio is expanded from stereo to surround for supported games."), "SPU2/Output",
 		"ExpansionMode", AudioStreamParameters::DEFAULT_EXPANSION_MODE, &AudioStream::ParseExpansionMode,
@@ -3598,17 +3661,14 @@ void FullscreenUI::DrawAudioSettingsPage()
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_BUCKET, "Buffer Size"),
 		FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
 		"SPU2/Output", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
-	if (!GetEffectiveBoolSetting(bsi, "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL))
-	{
-		DrawIntRangeSetting(
-			bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
-			FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
-					  "played through speakers."),
-			"SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
-	}
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Minimal Output Latency"),
-		FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
-		"SPU2/Output", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Low-Latency Buffer"),
+		FSUI_CSTR("Larger buffers reduce underrun in exchange for latency."),
+		"SPU2/Output", "LowLatencyBufferMS", AudioStreamParameters::DEFAULT_LOW_LATENCY_BUFFER_MS, 10, 100,
+		FSUI_CSTR("%d ms"));
+	DrawIntRangeSetting(
+		bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
+		output_latency_summary.c_str(), "SPU2/Output", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS,
+		1, 500, FSUI_CSTR("%d ms"));
 
 	EndMenuButtons();
 }
@@ -6712,7 +6772,6 @@ TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
 TRANSLATE_NOOP("FullscreenUI", "Synchronization");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Output Latency");
-TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
 TRANSLATE_NOOP("FullscreenUI", "Create Memory Card");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Folder Memory Card Filter");

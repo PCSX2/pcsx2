@@ -249,6 +249,8 @@
     <ClCompile Include="GS\Renderers\Vulkan\vk_mem_alloc.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Host\AudioRateController.cpp" />
+    <ClCompile Include="Host\AudioRateResampler.cpp" />
     <ClCompile Include="Host\AudioStream.cpp" />
     <ClCompile Include="Host\CubebAudioStream.cpp" />
     <ClCompile Include="Host\SDLAudioStream.cpp" />
@@ -698,6 +700,8 @@
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="Host\AudioRateController.h" />
+    <ClInclude Include="Host\AudioRateResampler.h" />
     <ClInclude Include="Host\AudioStream.h" />
     <ClInclude Include="Host\AudioStreamTypes.h" />
     <ClInclude Include="ImGui\FullscreenUI.h" />

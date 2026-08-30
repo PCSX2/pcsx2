@@ -480,6 +480,7 @@ namespace FullscreenUI
 		std::optional<DataType> (*from_string_function)(const char* str),
 		const char* (*to_string_function)(DataType value),
 		const char* (*to_display_string_function)(DataType value), SizeType option_count,
+		void (*change_callback)(SettingsInterface*) = nullptr,
 		bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
 		std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,

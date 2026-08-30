@@ -1416,6 +1416,12 @@
     <ClCompile Include="Host\AudioStream.cpp">
       <Filter>Misc\Host</Filter>
     </ClCompile>
+    <ClCompile Include="Host\AudioRateController.cpp">
+      <Filter>Misc\Host</Filter>
+    </ClCompile>
+    <ClCompile Include="Host\AudioRateResampler.cpp">
+      <Filter>Misc\Host</Filter>
+    </ClCompile>
     <ClCompile Include="Host\SDLAudioStream.cpp">
       <Filter>Misc\Host</Filter>
     </ClCompile>
@@ -2378,6 +2384,12 @@
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClInclude>
     <ClInclude Include="Host\AudioStream.h">
+      <Filter>Misc\Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Host\AudioRateController.h">
+      <Filter>Misc\Host</Filter>
+    </ClInclude>
+    <ClInclude Include="Host\AudioRateResampler.h">
       <Filter>Misc\Host</Filter>
     </ClInclude>
     <ClInclude Include="Host\AudioStreamTypes.h">

@@ -1190,10 +1190,12 @@ bool Pcsx2Config::GSOptions::ShouldDump(u64 draw, int frame) const
 static constexpr const std::array s_spu2_sync_mode_names = {
 	"Disabled",
 	"TimeStretch",
+	"LowLatency",
 };
 static constexpr const std::array s_spu2_sync_mode_display_names = {
 	TRANSLATE_NOOP("Pcsx2Config", "Disabled (Noisy)"),
 	TRANSLATE_NOOP("Pcsx2Config", "TimeStretch (Recommended)"),
+	TRANSLATE_NOOP("Pcsx2Config", "Low Latency (Resampling)"),
 };
 
 const char* Pcsx2Config::SPU2Options::GetSyncModeName(SPU2SyncMode mode)
@@ -1289,6 +1291,7 @@ bool Pcsx2Config::SPU2Options::operator==(const SPU2Options& right) const
 		   OpEqu(FastForwardVolume) &&
 		   OpEqu(OutputMuted) &&
 		   OpEqu(Backend) &&
+		   OpEqu(SyncMode) &&
 		   OpEqu(StreamParameters) &&
 		   OpEqu(DriverName) &&
 		   OpEqu(DeviceName);
