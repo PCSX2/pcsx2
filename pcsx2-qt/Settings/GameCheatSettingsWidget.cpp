@@ -61,6 +61,8 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* settings_dialog
 	});
 	connect(dialog(), &SettingsWindow::discSerialChanged, this, &GameCheatSettingsWidget::reloadList);
 
+	dialog()->registerWidgetHelp(m_ui.enableCheats, tr("Enable Cheats"), tr("Unchecked"),
+		tr("Enables loading cheats from pnach files."));
 	dialog()->registerWidgetHelp(m_ui.allCRCsCheckbox, tr("Show Cheats For All CRCs"), tr("Checked"),
 		tr("Toggles scanning patch files for all CRCs of the game. With this enabled available patches for the game serial with different CRCs will also be loaded."));
 }

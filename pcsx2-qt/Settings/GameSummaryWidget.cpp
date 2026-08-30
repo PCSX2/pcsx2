@@ -53,6 +53,9 @@ GameSummaryWidget::GameSummaryWidget(const GameList::Entry* entry, SettingsWindo
 	m_ui.restoreTitle->setEnabled(has_custom_title);
 	m_ui.restoreRegion->setEnabled(has_custom_region);
 	m_ui.checkWiki->setEnabled(!entry->serial.empty());
+
+	dialog()->registerWidgetHelp(m_ui.inputProfile, tr("Input Profile"), tr("Shared (Default)"),
+		tr("Selects the controller input profile to use for this game. Choosing a specific profile allows custom controller bindings without changing global settings."));
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;

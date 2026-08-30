@@ -147,6 +147,10 @@ DebugAnalysisSettingsWidget::DebugAnalysisSettingsWidget(SettingsWindow* dialog,
 		m_dialog->registerWidgetHelp(m_ui.customAddressRange, tr("Custom Address Range"), tr("Unchecked"),
 			tr("Whether to look for functions from the address range specified (Checked), or from the ELF segment "
 			   "containing the entry point (Unchecked)."));
+		m_dialog->registerWidgetHelp(m_ui.addressRangeStart, tr("Scan Range Start Address"), tr("N/A"),
+			tr("Starting memory address (in hexadecimal) to begin scanning for functions."));
+		m_dialog->registerWidgetHelp(m_ui.addressRangeEnd, tr("Scan Range End Address"), tr("N/A"),
+			tr("Ending memory address (in hexadecimal) to stop scanning for functions."));
 	}
 	else
 	{

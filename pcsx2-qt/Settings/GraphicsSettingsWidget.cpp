@@ -410,8 +410,14 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		onEnableAudioCaptureArgumentsChanged();
 	}
 
-	// Display tab
+	// Header & Display tab
 	{
+		dialog()->registerWidgetHelp(m_header.rendererDropdown, tr("Renderer"), tr("Automatic (Default)"),
+			tr("Selects the graphics renderer. Automatic will select the best available renderer for your hardware."));
+
+		dialog()->registerWidgetHelp(m_header.adapterDropdown, tr("Graphics Adapter"), tr("Default"),
+			tr("Selects which GPU or adapter to use for graphics rendering on systems with multiple graphics devices."));
+
 		dialog()->registerWidgetHelp(m_display.widescreenPatches, tr("Apply Widescreen Patches"), tr("Unchecked"),
 			tr("Automatically loads and applies widescreen patches on game start. Can cause issues."));
 
@@ -552,6 +558,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "May improve performance during readbacks but with a significant increase in power usage."));
 
 		// Software
+		dialog()->registerWidgetHelp(m_sw.swTextureFiltering, tr("Software Texture Filtering"), tr("Bilinear (PS2)"),
+			tr("Selects the texture filtering mode used by the software renderer."));
+
 		dialog()->registerWidgetHelp(m_sw.extraSWThreads, tr("Software Rendering Threads"), tr("2 threads"),
 			tr("Number of rendering threads: 0 for single thread, 2 or more for multithread (1 is for debugging). "
 			   "2 to 4 threads is recommended, any more than that is likely to be slower instead of faster."));
@@ -568,6 +577,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	{
 		dialog()->registerWidgetHelp(m_fixes.cpuSpriteRenderBW, tr("CPU Sprite Render Size"), tr("0 (Disabled)"),
 			tr("The maximum target memory width that will allow the CPU Sprite Renderer to activate on."));
+
+		dialog()->registerWidgetHelp(m_fixes.cpuSpriteRenderLevel, tr("CPU Sprite Render Level"), tr("Disabled"),
+			tr("Determines filter level for CPU sprite render."));
 
 		dialog()->registerWidgetHelp(m_fixes.cpuCLUTRender, tr("Software CLUT Render"), tr("0 (Disabled)"),
 			tr("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."));
@@ -662,6 +674,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_upscaling.nativePaletteDraw, tr("Unscaled Palette Texture Draws"), tr("Unchecked"),
 			tr("Forces palette texture draws to render at native resolution."));
+
+		dialog()->registerWidgetHelp(m_upscaling.nativeScaling, tr("Native Scaling"), tr("Off (Default)"),
+			tr("Emulates native PS2 coordinate scaling behavior when upscaling to reduce misalignment artifacts and seams in games that draw custom 2D elements."));
 	}
 
 	// Texture Replacement tab
@@ -677,6 +692,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_texture.loadTextureReplacements, tr("Load Textures"), tr("Unchecked"), tr("Loads replacement textures where available and user-provided."));
 
 		dialog()->registerWidgetHelp(m_texture.precacheTextureReplacements, tr("Precache Textures"), tr("Unchecked"), tr("Preloads all replacement textures to memory. Not necessary with asynchronous loading."));
+
+		if (!dialog()->isPerGameSettings())
+		{
+			dialog()->registerWidgetHelp(m_texture.texturesDirectory, tr("Textures Directory"), tr("Default"),
+				tr("Directory where replacement texture packs are loaded from and where dumped textures are saved."));
+		}
 	}
 
 	// Post Processing tab
@@ -707,6 +728,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 	// Recording tab
 	{
+		dialog()->registerWidgetHelp(m_capture.enableVideoCapture, tr("Capture Video"), tr("Checked"),
+			tr("Enables video recording during gameplay capture."));
+
+		dialog()->registerWidgetHelp(m_capture.captureContainer, tr("Container Format"), tr("MKV"),
+			tr("Selects the media container file format for video recordings."));
+
 		dialog()->registerWidgetHelp(m_capture.videoCaptureCodec, tr("Video Codec"), tr("Default"),
 			tr("Selects the Video Codec to be used for Video Capture. "
 			   "<b>If unsure, leave it on default.<b>"));
@@ -724,6 +751,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 			   "<b>Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can result in very large video capture and can cause system overload.</b>"));
 
+		dialog()->registerWidgetHelp(m_capture.videoCaptureWidth, tr("Video Capture Width"), tr("1280"),
+			tr("Custom horizontal resolution width for video recordings when automatic resolution is unchecked."));
+
+		dialog()->registerWidgetHelp(m_capture.videoCaptureHeight, tr("Video Capture Height"), tr("720"),
+			tr("Custom vertical resolution height for video recordings when automatic resolution is unchecked."));
 
 		dialog()->registerWidgetHelp(m_capture.enableVideoCaptureArguments, tr("Enable Extra Video Arguments"), tr("Unchecked"), tr("Allows you to pass arguments to the selected video codec."));
 
@@ -731,6 +763,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Parameters passed to the selected video codec.<br>"
 			   "<b>You must use '=' to separate key from value and ':' to separate two pairs from each other.</b><br>"
 			   "For example: \"crf = 21 : preset = veryfast\""));
+
+		dialog()->registerWidgetHelp(m_capture.enableAudioCapture, tr("Capture Audio"), tr("Checked"),
+			tr("Enables audio stream recording into video captures."));
 
 		dialog()->registerWidgetHelp(m_capture.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
 			tr("Selects the Audio Codec to be used for Video Capture. "
@@ -762,8 +797,20 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			tr("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.<br>"
 			   "Disallowing exclusive fullscreen may enable smoother task switching and overlays, but increase input latency."));
 
+		dialog()->registerWidgetHelp(m_advanced.overrideTextureBarriers, tr("Override Texture Barriers"), tr("Automatic (Default)"),
+			tr("Forces texture barrier functionality to the specified value."));
+
 		dialog()->registerWidgetHelp(m_advanced.rovBarriersVK, tr("ROV Barriers Vulkan"), tr("Unchecked"),
 			tr("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."));
+
+		dialog()->registerWidgetHelp(m_advanced.disableFramebufferFetch, tr("Disable Framebuffer Fetch"), tr("Unchecked"),
+			tr("Prevents the usage of framebuffer fetch when supported by host GPU."));
+
+		dialog()->registerWidgetHelp(m_advanced.disableShaderCache, tr("Disable Shader Cache"), tr("Unchecked"),
+			tr("Prevents the loading and saving of shaders/pipelines to disk."));
+
+		dialog()->registerWidgetHelp(m_advanced.disableVertexShaderExpand, tr("Disable Vertex Shader Expand"), tr("Unchecked"),
+			tr("Falls back to the CPU for expanding sprites/lines."));
 
 		dialog()->registerWidgetHelp(m_advanced.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
 			tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
