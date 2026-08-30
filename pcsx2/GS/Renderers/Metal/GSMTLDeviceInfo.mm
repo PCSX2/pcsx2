@@ -207,7 +207,7 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 	}
 	else if ([name containsString:@"Apple"])
 	{
-		// No special settings
+		features.broken_shader_depth = true;
 	}
 	else
 	{
@@ -227,6 +227,9 @@ GSMTLDevice::GSMTLDevice(MRCOwned<id<MTLDevice>> dev)
 
 	if (char* env = getenv("MTL_ROV_WITH_RT"))
 		features.rov_requires_rt = env[0] == '1' || env[0] == 'y' || env[0] == 'Y';
+
+	if (char* env = getenv("MTL_SHADER_DEPTH_WORKAROUND"))
+		features.broken_shader_depth = env[0] == '1' || env[0] == 'y' || env[0] == 'Y';
 
 	features.max_texsize = GetMaxTextureSize(dev);
 

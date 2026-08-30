@@ -37,6 +37,7 @@ struct GSMTLDevice
 		bool rov                    : 1;
 		bool rov_requires_rt        : 1;
 		bool rov_requires_r32       : 1;
+		bool broken_shader_depth    : 1;
 		MetalVersion shader_version;
 		int max_texsize;
 	};
