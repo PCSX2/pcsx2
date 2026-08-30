@@ -2,14 +2,17 @@
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 
-if [[ $# -lt 1 ]]; then
-	echo "Output file must be provided as a parameter"
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+	echo "Syntax: $0 <output file> [git tag]"
 	exit 1
 fi
 
 OUTFILE=$1
 GIT_DATE=$(git log -1 --pretty=%cd --date=iso8601)
-GIT_VERSION=$(git tag --points-at HEAD)
+GIT_VERSION=${2:-}
+if [[ -z "${GIT_VERSION}" ]]; then
+	GIT_VERSION=$(git tag --points-at HEAD --sort=-version:refname | head -n 1)
+fi
 GIT_HASH=$(git rev-parse HEAD)
 
 if [[ -z "${GIT_VERSION}" ]]; then
@@ -41,4 +44,3 @@ cp "${SCRIPTDIR}"/pcsx2-qt.metainfo.xml.in "${OUTFILE}"
 sed -i -e "s/@GIT_VERSION@/${GIT_VERSION}/" "${OUTFILE}"
 sed -i -e "s/@GIT_DATE@/${GIT_DATE}/" "${OUTFILE}"
 sed -i -e "s/@GIT_HASH@/${GIT_HASH}/" "${OUTFILE}"
-

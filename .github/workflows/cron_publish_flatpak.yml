@@ -15,6 +15,11 @@ on:
         required: false
         type: boolean
         default: true
+      gitTag:
+        description: 'Tag to use for the AppStream release version (leave blank to detect it)'
+        required: false
+        type: string
+        default: ''
 
 jobs:
 
@@ -66,5 +71,5 @@ jobs:
       publish: ${{ inputs.publish || true }}
       fetchTags: true
       stableBuild: ${{ inputs.stableBuild || false }}
+      gitTag: ${{ inputs.gitTag || '' }}
     secrets: inherit
-

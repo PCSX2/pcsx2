@@ -39,6 +39,10 @@ on:
         required: false
         type: boolean
         default: false
+      gitTag:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   build_linux:
@@ -63,6 +67,12 @@ jobs:
       - name: Set Safe Directory
         shell: bash
         run: git config --global --add safe.directory "*"
+
+      - name: Prepare Flatpak tag
+        shell: bash
+        env:
+          PCSX2_GIT_TAG: ${{ inputs.gitTag }}
+        run: printf '%s\n' "$PCSX2_GIT_TAG" > .flatpak-git-tag
 
       - name: Add stable release identifier file
         if: ${{ inputs.stableBuild == true || inputs.stableBuild == 'true' }}

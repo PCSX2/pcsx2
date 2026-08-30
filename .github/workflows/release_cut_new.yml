@@ -117,6 +117,7 @@ jobs:
       publish: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prerelease == 'false' }} # prerelease builds are published by the cron job
       fetchTags: true
       stableBuild: ${{ inputs.is_prerelease == 'false' }}
+      gitTag: ${{ needs.cut-release.outputs.new_tag }}
     secrets: inherit
 
   # Windows
