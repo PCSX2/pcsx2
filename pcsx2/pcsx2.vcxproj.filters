@@ -1559,40 +1559,7 @@
     <ClInclude Include="COP0.h">
       <Filter>System\Ps2\EmotionEngine\EE</Filter>
     </ClInclude>
-    <ClInclude Include="x86\iCOP0.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iFPU.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iMMI.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
     <ClInclude Include="x86\iR5900.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900Arit.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900AritImm.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900Branch.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900Jump.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900LoadStore.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900Move.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900MultDiv.h">
-      <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
-    </ClInclude>
-    <ClInclude Include="x86\iR5900Shift.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
     <ClInclude Include="IopBios.h">

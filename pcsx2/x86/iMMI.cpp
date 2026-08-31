@@ -4,7 +4,6 @@
 #include "Common.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
-#include "iMMI.h"
 #include "common/BitUtils.h"
 
 using namespace x86Emitter;
