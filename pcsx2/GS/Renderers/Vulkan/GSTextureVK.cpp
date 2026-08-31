@@ -104,9 +104,9 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Usage usage, Format format, int
 
 	if (format == Format::UNorm8)
 	{
-		// for r8 textures, swizzle it across all 4 components. the shaders depend on it being in alpha.. why?
+		// UNorm8 wants value in alpha, not red.
 		static constexpr const VkComponentMapping r8_swizzle = {
-			VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_R };
+			VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_ZERO, VK_COMPONENT_SWIZZLE_R };
 		vci.components = r8_swizzle;
 	}
 
