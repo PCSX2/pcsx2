@@ -289,6 +289,8 @@ echo "Installing MoltenVK..."
 rm -fr "MoltenVK-${MOLTENVK}"
 tar xf "MoltenVK-$MOLTENVK.tar.gz"
 cd "MoltenVK-${MOLTENVK}"
+patch -p1 < "$SCRIPTDIR/4cf93f0f16b1503580cdb7ffdedb056321446677.patch"
+patch -p1 < "$SCRIPTDIR/mvk-texture-swizzle.patch"
 ./fetchDependencies --macos
 make macos MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0 MVK_CONFIG_USE_METAL_PRIVATE_API=1
 cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
