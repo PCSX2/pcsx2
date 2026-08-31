@@ -1,0 +1,159 @@
+From 4cf93f0f16b1503580cdb7ffdedb056321446677 Mon Sep 17 00:00:00 2001
+From: squidbus <175574877+squidbus@users.noreply.github.com>
+Date: Sat, 9 May 2026 16:53:22 -0700
+Subject: [PATCH] Restore some checks for Mac1 GPUs.
+
+---
+ MoltenVK/MoltenVK/GPUObjects/MVKDevice.h      |  1 +
+ MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm     | 34 +++++++++++--------
+ MoltenVK/MoltenVK/GPUObjects/MVKImage.mm      |  2 +-
+ .../MoltenVK/GPUObjects/MVKPixelFormats.mm    |  2 +-
+ 4 files changed, 23 insertions(+), 16 deletions(-)
+
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.h b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.h
+index ba3914de5..8923d23f0 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.h
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.h
+@@ -112,6 +112,7 @@ typedef struct MVKMTLDeviceCapabilities {
+ 	bool supportsApple8;
+ 	bool supportsApple9;
+ 	bool supportsApple10;
++	bool supportsMac1;
+ 	bool supportsMac2;
+ 	bool supportsMetal3;
+ 	bool supportsMetal4;
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
+index 2c930b004..2e212645a 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
+@@ -110,7 +110,8 @@
+ #if MVK_XCODE_26
+ 	supportsApple10 = supportsGPUFam(Apple10, mtlDev);
+ #endif
+-	supportsMac2 = MVK_MACOS;	// Incl Mac2 & MacCatalyst2
++	supportsMac1 = MVK_MACOS;
++	supportsMac2 = supportsGPUFam(Mac2, mtlDev) || supportsGPUFam(MacCatalyst2, mtlDev);
+ 
+ 	isAppleGPU = supportsApple1;
+ 
+@@ -1547,7 +1548,7 @@
+ 	const auto placementHeapFlags = VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT |
+ 	                                VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT |
+ 	                                VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT;
+-	if (!getMVKConfig().useMTLHeap && mvkIsAnyFlagEnabled(flags, placementHeapFlags)) {
++	if (!_metalFeatures.placementHeaps && mvkIsAnyFlagEnabled(flags, placementHeapFlags)) {
+ 		return VK_ERROR_FORMAT_NOT_SUPPORTED;
+ 	}
+ 
+@@ -2456,9 +2457,10 @@
+ 
+ 	// AMD support for MTLHeap is buggy.
+ 	auto cfgUseMTLHeap = getMVKConfig().useMTLHeap;
+-	_metalFeatures.placementHeaps = (_properties.vendorID == kAMDVendorId
+-	                                 ? cfgUseMTLHeap == MVK_CONFIG_USE_MTLHEAP_ALWAYS
+-	                                 : cfgUseMTLHeap != MVK_CONFIG_USE_MTLHEAP_NEVER);
++	auto allowMTLHeap = (_properties.vendorID == kAMDVendorId
++	                     ? cfgUseMTLHeap == MVK_CONFIG_USE_MTLHEAP_ALWAYS
++	                     : cfgUseMTLHeap != MVK_CONFIG_USE_MTLHEAP_NEVER);
++	_metalFeatures.placementHeaps = allowMTLHeap && (supportsMTLGPUFamily(Apple2) || supportsMTLGPUFamily(Mac2));
+ 	_metalFeatures.multisampleArrayTextures = !MVK_TVOS || mvkOSVersionIsAtLeast(16.0);
+ 
+ 	// Dynamic vertex stride needs to have everything aligned - compiled with support for vertex stride calls, and supported by both runtime OS and GPU.
+@@ -2467,7 +2469,7 @@
+ 
+ 	_metalFeatures.renderLinearTextures = _gpuCapabilities.supportsRenderLinearTextures;
+ 
+-	if (supportsMTLGPUFamily(Mac2)) {
++	if (supportsMTLGPUFamily(Mac1)) {
+ 		_metalFeatures.mtlBufferAlignment = 256;
+ 		_metalFeatures.mtlConstantBufferAlignment = 32;
+ 		_metalFeatures.mtlCopyBufferAlignment = 4;
+@@ -2489,15 +2491,18 @@
+ 		_metalFeatures.presentModeImmediate = true;
+ 		_metalFeatures.nonUniformThreadgroups = true;
+ 		_metalFeatures.native3DCompressedTextures = true;
+-		_metalFeatures.multisampleLayeredRendering = _metalFeatures.layeredRendering;
++		_metalFeatures.simdPermute = true;
++		_metalFeatures.memoryBarriers = true;
++	}
++
++    if (supportsMTLGPUFamily(Mac2)) {
++		_metalFeatures.multisampleLayeredRendering = true;
+ 		_metalFeatures.stencilFeedback = true;
+ 		_metalFeatures.depthResolve = true;
+ 		_metalFeatures.stencilResolve = true;
+-		_metalFeatures.simdPermute = true;
+ 		_metalFeatures.quadPermute = true;
+ 		_metalFeatures.simdReduction = true;
+-		_metalFeatures.memoryBarriers = true;
+-	}
++    }
+ 
+     if (supportsMTLGPUFamily(Apple1)) {
+ 		_metalFeatures.mtlBufferAlignment = 64;
+@@ -2798,7 +2803,7 @@
+         _features.shaderResourceMinLod = true;
+ 	}
+ 
+-    if (supportsMTLGPUFamily(Mac2)) {
++    if (supportsMTLGPUFamily(Mac1)) {
+ 		_features.occlusionQueryPrecise = true;
+     	_features.imageCubeArray = true;
+ 		_features.tessellationShader = true;
+@@ -2970,19 +2975,19 @@
+ 
+     if (supportsMTLGPUFamily(Apple3)) {
+         _properties.limits.optimalBufferCopyOffsetAlignment = 16;
+-    } else if (supportsMTLGPUFamily(Mac2)) {
++    } else if (supportsMTLGPUFamily(Mac1)) {
+         _properties.limits.optimalBufferCopyOffsetAlignment = 256;
+     } else {
+         _properties.limits.optimalBufferCopyOffsetAlignment = 64;
+     }
+ 
+-    if (supportsMTLGPUFamily(Apple4) || supportsMTLGPUFamily(Mac2)) {
++    if (supportsMTLGPUFamily(Apple4) || supportsMTLGPUFamily(Mac1)) {
+         _properties.limits.maxFragmentInputComponents = 124;
+     } else {
+         _properties.limits.maxFragmentInputComponents = 60;
+     }
+ 
+-    if (supportsMTLGPUFamily(Apple5) || supportsMTLGPUFamily(Mac2)) {
++    if (supportsMTLGPUFamily(Apple5) || supportsMTLGPUFamily(Mac1)) {
+         _properties.limits.maxTessellationGenerationLevel = 64;
+         _properties.limits.maxTessellationPatchSize = 32;
+     } else if (supportsMTLGPUFamily(Apple3)) {
+@@ -3653,6 +3658,7 @@ static uint32_t mvkGetEntryProperty(io_registry_entry_t entry, CFStringRef prope
+ 	if (supportsMTLGPUFamily(Apple2)) { logMsg += "\n\t\tGPU Family Apple 2"; } else
+ 	if (supportsMTLGPUFamily(Apple1)) { logMsg += "\n\t\tGPU Family Apple 1"; }
+ 
++	if (supportsMTLGPUFamily(Mac1)) { logMsg += "\n\t\tGPU Family Mac 1"; }
+ 	if (supportsMTLGPUFamily(Mac2)) { logMsg += "\n\t\tGPU Family Mac 2"; }
+ 
+ 	logMsg += "\n\t\tRead-Write Texture Tier ";
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm b/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
+index d2fdd4020..696ec4467 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
+@@ -1382,7 +1382,7 @@ static MTLRegion getMTLRegion(const ImgRgn& imgRgn) {
+ 	const auto placementHeapFlags = VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT |
+ 	                                VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT |
+ 	                                VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT;
+-	if (!getMVKConfig().useMTLHeap && mvkIsAnyFlagEnabled(pCreateInfo->flags, placementHeapFlags)) {
++	if (!getMetalFeatures().placementHeaps && mvkIsAnyFlagEnabled(pCreateInfo->flags, placementHeapFlags)) {
+ 		setConfigurationResult(reportError(VK_ERROR_FEATURE_NOT_PRESENT, "vkCreateImage() : MTLHeap must be enabled to create 2D-on-3D or block texel view compatible images."));
+ 	}
+ 
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm b/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
+index d16d6c8f6..11ca10a03 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
+@@ -1343,7 +1343,7 @@
+ 
+ 	addMTLVertexFormatDesc( UChar4Normalized_BGRA );
+ 	
+-	if (gpuCaps.supportsApple5 || gpuCaps.supportsMac2) {
++	if (gpuCaps.supportsApple5 || gpuCaps.supportsMac1) {
+ 		addMTLVertexFormatDesc( FloatRG11B10 );
+ 		addMTLVertexFormatDesc( FloatRGB9E5 );
+ 	}

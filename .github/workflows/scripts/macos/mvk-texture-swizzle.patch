@@ -1,0 +1,139 @@
+From f6be31a110761ea494a938d62473abc085ea447b Mon Sep 17 00:00:00 2001
+From: TellowKrinkle <tellowkrinkle@gmail.com>
+Date: Mon, 31 Aug 2026 02:52:38 -0500
+Subject: [PATCH] Re-add native texture swizzle checks
+
+---
+ MoltenVK/MoltenVK/API/mvk_deprecated_api.h    |  2 +-
+ MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm     |  3 +-
+ MoltenVK/MoltenVK/GPUObjects/MVKImage.mm      | 51 ++++++++++++++++++-
+ .../MoltenVK/GPUObjects/MVKPixelFormats.mm    |  3 ++
+ 4 files changed, 56 insertions(+), 3 deletions(-)
+
+diff --git a/MoltenVK/MoltenVK/API/mvk_deprecated_api.h b/MoltenVK/MoltenVK/API/mvk_deprecated_api.h
+index 74fef844..8d16f86c 100644
+--- a/MoltenVK/MoltenVK/API/mvk_deprecated_api.h
++++ b/MoltenVK/MoltenVK/API/mvk_deprecated_api.h
+@@ -118,7 +118,7 @@ typedef struct {
+ 	VkBool32 fences;								/**< If true, Metal synchronization fences (MTLFence) are supported. Deprecated. Will always be true on all platforms. */
+ 	VkBool32 rasterOrderGroups;						/**< If true, Raster order groups in fragment shaders are supported. */
+ 	VkBool32 native3DCompressedTextures;			/**< If true, 3D compressed images are supported natively, without manual decompression. */
+-	VkBool32 nativeTextureSwizzle;					/**< If true, component swizzle is supported natively, without manual swizzling in shaders. Deprecated. Will always be true on all platforms. */
++	VkBool32 nativeTextureSwizzle;					/**< If true, component swizzle is supported natively, without manual swizzling in shaders. */
+ 	VkBool32 placementHeaps;						/**< If true, MTLHeap objects support placement of resources. */
+ 	VkDeviceSize pushConstantSizeAlignment;			/**< The alignment used internally when allocating memory for push constants. Must be PoT. */
+ 	uint32_t maxTextureLayers;						/**< The maximum number of layers in an array texture. */
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
+index aaf5945b..c7da8256 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKDevice.mm
+@@ -2496,6 +2496,7 @@
+ 		_metalFeatures.stencilResolve = true;
+ 		_metalFeatures.quadPermute = true;
+ 		_metalFeatures.simdReduction = true;
++		_metalFeatures.nativeTextureSwizzle = true;
+     }
+ 
+     if (supportsMTLGPUFamily(Apple1)) {
+@@ -2504,6 +2505,7 @@
+ 		_metalFeatures.maxPerStageTextureCount = 31;
+ 		_metalFeatures.maxTextureDimension = (8 * KIBI);
+ 		_metalFeatures.maxQueryBufferSize = (64 * KIBI);
++		_metalFeatures.nativeTextureSwizzle = true;
+ 
+ 		_metalFeatures.maxPerStageDynamicMTLBufferCount = _metalFeatures.maxPerStageBufferCount;
+ 		_metalFeatures.renderLinearTextures = true;
+@@ -2727,7 +2729,6 @@
+ 	_metalFeatures.events = true;
+ 	_metalFeatures.ioSurfaces = true;
+ 	_metalFeatures.renderWithoutAttachments = true;
+-	_metalFeatures.nativeTextureSwizzle = true;
+ }
+ 
+ bool MVKPhysicalDevice::isTier2MetalArgumentBuffers() {
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm b/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
+index 8eda5515..392a4f98 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKImage.mm
+@@ -1925,7 +1925,7 @@ static void signalAndUntrack(const MVKSwapchainSignaler& signaler) {
+     }
+ 
+     id<MTLTexture> texView = nil;
+-    if (_useSwizzle) {
++    if (_useSwizzle && getMetalFeatures().nativeTextureSwizzle) {
+         texView = [mtlTex newTextureViewWithPixelFormat: _mtlPixFmt
+                                             textureType: _imageView->_mtlTextureType
+                                                  levels: levelRange
+@@ -2103,6 +2103,55 @@ static void signalAndUntrack(const MVKSwapchainSignaler& signaler) {
+ 		}
+ 	}
+ 
++#define SWIZZLE_MATCHES(R, G, B, A)    mvkVkComponentMappingsMatch(_componentSwizzle, {VK_COMPONENT_SWIZZLE_ ##R, VK_COMPONENT_SWIZZLE_ ##G, VK_COMPONENT_SWIZZLE_ ##B, VK_COMPONENT_SWIZZLE_ ##A} )
++#define VK_COMPONENT_SWIZZLE_ANY       VK_COMPONENT_SWIZZLE_MAX_ENUM
++
++	if (_imageView->_image->hasPixelFormatView(_planeIndex)) {
++		switch (_mtlPixFmt) {
++			case MTLPixelFormatR8Unorm:
++				if (SWIZZLE_MATCHES(ZERO, ANY, ANY, R)) {
++					_mtlPixFmt = MTLPixelFormatA8Unorm;
++					return VK_SUCCESS;
++				}
++				break;
++
++			case MTLPixelFormatA8Unorm:
++				if (SWIZZLE_MATCHES(A, ANY, ANY, ZERO)) {
++					_mtlPixFmt = MTLPixelFormatR8Unorm;
++					return VK_SUCCESS;
++				}
++				break;
++
++			case MTLPixelFormatRGBA8Unorm:
++				if (SWIZZLE_MATCHES(B, G, R, A)) {
++					_mtlPixFmt = MTLPixelFormatBGRA8Unorm;
++					return VK_SUCCESS;
++				}
++				break;
++
++			case MTLPixelFormatRGBA8Unorm_sRGB:
++				if (SWIZZLE_MATCHES(B, G, R, A)) {
++					_mtlPixFmt = MTLPixelFormatBGRA8Unorm_sRGB;
++					return VK_SUCCESS;
++				}
++				break;
++
++			case MTLPixelFormatBGRA8Unorm:
++				if (SWIZZLE_MATCHES(B, G, R, A)) {
++					_mtlPixFmt = MTLPixelFormatRGBA8Unorm;
++					return VK_SUCCESS;
++				}
++				break;
++
++			case MTLPixelFormatBGRA8Unorm_sRGB:
++				if (SWIZZLE_MATCHES(B, G, R, A)) {
++					_mtlPixFmt = MTLPixelFormatRGBA8Unorm_sRGB;
++					return VK_SUCCESS;
++				}
++				break;
++		}
++	}
++
+ 	_useSwizzle = !mvkVkComponentMappingsMatch(_componentSwizzle, {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A});
+ 	return VK_SUCCESS;
+ }
+diff --git a/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm b/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
+index 316d7c6f..31a2c6a1 100644
+--- a/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
++++ b/MoltenVK/MoltenVK/GPUObjects/MVKPixelFormats.mm
+@@ -654,6 +654,9 @@
+ 
+ 	bool pfv = false;
+ 
++	// Swizzle emulation may need to reinterpret
++	needsReinterpretation |= !_physicalDevice->getMetalFeatures()->nativeTextureSwizzle;
++
+ 	pfv |= isColorFormat && needsReinterpretation &&
+ 	       mvkIsAnyFlagEnabled(vkImageUsageFlags, (VK_IMAGE_USAGE_SAMPLED_BIT |
+ 	                                               VK_IMAGE_USAGE_STORAGE_BIT |
+-- 
+2.39.5 (Apple Git-154)
+
