@@ -166,29 +166,6 @@ struct PSInputGeneric
 	uint interior;
 };
 
-// Main state of the pixel shader invocation for shared code.
-// Metal defines it's own version with identically named fields.
-#ifndef __METAL_VERSION__
-struct PSMainState
-{
-	// Fields used by Metal for texture slots. Unused by other backends.
-	uint tex;
-	uint tex_depth;
-	uint palette;
-	uint prim_id_tex;
-	uint tex_sampler;
-
-	// Fields used by all backends.
-	FLOAT4 current_color;
-	float current_depth;
-	uint prim_id;
-	bool color_discarded;
-	bool depth_discarded;
-	PSInputGeneric psin;
-	PSUniformsGeneric cb;
-};
-#endif
-
 // Generic PS outputs for shared shader code to pass values.
 struct PSOutputGeneric
 {

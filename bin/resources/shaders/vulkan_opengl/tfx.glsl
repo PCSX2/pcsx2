@@ -91,16 +91,16 @@
 #define VS_NEEDS_EXPAND (VS_EXPAND_TYPE != VS_EXPAND_NONE)
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(STATE, POS) (texture(Texture, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_LOD(STATE, POS, LOD) (textureLod(Texture, FLOAT2(POS), float(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(STATE, POS) (PS_SAMPLE_TEX(STATE, (POS)).r)
-#define PS_SAMPLE_TEX_DEPTH_LOD(STATE, POS, LOD) (PS_SAMPLE_TEX_LOD(STATE, (POS), (LOD)).r)
-#define PS_READ_TEX(STATE, POS, LOD) (texelFetch(Texture, INT2(POS), int(LOD)))
-#define PS_READ_TEX_DEPTH(STATE, POS, LOD) (PS_READ_TEX(STATE, (POS), (LOD)).r)
-#define PS_READ_PALETTE(STATE, POS) (texelFetch(Palette, INT2(POS), 0))
-#define PS_READ_PRIMID(STATE, POS) (texelFetch(PrimMinTexture, INT2(POS), 0).r)
-#define PS_GET_TEX_DIMS(STATE, OUT_VAR) (OUT_VAR = UINT2(textureSize(Texture, 0)))
-#define PS_GET_TEX_DEPTH_DIMS(STATE, OUT_VAR) (PS_GET_TEX_DIMS(STATE, OUT_VAR))
+#define PS_SAMPLE_TEX(POS) (texture(Texture, FLOAT2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (textureLod(Texture, FLOAT2(POS), float(LOD)))
+#define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
+#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
+#define PS_READ_TEX(POS, LOD) (texelFetch(Texture, INT2(POS), int(LOD)))
+#define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
+#define PS_READ_PALETTE(POS) (texelFetch(Palette, INT2(POS), 0))
+#define PS_READ_PRIMID(POS) (texelFetch(PrimMinTexture, INT2(POS), 0).r)
+#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = UINT2(textureSize(Texture, 0)))
+#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 // Unused in VK/GL
 #define PS_POINT_SAMPLER 0
 #define BROKEN_SHADER_DEPTH 0
@@ -443,16 +443,25 @@ PSUniformsGeneric GetPSUniforms()
 // Get pixel shader inputs for shared code.
 PSInputGeneric GetPSInput()
 {
-	PSInputGeneric psin;
-	psin.p = gl_FragCoord;
-	psin.t = vsIn.t;
-	psin.ti = vsIn.ti;
-	psin.c = vsIn.c;
-	psin.fc = vsIn.c;
-	psin.inv_cov = vsIn.inv_cov;
-	psin.interior = vsIn.interior;
-	return psin;
+	PSInputGeneric ps_in;
+	ps_in.p = gl_FragCoord;
+	ps_in.t = vsIn.t;
+	ps_in.ti = vsIn.ti;
+	ps_in.c = vsIn.c;
+	ps_in.fc = vsIn.c;
+	ps_in.inv_cov = vsIn.inv_cov;
+	ps_in.interior = vsIn.interior;
+	return ps_in;
 }
+
+// Pixel shader global state
+PSInputGeneric ps_in;
+PSUniformsGeneric ps_cb;
+vec4 ps_current_color;
+float ps_current_depth;
+uint ps_prim_id;
+bool ps_color_discarded;
+bool ps_depth_discarded;
 
 #include "tfx_ps_header.inc"
 #include "tfx_ps_util.inc"
@@ -469,29 +478,23 @@ PSInputGeneric GetPSInput()
 
 void main()
 {
-	PSMainState state;
-	state.psin = GetPSInput();
-	state.cb = GetPSUniforms();
-	state.tex = 0; // unused
-	state.tex_depth = 0; // unused
-	state.palette = 0; // unused
-	state.prim_id_tex = 0; // unused
-	state.tex_sampler = 0; // unused
-	state.prim_id = gl_PrimitiveID;
-	state.color_discarded = false;
-	state.depth_discarded = false;
+	ps_in = GetPSInput();
+	ps_cb = GetPSUniforms();
+	ps_prim_id = gl_PrimitiveID;
+	ps_color_discarded = false;
+	ps_depth_discarded = false;
 
-	ivec2 coord = ivec2(state.psin.p.xy);
+	ivec2 coord = ivec2(ps_in.p.xy);
 
 	#if PS_ROV_COLOR || PS_ROV_DEPTH
 		beginInvocationInterlockARB();
 	#endif
 
-	state.current_depth = DepthLoad(coord);
+	ps_current_depth = DepthLoad(coord);
 
-	state.current_color = RtLoad(coord);
+	ps_current_color = RtLoad(coord);
 
-	PSOutputGeneric psout = ps_main_impl(state);
+	PSOutputGeneric psout = ps_main_impl();
 
 	#if PS_RETURN_COLOR
 		o_col0 = psout.c0;
@@ -499,8 +502,8 @@ void main()
 			o_col1 = psout.c1;
 		#endif
 	#elif PS_RETURN_COLOR_ROV
-		psout.c0 = mix(psout.c0, state.current_color, equal(fbmask, uvec4(0xFFu))); // channel masking
-		if (!state.color_discarded)
+		psout.c0 = mix(psout.c0, ps_current_color, equal(fbmask, uvec4(0xFFu))); // channel masking
+		if (!ps_color_discarded)
 			imageStore(RtImageRov, coord, psout.c0);
 	#endif
 	
@@ -515,7 +518,7 @@ void main()
 			o_col1 = psout.depth;
 		#endif
 	#elif PS_RETURN_DEPTH_ROV
-		if (!state.depth_discarded)
+		if (!ps_depth_discarded)
 			imageStore(DepthImageRov, coord, vec4(psout.depth, 0, 0, 1.0f));
 	#endif
 

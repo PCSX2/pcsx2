@@ -1,4 +1,4 @@
-STATIC FLOAT4 sample_c_af(IN_PARAM(PSMainState, state), FLOAT2 uv, float uv_w)
+STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
 	uv = any(IS_NAN_OR_INF_4(FLOAT4(uv, 0, 0))) ? float2_bcast(0.0f) : uv;
@@ -10,7 +10,7 @@ STATIC FLOAT4 sample_c_af(IN_PARAM(PSMainState, state), FLOAT2 uv, float uv_w)
 	// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 	// And https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_filter_anisotropic.txt
 	// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/
-	FLOAT2 sz = FLOAT2(get_tex_dims(state));
+	FLOAT2 sz = FLOAT2(get_tex_dims());
 	FLOAT2 dX = DFDX(uv) * sz;
 	FLOAT2 dY = DFDY(uv) * sz;
 
@@ -100,12 +100,12 @@ STATIC FLOAT4 sample_c_af(IN_PARAM(PSMainState, state), FLOAT2 uv, float uv_w)
 		aniso_line = aniso_line_dir * 0.5f * (1.0f / sz);
 	}
 
-	float lod = PS_AUTOMATIC_LOD != FALSE ? log2(length_lod) : PS_MANUAL_LOD != FALSE ? manual_lod(state, uv_w) : 0.0f;
+	float lod = PS_AUTOMATIC_LOD != FALSE ? log2(length_lod) : PS_MANUAL_LOD != FALSE ? manual_lod(uv_w) : 0.0f;
 
 	FLOAT4 colour;
 	if (aniso_ratio == 1.0f)
 	{
-		colour = sample_tex_lod(state, uv, lod);
+		colour = sample_tex_lod(uv, lod);
 	}
 	else
 	{
@@ -117,7 +117,7 @@ STATIC FLOAT4 sample_c_af(IN_PARAM(PSMainState, state), FLOAT2 uv, float uv_w)
 		{
 			FLOAT2 d = -aniso_line + (0.5f + i) * segment;
 			FLOAT2 uv_sample = uv + d;
-			FLOAT4 sample_colour = sample_tex_lod(state, uv_sample, lod);
+			FLOAT4 sample_colour = sample_tex_lod(uv_sample, lod);
 			num += sample_colour;
 		}
 

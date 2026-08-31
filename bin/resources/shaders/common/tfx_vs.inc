@@ -46,7 +46,7 @@ STATIC void vs_broken_shader_depth(IN_OUT_PARAM(VSOutputGeneric, vout))
 	// Work around by always routing depth through the shader, and never using hardware depth values.
 	// To allow us to continue to use [[depth(less)]] optimizations, add a bit in the VS and subtract it off in the FS,
 	// so that "equal" depth doesn't ever fail a hardware depth test.
-	vout.p.z += EXP_NEG_32;
+	vout.p.z += EXP2_NEG_32;
 }
 
 STATIC VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUniformsGeneric, cb))

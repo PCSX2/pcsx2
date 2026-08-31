@@ -1,4 +1,4 @@
-STATIC FLOAT4 tfx(IN_PARAM(PSMainState, state), FLOAT4 T, FLOAT4 C)
+STATIC FLOAT4 tfx(FLOAT4 T, FLOAT4 C)
 {
 	FLOAT4 C_out;
 	FLOAT4 FxT = trunc((C * T) / 128.f);

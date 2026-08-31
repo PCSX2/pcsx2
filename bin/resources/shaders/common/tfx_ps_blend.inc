@@ -1,6 +1,6 @@
 #define PICK3(SELECTOR, ZERO, ONE, TWO) ((SELECTOR) == 0 ? (ZERO) : (SELECTOR) == 1 ? (ONE) : (TWO))
 
-STATIC void ps_blend(IN_OUT_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
+STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 {
 	float As = As_rgba.a;
 	
@@ -21,33 +21,33 @@ STATIC void ps_blend(IN_OUT_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, Colo
 		}
 
 		float Ad = PS_RTA_CORRECTION != FALSE ?
-			trunc(state.current_color.a * 128.0f + 0.1f) / 128.f : trunc(state.current_color.a * 255.0f + 0.1f) / 128.f;
+			trunc(ps_current_color.a * 128.0f + 0.1f) / 128.f : trunc(ps_current_color.a * 255.0f + 0.1f) / 128.f;
 
 		if (PS_SHUFFLE != FALSE && NEEDS_RT)
 		{
-			UINT4 denorm_rt = UINT4(state.current_color);
+			UINT4 denorm_rt = UINT4(ps_current_color);
 			if ((PS_PROCESS_BA & SHUFFLE_WRITE) != 0)
 			{
-				state.current_color.r = float((denorm_rt.b << 3) & 0xF8u);
-				state.current_color.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
-				state.current_color.b = float((denorm_rt.a << 1) & 0xF8u);
-				state.current_color.a = float(denorm_rt.a & 0x80u);
+				ps_current_color.r = float((denorm_rt.b << 3) & 0xF8u);
+				ps_current_color.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
+				ps_current_color.b = float((denorm_rt.a << 1) & 0xF8u);
+				ps_current_color.a = float(denorm_rt.a & 0x80u);
 			}
 			else
 			{
-				state.current_color.r = float((denorm_rt.r << 3) & 0xF8u);
-				state.current_color.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
-				state.current_color.b = float((denorm_rt.g << 1) & 0xF8u);
-				state.current_color.a = float(denorm_rt.g & 0x80u);
+				ps_current_color.r = float((denorm_rt.r << 3) & 0xF8u);
+				ps_current_color.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
+				ps_current_color.b = float((denorm_rt.g << 1) & 0xF8u);
+				ps_current_color.a = float(denorm_rt.g & 0x80u);
 			}
 		}
 		float multi = PS_COLCLIP_HW != FALSE ? 65535.f : 255.f;
-		FLOAT3 Cd = trunc(state.current_color.rgb * multi + float3_bcast(0.1f));
+		FLOAT3 Cd = trunc(ps_current_color.rgb * multi + float3_bcast(0.1f));
 		FLOAT3 Cs = Color.rgb;
 
 		FLOAT3 A = PICK3(PS_BLEND_A, Cs, Cd, float3_bcast(0.0f));
 		FLOAT3 B = PICK3(PS_BLEND_B, Cs, Cd, float3_bcast(0.0f));
-		float  C = PICK3(PS_BLEND_C, As, Ad, state.cb.alpha_fix);
+		float  C = PICK3(PS_BLEND_C, As, Ad, ps_cb.alpha_fix);
 		FLOAT3 D = PICK3(PS_BLEND_D, Cs, Cd, float3_bcast(0.0f));
 
 		// As/Af clamp alpha for Blend mix
@@ -106,7 +106,7 @@ STATIC void ps_blend(IN_OUT_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, Colo
 	}
 	else
 	{
-		float Alpha = PS_BLEND_C == 2 ? state.cb.alpha_fix : As;
+		float Alpha = PS_BLEND_C == 2 ? ps_cb.alpha_fix : As;
 
 		if (PS_BLEND_HW == 1)
 		{

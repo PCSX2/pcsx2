@@ -1,4 +1,4 @@
-STATIC void ps_shuffle(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
+STATIC void ps_shuffle(IN_OUT_PARAM(FLOAT4, C))
 {
 	if (PS_SHUFFLE != FALSE)
 	{
@@ -32,7 +32,7 @@ STATIC void ps_shuffle(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
 		else if (PS_READ16_SRC != FALSE)
 		{
 			UINT4 denorm_c = UINT4(C);
-			UINT2 denorm_TA = UINT2(state.cb.ta * 255.5f);
+			UINT2 denorm_TA = UINT2(ps_cb.ta * 255.5f);
 			
 			C.rb = float2_bcast(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
 			C.ga = float2_bcast(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
@@ -58,65 +58,65 @@ STATIC void ps_shuffle(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
 	}
 }
 
-STATIC PSOutputGeneric ps_main_impl(IN_OUT_PARAM(PSMainState, state))
+STATIC PSOutputGeneric ps_main_impl()
 {
 	PSOutputGeneric psout;
 	psout.c0 = float4_bcast(0.0f);
 	psout.c1 = float4_bcast(0.0f);
 	psout.depth = 0.0f;
 
-	float input_z = state.psin.p.z;
+	float input_z = ps_in.p.z;
 
 	if (BROKEN_SHADER_DEPTH != FALSE)
-		input_z -= EXP_MIN_32;
+		input_z -= EXP2_NEG_32;
 
 	if (PS_ZFLOOR != FALSE)
 		input_z = floor(input_z * EXP2_POS_32) * EXP2_NEG_32;
 
 	if (PS_ZTST == ZTST_GEQUAL || PS_ZTST == ZTST_GREATER)
 	{
-		if (PS_ZTST == ZTST_GEQUAL && input_z < state.current_depth)
-			discard_all(state);
-		if (PS_ZTST == ZTST_GREATER && input_z <= state.current_depth)
-			discard_all(state);
+		if (PS_ZTST == ZTST_GEQUAL && input_z < ps_current_depth)
+			discard_all();
+		if (PS_ZTST == ZTST_GREATER && input_z <= ps_current_depth)
+			discard_all();
 	}
 
 	if ((uint(PS_SCANMSK) & 2u) != 0u)
 	{
-		if ((uint(state.psin.p.y) & 1u) == (uint(PS_SCANMSK) & 1u))
-			discard_all(state);
+		if ((uint(ps_in.p.y) & 1u) == (uint(PS_SCANMSK) & 1u))
+			discard_all();
 	}
 
 	if (PS_DATE >= 5)
 	{
 		// 1 => DATM == 0, 2 => DATM == 1
-		float rt_a = PS_WRITE_RG != FALSE ? state.current_color.g : state.current_color.a;
+		float rt_a = PS_WRITE_RG != FALSE ? ps_current_color.g : ps_current_color.a;
 		bool bad = PS_RTA_CORRECTION != FALSE ?
 			((uint(PS_DATE) & 3u) == 1u ? (rt_a > (254.5f / 255.f)) : (rt_a < (254.5f / 255.f))) :
 			((uint(PS_DATE) & 3u) == 1u ? (rt_a > 0.5) : (rt_a < 0.5));
 
 		if (bad)
-			discard_all(state);
+			discard_all();
 	}
 
 	if (PS_DATE == 3)
 	{
-		float stencil_ceil = PS_READ_PRIMID(state, UINT2(state.psin.p.xy));
+		float stencil_ceil = PS_READ_PRIMID(UINT2(ps_in.p.xy));
 		// Note prim_id == stencil_ceil will be the primitive that will update
 		// the bad alpha value so we must keep it.
-		if (float(state.prim_id) > stencil_ceil)
-			discard_all(state);
+		if (float(ps_prim_id) > stencil_ceil)
+			discard_all();
 	}
 
-	FLOAT4 C = ps_color(state);
+	FLOAT4 C = ps_color();
 
 	// Must be done before alpha correction
 
 	if (PS_AA1 != PS_AA1_NONE)
 	{
 		float cov = PS_AA1 == PS_AA1_LINE
-			? SATURATE(state.cb.line_cov_scale * (1.f - abs(state.psin.inv_cov))) // Blur only outer part of the line by scaling coverage.
-			: SATURATE(1.f - abs(state.psin.inv_cov));
+			? SATURATE(ps_cb.line_cov_scale * (1.f - abs(ps_in.inv_cov))) // Blur only outer part of the line by scaling coverage.
+			: SATURATE(1.f - abs(ps_in.inv_cov));
 		if (PS_ABE == FALSE || floor(C.a) == 128.f) // The coverage is only used if the fragment alpha is 128.
 			C.a = 128.f * cov;
 	}
@@ -126,14 +126,14 @@ STATIC PSOutputGeneric ps_main_impl(IN_OUT_PARAM(PSMainState, state))
 		C.a = 128.0f;
 	}
 
-	bool atst_pass = atst(state, C);
+	bool atst_pass = atst(C);
 	if (PS_AFAIL == AFAIL_KEEP && !atst_pass)
-		discard_all(state);
+		discard_all();
 
 	FLOAT4 alpha_blend = float4_bcast(0.f);
 	if (SW_AD_TO_HW)
 	{
-		float RT_a = trunc(state.current_color.a * (PS_RTA_CORRECTION != FALSE ? 128.f : 255.f) + 0.1f);
+		float RT_a = trunc(ps_current_color.a * (PS_RTA_CORRECTION != FALSE ? 128.f : 255.f) + 0.1f);
 		alpha_blend = float4_bcast(RT_a / 128.f);
 	}
 	else
@@ -141,32 +141,32 @@ STATIC PSOutputGeneric ps_main_impl(IN_OUT_PARAM(PSMainState, state))
 		alpha_blend = float4_bcast(C.a / 128.f);
 	}
 
-	ps_alpha_correct(state, C);
+	ps_alpha_correct(C);
 
 	// Get first primitive that will write a failing alpha value
 	if (PS_DATE == 1)
 	{
 		// DATM == 0, Pixel with alpha equal to 1 will failed (128-255)
-		psout.c0 = float4_bcast(C.a > 127.5f ? float(state.prim_id) : float(PRIMID_MAX));
+		psout.c0 = float4_bcast(C.a > 127.5f ? float(ps_prim_id) : float(PRIMID_MAX));
 		return psout;
 	}
 	else if (PS_DATE == 2)
 	{
 		// DATM == 1, Pixel with alpha equal to 0 will failed (0-127)
-		psout.c0 = float4_bcast(C.a < 127.5f ? float(state.prim_id) : PRIMID_MAX);
+		psout.c0 = float4_bcast(C.a < 127.5f ? float(ps_prim_id) : PRIMID_MAX);
 		return psout;
 	}
 
-	ps_blend(state, C, alpha_blend);
+	ps_blend(C, alpha_blend);
 
-	ps_shuffle(state, C);
+	ps_shuffle(C);
 
-	ps_dither(state, C, alpha_blend.a);
+	ps_dither(C, alpha_blend.a);
 
 	// Color clamp/wrap needs to be done after sw blending and dithering
-	ps_color_clamp_wrap(state, C);
+	ps_color_clamp_wrap(C);
 
-	ps_fbmask(state, C);
+	ps_fbmask(C);
 
 	// Use alpha blend factor to determine whether to update A.
 	if (PS_AFAIL == AFAIL_RGB_ONLY_DSB)
@@ -181,20 +181,20 @@ STATIC PSOutputGeneric ps_main_impl(IN_OUT_PARAM(PSMainState, state))
 		psout.c1 = alpha_blend;
 
 	if (PS_ZCLAMP != FALSE)
-		input_z = min(input_z, state.cb.max_depth_ps);
+		input_z = min(input_z, ps_cb.max_depth_ps);
 
-	if (PS_AA1 == PS_AA1_TRIANGLE_SW_Z && state.psin.interior == 0)
-		discard_depth(state, input_z); // No depth update for triangle edges.
+	if (PS_AA1 == PS_AA1_TRIANGLE_SW_Z && ps_in.interior == 0)
+		discard_depth(input_z); // No depth update for triangle edges.
 
 	if (!atst_pass)
 	{
 		if (PS_AFAIL == AFAIL_RGB_ONLY_SW_Z || PS_AFAIL == AFAIL_RGB_ONLY)
-			psout.c0.a = state.current_color.a; // discard alpha
+			psout.c0.a = ps_current_color.a; // discard alpha
 		else if (PS_AFAIL == AFAIL_ZB_ONLY)
-			discard_color(state, psout.c0);
+			discard_color(psout.c0);
 
 		if (PS_AFAIL == AFAIL_RGB_ONLY_SW_Z || PS_AFAIL == AFAIL_FB_ONLY)
-			discard_depth(state, input_z);
+			discard_depth(input_z);
 	}
 
 	psout.depth = input_z;

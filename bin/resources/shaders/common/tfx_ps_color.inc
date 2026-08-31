@@ -1,35 +1,35 @@
-STATIC FLOAT4 ps_color(IN_PARAM(PSMainState, state))
+STATIC FLOAT4 ps_color()
 {
 	FLOAT2 st, st_int;
 	if (PS_FST == FALSE)
 	{
-		st = state.psin.t.xy / state.psin.t.w;
-		st_int = state.psin.ti.zw / state.psin.t.w;
+		st = ps_in.t.xy / ps_in.t.w;
+		st_int = ps_in.ti.zw / ps_in.t.w;
 	}
 	else
 	{
 		// Note: xy are normalized coordinates
-		st = state.psin.ti.xy;
-		st_int = state.psin.ti.zw;
+		st = ps_in.ti.xy;
+		st_int = ps_in.ti.zw;
 	}
 
 	FLOAT4 T;
 	if (PS_CHANNEL == 1)
-		T = fetch_red(state);
+		T = fetch_red();
 	else if (PS_CHANNEL == 2)
-		T = fetch_green(state);
+		T = fetch_green();
 	else if (PS_CHANNEL == 3)
-		T = fetch_blue(state);
+		T = fetch_blue();
 	else if (PS_CHANNEL == 4)
-		T = fetch_alpha(state);
+		T = fetch_alpha();
 	else if (PS_CHANNEL == 5)
-		T = fetch_rgb(state);
+		T = fetch_rgb();
 	else if (PS_CHANNEL == 6)
-		T = fetch_gXbY(state);
+		T = fetch_gXbY();
 	else if (PS_DEPTH_FMT != 0)
-		T = sample_depth(state, st_int);
+		T = sample_depth(st_int);
 	else
-		T = sample_color(state, st);
+		T = sample_color(st);
 
 	if (PS_SHUFFLE != FALSE && PS_SHUFFLE_SAME == FALSE && PS_READ16_SRC == FALSE &&
 		!(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
@@ -50,12 +50,12 @@ STATIC FLOAT4 ps_color(IN_PARAM(PSMainState, state))
 			T.a = float(denorm_c_before.g & 0x80u);
 		}
 		
-		T.a = (T.a >= 127.5 ? state.cb.ta.y : PS_AEM == FALSE || any_nonzero(INT3(T.rgb) & int(0xF8)) ? state.cb.ta.x : 0.f) * 255.f;
+		T.a = (T.a >= 127.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(INT3(T.rgb) & int(0xF8)) ? ps_cb.ta.x : 0.f) * 255.f;
 	}
 
-	FLOAT4 C = tfx(state, T, PS_IIP != FALSE ? state.psin.c : state.psin.fc);
+	FLOAT4 C = tfx(T, PS_IIP != FALSE ? ps_in.c : ps_in.fc);
 
-	fog(state, C, state.psin.t.z);
+	fog(C, ps_in.t.z);
 
 	return C;
 }

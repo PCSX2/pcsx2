@@ -1,29 +1,29 @@
-STATIC void ps_fbmask(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
+STATIC void ps_fbmask(IN_OUT_PARAM(FLOAT4, C))
 {
 	if (PS_FBMASK != FALSE)
 	{
 		float multi = (PS_COLCLIP_HW != FALSE) ? 65535.f : 255.f;
-		FLOAT4 RT = trunc(state.current_color * FLOAT4(multi, multi, multi, 255.f) + float4_bcast(0.1f));
-		C = FLOAT4((UINT4(INT4(C)) & ~state.cb.fbmask) | (UINT4(RT) & state.cb.fbmask));
+		FLOAT4 RT = trunc(ps_current_color * FLOAT4(multi, multi, multi, 255.f) + float4_bcast(0.1f));
+		C = FLOAT4((UINT4(INT4(C)) & ~ps_cb.fbmask) | (UINT4(RT) & ps_cb.fbmask));
 	}
 }
 
-STATIC void ps_dither(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C), float As)
+STATIC void ps_dither(IN_OUT_PARAM(FLOAT4, C), float As)
 {
 	if (PS_DITHER == 0 || PS_DITHER == 3)
 		return;
 	USHORT2 fpos;
 	if (PS_DITHER == 2)
-		fpos = USHORT2(state.psin.p.xy);
+		fpos = USHORT2(ps_in.p.xy);
 	else
-		fpos = USHORT2(state.psin.p.xy * float2_bcast(state.cb.scale_factor.y));
-	float value = MAT_GET(state.cb.dither_matrix, fpos.x & 3u, fpos.y & 3u);
+		fpos = USHORT2(ps_in.p.xy * float2_bcast(ps_cb.scale_factor.y));
+	float value = MAT_GET(ps_cb.dither_matrix, fpos.x & 3u, fpos.y & 3u);
 
 	// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
 	// so after the alpha blend the resulting value should be the same as (Cs - Cd) * As + Cd + Dither.
 	if (PS_DITHER_ADJUST != FALSE)
 	{
-		float Alpha = PS_BLEND_C == 2 ? state.cb.alpha_fix : As;
+		float Alpha = PS_BLEND_C == 2 ? ps_cb.alpha_fix : As;
 		value *= Alpha > 0.f ? min(1.f / Alpha, 1.f) : 1.f;
 	}
 
@@ -33,7 +33,7 @@ STATIC void ps_dither(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C), flo
 		C.rgb += value;
 }
 
-STATIC void ps_color_clamp_wrap(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
+STATIC void ps_color_clamp_wrap(IN_OUT_PARAM(FLOAT4, C))
 {
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
@@ -62,7 +62,7 @@ STATIC void ps_color_clamp_wrap(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT
 		C.rgb = FLOAT3(SHORT3(C.rgb) & SHORT(0xF8));
 }
 
-STATIC void ps_alpha_correct(IN_PARAM(PSMainState, state), IN_OUT_PARAM(FLOAT4, C))
+STATIC void ps_alpha_correct(IN_OUT_PARAM(FLOAT4, C))
 {
   if (PS_DST_FMT == FMT_16)
 	{

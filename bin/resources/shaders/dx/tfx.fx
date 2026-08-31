@@ -94,16 +94,16 @@
 #define BROKEN_SHADER_DEPTH 0
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(STATE, POS) (Texture.Sample(TextureSampler, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_LOD(STATE, POS, LOD) (Texture.SampleLevel(TextureSampler, FLOAT2(POS), float(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(STATE, POS) (PS_SAMPLE_TEX(STATE, (POS)).r)
-#define PS_SAMPLE_TEX_DEPTH_LOD(STATE, POS, LOD) (PS_SAMPLE_TEX_LOD(STATE, (POS), (LOD)).r)
-#define PS_READ_TEX(STATE, POS, LOD) (Texture.Load(INT3(INT2(POS), int(LOD))))
-#define PS_READ_TEX_DEPTH(STATE, POS, LOD) (PS_READ_TEX(STATE, (POS), (LOD)).r)
-#define PS_READ_PALETTE(STATE, POS) (Palette.Load(INT3(INT2(POS), 0)))
-#define PS_READ_PRIMID(STATE, POS) (PrimMinTexture.Load(INT3(INT2(POS), 0)).r)
-#define PS_GET_TEX_DIMS(STATE, OUT_VAR) (Texture.GetDimensions(OUT_VAR.x, OUT_VAR.y))
-#define PS_GET_TEX_DEPTH_DIMS(STATE, OUT_VAR) (PS_GET_TEX_DIMS(STATE, OUT_VAR))
+#define PS_SAMPLE_TEX(POS) (Texture.Sample(TextureSampler, FLOAT2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (Texture.SampleLevel(TextureSampler, FLOAT2(POS), float(LOD)))
+#define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
+#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
+#define PS_READ_TEX(POS, LOD) (Texture.Load(INT3(INT2(POS), int(LOD))))
+#define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
+#define PS_READ_PALETTE(POS) (Palette.Load(INT3(INT2(POS), 0)))
+#define PS_READ_PRIMID(POS) (PrimMinTexture.Load(INT3(INT2(POS), 0)).r)
+#define PS_GET_TEX_DIMS(OUT_VAR) (Texture.GetDimensions(OUT_VAR.x, OUT_VAR.y))
+#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 
 /// End helper macros for shared shader code.
 
@@ -305,16 +305,16 @@ cbuffer cb1 : register(b0)
 };
 
 // Get pixel shader input for passing to shared code.
-PSInputGeneric GetPSInput(PS_INPUT psin)
+PSInputGeneric GetPSInput(PS_INPUT ps_in)
 {
 	PSInputGeneric psin_gen;
-	psin_gen.p = psin.p;
-	psin_gen.t = psin.t;
-	psin_gen.ti = psin.ti;
-	psin_gen.c = psin.c;
-	psin_gen.fc = psin.c;
-	psin_gen.inv_cov = psin.inv_cov;
-	psin_gen.interior = psin.interior;
+	psin_gen.p = ps_in.p;
+	psin_gen.t = ps_in.t;
+	psin_gen.ti = ps_in.ti;
+	psin_gen.c = ps_in.c;
+	psin_gen.fc = ps_in.c;
+	psin_gen.inv_cov = ps_in.inv_cov;
+	psin_gen.interior = ps_in.interior;
 	return psin_gen;
 }
 
@@ -360,6 +360,15 @@ void DepthWrite(int2 xy, float d)
 #endif
 }
 
+// Pixel shader global state
+static PSInputGeneric ps_in;
+static PSUniformsGeneric ps_cb;
+static float4 ps_current_color;
+static float ps_current_depth;
+static uint ps_prim_id;
+static bool ps_color_discarded;
+static bool ps_depth_discarded;
+
 #include "tfx_ps_header.inc"
 #include "tfx_ps_util.inc"
 #include "tfx_ps_sample_af.inc"
@@ -383,33 +392,27 @@ PS_OUTPUT ps_main(PS_INPUT input)
 void ps_main(PS_INPUT input)
 #endif
 {
-	PSMainState state;
-	state.psin = GetPSInput(input);
-	state.cb = GetPSUniforms();
-	state.tex = 0; // unused
-	state.tex_depth = 0; // unused
-	state.palette = 0; // unused
-	state.prim_id_tex = 0; // unused
-	state.tex_sampler = 0; // unused
+	ps_in = GetPSInput(input);
+	ps_cb = GetPSUniforms();
 	#if NEED_PRIMID
-		state.prim_id = input.prim_id;
+		ps_prim_id = input.prim_id;
 	#else
-		state.prim_id = 0;
+		ps_prim_id = 0;
 	#endif
-	state.color_discarded = false;
-	state.depth_discarded = false;
+	ps_color_discarded = false;
+	ps_depth_discarded = false;
 
-	int2 coord = int2(state.psin.p.xy);
+	int2 coord = int2(ps_in.p.xy);
 
-	state.current_depth = DepthLoad(coord);
+	ps_current_depth = DepthLoad(coord);
 
-	state.current_color = RtLoad(coord);
+	ps_current_color = RtLoad(coord);
 
 	#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
 		PS_OUTPUT psout;
 	#endif
 
-	PSOutputGeneric psout_gen = ps_main_impl(state);
+	PSOutputGeneric psout_gen = ps_main_impl();
 
 	// Color write back
 	#if PS_RETURN_COLOR
@@ -418,9 +421,9 @@ void ps_main(PS_INPUT input)
 			psout.c1 = psout_gen.c1;
 		#endif
 	#elif PS_RETURN_COLOR_ROV
-		psout_gen.c0 = (fbmask == 0xFFu) ? state.current_color : psout_gen.c0; // channel masking
-		if (!state.color_discarded)
-			RtTextureRov[state.psin.p.xy] = psout_gen.c0;
+		psout_gen.c0 = (fbmask == 0xFFu) ? ps_current_color : psout_gen.c0; // channel masking
+		if (!ps_color_discarded)
+			RtTextureRov[ps_in.p.xy] = psout_gen.c0;
 	#endif
 
 	// Depth write back
@@ -431,8 +434,8 @@ void ps_main(PS_INPUT input)
 			psout.depth_color = psout_gen.depth;
 		#endif
 	#elif PS_RETURN_DEPTH_ROV
-		if (!state.depth_discarded)
-			DepthTextureRov[state.psin.p.xy] = psout_gen.depth;
+		if (!ps_depth_discarded)
+			DepthTextureRov[ps_in.p.xy] = psout_gen.depth;
 	#endif
 
 	#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)

@@ -328,57 +328,6 @@ struct MainVSOut
 	}
 };
 
-struct MainPSIn
-{
-	float4 p [[position]];
-	float4 t;
-	float4 ti;
-	float4 c [[function_constant(IIP)]];
-	float4 fc [[flat, function_constant(NOT_IIP)]];
-	float inv_cov [[function_constant(PS_COVERAGE)]];
-	uint interior [[function_constant(PS_INTERIOR)]];
-};
-
-struct MainPSOut
-{
-	float4 c0 [[color(0), index(0), function_constant(PS_OUTPUT_COLOR0)]];
-	float4 c1 [[color(0), index(1), function_constant(PS_OUTPUT_COLOR1)]];
-	float depthColor [[color(1), function_constant(PS_ZOUTPUT_COLOR)]];
-	float depthLess [[depth(less), function_constant(PS_ZOUTPUT_LESS)]];
-	float depthAny  [[depth(any),  function_constant(PS_ZOUTPUT_ANY)]];
-	MainPSOut(PSOutputGeneric res)
-	{
-		if (PS_OUTPUT_COLOR0)
-			c0 = res.c0;
-		if (PS_OUTPUT_COLOR1)
-			c1 = res.c1;
-		if (PS_ZOUTPUT_LESS)
-			depthLess = res.depth;
-		if (PS_ZOUTPUT_ANY)
-			depthAny = res.depth;
-		if (PS_ZOUTPUT_COLOR)
-			depthColor = res.depth;
-	}
-};
-
-struct PSMainState
-{
-	texture2d<float> tex;
-	depth2d<float> tex_depth;
-	texture2d<float> palette;
-	texture2d<float> prim_id_tex;
-	sampler tex_sampler;
-	float4 current_color;
-	float current_depth;
-	uint prim_id;
-	bool color_discarded = false;
-	bool depth_discarded = false;
-	const thread MainPSIn& psin;
-	constant GSMTLMainPSUniform& cb;
-
-	PSMainState(const thread MainPSIn& psin, constant GSMTLMainPSUniform& cb): psin(psin), cb(cb) {}
-};
-
 // MARK: - Vertex functions
 
 // Convert VS constants for shared code.
@@ -449,18 +398,69 @@ constant bool NEEDS_RT_ROV = PS_ROV_COLOR && !ROV_NEEDS_R32;
 constant bool NEEDS_RT_U32 = PS_ROV_COLOR &&  ROV_NEEDS_R32;
 constant bool NEEDS_DS_ROV = PS_ROV_DEPTH != ROV_DEPTH::NONE;
 
-#include "../../../../bin/resources/shaders/common/tfx_ps_header.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_util.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_sample_af.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_fetch.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_sample.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_tfx.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_atst.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_fog.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_color.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_post.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_blend.inc"
-#include "../../../../bin/resources/shaders/common/tfx_ps_main.inc"
+struct MainPSIn
+{
+	float4 p [[position]];
+	float4 t;
+	float4 ti;
+	float4 c [[function_constant(IIP)]];
+	float4 fc [[flat, function_constant(NOT_IIP)]];
+	float inv_cov [[function_constant(PS_COVERAGE)]];
+	uint interior [[function_constant(PS_INTERIOR)]];
+};
+
+struct MainPSOut
+{
+	float4 c0 [[color(0), index(0), function_constant(PS_OUTPUT_COLOR0)]];
+	float4 c1 [[color(0), index(1), function_constant(PS_OUTPUT_COLOR1)]];
+	float depthColor [[color(1), function_constant(PS_ZOUTPUT_COLOR)]];
+	float depthLess [[depth(less), function_constant(PS_ZOUTPUT_LESS)]];
+	float depthAny  [[depth(any),  function_constant(PS_ZOUTPUT_ANY)]];
+	MainPSOut(PSOutputGeneric res)
+	{
+		if (PS_OUTPUT_COLOR0)
+			c0 = res.c0;
+		if (PS_OUTPUT_COLOR1)
+			c1 = res.c1;
+		if (PS_ZOUTPUT_LESS)
+			depthLess = res.depth;
+		if (PS_ZOUTPUT_ANY)
+			depthAny = res.depth;
+		if (PS_ZOUTPUT_COLOR)
+			depthColor = res.depth;
+	}
+};
+
+struct PSMainState
+{
+	texture2d<float> ps_tex;
+	depth2d<float> ps_tex_depth;
+	texture2d<float> ps_palette;
+	texture2d<float> ps_prim_id_tex;
+	sampler ps_tex_sampler;
+	float4 ps_current_color;
+	float ps_current_depth;
+	uint ps_prim_id;
+	bool ps_color_discarded = false;
+	bool ps_depth_discarded = false;
+	const thread MainPSIn& ps_in;
+	constant GSMTLMainPSUniform& ps_cb;
+
+	PSMainState(const thread MainPSIn& ps_in, constant GSMTLMainPSUniform& ps_cb): ps_in(ps_in), ps_cb(ps_cb) {}
+
+	#include "../../../../bin/resources/shaders/common/tfx_ps_header.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_util.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_sample_af.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_fetch.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_sample.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_tfx.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_atst.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_fog.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_color.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_post.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_blend.inc"
+	#include "../../../../bin/resources/shaders/common/tfx_ps_main.inc"
+};
 
 fragment MainPSOut ps_main(
 	MainPSIn in [[stage_in]],
@@ -537,7 +537,7 @@ fragment MainPSOut ps_main(
 		state.current_color = 0;
 	}
 
-	PSOutputGeneric out = ps_main_impl(state);
+	PSOutputGeneric out = state.ps_main_impl();
 
 	if (PS_ROV_DEPTH == ROV_DEPTH::READ_WRITE && !state.depth_discarded)
 		ds_rov.write(out.depth, coord);
@@ -580,7 +580,7 @@ fragment void ps_main_rov_eft(
 	else
 		state.current_color = rt_rov.read(coord);
 	
-	PSOutputGeneric out = ps_main_impl(state);
+	PSOutputGeneric out = state.ps_main_impl();
 
 	if (!state.color_discarded)
 	{
