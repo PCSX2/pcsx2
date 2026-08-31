@@ -21,6 +21,10 @@ extern u32 target;         // branch target
 extern u32 s_nBlockCycles; // cycles of current block recompiling
 extern bool s_nBlockInterlocked; // Current block has VU0 interlocking
 
+// FPU clamping constants
+alignas(16) extern const u32 g_minvals[4];
+alignas(16) extern const u32 g_maxvals[4];
+
 // x86 can use shorter displacement if it fits in an s8, so offset 144 bytes into the cpuRegs
 // This will allow us to reach r1-r16 with a shorter encoding
 // TODO: Actually figure out what things are used most often, maybe rearrange the cpuRegs struct, and point at that

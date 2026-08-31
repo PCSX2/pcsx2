@@ -8,9 +8,9 @@
 //   suffice.
 
 #include "Common.h"
+#include "COP0.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900.h"
-#include "iCOP0.h"
 
 namespace Interp = R5900::Interpreter::OpcodeImpl::COP0;
 using namespace x86Emitter;

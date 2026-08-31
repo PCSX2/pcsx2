@@ -5,7 +5,6 @@
 #include "R5900OpcodeTables.h"
 #include "common/emitter/x86emitter.h"
 #include "iR5900.h"
-#include "iFPU.h"
 
 /* This is a version of the FPU that emulates an exponent of 0xff and overflow/underflow flags */
 
