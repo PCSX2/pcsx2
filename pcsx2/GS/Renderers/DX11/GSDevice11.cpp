@@ -1094,12 +1094,34 @@ GSDevice::PresentResult GSDevice11::BeginPresent(bool frame_skip)
 	m_state.rtv = m_swap_chain_rtv.get();
 	m_state.rtv->AddRef();
 	m_state.current_rt = nullptr;
+
+	if (m_state.dsv_as_rtv)
+	{
+		m_state.dsv_as_rtv->Release();
+		m_state.dsv_as_rtv = nullptr;
+	}
+	m_state.current_ds_as_rt = nullptr;
+
 	if (m_state.dsv)
 	{
 		m_state.dsv->Release();
 		m_state.dsv = nullptr;
 	}
 	m_state.current_ds = nullptr;
+
+	if (m_state.rt_uav)
+	{
+		m_state.rt_uav->Release();
+		m_state.rt_uav = nullptr;
+	}
+	m_state.current_rt_uav = nullptr;
+
+	if (m_state.ds_uav)
+	{
+		m_state.ds_uav->Release();
+		m_state.ds_uav = nullptr;
+	}
+	m_state.current_ds_uav = nullptr;
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
@@ -2926,7 +2948,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextur
 			m_state.dsv_as_rtv->Release();
 		if (dsv_as_rtv)
 			dsv_as_rtv->AddRef();
-		m_state.rtv = dsv_as_rtv;
+		m_state.dsv_as_rtv = dsv_as_rtv;
 		m_state.current_ds_as_rt = ds_as_rt;
 	}
 	if (m_state.dsv != dsv)
@@ -2984,6 +3006,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextur
 	{
 		const GSVector2i size =
 			rt ? rt->GetSize() :
+			ds_as_rt ? ds_as_rt->GetSize() :
 			ds ? ds->GetSize() :
 			(rt_uav_tex && rt_uav_tex != m_null_texture) ? rt_uav_tex->GetSize() :
 			ds_uav_tex->GetSize();
