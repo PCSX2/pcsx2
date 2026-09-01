@@ -10690,7 +10690,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	tex_size.y = std::min(tex_size.y, 1 << m_cached_ctx.TEX0.TH);
 
 	const bool is_target_src = src && src->m_from_target;
-
+	const bool is_recursive = m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0;
 	// Try to catch cases of stupid draws like Manhunt and Syphon Filter where they sample a single pixel.
 	// Also make sure it's grabbing most of the texture.
 	if (tex_size.x == 0 || tex_size.y == 0 || draw_size.x == 0 || draw_size.y == 0)
@@ -10704,7 +10704,8 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 
 	const GSDrawingContext& next_ctx = m_env.CTXT[m_env.PRIM.CTXT];
 	const bool next_tex0_is_draw = m_env.PRIM.TME && next_ctx.TEX0.TBP0 == m_cached_ctx.FRAME.Block() && next_ctx.TEX1.MMAG == 1;
-	if (!PRIM->TME || (m_context->TEX1.MMAG != 1 && !next_tex0_is_draw) || m_vt.m_primclass < GS_TRIANGLE_CLASS || m_cached_ctx.FRAME.Block() == m_cached_ctx.TEX0.TBP0 ||
+	if (!PRIM->TME || (m_context->TEX1.MMAG != 1 && !next_tex0_is_draw) || m_vt.m_primclass < GS_TRIANGLE_CLASS || 
+		(is_recursive && !m_r.rintersect(GSVector4i(m_vt.m_min.t.x, m_vt.m_min.t.y, m_vt.m_max.t.x, m_vt.m_max.t.y)).rempty()) || // Same target with overlap.
 		IsMipMapDraw() || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].trbpp <= 8)
 		return 0;
 
@@ -10718,7 +10719,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	const GSVector2i tex_size_half = GSVector2i((src->GetRegion().HasX() ? src->GetRegionSize().x : src_valid.width()) / 2, (src->GetRegion().HasY() ? src->GetRegionSize().y : src_valid.height()) / 2);
 	const bool possible_downscale = m_context->TEX1.MMIN == 1 || !src->m_from_target || src->m_from_target->m_downscaled || GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive || tex_size.x >= tex_size_half.x || tex_size.y >= tex_size_half.y;
 
-	if (is_downscale && (draw_size.x >= PCRTCDisplays.GetResolution().x || !possible_downscale))
+	if (is_downscale && (draw_size.x >= PCRTCDisplays.GetResolution().x || !possible_downscale || is_recursive))
 		return 0;
 
 	const bool is_upscale = m_cached_ctx.TEX0.TBW <= m_cached_ctx.FRAME.FBW && ((draw_size.x / tex_size.x) >= 4 || (draw_size.y / tex_size.y) >= 4);
@@ -10727,7 +10728,7 @@ int GSRendererHW::IsScalingDraw(GSTextureCache::Source* src, bool no_gaps)
 	const bool no_gaps_or_single_sprite = (is_downscale || is_upscale) && (no_gaps || (m_vt.m_primclass == GS_SPRITE_CLASS && SpriteDrawWithoutGaps()));
 
 	const bool dst_discarded = IsDiscardingDstRGB() || IsDiscardingDstAlpha();
-	if (no_gaps_or_single_sprite && ((is_upscale && !m_context->ALPHA.IsOpaque()) ||
+	if (!is_recursive && no_gaps_or_single_sprite && ((is_upscale && !m_context->ALPHA.IsOpaque()) ||
 		(is_downscale && (dst_discarded || (PRIM->ABE && m_context->ALPHA.C == 2 && m_context->ALPHA.FIX == 255)))))
 	{
 		GL_INS("HW: %s draw detected - from %dx%d to %dx%d draw %lld", is_downscale ? "Downscale" : "Upscale", tex_size.x, tex_size.y, draw_size.x, draw_size.y, s_n);
