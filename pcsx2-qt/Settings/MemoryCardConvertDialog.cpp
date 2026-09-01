@@ -239,12 +239,8 @@ void MemoryCardConvertDialog::ConvertCard()
 	}
 	else
 	{
-		QString baseName = m_selectedCard;
-
-		// Get our destination file name
-		size_t extensionPos = baseName.lastIndexOf(".ps2", -1);
-		// Strip the extension off of it
-		baseName.replace(extensionPos, 4, "");
+		// Strip the extension off
+		QString baseName = QFileInfo(m_selectedCard).completeBaseName();
 		// Add _converted to the end of it
 		baseName.append("_converted");
 

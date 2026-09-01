@@ -81,7 +81,7 @@ static u32 CalculateECC(u8* buf)
 	return column_parity | (line_parity_0 << 8) | (line_parity_1 << 16);
 }
 
-static bool ConvertNoECCtoRAW(const char* file_in, const char* file_out)
+bool ConvertNoECCtoRAW(const char* file_in, const char* file_out)
 {
 	auto fin = FileSystem::OpenManagedCFile(file_in, "rb");
 	if (!fin)
@@ -1137,4 +1137,14 @@ bool FileMcd_DeleteCard(const std::string_view name)
 	}
 
 	return true;
+}
+
+bool FileMcd_IsNoECCCard(const std::string& path)
+{
+	auto fp = FileSystem::OpenManagedSharedCFile(path.c_str(), "rb", FileSystem::FileShareMode::DenyNone);
+	if (!fp)
+		return false;
+
+	const s64 size = FileSystem::FSize64(fp.get());
+	return (size == _8mb) || (size == _16mb) || (size == _32mb) || (size == _64mb);
 }

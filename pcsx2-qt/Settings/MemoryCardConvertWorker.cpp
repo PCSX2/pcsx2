@@ -109,7 +109,24 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 	config.Enabled = true;
 	config.Type = MemoryCardType::Folder;
 
-	std::optional<std::vector<u8>> sourceBufferOpt = FileSystem::ReadBinaryFile(srcPath.c_str());
+	// If we're dealing with a non-ECC Memory Card, convert to a temporary RAW file first.
+	std::string noECCToRAWPath;
+	if (FileMcd_IsNoECCCard(srcPath))
+	{
+		noECCToRAWPath = srcPath + "_raw_tmp";
+		if (!ConvertNoECCtoRAW(srcPath.c_str(), noECCToRAWPath.c_str()))
+		{
+			Console.Error("%s(%s, %s, %d) Failed to convert non-ECC Memory Card to RAW!", __FUNCTION__, srcFileName.c_str(), destFolderName.c_str(), type);
+			FileSystem::DeleteFilePath(noECCToRAWPath.c_str());
+			return false;
+		}
+	}
+
+	const std::string& pathToUse = noECCToRAWPath.empty() ? srcPath : noECCToRAWPath;
+	std::optional<std::vector<u8>> sourceBufferOpt = FileSystem::ReadBinaryFile(pathToUse.c_str());
+
+	if (!noECCToRAWPath.empty())
+		FileSystem::DeleteFilePath(noECCToRAWPath.c_str());
 
 	if (!sourceBufferOpt.has_value())
 	{
