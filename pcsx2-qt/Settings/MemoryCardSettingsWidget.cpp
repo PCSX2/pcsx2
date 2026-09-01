@@ -334,6 +334,8 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 	const QString selectedCard(getSelectedCard());
 	if (!selectedCard.isEmpty())
 	{
+		const std::optional<AvailableMcdInfo> cardInfo = FileMcd_GetCardInfo(selectedCard.toStdString());
+		const bool isPS1 = cardInfo.has_value() && cardInfo.value().file_type == MemoryCardFileType::PS1;
 		for (u32 slot = 0; slot < MAX_SLOTS; slot++)
 		{
 			connect(menu.addAction(tr("Use for Slot %1").arg(slot + 1)), &QAction::triggered, this,
@@ -342,7 +344,8 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
-		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
+		if (!isPS1)
+			connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
 		menu.addSeparator();
 	}
