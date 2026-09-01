@@ -60,6 +60,7 @@ set QTMINOR=6.11
 set QTAPNG=1.3.0
 
 set FFMPEG=9.0.1
+set MAKE=4.4.1
 set MESON=1.10.2
 set PKGCONF=2.5.1
 set AMF=1.5.2
@@ -101,6 +102,7 @@ call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 
 call :downloadfile "ffmpeg-%FFMPEG%.tar.xz" "https://ffmpeg.org/releases/ffmpeg-%FFMPEG%.tar.xz" cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635 || goto error
+call :downloadfile "make-%MAKE%-without-guile-w32-bin.zip" "https://sourceforge.net/projects/ezwinports/files/make-%MAKE%-without-guile-w32-bin.zip/download" fb66a02b530f7466f6222ce53c0b602c5288e601547a034e4156a512dd895ee7 || goto error
 call :downloadfile "meson-%MESON%.tar.gz" "https://github.com/mesonbuild/meson/releases/download/%MESON%/meson-%MESON%.tar.gz" 7890287d911dd4ee1ebd0efb61ed0321bfcd87c725df923a837cf90c6508f96b || goto error
 call :downloadfile "pkgconf-pkgconf-%PKGCONF%.zip" "https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-%PKGCONF%.zip" c5b5f88a2ca2324dc5d857e35bb145e24290e326357ea94a86d47b8d7fa15477 || goto error
 call :downloadfile "amf-headers-v%AMF%.tar.gz" "https://github.com/GPUOpen-LibrariesAndSDKs/AMF/releases/download/v%AMF%/AMF-headers-v%AMF%.tar.gz" d3c12eb324edf05e214608b6a395a51dd95770ed9d45520185d6c3a206811c99 || goto error
@@ -207,13 +209,18 @@ set PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 Set "PKG_CONFIG_PATH=%INSTALLDIR%\lib\pkgconfig"
 cd .. || goto error
 
+echo "Extracting make"
+%SEVENZIP% e "make-%MAKE%-without-guile-w32-bin.zip" "bin\make.exe" -o"%INSTALLDIR%\bin\" -aoa || goto error
+set MAKE_EXE="%INSTALLDIR%\bin\make.exe"
+echo.
+
 set "OLD_PATH=%PATH%"
 set "PATH=%PATH%;%UNIX_TOOLS%"
 
 echo "Installing nvenc headers..."
 rmdir /S /Q "nv-codec-headers-%NVENC%"
 tar xf "nv-codec-headers-%NVENC%.tar.gz" || goto error
-make -C "nv-codec-headers-%NVENC%" PREFIX="%INSTALLDIR%" install || goto error
+!MAKE_EXE! -C "nv-codec-headers-%NVENC%" PREFIX="%INSTALLDIR%" install || goto error
 echo.
 
 set CC=cl
@@ -227,8 +234,8 @@ if !FOUND_NASM!==0 (
   set LIBX264_NASM=--disable-asm
 )
 %BASH% configure --prefix="%INSTALLDIR%" --disable-cli --enable-static --extra-cflags="-MD -w -Os -GL" !LIBX264_NASM! || goto error
-make -j%NUMBER_OF_PROCESSORS% || goto error
-make install || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
 cd .. || goto error
 echo.
 
@@ -264,8 +271,8 @@ rem --enable-small removes the display names of codecs, so instead we specify op
   --enable-parser=hevc ^
   --enable-muxer=avi,matroska,mov,mp3,mp4,wav ^
   --enable-protocol=file || goto error
-make -j%NUMBER_OF_PROCESSORS% || goto error
-make install || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
 cd ..
 echo.
 
