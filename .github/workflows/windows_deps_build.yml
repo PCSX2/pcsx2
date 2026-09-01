@@ -37,5 +37,4 @@ jobs:
         if: steps.cache-deps.outputs.cache-hit != 'true'
         env:
           DEBUG: 0
-          BUILD_FFMPEG: 1
         run: .github/workflows/scripts/windows/build-dependencies.bat
