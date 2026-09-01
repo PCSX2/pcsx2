@@ -266,12 +266,29 @@ void MemoryCardSettingsWidget::renameCard()
 	if (newName.isEmpty() || newName == selectedCard)
 		return;
 
-	if (!newName.endsWith(QStringLiteral(".ps2")) || newName.length() <= 4)
+	const std::optional<AvailableMcdInfo> cardInfo = FileMcd_GetCardInfo(selectedCard.toStdString());
+	const bool isPS1 = cardInfo.has_value() && (cardInfo.value().file_type == MemoryCardFileType::PS1);
+	const bool isNoECC = cardInfo.has_value() && FileMcd_IsNoECCCard(cardInfo.value().path);
+	const bool filenameTooShort = newName.length() <= 4;
+
+	if (isPS1 && ((!newName.endsWith(QStringLiteral(".mcr")) && !newName.endsWith(QStringLiteral(".mcd"))) || filenameTooShort))
 	{
-		QMessageBox::critical(
-			QtUtils::GetRootWidget(this), tr("Rename Memory Card"), tr("New name is invalid, it must end with .ps2"));
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+			tr("New name is invalid, a PS1 card must have at least 1 character and a .mcr or .mcd extension."));
 		return;
 	}
+	if (isNoECC && ((!newName.endsWith(QStringLiteral(".bin")) && !newName.endsWith(QStringLiteral(".mc2"))) || filenameTooShort))
+	{
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+			tr("New name is invalid, a PS2 card with no ECC must have at least 1 character and a .bin or .mc2 extension."));
+		return;
+	}
+	if (!isPS1 && !isNoECC && (!newName.endsWith(QStringLiteral(".ps2")) || filenameTooShort))
+ 	{
+ 		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+			tr("New name is invalid, a PS2 card must have at least 1 character and a .ps2 extension."));
+ 		return;
+ 	}
 
 	const std::string newNameStr(newName.toStdString());
 	if (FileMcd_GetCardInfo(newNameStr).has_value())
