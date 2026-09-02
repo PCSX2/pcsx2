@@ -44,16 +44,16 @@
 #define VS_LOAD_INDEX(INDICES, VID) INDICES[VID]
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(STATE, POS) (STATE.tex.sample(STATE.tex_sampler, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_LOD(STATE, POS, LOD) (STATE.tex.sample(STATE.tex_sampler, FLOAT2(POS), level(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(STATE, POS) (STATE.tex_depth.sample(STATE.tex_sampler, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_DEPTH_LOD(STATE, POS, LOD) (STATE.tex_depth.sample(STATE.tex_sampler, FLOAT2(POS), level(LOD)))
-#define PS_READ_TEX(STATE, POS, LOD) (STATE.tex.read(UINT2(POS), (LOD)))
-#define PS_READ_TEX_DEPTH(STATE, POS, LOD) (STATE.tex_depth.read(UINT2(POS), (LOD)))
-#define PS_READ_PALETTE(STATE, POS) (STATE.palette.read(UINT2(POS), 0))
-#define PS_READ_PRIMID(STATE, POS) (STATE.prim_id_tex.read(UINT2(POS), 0).r)
-#define PS_GET_TEX_DIMS(STATE, OUT_VAR) (OUT_VAR = UINT2(STATE.tex.get_width(), STATE.tex.get_height()))
-#define PS_GET_TEX_DEPTH_DIMS(STATE, OUT_VAR) (OUT_VAR = UINT2(STATE.tex_depth.get_width(), STATE.tex_depth.get_height()))
+#define PS_SAMPLE_TEX(POS) (tex.sample(tex_sampler, float2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (tex.sample(tex_sampler, float2(POS), level(LOD)))
+#define PS_SAMPLE_TEX_DEPTH(POS) (tex_depth.sample(tex_sampler, float2(POS)))
+#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (tex_depth.sample(tex_sampler, float2(POS), level(LOD)))
+#define PS_READ_TEX(POS, LOD) (tex.read(uint2(POS), (LOD)))
+#define PS_READ_TEX_DEPTH(POS, LOD) (tex_depth.read(uint2(POS), (LOD)))
+#define PS_READ_PALETTE(POS) (palette.read(uint2(POS), 0))
+#define PS_READ_PRIMID(POS) (prim_id_tex.read(uint2(POS), 0).r)
+#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(tex.get_width(), tex.get_height()))
+#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (OUT_VAR = uint2(tex_depth.get_width(), tex_depth.get_height()))
 #define PS_STATIC
 
 // Enum constants
