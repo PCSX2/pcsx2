@@ -334,7 +334,7 @@ OUTPUT_TYPE ps_convert_depth32_depth24(PS_INPUT input) : OUTPUT_SV
 	float depthTR = CONVERT_FN(Texture.Load(int3(coords.zy, 0))); \
 	float depthBL = CONVERT_FN(Texture.Load(int3(coords.xw, 0))); \
 	float depthBR = CONVERT_FN(Texture.Load(int3(coords.zw, 0))); \
-	return lerp(lerp(depthTL, depthTR, mix_vals.x), lerp(depthBL, depthBR, mix_vals.x), mix_vals.y);
+	return floor(lerp(lerp(depthTL, depthTR, mix_vals.x), lerp(depthBL, depthBR, mix_vals.x), mix_vals.y) * exp2(32.0f)) * exp2(-32.0f); 
 
 #if defined(__ps_convert_rgba8_depth32__)
 OUTPUT_TYPE ps_convert_rgba8_depth32(PS_INPUT input) : OUTPUT_SV
