@@ -1984,7 +1984,7 @@ void FullscreenUI::DrawSettingsWindow()
 				break;
 
 			case SettingsPage::Achievements:
-				DrawAchievementsSettingsPage(lock);
+				DrawAchievementsSettingsPage();
 				break;
 
 			case SettingsPage::Controller:
@@ -4560,15 +4560,9 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
 								Host::SetBaseBoolSettingValue("Achievements", "ChallengeMode", true);
 								Host::CommitBaseSettingChanges();
-								VMManager::ApplySettings();
+								Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
 
-								bool has_active_game;
-								{
-									auto lock = Achievements::GetLock();
-									has_active_game = Achievements::HasActiveGame();
-								}
-
-								if (has_active_game)
+								if (VMManager::HasValidVM())
 								{
 									OpenConfirmMessageDialog(FSUI_STR("Reset System"),
 										FSUI_STR("Hardcore mode will not be enabled until the system is reset. Do you want to reset the system now?"),
@@ -4590,10 +4584,9 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 								{
 									Host::SetBaseBoolSettingValue("Achievements", "Enabled", true);
 									Host::CommitBaseSettingChanges();
-									VMManager::ApplySettings();
+									Host::RunOnCPUThread([]() { VMManager::ApplySettings(); });
+									prompt_hardcore();
 								}
-
-								prompt_hardcore();
 							});
 					}
 					else
@@ -4687,7 +4680,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 	ImGui::PopStyleVar(2);
 }
 
-void FullscreenUI::DrawAchievementsSettingsPage(std::unique_lock<std::mutex>& settings_lock)
+void FullscreenUI::DrawAchievementsSettingsPage()
 {
 #ifdef ENABLE_RAINTEGRATION
 	if (Achievements::IsUsingRAIntegration())
