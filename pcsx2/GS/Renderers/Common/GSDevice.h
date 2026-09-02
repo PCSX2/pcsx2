@@ -375,6 +375,13 @@ public:
 		return ShaderEntryPoint(Shader());
 	}
 
+	constexpr ShaderConvertSelector SetShader(ShaderConvert shader = ShaderConvert::COPY)
+	{
+		ShaderConvertSelector tmp = *this;
+		tmp.fields.shader = static_cast<u32>(shader);
+		return tmp;
+	}
+
 	constexpr ShaderConvertSelector SetMask(u8 mask = 0xf) const
 	{
 		ShaderConvertSelector tmp = *this;
@@ -446,7 +453,7 @@ public:
 };
 
 static inline ShaderConvertSelector GetConvertShader(GSTexture::Format src, GSTexture::Format dst,
-	u32 src_bpp = 32, u32 dst_bpp = 32, u8 mask = 0xf)
+	u32 src_bpp = 32, u32 dst_bpp = 32, u8 mask = 0xf, Filter linear = Nearest)
 {
 	ShaderConvert shader = static_cast<ShaderConvert>(-1);
 	switch (src)
@@ -531,7 +538,7 @@ static inline ShaderConvertSelector GetConvertShader(GSTexture::Format src, GSTe
 			break;
 	}
 
-	return ShaderConvertSelector(shader, mask, dst == GSTexture::Format::DepthStencil);
+	return ShaderConvertSelector(shader, mask, dst == GSTexture::Format::DepthStencil, linear);
 }
 
 static inline ShaderConvertSelector GetConvertShader(const GSTexture* src, const GSTexture* dst, u32 src_bpp, u32 dst_bpp, u8 mask = 0xf)
