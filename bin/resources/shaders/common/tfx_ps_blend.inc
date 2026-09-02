@@ -1,6 +1,6 @@
 #define PICK3(SELECTOR, ZERO, ONE, TWO) ((SELECTOR) == 0 ? (ZERO) : (SELECTOR) == 1 ? (ONE) : (TWO))
 
-static void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgba))
+PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgba))
 {
 	float As = As_rgba.a;
 	

@@ -1,4 +1,4 @@
-static void discard_all()
+PS_STATIC void discard_all()
 {
 	if (PS_ROV_COLOR != FALSE || PS_ROV_DEPTH != PS_ROV_DEPTH_NONE)
 		ps_color_discarded = ps_depth_discarded = true;
@@ -6,7 +6,7 @@ static void discard_all()
 		discard;
 }
 
-static void discard_color(IN_OUT_PARAM(float4, color))
+PS_STATIC void discard_color(IN_OUT_PARAM(float4, color))
 {
 	if (PS_ROV_COLOR != FALSE)
 		ps_color_discarded = true;
@@ -14,7 +14,7 @@ static void discard_color(IN_OUT_PARAM(float4, color))
 		color = ps_current_color;
 }
 
-static void discard_depth(IN_OUT_PARAM(float, depth))
+PS_STATIC void discard_depth(IN_OUT_PARAM(float, depth))
 {
 	if (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
 		ps_depth_discarded = true;
@@ -22,7 +22,7 @@ static void discard_depth(IN_OUT_PARAM(float, depth))
 		depth = ps_current_depth;
 }
 
-static float4 sample_tex_lod(float2 uv, float lod)
+PS_STATIC float4 sample_tex_lod(float2 uv, float lod)
 {
 	if (PS_TEX_IS_DEPTH)
 		return float4(PS_SAMPLE_TEX_DEPTH_LOD(uv, lod), 0.0f, 0.0f, 0.0f);
@@ -30,7 +30,7 @@ static float4 sample_tex_lod(float2 uv, float lod)
 		return PS_SAMPLE_TEX_LOD(uv, lod);
 }
 
-static float4 sample_tex(float2 uv)
+PS_STATIC float4 sample_tex(float2 uv)
 {
 	if (PS_TEX_IS_DEPTH)
 		return float4(PS_SAMPLE_TEX_DEPTH(uv), 0.0f, 0.0f, 0.0);
@@ -38,7 +38,7 @@ static float4 sample_tex(float2 uv)
 		return PS_SAMPLE_TEX(uv);
 }
 
-static float4 read_tex(uint2 pos, uint lod)
+PS_STATIC float4 read_tex(uint2 pos, uint lod)
 {
 	if (PS_TEX_IS_DEPTH)
 		return float4(PS_READ_TEX_DEPTH(pos, lod), 0.0f, 0.0f, 0.0f);
@@ -46,12 +46,12 @@ static float4 read_tex(uint2 pos, uint lod)
 		return PS_READ_TEX(pos, lod);
 }
 
-static float4 read_tex(uint2 pos)
+PS_STATIC float4 read_tex(uint2 pos)
 {
 	return read_tex(pos, 0);
 }
 
-static uint2 get_tex_dims()
+PS_STATIC uint2 get_tex_dims()
 {
 	uint2 dims = uint2(0, 0);
 	if (PS_TEX_IS_DEPTH)

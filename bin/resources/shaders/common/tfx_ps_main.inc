@@ -1,4 +1,4 @@
-static void ps_shuffle(IN_OUT_PARAM(float4, C))
+PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 {
 	if (PS_SHUFFLE != FALSE)
 	{
@@ -58,7 +58,7 @@ static void ps_shuffle(IN_OUT_PARAM(float4, C))
 	}
 }
 
-static PSOutputGeneric ps_main_impl()
+PS_STATIC PSOutputGeneric ps_main_impl()
 {
 	PSOutputGeneric psout;
 	psout.c0 = float4_bcast(0.0f);

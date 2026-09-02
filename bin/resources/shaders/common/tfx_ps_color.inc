@@ -1,4 +1,4 @@
-static float4 ps_color()
+PS_STATIC float4 ps_color()
 {
 	float2 st, st_int;
 	if (PS_FST == FALSE)

@@ -54,6 +54,7 @@
 #define PS_READ_PRIMID(STATE, POS) (STATE.prim_id_tex.read(UINT2(POS), 0).r)
 #define PS_GET_TEX_DIMS(STATE, OUT_VAR) (OUT_VAR = UINT2(STATE.tex.get_width(), STATE.tex.get_height()))
 #define PS_GET_TEX_DEPTH_DIMS(STATE, OUT_VAR) (OUT_VAR = UINT2(STATE.tex_depth.get_width(), STATE.tex_depth.get_height()))
+#define PS_STATIC
 
 // Enum constants
 #ifndef VS_EXPAND_NONE

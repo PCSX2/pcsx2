@@ -82,6 +82,7 @@
 #define PS_READ_PRIMID(POS) (PrimMinTexture.Load(int3(int2(POS), 0)).r)
 #define PS_GET_TEX_DIMS(OUT_VAR) (Texture.GetDimensions(OUT_VAR.x, OUT_VAR.y))
 #define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
+#define PS_STATIC static
 
 /// End helper macros for shared shader code.
 

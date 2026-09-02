@@ -1,4 +1,4 @@
-static float4 tfx(float4 T, float4 C)
+PS_STATIC float4 tfx(float4 T, float4 C)
 {
 	float4 C_out;
 	float4 FxT = trunc((C * T) / 128.f);

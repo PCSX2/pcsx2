@@ -94,6 +94,7 @@
 #define PS_READ_PRIMID(POS) (texelFetch(PrimMinTexture, int2(POS), 0).r)
 #define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(textureSize(Texture, 0)))
 #define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
+#define PS_STATIC
 // Unused in VK/GL
 #define PS_POINT_SAMPLER 0
 #define BROKEN_SHADER_DEPTH 0

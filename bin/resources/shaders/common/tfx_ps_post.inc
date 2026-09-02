@@ -1,4 +1,4 @@
-static void ps_fbmask(IN_OUT_PARAM(float4, C))
+PS_STATIC void ps_fbmask(IN_OUT_PARAM(float4, C))
 {
 	if (PS_FBMASK != FALSE)
 	{
@@ -8,7 +8,7 @@ static void ps_fbmask(IN_OUT_PARAM(float4, C))
 	}
 }
 
-static void ps_dither(IN_OUT_PARAM(float4, C), float As)
+PS_STATIC void ps_dither(IN_OUT_PARAM(float4, C), float As)
 {
 	if (PS_DITHER == 0 || PS_DITHER == 3)
 		return;
@@ -33,7 +33,7 @@ static void ps_dither(IN_OUT_PARAM(float4, C), float As)
 		C.rgb += value;
 }
 
-static void ps_color_clamp_wrap(IN_OUT_PARAM(float4, C))
+PS_STATIC void ps_color_clamp_wrap(IN_OUT_PARAM(float4, C))
 {
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
@@ -62,7 +62,7 @@ static void ps_color_clamp_wrap(IN_OUT_PARAM(float4, C))
 		C.rgb = float3(short3(C.rgb) & short(0xF8));
 }
 
-static void ps_alpha_correct(IN_OUT_PARAM(float4, C))
+PS_STATIC void ps_alpha_correct(IN_OUT_PARAM(float4, C))
 {
   if (PS_DST_FMT == FMT_16)
 	{

@@ -1,9 +1,9 @@
-static uint fetch_raw_depth()
+PS_STATIC uint fetch_raw_depth()
 {
 	return uint(PS_READ_TEX_DEPTH(ushort2(ps_in.p.xy + ps_cb.channel_shuffle_offset), 0) * EXP2_POS_32);
 }
 
-static float4 fetch_raw_color()
+PS_STATIC float4 fetch_raw_color()
 {
 	if (PS_TEX_IS_FB != FALSE)
 		return ps_current_color;
@@ -11,7 +11,7 @@ static float4 fetch_raw_color()
 		return PS_READ_TEX(ushort2(ps_in.p.xy + ps_cb.channel_shuffle_offset), 0);
 }
 
-static float4 fetch_c(ushort2 uv)
+PS_STATIC float4 fetch_c(ushort2 uv)
 {
 	if (PS_TEX_IS_FB != FALSE)
 		return ps_current_color;
@@ -21,36 +21,36 @@ static float4 fetch_c(ushort2 uv)
 		return PS_READ_TEX(uv, 0);
 }
 
-static float4 fetch_red()
+PS_STATIC float4 fetch_red()
 {
 	float rt = PS_TEX_IS_DEPTH ? float(fetch_raw_depth() & 0xFFu) / 255.f : fetch_raw_color().r;
 	return sample_p_norm(rt) * 255.f;
 }
 
-static float4 fetch_green()
+PS_STATIC float4 fetch_green()
 {
 	float rt = PS_TEX_IS_DEPTH ? float((fetch_raw_depth() >> 8) & 0xFFu) / 255.f : fetch_raw_color().g;
 	return sample_p_norm(rt) * 255.f;
 }
 
-static float4 fetch_blue()
+PS_STATIC float4 fetch_blue()
 {
 	float rt = PS_TEX_IS_DEPTH ? float((fetch_raw_depth() >> 16) & 0xFFu) / 255.f : fetch_raw_color().b;
 	return sample_p_norm(rt) * 255.f;
 }
 
-static float4 fetch_alpha()
+PS_STATIC float4 fetch_alpha()
 {
 	return sample_p_norm(fetch_raw_color().a) * 255.f;
 }
 
-static float4 fetch_rgb()
+PS_STATIC float4 fetch_rgb()
 {
 	float4 rt = fetch_raw_color();
 	return float4(sample_p_norm(rt.r).r, sample_p_norm(rt.g).g, sample_p_norm(rt.b).b, 1) * 255.f;
 }
 
-static float4 fetch_gXbY()
+PS_STATIC float4 fetch_gXbY()
 {
 	if (PS_TEX_IS_DEPTH)
 	{

@@ -1,4 +1,4 @@
-static float manual_lod(float uv_w)
+PS_STATIC float manual_lod(float uv_w)
 {
 	float K = ps_cb.lod_params.x;
 	float L = ps_cb.lod_params.y;
@@ -8,7 +8,7 @@ static float manual_lod(float uv_w)
 	return min(gs_lod, max_lod) - bias;
 }
 
-static float4 sample_c(float2 uv)
+PS_STATIC float4 sample_c(float2 uv)
 {
 	if (PS_TEX_IS_FB != 0)
 		return ps_current_color;
@@ -51,17 +51,17 @@ static float4 sample_c(float2 uv)
 		return sample_tex_lod(uv, 0);
 }
 
-static float4 sample_p(uint idx)
+PS_STATIC float4 sample_p(uint idx)
 {
 	return PS_READ_PALETTE(uint2(idx, 0));
 }
 
-static float4 sample_p_norm(float u)
+PS_STATIC float4 sample_p_norm(float u)
 {
 	return sample_p(uint(u * 255.5f));
 }
 
-static float4 clamp_wrap_uv(float4 uv)
+PS_STATIC float4 clamp_wrap_uv(float4 uv)
 {
 	float4 tex_size = ps_cb.wh.xyxy;
 
@@ -144,7 +144,7 @@ static float4 clamp_wrap_uv(float4 uv)
 	return uv;
 }
 
-static float4x4 sample_4c(float4 uv)
+PS_STATIC float4x4 sample_4c(float4 uv)
 {
 	return float4x4(
 		sample_c(uv.xy),
@@ -154,7 +154,7 @@ static float4x4 sample_4c(float4 uv)
 	);
 }
 
-static uint4 sample_4_index(float4 uv)
+PS_STATIC uint4 sample_4_index(float4 uv)
 {
 	float4 c;
 
@@ -187,7 +187,7 @@ static uint4 sample_4_index(float4 uv)
 	return i;
 }
 
-static float4x4 sample_4p(uint4 u)
+PS_STATIC float4x4 sample_4p(uint4 u)
 {
 	return float4x4(
 		sample_p(u.x),
@@ -197,7 +197,7 @@ static float4x4 sample_4p(uint4 u)
 	);
 }
 
-static float4 sample_color(float2 st)
+PS_STATIC float4 sample_color(float2 st)
 {
 	if (PS_TCOFFSETHACK != FALSE)
 		st += ps_cb.tc_offset;
@@ -261,7 +261,7 @@ static float4 sample_color(float2 st)
 	return trunc(t * 255.f + 0.05f);
 }
 
-static ushort2 clamp_wrap_uv_depth(ushort2 uv)
+PS_STATIC ushort2 clamp_wrap_uv_depth(ushort2 uv)
 {
 	ushort2 uv_out = uv;
 	// Keep the full precision
@@ -292,7 +292,7 @@ static ushort2 clamp_wrap_uv_depth(ushort2 uv)
 	return uv_out;
 }
 
-static float4 sample_depth(float2 st)
+PS_STATIC float4 sample_depth(float2 st)
 {
 	float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * float2_bcast(ps_cb.scale_factor.x);
 

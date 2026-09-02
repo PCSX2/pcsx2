@@ -1,4 +1,4 @@
-static float4 sample_c_af(float2 uv, float uv_w)
+PS_STATIC float4 sample_c_af(float2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
 	uv = any(IS_NAN_OR_INF_4(float4(uv, 0, 0))) ? float2_bcast(0.0f) : uv;
