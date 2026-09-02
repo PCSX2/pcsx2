@@ -60,7 +60,7 @@
 // Raw vertex layout for vertex expand shaders.
 struct VSRawVertex
 {
-	FLOAT2 ST;
+	float2 ST;
 	uint RGBA;
 	float Q;
 	uint XY;
@@ -71,11 +71,11 @@ struct VSRawVertex
 
 // Vertex shader constant buffer fields. Shared by all shaders except Metal.
 #define VS_UNIFORMS(X) \
-	X(FLOAT2, vertex_scale) \
-	X(FLOAT2, vertex_offset) \
-	X(FLOAT2, texture_scale) \
-	X(FLOAT2, texture_offset) \
-	X(FLOAT2, point_size) \
+	X(float2, vertex_scale) \
+	X(float2, vertex_offset) \
+	X(float2, texture_scale) \
+	X(float2, texture_offset) \
+	X(float2, point_size) \
 	X(uint, max_depth_vs) \
 	X(float, line_aa1_width)
 
@@ -97,22 +97,22 @@ struct VSUniformsGeneric
 // Generic VS inputs for passing to shared shader code.
 struct VSInputGeneric
 {
-	FLOAT2 st;
-	FLOAT4 c;
+	float2 st;
+	float4 c;
 	float  q;
-	UINT2  p;
+	uint2  p;
 	uint   z;
-	UINT2  uv;
-	FLOAT4 f;
+	uint2  uv;
+	float4 f;
 };
 
 // Generic VS outputs for shared shader code to pass values.
 struct VSOutputGeneric
 {
-	FLOAT4 p;
-	FLOAT4 t;
-	FLOAT4 ti;
-	FLOAT4 c;
+	float4 p;
+	float4 t;
+	float4 ti;
+	float4 c;
 	float inv_cov;
 	uint interior;
 	float point_size;
@@ -121,26 +121,26 @@ struct VSOutputGeneric
 // Pixel shader constant buffer fields.
 // Shared by all shaders except Metal, which defines its own version.
 #define PS_UNIFORMS(X) \
-	X(FLOAT3, fog_color) \
+	X(float3, fog_color) \
 	X(float, aref) \
-	X(FLOAT4, wh)  \
-	X(FLOAT2, ta) \
+	X(float4, wh)  \
+	X(float2, ta) \
 	X(float, max_depth_ps) \
 	X(float, alpha_fix) \
-	X(UINT4, fbmask) \
-	X(FLOAT4, half_texel) \
-	X(FLOAT4, uv_min_max) \
-	X(FLOAT4, lod_params) \
-	X(FLOAT4, st_range) \
+	X(uint4, fbmask) \
+	X(float4, half_texel) \
+	X(float4, uv_min_max) \
+	X(float4, lod_params) \
+	X(float4, st_range) \
 	X(uint, channel_shuffle_blue_mask) \
 	X(uint, channel_shuffle_blue_shift) \
 	X(uint, channel_shuffle_green_mask) \
 	X(uint, channel_shuffle_green_shift) \
-	X(FLOAT2, channel_shuffle_offset) \
-	X(FLOAT2, tc_offset) \
-	X(FLOAT2, st_scale) \
-	X(FLOAT4x4, dither_matrix) \
-	X(FLOAT4, scale_factor) \
+	X(float2, channel_shuffle_offset) \
+	X(float2, tc_offset) \
+	X(float2, st_scale) \
+	X(float4x4, dither_matrix) \
+	X(float4, scale_factor) \
 	X(float, line_cov_scale) \
 	X(float, _pad0) \
 	X(float, _pad1) \
@@ -157,11 +157,11 @@ struct PSUniformsGeneric
 // Generic PS inputs for passing to shared shader code.
 struct PSInputGeneric
 {
-	FLOAT4 p;
-	FLOAT4 t;
-	FLOAT4 ti;
-	FLOAT4 c;
-	FLOAT4 fc;
+	float4 p;
+	float4 t;
+	float4 ti;
+	float4 c;
+	float4 fc;
 	float inv_cov;
 	uint interior;
 };
@@ -169,64 +169,64 @@ struct PSInputGeneric
 // Generic PS outputs for shared shader code to pass values.
 struct PSOutputGeneric
 {
-	FLOAT4 c0;
-	FLOAT4 c1;
+	float4 c0;
+	float4 c1;
 	float depth;
 };
 
 // Metal defines it's own version of these conversion functions.
 #ifndef __METAL_VERSION__
-STATIC FLOAT4 convert_depth32_rgba8(float value)
+static float4 convert_depth32_rgba8(float value)
 {
 	uint val = uint(value * EXP2_POS_32);
-	return FLOAT4(UINT_BITCAST_UCHAR4(val));
+	return float4(UINT_BITCAST_UCHAR4(val));
 }
 
-STATIC FLOAT4 convert_depth16_rgba8(float value)
+static float4 convert_depth16_rgba8(float value)
 {
 	uint val = uint(value * EXP2_POS_32);
-	return FLOAT4(UINT4(val << 3, val >> 2, val >> 7, val >> 8) & UINT4(0xf8, 0xf8, 0xf8, 0x80));
+	return float4(uint4(val << 3, val >> 2, val >> 7, val >> 8) & uint4(0xf8, 0xf8, 0xf8, 0x80));
 }
 #endif
 
-STATIC FLOAT2 float2_bcast(float val)
+static float2 float2_bcast(float val)
 {
-	return FLOAT2(val, val);
+	return float2(val, val);
 }
 
-STATIC FLOAT3 float3_bcast(float val)
+static float3 float3_bcast(float val)
 {
-	return FLOAT3(val, val, val);
+	return float3(val, val, val);
 }
 
-STATIC FLOAT4 float4_bcast(float val)
+static float4 float4_bcast(float val)
 {
-	return FLOAT4(val, val, val, val);
+	return float4(val, val, val, val);
 }
 
-STATIC UINT4 uint4_bcast(uint val)
+static uint4 uint4_bcast(uint val)
 {
-	return UINT4(val, val, val, val);
+	return uint4(val, val, val, val);
 }
 
-STATIC UINT2 uint2_bcast(uint val)
+static uint2 uint2_bcast(uint val)
 {
-	return UINT2(val, val);
+	return uint2(val, val);
 }
 
-STATIC INT3 int3_bcast(int val)
+static int3 int3_bcast(int val)
 {
-	return INT3(val, val, val);
+	return int3(val, val, val);
 }
 
-STATIC bool any_nonzero(FLOAT3 val)
+static bool any_nonzero(float3 val)
 {
-	return any(VNOTEQUAL(val, float3_bcast(0.0f)));
+	return any(notEqual(val, float3_bcast(0.0f)));
 }
 
-STATIC bool any_nonzero(INT3 val)
+static bool any_nonzero(int3 val)
 {
-	return any(VNOTEQUAL(val, int3_bcast(0)));
+	return any(notEqual(val, int3_bcast(0)));
 }
 
 #ifndef __METAL_VERSION__

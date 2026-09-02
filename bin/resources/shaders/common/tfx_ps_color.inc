@@ -1,6 +1,6 @@
-STATIC FLOAT4 ps_color()
+static float4 ps_color()
 {
-	FLOAT2 st, st_int;
+	float2 st, st_int;
 	if (PS_FST == FALSE)
 	{
 		st = ps_in.t.xy / ps_in.t.w;
@@ -13,7 +13,7 @@ STATIC FLOAT4 ps_color()
 		st_int = ps_in.ti.zw;
 	}
 
-	FLOAT4 T;
+	float4 T;
 	if (PS_CHANNEL == 1)
 		T = fetch_red();
 	else if (PS_CHANNEL == 2)
@@ -34,7 +34,7 @@ STATIC FLOAT4 ps_color()
 	if (PS_SHUFFLE != FALSE && PS_SHUFFLE_SAME == FALSE && PS_READ16_SRC == FALSE &&
 		!(PS_PROCESS_BA == SHUFFLE_READWRITE && PS_PROCESS_RG == SHUFFLE_READWRITE))
 	{
-		UINT4 denorm_c_before = UINT4(T);
+		uint4 denorm_c_before = uint4(T);
 		if ((PS_PROCESS_BA & SHUFFLE_READ) != FALSE)
 		{
 			T.r = float((denorm_c_before.b << 3) & 0xF8u);
@@ -50,10 +50,10 @@ STATIC FLOAT4 ps_color()
 			T.a = float(denorm_c_before.g & 0x80u);
 		}
 		
-		T.a = (T.a >= 127.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(INT3(T.rgb) & int(0xF8)) ? ps_cb.ta.x : 0.f) * 255.f;
+		T.a = (T.a >= 127.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(int3(T.rgb) & int(0xF8)) ? ps_cb.ta.x : 0.f) * 255.f;
 	}
 
-	FLOAT4 C = tfx(T, PS_IIP != FALSE ? ps_in.c : ps_in.fc);
+	float4 C = tfx(T, PS_IIP != FALSE ? ps_in.c : ps_in.fc);
 
 	fog(C, ps_in.t.z);
 

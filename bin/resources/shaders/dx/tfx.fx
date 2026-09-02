@@ -16,53 +16,31 @@
 /// Start helper macros for shared shader code.
 
 // Types
-#define FLOAT2 float2
-#define FLOAT3 float3
-#define FLOAT4 float4
-#define FLOAT2x2 float2x2
-#define FLOAT2x4 float2x4
-#define FLOAT4x4 float4x4
-#define UINT2 uint2
-#define UINT3 uint3
-#define UINT4 uint4
-#define INT2 int2
-#define INT3 int3
-#define INT4 int4
-#define USHORT uint
-#define USHORT2 uint2
-#define USHORT3 uint3
-#define USHORT4 uint4
-#define SHORT int
-#define SHORT2 int2
-#define SHORT3 int3
-#define SHORT4 int4
-#define BOOL2 bool2
-#define BOOL3 bool3
-#define BOOL4 bool4
+#define ushort uint
+#define ushort2 uint2
+#define ushort3 uint3
+#define ushort4 uint4
+#define short int
+#define short2 int2
+#define short3 int3
+#define short4 int4
 
 // Builtin keywords/functions
-#define STATIC
-#define DFDX ddx
-#define DFDY ddy
 #define SELECT(COND, TRUE_VAL, FALSE_VAL) ((COND) ? (FALSE_VAL) : (TRUE_VAL))
-#define VEQUAL(X, Y) ((X) == (Y))
-#define VGEQUAL(X, Y) ((X) >= (Y))
-#define VLEQUAL(X, Y) ((X) <= (Y))
-#define VGREATER(X, Y) ((X) > (Y))
-#define VLESS(X, Y) ((X) < (Y))
-#define VNOTEQUAL(X, Y) ((X) != (Y))
-#define RSQRT(X) rsqrt(X)
-#define GPU_DISCARD discard
-#define SATURATE(X) saturate(X)
+#define equal(X, Y) ((X) == (Y))
+#define greaterThanEqual(X, Y) ((X) >= (Y))
+#define lessThanEqual(X, Y) ((X) <= (Y))
+#define greaterThan(X, Y) ((X) > (Y))
+#define lessThan(X, Y) ((X) < (Y))
+#define notEqual(X, Y) ((X) != (Y))
+#define rsqrt(X) rsqrt(X)
 #define FLOAT_BITCAST_UINT(X) asuint(X)
 #define FLOAT4_BITCAST_UINT4(X) asuint(X)
-#define UINT_BITCAST_UCHAR4(X) UINT4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
+#define UINT_BITCAST_UCHAR4(X) uint4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
 // Warning: X, Y opposite order of GLSL and MSL!
 #define MAT_MUL(X, Y) mul((Y), (X))
 // Warning: X, Y opposite order of GLSL and MSL!
 #define MAT_GET(MAT, X, Y) MAT[X][Y]
-#define FRACT(X) frac(X)
-#define MIX lerp
 #define IN_PARAM(TYPE, NAME) TYPE NAME
 #define IN_OUT_PARAM(TYPE, NAME) inout TYPE NAME
 // FXC (<=SM5.1) may optimise away isnan and isinf.
@@ -94,14 +72,14 @@
 #define BROKEN_SHADER_DEPTH 0
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (Texture.Sample(TextureSampler, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (Texture.SampleLevel(TextureSampler, FLOAT2(POS), float(LOD)))
+#define PS_SAMPLE_TEX(POS) (Texture.Sample(TextureSampler, float2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (Texture.SampleLevel(TextureSampler, float2(POS), float(LOD)))
 #define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
 #define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
-#define PS_READ_TEX(POS, LOD) (Texture.Load(INT3(INT2(POS), int(LOD))))
+#define PS_READ_TEX(POS, LOD) (Texture.Load(int3(int2(POS), int(LOD))))
 #define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
-#define PS_READ_PALETTE(POS) (Palette.Load(INT3(INT2(POS), 0)))
-#define PS_READ_PRIMID(POS) (PrimMinTexture.Load(INT3(INT2(POS), 0)).r)
+#define PS_READ_PALETTE(POS) (Palette.Load(int3(int2(POS), 0)))
+#define PS_READ_PRIMID(POS) (PrimMinTexture.Load(int3(int2(POS), 0)).r)
 #define PS_GET_TEX_DIMS(OUT_VAR) (Texture.GetDimensions(OUT_VAR.x, OUT_VAR.y))
 #define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 
@@ -184,7 +162,7 @@ VSInputGeneric GetVSInput(VS_INPUT vin)
 {
 	VSInputGeneric vin_gen;
 	vin_gen.st = vin.st;
-	vin_gen.c = FLOAT4(vin.c);
+	vin_gen.c = float4(vin.c);
 	vin_gen.q = vin.q;
 	vin_gen.p = vin.p;
 	vin_gen.z = vin.z;

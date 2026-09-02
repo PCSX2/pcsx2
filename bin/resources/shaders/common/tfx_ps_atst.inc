@@ -1,4 +1,4 @@
-STATIC bool atst(FLOAT4 C)
+static bool atst(float4 C)
 {
 	float a = C.a;
 	switch (PS_ATST)

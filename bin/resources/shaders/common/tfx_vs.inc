@@ -19,11 +19,11 @@ VSInputGeneric load_vertex(VS_VERTICES_PARAM(vertices), uint index)
 	#if VS_NEEDS_EXPAND
 		VSRawVertex raw = VS_LOAD_VERTEX(vertices, VS_BASE_VERTEX + index);
 		vert.st = raw.ST;
-		vert.c = UINT4(raw.RGBA & 0xFFu, (raw.RGBA >> 8) & 0xFFu, (raw.RGBA >> 16) & 0xFFu, raw.RGBA >> 24);
+		vert.c = uint4(raw.RGBA & 0xFFu, (raw.RGBA >> 8) & 0xFFu, (raw.RGBA >> 16) & 0xFFu, raw.RGBA >> 24);
 		vert.q = raw.Q;
-		vert.p = UINT2(raw.XY & 0xFFFFu, raw.XY >> 16);
+		vert.p = uint2(raw.XY & 0xFFFFu, raw.XY >> 16);
 		vert.z = raw.Z;
-		vert.uv = UINT2(raw.UV & 0xFFFFu, raw.UV >> 16);
+		vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
 		vert.f = float4_bcast(float(raw.FOG) / 255.0f);
 	#else
 		// Don't reference the vertex buffer unless we really need to.
@@ -39,7 +39,7 @@ VSInputGeneric load_vertex(VS_VERTICES_PARAM(vertices), uint index)
 }
 #endif
 
-STATIC void vs_broken_shader_depth(IN_OUT_PARAM(VSOutputGeneric, vout))
+static void vs_broken_shader_depth(IN_OUT_PARAM(VSOutputGeneric, vout))
 {
 	// Apple GPUs use slightly different algorithms to calculate the Z they send to the shader vs the Z they use in hardware.
 	// This breaks a lot of things (the most common is conservative depth rejecting pixels that should have depth equal to current depth but now don't).
@@ -49,19 +49,19 @@ STATIC void vs_broken_shader_depth(IN_OUT_PARAM(VSOutputGeneric, vout))
 	vout.p.z += EXP2_NEG_32;
 }
 
-STATIC VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUniformsGeneric, cb))
 {
 	VSOutputGeneric vout;
 	// Clamp to max depth, GS doesn't wrap
 	uint z = min(v.z, cb.max_depth_vs);
-	vout.p.xy = FLOAT2(v.p) - FLOAT2(0.05f, 0.05f);
+	vout.p.xy = float2(v.p) - float2(0.05f, 0.05f);
 	vout.p.xy = vout.p.xy * cb.vertex_scale - cb.vertex_offset;
 	vout.p.y *= VS_Y_FLIP;
 	vout.p.w = 1.0f;
 	vout.p.z = VS_SCALE_RAW_Z(z);
 
-	FLOAT2 uv = FLOAT2(v.uv) - cb.texture_offset;
-	FLOAT2 st = v.st - cb.texture_offset;
+	float2 uv = float2(v.uv) - cb.texture_offset;
+	float2 st = v.st - cb.texture_offset;
 
 	// Float coordinate
 	vout.t.xy = st;
@@ -100,32 +100,32 @@ STATIC VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUnif
 }
 
 // Convert XY from NDC to GS pixel coordinates (i.e. 1.0 = 1 GS pixel).
-STATIC FLOAT2 get_xy_unscaled(FLOAT2 xy, IN_PARAM(VSUniformsGeneric, cb))
+static float2 get_xy_unscaled(float2 xy, IN_PARAM(VSUniformsGeneric, cb))
 {
 	return round(xy / cb.vertex_scale) / 16.0f;
 }
 
 // Get the XY deltas in GS pixel coordinates, using first vertex as the origin.
-STATIC FLOAT2x2 get_xy_deltas_unscaled(IN_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2), IN_PARAM(VSUniformsGeneric, cb))
+static float2x2 get_xy_deltas_unscaled(IN_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2), IN_PARAM(VSUniformsGeneric, cb))
 {
-	FLOAT2 xy0 = get_xy_unscaled(v0.p.xy, cb);
-	FLOAT2 xy1 = get_xy_unscaled(v1.p.xy, cb);
-	FLOAT2 xy2 = get_xy_unscaled(v2.p.xy, cb);
-	return FLOAT2x2(xy1 - xy0, xy2 - xy0);
+	float2 xy0 = get_xy_unscaled(v0.p.xy, cb);
+	float2 xy1 = get_xy_unscaled(v1.p.xy, cb);
+	float2 xy2 = get_xy_unscaled(v2.p.xy, cb);
+	return float2x2(xy1 - xy0, xy2 - xy0);
 }
 
 // Get the AA1 outward expand direction to the edge formed by the first two vertices.
 // This is up or down for shallow (X dominant) edges, and right or left for steep (Y dominant) edges.
 // Similar expansion to line AA1 except instead of expanding on both sides of the line,
 // expand on on the side towards the outside of the triangle.
-STATIC FLOAT2 get_aa1_triangle_expand_dir(IN_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2), IN_PARAM(VSUniformsGeneric, cb))
+static float2 get_aa1_triangle_expand_dir(IN_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2), IN_PARAM(VSUniformsGeneric, cb))
 {
-	FLOAT2x2 xy_deltas = get_xy_deltas_unscaled(v0, v1, v2, cb);
-	FLOAT2 line_delta = xy_deltas[0];
-	FLOAT2 line_opposite = xy_deltas[1];
+	float2x2 xy_deltas = get_xy_deltas_unscaled(v0, v1, v2, cb);
+	float2 line_delta = xy_deltas[0];
+	float2 line_opposite = xy_deltas[1];
 
-	FLOAT2 line_normal = FLOAT2(line_delta.y, -line_delta.x);
-	FLOAT2 line_expand = abs(line_delta.x) >= abs(line_delta.y) ? FLOAT2(0.0f, 1.0f) : FLOAT2(1.0f, 0.0f);
+	float2 line_normal = float2(line_delta.y, -line_delta.x);
+	float2 line_expand = abs(line_delta.x) >= abs(line_delta.y) ? float2(0.0f, 1.0f) : float2(1.0f, 0.0f);
 
 	if ((dot(line_expand, line_normal) >= 0.0f) == (dot(line_opposite, line_normal) >= 0.0f))
 	{
@@ -137,39 +137,39 @@ STATIC FLOAT2 get_aa1_triangle_expand_dir(IN_PARAM(VSOutputGeneric, v0), IN_PARA
 }
 
 // This works for GLSL, HLSL, MSL in spite of different row/column ordering.
-STATIC FLOAT2x2 get_inverse(IN_PARAM(FLOAT2x2, mat), float det)
+static float2x2 get_inverse(IN_PARAM(float2x2, mat), float det)
 {
-	return FLOAT2x2(mat[1][1], -mat[0][1], -mat[1][0], mat[0][0]) * (1 / det);
+	return float2x2(mat[1][1], -mat[0][1], -mat[1][0], mat[0][0]) * (1 / det);
 }
 
 // Extrapolate triangle attributes from the first vertex along the given direction.
 // dp_mat is derived from the input vertices, it is passed in to avoid recomputing.
-STATIC void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2),
-	IN_PARAM(FLOAT2x2, dp_mat), FLOAT2 dp, IN_PARAM(VSUniformsGeneric, cb))
+static void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_PARAM(VSOutputGeneric, v1), IN_PARAM(VSOutputGeneric, v2),
+	IN_PARAM(float2x2, dp_mat), float2 dp, IN_PARAM(VSUniformsGeneric, cb))
 {
 	// Get texture deltas
-	FLOAT2x2 dt;
+	float2x2 dt;
 	if (VS_FST != FALSE)
 	{
-		dt = FLOAT2x2(v1.ti.zw - v0.ti.zw, v2.ti.zw - v0.ti.zw);
+		dt = float2x2(v1.ti.zw - v0.ti.zw, v2.ti.zw - v0.ti.zw);
 	}
 	else
 	{
-		dt = FLOAT2x2(v1.t.xy - v0.t.xy, v2.t.xy - v0.t.xy);
+		dt = float2x2(v1.t.xy - v0.t.xy, v2.t.xy - v0.t.xy);
 	}
 
 	// Get color delta if interpolating
-	FLOAT2x4 dc;
+	float2x4 dc;
 	if (VS_IIP != FALSE)
 	{
-		dc = FLOAT2x4(v1.c - v0.c, v2.c - v0.c);
+		dc = float2x4(v1.c - v0.c, v2.c - v0.c);
 	}
 
-	FLOAT2 dz = FLOAT2(v1.p.z - v0.p.z, v2.p.z - v0.p.z); // Z deltas
+	float2 dz = float2(v1.p.z - v0.p.z, v2.p.z - v0.p.z); // Z deltas
 
-	FLOAT2 df = FLOAT2(v1.t.z - v0.t.z, v2.t.z - v0.t.z); // Fog deltas
+	float2 df = float2(v1.t.z - v0.t.z, v2.t.z - v0.t.z); // Fog deltas
 
-	FLOAT2 dq = FLOAT2(v1.t.w - v0.t.w, v2.t.w - v0.t.w); // Q deltas
+	float2 dq = float2(v1.t.w - v0.t.w, v2.t.w - v0.t.w); // Q deltas
 
 	// To prevent unstable extrapolation, do not extrapolate if the
 	// minimum perpendicular length of the triangle is < 2 pixels.
@@ -180,9 +180,9 @@ STATIC void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_
 	float min_perp_length = abs(dp_det) / max(max(len0, len1), len2);
 
 	// Get the position -> barycentric weight matrix
-	FLOAT2x2 inv_dp_mat = get_inverse(dp_mat, dp_det);
+	float2x2 inv_dp_mat = get_inverse(dp_mat, dp_det);
 
-	FLOAT2 weights = min_perp_length < 2 ? float2_bcast(0.0f) : MAT_MUL(inv_dp_mat, dp);
+	float2 weights = min_perp_length < 2 ? float2_bcast(0.0f) : MAT_MUL(inv_dp_mat, dp);
 
 	v0.p.xy += dp * cb.point_size; // Extrapolate position
 
@@ -211,12 +211,12 @@ STATIC void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_
 	v0.t.z += dot(df, weights); // Extrapolate fog
 }
 
-STATIC VSOutputGeneric vs_expand_none_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_expand_none_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
 {
 	return vs_main_impl(load_vertex(vertices, vid), cb);
 }
 
-STATIC VSOutputGeneric vs_expand_point_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_expand_point_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
 {
 	VSOutputGeneric vout = vs_main_impl(load_vertex(vertices, vid), cb);
 	if ((vid & 1u) != 0u)
@@ -226,7 +226,7 @@ STATIC VSOutputGeneric vs_expand_point_impl(uint vid, VS_VERTICES_PARAM(vertices
 	return vout;
 }
 
-STATIC VSOutputGeneric vs_expand_line_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_expand_line_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
 {
 	uint vid_base = vid >> 2;
 	bool is_bottom = (vid & 2u) != 0u;
@@ -236,15 +236,15 @@ STATIC VSOutputGeneric vs_expand_line_impl(uint vid, VS_VERTICES_PARAM(vertices)
 	VSOutputGeneric other = vs_main_impl(load_vertex(vertices, vid_other), cb);
 
 	// Use bottom minus top for delta regardless of which vertex we are expanding.
-	FLOAT2 line_delta = is_bottom ? vout.p.xy - other.p.xy : other.p.xy - vout.p.xy;
-	FLOAT2 line_vector = normalize(line_delta / cb.vertex_scale);
-	FLOAT2 line_expand = FLOAT2(line_vector.y, -line_vector.x);
+	float2 line_delta = is_bottom ? vout.p.xy - other.p.xy : other.p.xy - vout.p.xy;
+	float2 line_vector = normalize(line_delta / cb.vertex_scale);
+	float2 line_expand = float2(line_vector.y, -line_vector.x);
 
 	if (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
 		line_expand *= 2.f * cb.line_aa1_width;
 
-	FLOAT2 line_width = (line_expand * cb.point_size) / 2;
-	FLOAT2 offset = is_right ? line_width : -line_width;
+	float2 line_width = (line_expand * cb.point_size) / 2;
+	float2 offset = is_right ? line_width : -line_width;
 	vout.p.xy += offset;
 
 	if (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
@@ -257,7 +257,7 @@ STATIC VSOutputGeneric vs_expand_line_impl(uint vid, VS_VERTICES_PARAM(vertices)
 	return vout;
 }
 
-STATIC VSOutputGeneric vs_expand_sprite_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_expand_sprite_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb))
 {
 	uint vid_base = vid >> 1;
 	bool is_bottom = (vid & 2u) != 0u;
@@ -287,7 +287,7 @@ STATIC VSOutputGeneric vs_expand_sprite_impl(uint vid, VS_VERTICES_PARAM(vertice
 	return vout;
 }
 
-STATIC VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb),
+static VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb),
 	VS_INDICES_PARAM(indices))
 {
 	// Triangles with AA1 are expanded as follows:
@@ -329,9 +329,9 @@ STATIC VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(v
 		VSOutputGeneric other    = vs_main_impl(load_vertex(vertices, load_index(indices, 3 * prim_id + (is_bottom ? i0 : i1))), cb);
 		VSOutputGeneric opposite = vs_main_impl(load_vertex(vertices, load_index(indices, 3 * prim_id + i2)), cb);
 
-		FLOAT2x2 pos_deltas = get_xy_deltas_unscaled(vout, other, opposite, cb);
+		float2x2 pos_deltas = get_xy_deltas_unscaled(vout, other, opposite, cb);
 
-		FLOAT2 expand_dir = is_outside ? get_aa1_triangle_expand_dir(vout, other, opposite, cb) : float2_bcast(0.0f);
+		float2 expand_dir = is_outside ? get_aa1_triangle_expand_dir(vout, other, opposite, cb) : float2_bcast(0.0f);
 
 		// Do actual extrapolation, or no-op if expand_dir == 0.
 		extrapolate_aa1_triangle_edge(vout, other, opposite, pos_deltas, expand_dir, cb);
@@ -357,22 +357,22 @@ STATIC VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(v
 		VSOutputGeneric other    = vs_main_impl(load_vertex(vertices, load_index(indices, 3 * prim_id + (is_first_tri ? i1 : i2))), cb);
 		VSOutputGeneric opposite = vs_main_impl(load_vertex(vertices, load_index(indices, 3 * prim_id + (is_first_tri ? i2 : i1))), cb);
 
-		FLOAT2x2 pos_deltas = get_xy_deltas_unscaled(vout, other, opposite, cb);
+		float2x2 pos_deltas = get_xy_deltas_unscaled(vout, other, opposite, cb);
 
 		// Get the edge expansion directions of both incident edges.
-		FLOAT2 edge_expand_dir_0 = get_aa1_triangle_expand_dir(vout, other, opposite, cb);
-		FLOAT2 edge_expand_dir_1 = get_aa1_triangle_expand_dir(vout, opposite, other, cb);
+		float2 edge_expand_dir_0 = get_aa1_triangle_expand_dir(vout, other, opposite, cb);
+		float2 edge_expand_dir_1 = get_aa1_triangle_expand_dir(vout, opposite, other, cb);
 
 		// Check if the corner is already filled by the expanded edges.
 		// This happens if the expand directions are the same.
 		// If so we output a degenerate triangle at this corner.
-		bool corner_filled = all(VEQUAL(edge_expand_dir_0, edge_expand_dir_1));
+		bool corner_filled = all(equal(edge_expand_dir_0, edge_expand_dir_1));
 
 		// Nothing if corner is filled, otherwise opposite to the bisector of the corner angle.
-		FLOAT2 far_corner_dir = corner_filled ? float2_bcast(0.0f) : -normalize((pos_deltas[0] + pos_deltas[1]) / 2);
+		float2 far_corner_dir = corner_filled ? float2_bcast(0.0f) : -normalize((pos_deltas[0] + pos_deltas[1]) / 2);
 
 		// Determine the expand direction.
-		FLOAT2 expand_dir = is_near_corner ? float2_bcast(0.0f) : // No extrapolation
+		float2 expand_dir = is_near_corner ? float2_bcast(0.0f) : // No extrapolation
 												is_far_corner ? far_corner_dir :      // Opposite to the angle bisector of corner
 												edge_expand_dir_0;                    // Standard AA1 edge expansion
 
@@ -387,7 +387,7 @@ STATIC VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(v
 	return vout;
 }
 
-STATIC VSOutputGeneric vs_expand_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb), VS_INDICES_PARAM(indices))
+static VSOutputGeneric vs_expand_impl(uint vid, VS_VERTICES_PARAM(vertices), IN_PARAM(VSUniformsGeneric, cb), VS_INDICES_PARAM(indices))
 {
 	switch (VS_EXPAND_TYPE)
 	{

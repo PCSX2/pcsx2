@@ -1,6 +1,6 @@
 #define PICK3(SELECTOR, ZERO, ONE, TWO) ((SELECTOR) == 0 ? (ZERO) : (SELECTOR) == 1 ? (ONE) : (TWO))
 
-STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
+static void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgba))
 {
 	float As = As_rgba.a;
 	
@@ -25,7 +25,7 @@ STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 
 		if (PS_SHUFFLE != FALSE && NEEDS_RT)
 		{
-			UINT4 denorm_rt = UINT4(ps_current_color);
+			uint4 denorm_rt = uint4(ps_current_color);
 			if ((PS_PROCESS_BA & SHUFFLE_WRITE) != 0)
 			{
 				ps_current_color.r = float((denorm_rt.b << 3) & 0xF8u);
@@ -42,19 +42,19 @@ STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 			}
 		}
 		float multi = PS_COLCLIP_HW != FALSE ? 65535.f : 255.f;
-		FLOAT3 Cd = trunc(ps_current_color.rgb * multi + float3_bcast(0.1f));
-		FLOAT3 Cs = Color.rgb;
+		float3 Cd = trunc(ps_current_color.rgb * multi + float3_bcast(0.1f));
+		float3 Cs = Color.rgb;
 
-		FLOAT3 A = PICK3(PS_BLEND_A, Cs, Cd, float3_bcast(0.0f));
-		FLOAT3 B = PICK3(PS_BLEND_B, Cs, Cd, float3_bcast(0.0f));
+		float3 A = PICK3(PS_BLEND_A, Cs, Cd, float3_bcast(0.0f));
+		float3 B = PICK3(PS_BLEND_B, Cs, Cd, float3_bcast(0.0f));
 		float  C = PICK3(PS_BLEND_C, As, Ad, ps_cb.alpha_fix);
-		FLOAT3 D = PICK3(PS_BLEND_D, Cs, Cd, float3_bcast(0.0f));
+		float3 D = PICK3(PS_BLEND_D, Cs, Cd, float3_bcast(0.0f));
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
 		float C_clamped = C;
 		if (PS_BLEND_MIX > 0 && PS_BLEND_HW != 1 && PS_BLEND_HW != 2)
-			C_clamped = SATURATE(C_clamped);
+			C_clamped = saturate(C_clamped);
 
 		if (PS_BLEND_A == PS_BLEND_B)
 			Color.rgb = D;
@@ -81,7 +81,7 @@ STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 			// we pick the lowest overflow from all colors because it's the safest,
 			// we divide by 255 the color because we don't know Cd value,
 			// changed alpha should only be done for hw blend.
-			FLOAT3 alpha_compensate = max(float3_bcast(1.f), Color.rgb / float3_bcast(255.f));
+			float3 alpha_compensate = max(float3_bcast(1.f), Color.rgb / float3_bcast(255.f));
 			As_rgba.rgb -= alpha_compensate;
 		}
 		else if (PS_BLEND_HW == 2)
@@ -99,8 +99,8 @@ STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 			As_rgba.rgb = float3_bcast(C_clamped);
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 			// that is sent on second output to compensate.
-			FLOAT3 overflow_check = (Color.rgb - float3_bcast(255.f)) / 255.f;
-			FLOAT3 alpha_compensate = max(float3_bcast(0.f), overflow_check);
+			float3 overflow_check = (Color.rgb - float3_bcast(255.f)) / 255.f;
+			float3 alpha_compensate = max(float3_bcast(0.f), overflow_check);
 			As_rgba.rgb -= alpha_compensate;
 		}
 	}
@@ -116,7 +116,7 @@ STATIC void ps_blend(IN_OUT_PARAM(FLOAT4, Color), IN_OUT_PARAM(FLOAT4, As_rgba))
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-			Color.rgb = float3_bcast(SATURATE(Alpha - 1.f) * 255.f);
+			Color.rgb = float3_bcast(saturate(Alpha - 1.f) * 255.f);
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{

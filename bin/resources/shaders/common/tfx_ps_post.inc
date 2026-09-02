@@ -1,22 +1,22 @@
-STATIC void ps_fbmask(IN_OUT_PARAM(FLOAT4, C))
+static void ps_fbmask(IN_OUT_PARAM(float4, C))
 {
 	if (PS_FBMASK != FALSE)
 	{
 		float multi = (PS_COLCLIP_HW != FALSE) ? 65535.f : 255.f;
-		FLOAT4 RT = trunc(ps_current_color * FLOAT4(multi, multi, multi, 255.f) + float4_bcast(0.1f));
-		C = FLOAT4((UINT4(INT4(C)) & ~ps_cb.fbmask) | (UINT4(RT) & ps_cb.fbmask));
+		float4 RT = trunc(ps_current_color * float4(multi, multi, multi, 255.f) + float4_bcast(0.1f));
+		C = float4((uint4(int4(C)) & ~ps_cb.fbmask) | (uint4(RT) & ps_cb.fbmask));
 	}
 }
 
-STATIC void ps_dither(IN_OUT_PARAM(FLOAT4, C), float As)
+static void ps_dither(IN_OUT_PARAM(float4, C), float As)
 {
 	if (PS_DITHER == 0 || PS_DITHER == 3)
 		return;
-	USHORT2 fpos;
+	ushort2 fpos;
 	if (PS_DITHER == 2)
-		fpos = USHORT2(ps_in.p.xy);
+		fpos = ushort2(ps_in.p.xy);
 	else
-		fpos = USHORT2(ps_in.p.xy * float2_bcast(ps_cb.scale_factor.y));
+		fpos = ushort2(ps_in.p.xy * float2_bcast(ps_cb.scale_factor.y));
 	float value = MAT_GET(ps_cb.dither_matrix, fpos.x & 3u, fpos.y & 3u);
 
 	// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend
@@ -33,7 +33,7 @@ STATIC void ps_dither(IN_OUT_PARAM(FLOAT4, C), float As)
 		C.rgb += value;
 }
 
-STATIC void ps_color_clamp_wrap(IN_OUT_PARAM(FLOAT4, C))
+static void ps_color_clamp_wrap(IN_OUT_PARAM(float4, C))
 {
 	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
 	// so we need to limit the color depth on dithered items
@@ -54,15 +54,15 @@ STATIC void ps_color_clamp_wrap(IN_OUT_PARAM(FLOAT4, C))
 		// GPU: Color = 1/255, Alpha = 255/255 * 255/128 => output 1.9921875
 		// In 16 bits format, only 5 bits of colors are used. It impacts shadows computation of Castlevania
 		if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && (PS_BLEND_MIX == 0 || PS_DITHER != FALSE))
-			C.rgb = FLOAT3(SHORT3(C.rgb) & SHORT(0xF8));
+			C.rgb = float3(short3(C.rgb) & short(0xF8));
 		else if (PS_COLCLIP == 1 || PS_COLCLIP_HW == 1)
-			C.rgb = FLOAT3(SHORT3(C.rgb) & SHORT(0xFF));
+			C.rgb = float3(short3(C.rgb) & short(0xFF));
 	}
 	else if (PS_DST_FMT == FMT_16 && PS_DITHER != 3 && PS_BLEND_MIX == 0 && PS_BLEND_HW == 0)
-		C.rgb = FLOAT3(SHORT3(C.rgb) & SHORT(0xF8));
+		C.rgb = float3(short3(C.rgb) & short(0xF8));
 }
 
-STATIC void ps_alpha_correct(IN_OUT_PARAM(FLOAT4, C))
+static void ps_alpha_correct(IN_OUT_PARAM(float4, C))
 {
   if (PS_DST_FMT == FMT_16)
 	{

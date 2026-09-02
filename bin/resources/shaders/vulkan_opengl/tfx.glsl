@@ -16,54 +16,47 @@
 /// Start helper macros for shared shader code
 
 // Types
-#define FLOAT2 vec2
-#define FLOAT3 vec3
-#define FLOAT4 vec4
-#define FLOAT2x2 mat2x2
-#define FLOAT2x4 mat2x4
-#define FLOAT4x4 mat4x4
-#define UINT2 uvec2
-#define UINT3 uvec3
-#define UINT4 uvec4
-#define INT2 ivec2
-#define INT3 ivec3
-#define INT4 ivec4
-#define USHORT uint
-#define USHORT2 uvec2
-#define USHORT3 uvec3
-#define USHORT4 uvec4
-#define SHORT int
-#define SHORT2 ivec2
-#define SHORT3 ivec3
-#define SHORT4 ivec4
-#define BOOL2 bvec2
-#define BOOL3 bvec3
-#define BOOL4 bvec4
+#define float2 vec2
+#define float3 vec3
+#define float4 vec4
+#define float2x2 mat2x2
+#define float2x4 mat2x4
+#define float4x4 mat4x4
+#define uint2 uvec2
+#define uint3 uvec3
+#define uint4 uvec4
+#define int2 ivec2
+#define int3 ivec3
+#define int4 ivec4
+#define ushort uint
+#define ushort2 uvec2
+#define ushort3 uvec3
+#define ushort4 uvec4
+#define short int
+#define short2 ivec2
+#define short3 ivec3
+#define short4 ivec4
+#define bool2 bvec2
+#define bool3 bvec3
+#define bool4 bvec4
 
 // Builtin keywords/functions
-#define STATIC
-#define DFDX dFdx
-#define DFDY dFdy
+#define static
+#define ddx dFdx
+#define ddy dFdy
 #define SELECT(COND, TRUE_VAL, FALSE_VAL) mix((COND), (FALSE_VAL), (TRUE_VAL))
-#define VEQUAL(X, Y) equal((X), (Y))
-#define VGEQUAL(X, Y) greaterThanEqual((X), (Y))
-#define VLEQUAL(X, Y) lessThanEqual((X), (Y))
-#define VGREATER(X, Y) greaterThan((X), (Y))
-#define VLESS(X, Y) lessThan((X), (Y))
-#define VNOTEQUAL(X, Y) notEqual((X), (Y))
-#define RSQRT(X) inversesqrt(X)
-#define GPU_DISCARD discard
-#define SATURATE(X) clamp((X), 0.0f, 1.0f)
+#define rsqrt(X) inversesqrt(X)
+#define saturate(X) clamp((X), 0.0f, 1.0f)
 #define FLOAT_BITCAST_UINT(X) floatBitsToUint(X)
 #define FLOAT4_BITCAST_UINT4(X) floatBitsToUint(X)
-#define UINT_BITCAST_UCHAR4(X) UINT4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
+#define UINT_BITCAST_UCHAR4(X) uint4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
 #define MAT_MUL(X, Y) ((X) * (Y))
 #define MAT_GET(MAT, X, Y) MAT[Y][X]
-#define FRACT(X) fract(X)
-#define MIX mix
+#define frac(X) fract(X)
+#define lerp mix
 #define IN_PARAM(TYPE, NAME) TYPE NAME
 #define IN_OUT_PARAM(TYPE, NAME) inout TYPE NAME
-#define IS_NAN_OR_INF_4(X) BOOL4(INT4(isinf(X)) | INT4(isnan(X)))
+#define IS_NAN_OR_INF_4(X) bool4(int4(isinf(X)) | int4(isnan(X)))
 #define UNROLL
 
 // Constants
@@ -91,15 +84,15 @@
 #define VS_NEEDS_EXPAND (VS_EXPAND_TYPE != VS_EXPAND_NONE)
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (texture(Texture, FLOAT2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (textureLod(Texture, FLOAT2(POS), float(LOD)))
+#define PS_SAMPLE_TEX(POS) (texture(Texture, float2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (textureLod(Texture, float2(POS), float(LOD)))
 #define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
 #define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
-#define PS_READ_TEX(POS, LOD) (texelFetch(Texture, INT2(POS), int(LOD)))
+#define PS_READ_TEX(POS, LOD) (texelFetch(Texture, int2(POS), int(LOD)))
 #define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
-#define PS_READ_PALETTE(POS) (texelFetch(Palette, INT2(POS), 0))
-#define PS_READ_PRIMID(POS) (texelFetch(PrimMinTexture, INT2(POS), 0).r)
-#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = UINT2(textureSize(Texture, 0)))
+#define PS_READ_PALETTE(POS) (texelFetch(Palette, int2(POS), 0))
+#define PS_READ_PRIMID(POS) (texelFetch(PrimMinTexture, int2(POS), 0).r)
+#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(textureSize(Texture, 0)))
 #define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 // Unused in VK/GL
 #define PS_POINT_SAMPLER 0
@@ -236,7 +229,7 @@ VSInputGeneric GetVSInput()
 {
 	VSInputGeneric vin;
 	vin.st = a_st;
-	vin.c = FLOAT4(a_c);
+	vin.c = float4(a_c);
 	vin.q = a_q;
 	vin.p = a_p;
 	vin.z = a_z;

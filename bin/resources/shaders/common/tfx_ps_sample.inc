@@ -1,4 +1,4 @@
-STATIC float manual_lod(float uv_w)
+static float manual_lod(float uv_w)
 {
 	float K = ps_cb.lod_params.x;
 	float L = ps_cb.lod_params.y;
@@ -8,12 +8,12 @@ STATIC float manual_lod(float uv_w)
 	return min(gs_lod, max_lod) - bias;
 }
 
-STATIC FLOAT4 sample_c(FLOAT2 uv)
+static float4 sample_c(float2 uv)
 {
 	if (PS_TEX_IS_FB != 0)
 		return ps_current_color;
 	if (PS_REGION_RECT != 0)
-		return read_tex(UINT2(uv));
+		return read_tex(uint2(uv));
 	if (PS_POINT_SAMPLER != FALSE)
 	{
 		// Weird issue with ATI/AMD cards on DX,
@@ -22,7 +22,7 @@ STATIC FLOAT4 sample_c(FLOAT2 uv)
 		// I'm manually adjusting coordinates to the centre of texels here,
 		// though the centre is just paranoia, the top left corner works fine.
 		// As of 2018 this issue is still present.
-		uv = (trunc(uv * ps_cb.wh.zw) + FLOAT2(0.5, 0.5)) / ps_cb.wh.zw;
+		uv = (trunc(uv * ps_cb.wh.zw) + float2(0.5, 0.5)) / ps_cb.wh.zw;
 	}
 
 	if (PS_ADJS == FALSE && PS_ADJT == FALSE)
@@ -51,29 +51,29 @@ STATIC FLOAT4 sample_c(FLOAT2 uv)
 		return sample_tex_lod(uv, 0);
 }
 
-STATIC FLOAT4 sample_p(uint idx)
+static float4 sample_p(uint idx)
 {
-	return PS_READ_PALETTE(UINT2(idx, 0));
+	return PS_READ_PALETTE(uint2(idx, 0));
 }
 
-STATIC FLOAT4 sample_p_norm(float u)
+static float4 sample_p_norm(float u)
 {
 	return sample_p(uint(u * 255.5f));
 }
 
-STATIC FLOAT4 clamp_wrap_uv(FLOAT4 uv)
+static float4 clamp_wrap_uv(float4 uv)
 {
-	FLOAT4 tex_size = ps_cb.wh.xyxy;
+	float4 tex_size = ps_cb.wh.xyxy;
 
 	if (PS_WMS == PS_WMT)
 	{
 		if (PS_REGION_RECT != FALSE && PS_WMS == 0)
 		{
-			uv = FRACT(uv);
+			uv = frac(uv);
 		}
 		else if (PS_REGION_RECT != FALSE && PS_WMS == 1)
 		{
-			uv = SATURATE(uv);
+			uv = saturate(uv);
 		}
 		else if (PS_WMS == 2)
 		{
@@ -84,21 +84,21 @@ STATIC FLOAT4 clamp_wrap_uv(FLOAT4 uv)
 			// wrap negative uv coords to avoid an off by one error that shifted
 			// textures. Fixes Xenosaga's hair issue.
 			if (PS_FST == FALSE)
-				uv = FRACT(uv);
+				uv = frac(uv);
 
-			UINT4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
-			uv = FLOAT4((USHORT4(uv * tex_size) & USHORT4(uv_msk_fix.xyxy)) | USHORT4(uv_msk_fix.zwzw)) / tex_size;
+			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uv = float4((ushort4(uv * tex_size) & ushort4(uv_msk_fix.xyxy)) | ushort4(uv_msk_fix.zwzw)) / tex_size;
 		}
 	}
 	else
 	{
 		if (PS_REGION_RECT != FALSE && PS_WMS == 0)
 		{
-			uv.xz = FRACT(uv.xz);
+			uv.xz = frac(uv.xz);
 		}
 		else if (PS_REGION_RECT != FALSE && PS_WMS == 1)
 		{
-			uv.xz = SATURATE(uv.xz);
+			uv.xz = saturate(uv.xz);
 		}
 		else if (PS_WMS == 2)
 		{
@@ -107,19 +107,19 @@ STATIC FLOAT4 clamp_wrap_uv(FLOAT4 uv)
 		else if (PS_WMS == 3)
 		{
 			if (PS_FST == FALSE)
-				uv.xz = FRACT(uv.xz);
+				uv.xz = frac(uv.xz);
 
-			UINT4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
-			uv.xz = FLOAT2((USHORT2(uv.xz * tex_size.xx) & USHORT2(uv_msk_fix.xx)) | USHORT2(uv_msk_fix.zz)) / tex_size.xx;
+			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uv.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(uv_msk_fix.xx)) | ushort2(uv_msk_fix.zz)) / tex_size.xx;
 		}
 
 		if (PS_REGION_RECT != FALSE && PS_WMT == 0)
 		{
-			uv.yw = FRACT(uv.yw);
+			uv.yw = frac(uv.yw);
 		}
 		else if (PS_REGION_RECT != FALSE && PS_WMT == 1)
 		{
-			uv.yw = SATURATE(uv.yw);
+			uv.yw = saturate(uv.yw);
 		}
 		else if (PS_WMT == 2)
 		{
@@ -128,10 +128,10 @@ STATIC FLOAT4 clamp_wrap_uv(FLOAT4 uv)
 		else if (PS_WMT == 3)
 		{
 			if (PS_FST == FALSE)
-				uv.yw = FRACT(uv.yw);
+				uv.yw = frac(uv.yw);
 
-			UINT4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
-			uv.yw = FLOAT2((USHORT2(uv.yw * tex_size.yy) & USHORT2(uv_msk_fix.yy)) | USHORT2(uv_msk_fix.ww)) / tex_size.yy;
+			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uv.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(uv_msk_fix.yy)) | ushort2(uv_msk_fix.ww)) / tex_size.yy;
 		}
 	}
 
@@ -144,9 +144,9 @@ STATIC FLOAT4 clamp_wrap_uv(FLOAT4 uv)
 	return uv;
 }
 
-STATIC FLOAT4x4 sample_4c(FLOAT4 uv)
+static float4x4 sample_4c(float4 uv)
 {
-	return FLOAT4x4(
+	return float4x4(
 		sample_c(uv.xy),
 		sample_c(uv.zy),
 		sample_c(uv.xw),
@@ -154,9 +154,9 @@ STATIC FLOAT4x4 sample_4c(FLOAT4 uv)
 	);
 }
 
-STATIC UINT4 sample_4_index(FLOAT4 uv)
+static uint4 sample_4_index(float4 uv)
 {
-	FLOAT4 c;
+	float4 c;
 
 	// Either GS will send a texture that contains a single alpha channel
 	// Or we have an old RT (ie RGBA8) that contains index (4/8) in the alpha channel
@@ -168,15 +168,15 @@ STATIC UINT4 sample_4_index(FLOAT4 uv)
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
 	
-	UINT4 i;
+	uint4 i;
 	
 	if (PS_RTA_SRC_CORRECTION != FALSE)
 	{
-		i = UINT4(round(c * 128.25f)); // Denormalize value
+		i = uint4(round(c * 128.25f)); // Denormalize value
 	}
 	else
 	{
-		i = UINT4(c * 255.5f); // Denormalize value
+		i = uint4(c * 255.5f); // Denormalize value
 	}
 	
 	if (PS_PAL_FMT == 1)
@@ -187,9 +187,9 @@ STATIC UINT4 sample_4_index(FLOAT4 uv)
 	return i;
 }
 
-STATIC FLOAT4x4 sample_4p(UINT4 u)
+static float4x4 sample_4p(uint4 u)
 {
-	return FLOAT4x4(
+	return float4x4(
 		sample_p(u.x),
 		sample_p(u.y),
 		sample_p(u.z),
@@ -197,14 +197,14 @@ STATIC FLOAT4x4 sample_4p(UINT4 u)
 	);
 }
 
-STATIC FLOAT4 sample_color(FLOAT2 st)
+static float4 sample_color(float2 st)
 {
 	if (PS_TCOFFSETHACK != FALSE)
 		st += ps_cb.tc_offset;
 
-	FLOAT4 t;
-	FLOAT4x4 c;
-	FLOAT2 dd;
+	float4 t;
+	float4x4 c;
+	float2 dd;
 
 	if (PS_LTF == FALSE && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == FALSE && PS_WMS < 2 && PS_WMT < 2)
 	{
@@ -212,11 +212,11 @@ STATIC FLOAT4 sample_color(FLOAT2 st)
 	}
 	else
 	{
-		FLOAT4 uv;
+		float4 uv;
 		if (PS_LTF != FALSE)
 		{
 			uv = st.xyxy + ps_cb.half_texel;
-			dd = FRACT(uv.xy * ps_cb.wh.zw);
+			dd = frac(uv.xy * ps_cb.wh.zw);
 			if (PS_FST == FALSE)
 			{
 				// Background in Shin Megami Tensei Lucifers
@@ -243,11 +243,11 @@ STATIC FLOAT4 sample_color(FLOAT2 st)
 		if (PS_AEM_FMT == FMT_24)
 			c[i].a = (PS_AEM == FALSE || any_nonzero(c[i].rgb)) ? ps_cb.ta.x : 0.f;
 		else if (PS_AEM_FMT == FMT_16)
-			c[i].a = c[i].a >= 0.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(INT3(c[i].rgb * 255.0f) & int(0xF8)) ? ps_cb.ta.x : 0.f;
+			c[i].a = c[i].a >= 0.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(int3(c[i].rgb * 255.0f) & int(0xF8)) ? ps_cb.ta.x : 0.f;
 	}
 
 	if (PS_LTF != FALSE)
-		t = MIX(MIX(c[0], c[1], dd.x), MIX(c[2], c[3], dd.x), dd.y);
+		t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
 	else
 		t = c[0];
 
@@ -261,13 +261,13 @@ STATIC FLOAT4 sample_color(FLOAT2 st)
 	return trunc(t * 255.f + 0.05f);
 }
 
-STATIC USHORT2 clamp_wrap_uv_depth(USHORT2 uv)
+static ushort2 clamp_wrap_uv_depth(ushort2 uv)
 {
-	USHORT2 uv_out = uv;
+	ushort2 uv_out = uv;
 	// Keep the full precision
 	// It allow to multiply the ScalingFactor before the 1/16 coeff
-	UINT4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
-	USHORT4 mask = USHORT4(uv_msk_fix << 4);
+	uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+	ushort4 mask = ushort4(uv_msk_fix << 4);
 
 	if (PS_WMS == PS_WMT)
 	{
@@ -292,22 +292,22 @@ STATIC USHORT2 clamp_wrap_uv_depth(USHORT2 uv)
 	return uv_out;
 }
 
-STATIC FLOAT4 sample_depth(FLOAT2 st)
+static float4 sample_depth(float2 st)
 {
-	FLOAT2 uv_f = FLOAT2(clamp_wrap_uv_depth(USHORT2(st))) * float2_bcast(ps_cb.scale_factor.x);
+	float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * float2_bcast(ps_cb.scale_factor.x);
 
 	if (PS_REGION_RECT != FALSE)
 		uv_f = clamp(uv_f + ps_cb.st_range.xy, ps_cb.st_range.xy, ps_cb.st_range.zw);
 
-	USHORT2 uv = USHORT2(uv_f);
-	FLOAT4 t = float4_bcast(0.0f);
+	ushort2 uv = ushort2(uv_f);
+	float4 t = float4_bcast(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE != FALSE)
 	{
 		// Warning: UV can't be used in channel effect
-		USHORT depth = fetch_raw_depth();
+		ushort depth = fetch_raw_depth();
 		// Convert msb based on the palette
-		t = PS_READ_PALETTE(USHORT2((depth >> 8) & 0xFFu, 0)) * 255.f;
+		t = PS_READ_PALETTE(ushort2((depth >> 8) & 0xFFu, 0)) * 255.f;
 	}
 	else if (PS_URBAN_CHAOS_HLE != FALSE)
 	{
@@ -318,10 +318,10 @@ STATIC FLOAT4 sample_depth(FLOAT2 st)
 		// To be faster both steps (msb&lsb) are done in a single pass.
 
 		// Warning: UV can't be used in channel effect
-		USHORT depth = fetch_raw_depth();
+		ushort depth = fetch_raw_depth();
 
 		// Convert lsb based on the palette
-		t = PS_READ_PALETTE(USHORT2(depth & 0xFFu, 0)) * 255.f;
+		t = PS_READ_PALETTE(ushort2(depth & 0xFFu, 0)) * 255.f;
 
 		// Msb is easier
 		float green = float((depth >> 8) & 0xFFu) * 36.f;
@@ -347,7 +347,7 @@ STATIC FLOAT4 sample_depth(FLOAT2 st)
 	else if (PS_AEM_FMT == FMT_16)
 		t.a = t.a >= 128.f ? 255.f * ps_cb.ta.y : (PS_AEM == FALSE || any_nonzero(t.rgb)) ? 255.f * ps_cb.ta.x : 0.f;
 	else if (PS_PAL_FMT != 0 && PS_TALES_OF_ABYSS_HLE == FALSE && PS_URBAN_CHAOS_HLE == FALSE)
-		t = trunc(sample_4p(UINT4(t.aaaa))[0] * 255.0f + 0.05f);
+		t = trunc(sample_4p(uint4(t.aaaa))[0] * 255.0f + 0.05f);
 	
 	return t;
 }

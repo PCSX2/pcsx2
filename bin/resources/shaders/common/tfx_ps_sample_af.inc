@@ -1,7 +1,7 @@
-STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
+static float4 sample_c_af(float2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
-	uv = any(IS_NAN_OR_INF_4(FLOAT4(uv, 0, 0))) ? float2_bcast(0.0f) : uv;
+	uv = any(IS_NAN_OR_INF_4(float4(uv, 0, 0))) ? float2_bcast(0.0f) : uv;
 
 	// Large floating point values risk NaN/Inf values.
 	// Above this value floats lose decimal precision, so seems a resonable limit for UVs.
@@ -10,9 +10,9 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 	// Below taken from https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#7.18.11%20LOD%20Calculations
 	// And https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_filter_anisotropic.txt
 	// With guidance from https://pema.dev/2025/05/09/mipmaps-too-much-detail/
-	FLOAT2 sz = FLOAT2(get_tex_dims());
-	FLOAT2 dX = DFDX(uv) * sz;
-	FLOAT2 dY = DFDY(uv) * sz;
+	float2 sz = float2(get_tex_dims());
+	float2 dX = ddx(uv) * sz;
+	float2 dY = ddy(uv) * sz;
 
 	float length_x = length(dX);
 	float length_y = length(dY);
@@ -22,7 +22,7 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 	float f = (dX.x * dY.y - dX.y * dY.x);
 	bool d_par = f < 0.001f;
 	bool d_per = dot(dX, dY) < 0.001f;
-	bool d_inf_nan = any(IS_NAN_OR_INF_4(FLOAT4(dX, dY)));
+	bool d_inf_nan = any(IS_NAN_OR_INF_4(float4(dX, dY)));
 
 	if (!(d_zero || d_par || d_per || d_inf_nan))
 	{
@@ -41,22 +41,22 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 		float sqrt_num_plus = sqrt(F * (t + p));
 		float sqrt_num_minus = sqrt(F * (t - p));
 
-		float inv_sqrt_denom_plus  = RSQRT(denom_plus);
-		float inv_sqrt_denom_minus = RSQRT(denom_minus);
+		float inv_sqrt_denom_plus  = rsqrt(denom_plus);
+		float inv_sqrt_denom_minus = rsqrt(denom_minus);
 
 		float signB = sign(B);
 
-		FLOAT2 new_dX = FLOAT2(
+		float2 new_dX = float2(
 			sqrt_num_plus * inv_sqrt_denom_plus,
 			sqrt_num_minus * inv_sqrt_denom_plus * signB
 		);
 
-		FLOAT2 new_dY = FLOAT2(
+		float2 new_dY = float2(
 			sqrt_num_minus * inv_sqrt_denom_minus * -signB,
 			sqrt_num_plus * inv_sqrt_denom_minus
 		);
 
-		d_inf_nan = any(IS_NAN_OR_INF_4(FLOAT4(new_dX, new_dY)));
+		d_inf_nan = any(IS_NAN_OR_INF_4(float4(new_dX, new_dY)));
 		if (!d_inf_nan)
 		{
 			dX = new_dX;
@@ -73,7 +73,7 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 
 	float aniso_ratio;
 	float length_lod;
-	FLOAT2 aniso_line;
+	float2 aniso_line;
 
 	if (length_major <= 1.0f)
 	{
@@ -86,7 +86,7 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 	}
 	else
 	{
-		FLOAT2 aniso_line_dir = is_major_x ? dX : dY;
+		float2 aniso_line_dir = is_major_x ? dX : dY;
 
 		aniso_ratio = min(length_major / length_minor, float(PS_SW_ANISO));
 		length_lod = length_major / aniso_ratio;
@@ -102,22 +102,22 @@ STATIC FLOAT4 sample_c_af(FLOAT2 uv, float uv_w)
 
 	float lod = PS_AUTOMATIC_LOD != FALSE ? log2(length_lod) : PS_MANUAL_LOD != FALSE ? manual_lod(uv_w) : 0.0f;
 
-	FLOAT4 colour;
+	float4 colour;
 	if (aniso_ratio == 1.0f)
 	{
 		colour = sample_tex_lod(uv, lod);
 	}
 	else
 	{
-		FLOAT4 num = float4_bcast(0.0f);
-		FLOAT2 segment = (2.0f * aniso_line) / aniso_ratio;
+		float4 num = float4_bcast(0.0f);
+		float2 segment = (2.0f * aniso_line) / aniso_ratio;
 		
 		int aniso_ratio_i = int(aniso_ratio);
 		for (int i = 0; i < aniso_ratio_i; i++)
 		{
-			FLOAT2 d = -aniso_line + (0.5f + i) * segment;
-			FLOAT2 uv_sample = uv + d;
-			FLOAT4 sample_colour = sample_tex_lod(uv_sample, lod);
+			float2 d = -aniso_line + (0.5f + i) * segment;
+			float2 uv_sample = uv + d;
+			float4 sample_colour = sample_tex_lod(uv_sample, lod);
 			num += sample_colour;
 		}
 
