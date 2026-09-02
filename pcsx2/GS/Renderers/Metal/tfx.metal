@@ -44,16 +44,16 @@
 #define VS_LOAD_INDEX(INDICES, VID) INDICES[VID]
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (tex.sample(tex_sampler, float2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (tex.sample(tex_sampler, float2(POS), level(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(POS) (tex_depth.sample(tex_sampler, float2(POS)))
-#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (tex_depth.sample(tex_sampler, float2(POS), level(LOD)))
-#define PS_READ_TEX(POS, LOD) (tex.read(uint2(POS), (LOD)))
-#define PS_READ_TEX_DEPTH(POS, LOD) (tex_depth.read(uint2(POS), (LOD)))
-#define PS_READ_PALETTE(POS) (palette.read(uint2(POS), 0))
-#define PS_READ_PRIMID(POS) (prim_id_tex.read(uint2(POS), 0).r)
-#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(tex.get_width(), tex.get_height()))
-#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (OUT_VAR = uint2(tex_depth.get_width(), tex_depth.get_height()))
+#define PS_SAMPLE_TEX(POS) (ps_tex.sample(ps_tex_sampler, float2(POS)))
+#define PS_SAMPLE_TEX_LOD(POS, LOD) (ps_tex.sample(ps_tex_sampler, float2(POS), level(LOD)))
+#define PS_SAMPLE_TEX_DEPTH(POS) (ps_tex_depth.sample(ps_tex_sampler, float2(POS)))
+#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (ps_tex_depth.sample(ps_tex_sampler, float2(POS), level(LOD)))
+#define PS_READ_TEX(POS, LOD) (ps_tex.read(uint2(POS), (LOD)))
+#define PS_READ_TEX_DEPTH(POS, LOD) (ps_tex_depth.read(uint2(POS), (LOD)))
+#define PS_READ_PALETTE(POS) (ps_palette.read(uint2(POS), 0))
+#define PS_READ_PRIMID(POS) (ps_prim_id_tex.read(uint2(POS), 0).r)
+#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(ps_tex.get_width(), ps_tex.get_height()))
+#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (OUT_VAR = uint2(ps_tex_depth.get_width(), ps_tex_depth.get_height()))
 #define PS_STATIC
 
 // Enum constants
@@ -459,18 +459,18 @@ fragment MainPSOut ps_main(
 {
 	PSMainState state(in, cb);
 
-	state.tex_sampler = s;
+	state.ps_tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.tex = tex;
+		state.ps_tex = tex;
 	else
-		state.tex_depth = depth;
+		state.ps_tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.palette = palette;
+		state.ps_palette = palette;
 	if (PS_PRIM_CHECKING_READ)
-		state.prim_id_tex = primidtex;
+		state.ps_prim_id_tex = primidtex;
 #if PRIMID_SUPPORT
 	if (NEEDS_PRIMID)
-		state.prim_id = primid;
+		state.ps_prim_id = primid;
 #endif
 
 	uint2 coord = uint2(in.p.xy);
@@ -478,13 +478,13 @@ fragment MainPSOut ps_main(
 	if (SW_DEPTH)
 	{
 		if (PS_ROV_DEPTH != ROV_DEPTH::NONE)
-			state.current_depth = ds_rov.read(coord).x;
+			state.ps_current_depth = ds_rov.read(coord).x;
 		else if (DEPTH_FEEDBACK)
-			state.current_depth = ds_depth.read(coord);
+			state.ps_current_depth = ds_depth.read(coord);
 		else if (NEEDS_DS_FBF)
-			state.current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
+			state.ps_current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
 		else
-			state.current_depth = ds_tex.read(coord).x;
+			state.ps_current_depth = ds_tex.read(coord).x;
 	}
 
 	if (NEEDS_RT || (PS_ROV_COLOR && any(cb.fbmask == 0xff)))
@@ -492,32 +492,32 @@ fragment MainPSOut ps_main(
 		if (PS_ROV_COLOR)
 		{
 			if (ROV_NEEDS_R32)
-				state.current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+				state.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
 			else
-				state.current_color = rt_rov.read(coord);
+				state.ps_current_color = rt_rov.read(coord);
 		}
 		else
 		{
 #if FBFETCH_SUPPORT
-			state.current_color = HAS_FBFETCH ? rt_fbf : rt.read(coord);
+			state.ps_current_color = HAS_FBFETCH ? rt_fbf : rt.read(coord);
 #else
-			state.current_color = rt.read(coord);
+			state.ps_current_color = rt.read(coord);
 #endif
 		}
 	}
 	else
 	{
-		state.current_color = 0;
+		state.ps_current_color = 0;
 	}
 
 	PSOutputGeneric out = state.ps_main_impl();
 
-	if (PS_ROV_DEPTH == ROV_DEPTH::READ_WRITE && !state.depth_discarded)
+	if (PS_ROV_DEPTH == ROV_DEPTH::READ_WRITE && !state.ps_depth_discarded)
 		ds_rov.write(out.depth, coord);
-	if (PS_ROV_COLOR && !state.color_discarded)
+	if (PS_ROV_COLOR && !state.ps_color_discarded)
 	{
 		if (!PS_FBMASK)
-			out.c0 = select(out.c0, state.current_color, cb.fbmask == 0xff);
+			out.c0 = select(out.c0, state.ps_current_color, cb.fbmask == 0xff);
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else
@@ -539,26 +539,26 @@ fragment void ps_main_rov_eft(
 	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]])
 {
 	PSMainState state(in, cb);
-	state.tex_sampler = s;
+	state.ps_tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.tex = tex;
+		state.ps_tex = tex;
 	else
-		state.tex_depth = depth;
+		state.ps_tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.palette = palette;
+		state.ps_palette = palette;
 
 	uint2 coord = uint2(in.p.xy);
 	if (ROV_NEEDS_R32)
-		state.current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+		state.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
 	else
-		state.current_color = rt_rov.read(coord);
+		state.ps_current_color = rt_rov.read(coord);
 	
 	PSOutputGeneric out = state.ps_main_impl();
 
-	if (!state.color_discarded)
+	if (!state.ps_color_discarded)
 	{
 		if (!PS_FBMASK)
-			out.c0 = select(out.c0, state.current_color, cb.fbmask == 0xff);
+			out.c0 = select(out.c0, state.ps_current_color, cb.fbmask == 0xff);
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else
