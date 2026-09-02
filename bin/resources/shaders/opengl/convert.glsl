@@ -222,7 +222,7 @@ void ps_convert_depth32_depth24()
 	float depthTR = CONVERT_FN(texelFetch(TextureSampler, coords.zy, 0)); \
 	float depthBL = CONVERT_FN(texelFetch(TextureSampler, coords.xw, 0)); \
 	float depthBR = CONVERT_FN(texelFetch(TextureSampler, coords.zw, 0)); \
-	OUTPUT = mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+	OUTPUT = floor(mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y) * exp2(32.0f)) * exp2(-32.0f);
 
 #ifdef ps_convert_rgba8_depth32
 void ps_convert_rgba8_depth32()

@@ -260,7 +260,7 @@ struct ConvertToDepthRes
 		float depthTR = convert(texture.read(coords.zy));
 		float depthBL = convert(texture.read(coords.xw));
 		float depthBR = convert(texture.read(coords.zw));
-		return mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y);
+		return floor(mix(mix(depthTL, depthTR, mix_vals.x), mix(depthBL, depthBR, mix_vals.x), mix_vals.y) * 0x1p32) * 0x1p-32;
 	}
 
 	template <float (&convert)(half4)>
