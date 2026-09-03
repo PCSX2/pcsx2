@@ -457,7 +457,7 @@ void GSRendererSW::Draw()
 			break;
 	}
 
-	const u32 round_uv = static_cast<u32>(GetVertexUVRoundingInfo());
+	const u32 round_uv = PRIM->TME ? static_cast<u32>(GetVertexUVRoundingInfo(true)) : 0u;
 	const u32 fst = PRIM->FST | round_uv; // UV rounding pre-divides ST by Q and saves as UVs.
 	
 	auto data = m_vertex_heap.make_shared<SharedData>().cast<GSRasterizerData>();

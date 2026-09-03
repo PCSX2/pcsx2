@@ -9,7 +9,7 @@
 
 namespace GSShader {
 
-enum class VSExpand : uint8_t
+enum class VSExpand : uint32_t
 {
 	None        = 0,
 	Point       = 1,
@@ -17,6 +17,7 @@ enum class VSExpand : uint8_t
 	Sprite      = 3,
 	LineAA1     = 4,
 	TriangleAA1 = 5,
+	Triangle    = 6,
 };
 
 enum class PS_ATST : uint32_t
@@ -25,7 +26,7 @@ enum class PS_ATST : uint32_t
 	LEQUAL = 1,
 	GEQUAL = 2,
 	EQUAL = 3,
-	NOTEQUAL = 4
+	NOTEQUAL = 4,
 };
 
 // Identical to the usual GS enum except for RGB_ONLY_DSB and RGB_ONLY_SW_Z
@@ -66,8 +67,22 @@ enum class PS_ROV_DEPTH : uint32_t
 enum class PS_ROUND_UV : uint32_t
 {
 	NONE    = 0, // No special rounding.
-	NEAREST = 1, // Rounding for correct nearest sampling.
-	LINEAR  = 2, // Rounding for correct bilinear sampling. 
+	NEAREST = 1, // Rounding for nearest sampling.
+	LINEAR  = 2, // Rounding for bilinear sampling.
+};
+
+enum class VS_CLAMP_UV : uint32_t
+{
+	NONE = 0, // No rounding.
+	NEAREST = 1, // Clamping for nearest sampling.
+	LINEAR = 2, // Clamping for bilinear sampling.
+};
+
+enum class VS_ALIGN_UV : uint32_t
+{
+	NONE = 0, // No alignment.
+	ALIGN = 1, // Align position/texture coords to native pixels.
+	PASSTHROUGH_ = 2, // Does nothing, but needed to enable some shader outputs.
 };
 
 } // namespace GSShader
@@ -84,5 +99,6 @@ static constexpr CONSTANT int ROUND_UV_DENOMINATOR = 32;
 static constexpr CONSTANT float ROUND_UV_THRESHOLD = (16.0f / float(2 * ROUND_UV_DENOMINATOR)); // 16.0f = 1 texel.
 static constexpr CONSTANT int ROUND_UV_UP = 1;
 static constexpr CONSTANT int ROUND_UV_DOWN = 2;
+static constexpr CONSTANT int ROUND_UV_PER_PIXEL = 4;
 static constexpr CONSTANT int ROUND_UV_SWAP = 8;
 #undef CONSTANT

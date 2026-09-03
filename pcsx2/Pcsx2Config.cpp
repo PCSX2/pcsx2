@@ -760,6 +760,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
 	AccurateUVRounding = false;
+	ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -863,6 +864,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_BilinearHack) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(ShaderSpriteAlign) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -1052,7 +1054,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWROV);
 	SettingsWrapBitBool(HWROVLogging);
 	SettingsWrapBitBool(HWROVBarriersVK);
-	SettingsWrapBitBoolEx(AccurateUVRounding, "AccurateUVRounding");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
@@ -1069,6 +1070,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfieldEx(SkipDrawEnd, "UserHacks_SkipDraw_End");
 	SkipDrawEnd = std::max(SkipDrawStart, SkipDrawEnd);
 
+	SettingsWrapBitBoolEx(AccurateUVRounding, "AccurateUVRounding");
+	SettingsWrapIntEnumEx(ShaderSpriteAlign, "ShaderSpriteAlign");
 	SettingsWrapIntEnumEx(UserHacks_HalfPixelOffset, "UserHacks_HalfPixelOffset");
 	SettingsWrapBitfieldEx(UserHacks_RoundSprite, "UserHacks_round_sprite_offset");
 	SettingsWrapIntEnumEx(UserHacks_NativeScaling, "UserHacks_native_scaling");
@@ -1156,6 +1159,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
+	ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
 }
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
@@ -1173,6 +1177,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 	UserHacks_NativeScaling = GSNativeScaling::Off;
 	UserHacks_TCOffsetX = 0;
 	UserHacks_TCOffsetY = 0;
+	ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
 }
 
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
