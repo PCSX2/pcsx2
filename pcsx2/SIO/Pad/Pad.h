@@ -66,6 +66,10 @@ namespace Pad
 	// Sets the specified bind on a controller to the specified pressure (normalized to 0..1).
 	void SetControllerState(u32 controller, u32 bind, float value);
 
+	// Resets all input binds on a controller to their default state.
+	void ResetControllerInputs(u32 controller);
+	void ResetAllControllerInputs();
+
 	bool Freeze(StateWrapper& sw);
 
 	// Sets the state of the specified macro button.

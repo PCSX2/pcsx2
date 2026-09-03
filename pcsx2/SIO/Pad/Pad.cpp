@@ -554,6 +554,32 @@ void Pad::SetControllerState(u32 controller, u32 bind, float value)
 	s_controllers[controller]->Set(bind, value);
 }
 
+void Pad::ResetControllerInputs(u32 controller)
+{
+	if (controller >= NUM_CONTROLLER_PORTS || !HasConnectedPad(controller))
+		return;
+
+	for (InputBindingInfo binding : s_controllers[controller]->GetInfo().bindings)
+	{
+		switch (binding.bind_type)
+		{
+			case InputBindingInfo::Type::Button:
+			case InputBindingInfo::Type::Axis:
+			case InputBindingInfo::Type::HalfAxis:
+				s_controllers[controller]->Set(binding.bind_index, 0);
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+void Pad::ResetAllControllerInputs()
+{
+	for (u32 port = 0; port < NUM_CONTROLLER_PORTS; port++)
+		ResetControllerInputs(port);
+}
+
 bool Pad::Freeze(StateWrapper& sw)
 {
 	if (sw.IsReading())
