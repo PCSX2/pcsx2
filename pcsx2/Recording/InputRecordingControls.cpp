@@ -7,6 +7,7 @@
 #include "InputRecording.h"
 #include "InputRecordingControls.h"
 #include "Utilities/InputRecordingLogger.h"
+#include "SIO/Pad/Pad.h"
 
 #include "Host.h"
 #include "MTGS.h"
@@ -29,6 +30,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
 	{
 		m_state = Mode::Recording;
+		Pad::ResetAllControllerInputs();
 		InputRec::log(TRANSLATE("InputRecordingControls","Record Mode Enabled"), Host::OSD_INFO_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
@@ -36,6 +38,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 	{
 		m_controlQueue.push([&]() {
 			m_state = Mode::Recording;
+			Pad::ResetAllControllerInputs();
 			InputRec::log(TRANSLATE("InputRecordingControls","Record Mode Enabled"), Host::OSD_INFO_DURATION);
 		});
 	}

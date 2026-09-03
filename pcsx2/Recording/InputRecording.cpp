@@ -23,8 +23,6 @@ bool SaveStateBase::InputRecordingFreeze()
 
 #include "common/FileSystem.h"
 #include "common/StringUtil.h"
-#include "Counters.h"
-#include "SaveState.h"
 #include "VMManager.h"
 #include "Host.h"
 #include "ImGui/ImGuiOverlays.h"
@@ -32,7 +30,7 @@ bool SaveStateBase::InputRecordingFreeze()
 #include "GameDatabase.h"
 #include "fmt/format.h"
 #include "GS.h"
-#include "Host.h"
+#include "SIO/Pad/Pad.h"
 
 InputRecording g_InputRecording;
 
@@ -139,6 +137,7 @@ void InputRecording::closeActiveFile()
 	if (m_file.close())
 	{
 		m_is_active = false;
+		Pad::ResetAllControllerInputs();
 		InputRec::log(TRANSLATE_STR("InputRecording", "Input recording stopped"), Host::OSD_ERROR_DURATION);
 		MTGS::PresentCurrentFrame();
 	}
