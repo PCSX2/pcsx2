@@ -719,9 +719,9 @@ Pcsx2Config::GSOptions::GSOptions()
 	LinearPresent = GSPostBilinearMode::BilinearSmooth;
 	UseDebugDevice = false;
 	UseBlitSwapChain = false;
-	DisableShaderCache = false;
 	DisableFramebufferFetch = false;
 	DisableVertexShaderExpand = false;
+	ReducedUberShaders = false;
 	SkipDuplicateFrames = true;
 	OsdMessagesPos = OsdOverlayPos::TopLeft;
 	OsdPerformancePos = OsdOverlayPos::TopRight;
@@ -788,6 +788,10 @@ Pcsx2Config::GSOptions::GSOptions()
 	EnableVideoCaptureParameters = false;
 	EnableAudioCapture = true;
 	EnableAudioCaptureParameters = false;
+
+	ShaderCacheType = DEFAULT_SHADER_CACHE_TYPE;
+	HybridShaderCacheThreads = DEFAULT_HYBRID_SHADER_CACHE_THREADS;
+	HybridShaderCacheLatencyMS = DEFAULT_HYBRID_SHADER_CACHE_LATENCY_MS;
 }
 
 bool Pcsx2Config::GSOptions::operator==(const GSOptions& right) const
@@ -895,7 +899,11 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(Adapter) &&
 
 		OpEqu(HWDumpDirectory) &&
-		OpEqu(SWDumpDirectory));
+		OpEqu(SWDumpDirectory)) &&
+
+		OpEqu(ShaderCacheType) &&
+		OpEqu(HybridShaderCacheThreads) &&
+		OpEqu(HybridShaderCacheLatencyMS);
 }
 
 bool Pcsx2Config::GSOptions::operator!=(const GSOptions& right) const
@@ -909,13 +917,15 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(Adapter) &&
 		   OpEqu(UseDebugDevice) &&
 		   OpEqu(UseBlitSwapChain) &&
-		   OpEqu(DisableShaderCache) &&
 		   OpEqu(DisableFramebufferFetch) &&
 		   OpEqu(DisableVertexShaderExpand) &&
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
-		   OpEqu(ExclusiveFullscreenControl);
+		   OpEqu(ExclusiveFullscreenControl) &&
+		   OpEqu(ShaderCacheType) &&
+		   OpEqu(HybridShaderCacheThreads) &&
+		   OpEqu(HybridShaderCacheLatencyMS);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -957,9 +967,9 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(IntegerScaling);
 	SettingsWrapBitBool(UseDebugDevice);
 	SettingsWrapBitBool(UseBlitSwapChain);
-	SettingsWrapBitBool(DisableShaderCache);
 	SettingsWrapBitBool(DisableFramebufferFetch);
 	SettingsWrapBitBool(DisableVertexShaderExpand);
+	SettingsWrapBitBool(ReducedUberShaders);
 	SettingsWrapBitBool(SkipDuplicateFrames);
 	SettingsWrapBitBool(OsdShowSpeed);
 	SettingsWrapBitBool(OsdShowFPS);
@@ -1118,6 +1128,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 		Console.Error("Draw dumping is enabled but directory is unconfigured, please set one.");
 		DumpGSData = false;
 	}
+
+	SettingsWrapIntEnumEx(ShaderCacheType, "ShaderCacheType");
+	SettingsWrapIntEnumEx(HybridShaderCacheThreads, "HybridShaderCacheThreads");
+	SettingsWrapIntEnumEx(HybridShaderCacheLatencyMS, "HybridShaderCacheLatencyMS");
 }
 
 void Pcsx2Config::GSOptions::MaskUserHacks()

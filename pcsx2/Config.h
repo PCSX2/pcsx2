@@ -477,6 +477,14 @@ enum class GSDepthFeedbackMode : u8
 	DepthAsRT = 3,
 };
 
+enum class GSShaderCacheType : u8
+{
+	Disabled = 0,
+	Standard = 1,
+	Hybrid   = 2,
+	Uber     = 3,
+};
+
 enum class AchievementOverlayPosition : u8
 {
 	TopLeft,
@@ -743,6 +751,10 @@ struct Pcsx2Config
 		static constexpr int DEFAULT_SHADEBOOST_GAMMA = 50;
 		static constexpr int DEFAULT_SHADEBOOST_SATURATION = 50;
 
+		static constexpr GSShaderCacheType DEFAULT_SHADER_CACHE_TYPE = GSShaderCacheType::Standard;
+		static constexpr int DEFAULT_HYBRID_SHADER_CACHE_THREADS = 4;
+		static constexpr int DEFAULT_HYBRID_SHADER_CACHE_LATENCY_MS = 20;
+
 		union
 		{
 			u64 bitsets[2];
@@ -762,9 +774,9 @@ struct Pcsx2Config
 					UseDebugDevice : 1,
 					UseDebugBlend : 1,
 					UseBlitSwapChain : 1,
-					DisableShaderCache : 1,
 					DisableFramebufferFetch : 1,
 					DisableVertexShaderExpand : 1,
+					ReducedUberShaders : 1,
 					SkipDuplicateFrames : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
@@ -932,6 +944,10 @@ struct Pcsx2Config
 		std::string Adapter;
 		std::string HWDumpDirectory;
 		std::string SWDumpDirectory;
+
+		GSShaderCacheType ShaderCacheType = DEFAULT_SHADER_CACHE_TYPE;
+		int HybridShaderCacheThreads = DEFAULT_HYBRID_SHADER_CACHE_THREADS;
+		int HybridShaderCacheLatencyMS = DEFAULT_HYBRID_SHADER_CACHE_LATENCY_MS;
 
 		GSOptions();
 
