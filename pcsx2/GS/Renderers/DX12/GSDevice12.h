@@ -280,12 +280,15 @@ public:
 		GSHWDrawConfig::DepthStencilSelector dss;
 		GSHWDrawConfig::ColorMaskSelector cms;
 
+		u8 pad[2];
+
 		__fi bool operator==(const PipelineSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const PipelineSelector& p) const { return !BitEqual(*this, p); }
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 	};
 	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
+	static_assert(offsetof(PipelineSelector, pad) + sizeof(PipelineSelector::pad) == sizeof(PipelineSelector));
 
 	struct PipelineSelectorHash
 	{

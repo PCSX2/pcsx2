@@ -224,6 +224,7 @@ static bool OpenGSRenderer(GSRendererType renderer, u8* basemem)
 	g_gs_renderer->SetRegsMem(basemem);
 	g_gs_renderer->ResetPCRTC();
 	g_gs_renderer->UpdateRenderFixes();
+	g_gs_renderer->UpdateUpscalingAlignmentFixes();
 	g_perfmon.Reset();
 	return true;
 }
@@ -838,6 +839,12 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 		GSConfig.MoveHandlerFunctionId != old_config.MoveHandlerFunctionId)
 	{
 		g_gs_renderer->UpdateRenderFixes();
+	}
+
+	if (GSConfig.ShaderSpriteAlign != old_config.ShaderSpriteAlign ||
+		GSConfig.AccurateUVRounding != old_config.AccurateUVRounding)
+	{
+		g_gs_renderer->UpdateUpscalingAlignmentFixes();
 	}
 
 	// renderer-specific options (e.g. auto flush, TC offset)

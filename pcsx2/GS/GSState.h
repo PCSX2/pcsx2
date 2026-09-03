@@ -545,9 +545,9 @@ public:
 	template <u32 primclass>
 	void RewriteVerticesIfLargeSTImpl(const GSVector4& large_val, bool check_clamp_mode);
 	void RewriteVerticesIfLargeST(const GSVector4& large_val, bool check_clamp_mode);
-	template<u32 primclass, bool fst>
-	bool GetVertexUVRoundingInfoImpl();
-	bool GetVertexUVRoundingInfo();
+	template<u32 primclass, bool tme, bool fst>
+	bool GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_centers_aligned);
+	bool GetVertexUVRoundingInfo(const bool tex, const bool upscaling = false, bool* pixel_centers_aligned = nullptr);
 };
 
 // We put this in the header because of Multi-ISA.

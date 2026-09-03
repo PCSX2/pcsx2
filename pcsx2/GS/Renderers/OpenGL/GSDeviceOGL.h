@@ -124,16 +124,16 @@ public:
 		TEXTURE_DEPTH,
 	};
 
-	struct alignas(16) ProgramSelector
+	struct alignas(8) ProgramSelector
 	{
 		PSSelector ps;
 		VSSelector vs;
-		u8 pad[15];
+		u8 pad[4];
 
 		__fi bool operator==(const ProgramSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const ProgramSelector& p) const { return !BitEqual(*this, p); }
 	};
-	static_assert(sizeof(ProgramSelector) == 32, "Program selector is 32 bytes");
+	static_assert(sizeof(ProgramSelector) == 24, "Program selector is 24 bytes");
 	static_assert(offsetof(ProgramSelector, pad) + sizeof(ProgramSelector::pad) == sizeof(ProgramSelector));
 
 	struct ProgramSelectorHash

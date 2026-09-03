@@ -99,6 +99,8 @@ struct GSMTLMainVSUniform
 	vector_float2 point_size;
 	uint max_depth;
 	float line_aa1_width;
+	vector_uint2 xy_offset;
+	vector_float2 upscale;
 };
 
 struct GSMTLMainPSUniform
@@ -170,6 +172,8 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
 	GSMTLConstantIndex_VS_ROUND_UV,
+	GSMTLConstantIndex_VS_CLAMP_UV,
+	GSMTLConstantIndex_VS_ALIGN_UV,
 	GSMTLConstantIndex_VS_POINT_SIZE,
 	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
@@ -233,4 +237,6 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_ROV_COLOR,
 	GSMTLConstantIndex_PS_ROV_DEPTH,
 	GSMTLConstantIndex_PS_ROUND_UV,
+	GSMTLConstantIndex_PS_CLAMP_UV,
+	GSMTLConstantIndex_PS_ALIGN_UV,
 };
