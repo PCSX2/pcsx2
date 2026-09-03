@@ -79,6 +79,7 @@ GSDevice11::GSDevice11()
 	m_features.test_and_sample_depth = false;
 	m_features.depth_feedback = false;
 	m_features.aa1 = false;
+	m_features.depth_integer = false;
 }
 
 GSDevice11::~GSDevice11() = default;
@@ -251,7 +252,8 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		sm_ps.AddMacro("PIXEL_SHADER", 1);
 		sm_ps.AddMacro("HAS_BILN", static_cast<int>(shader.Biln()));
 		sm_ps.AddMacro("HAS_STENCIL_OUTPUT", static_cast<int>(shader.StencilOutput()));
-		sm_ps.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutputBpp() != 0));
+		sm_ps.AddMacro("HAS_INTEGER_INPUT", static_cast<int>(shader.IntegerInput()));
+		sm_ps.AddMacro("HAS_INTEGER_OUTPUT", static_cast<int>(shader.IntegerOutput()));
 		sm_ps.AddMacro("HAS_DEPTH_OUTPUT", static_cast<int>(shader.DepthOutput()));
 		sm_ps.AddMacro("HAS_FLOAT32_INPUT", static_cast<int>(shader.Float32Input()));
 		sm_ps.AddMacro("HAS_FLOAT32_OUTPUT", static_cast<int>(shader.Float32Output()));
@@ -437,7 +439,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		}
 	}
 
-	if (m_features.aa1)
+	if (UseVSExpandIndexBuffer())
 	{
 		bd.ByteWidth = INDEX_BUFFER_SIZE;
 		bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -715,6 +717,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.depth_feedback = m_features.multidraw_fb_copy && GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
+	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled && m_features.vs_expand;
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :
@@ -1439,7 +1442,7 @@ void GSDevice11::CommitClear(GSTexture* t)
 		if (T->GetState() == GSTexture::State::Invalidated)
 			m_ctx->DiscardView(static_cast<ID3D11RenderTargetView*>(*T));
 		else
-			m_ctx->ClearRenderTargetView(*T, T->GetClearForFormat().F32);
+			m_ctx->ClearRenderTargetView(*T, T->GetDX11ClearValue().F32);
 	}
 
 	T->SetState(GSTexture::State::Dirty);
@@ -1993,6 +1996,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 		sm.AddMacro("VS_FST", sel.fst);
 		sm.AddMacro("VS_IIP", sel.iip);
 		sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+		sm.AddMacro("VS_Z_INTEGER", sel.zint);
 
 		static constexpr const D3D11_INPUT_ELEMENT_DESC layout[] =
 			{
@@ -2103,6 +2107,9 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
 		sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 		sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
+		sm.AddMacro("PS_Z_RT_SLOT", sel.z_rt_slot);
+		sm.AddMacro("PS_Z_INTEGER", static_cast<u32>(sel.zint));
+		sm.AddMacro("PS_TEX_INTEGER", sel.texint);
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps = m_shader_cache.GetPixelShader(m_dev.get(), m_tfx_source, sm.GetPtr(), "ps_main");
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
@@ -2256,6 +2263,14 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
 		if (bsel.colormask.wa)
 			bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+
+		if (bsel.ds_as_rt)
+		{
+			bd.RenderTarget[bsel.ds_as_rt_slot].BlendEnable = false;
+			bd.RenderTarget[bsel.ds_as_rt_slot].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+			bd.IndependentBlendEnable = (bsel.ds_as_rt_slot != 0);
+		}
 
 		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 		m_dev->CreateBlendState(&bd, bs.put());
@@ -2842,14 +2857,16 @@ void GSDevice11::PSUpdateShaderState(const bool sr_update, const bool ss_update)
 	}
 }
 
-void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2)
+void GSDevice11::PSUnbindConflictingSRVs(GSTexture* tex1, GSTexture* tex2, GSTexture* tex3)
 {
 	// Make sure no SRVs are bound using the same texture before binding it to a RTV.
 	bool changed = false;
 	for (size_t i = 0; i < MAX_TEXTURES; i++)
 	{
 		// We chech against what's currently bound, then update pending state which calls PSUpdateShaderState to update gpu state.
-		if ((tex1 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex2)))
+		if ((tex1 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex1)) ||
+			(tex2 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex2)) ||
+			(tex3 && m_state.ps_current_srv[i] == *static_cast<GSTexture11*>(tex3)))
 		{
 			// Local and gpu cached state can differ, if it does check if it conflicts and if it doesn't then we can bind that instead of unbinding.
 			const bool unbind_needed = (tex1 && m_state.ps_pending_srv[i] == *static_cast<GSTexture11*>(tex1)) || (tex2 && m_state.ps_pending_srv[i] == *static_cast<GSTexture11*>(tex2));
@@ -3070,15 +3087,18 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr()
 
 void GSDevice11::RenderHW(GSHWDrawConfig& config)
 {
-	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
+	const GSVector2i rtsize = (config.rt ? config.rt : (config.ds ? config.ds : config.ds_int))->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 	GSTexture* draw_rt = config.ps.HasColorROV() ? nullptr : config.rt;
-	GSTexture* draw_ds_as_rt = m_ds_as_rt;
-	GSTexture* draw_ds = config.ps.HasDepthROV() ? nullptr : config.ds;
+	GSTexture* draw_ds_as_rt = config.ps.HasDepthROV() ? nullptr : (config.ds_int ? config.ds_int : m_ds_as_rt);
+	GSTexture* draw_ds = (config.ps.HasDepthROV() || config.ds_int) ? nullptr : config.ds;
+	const bool ds_as_rt_write = !config.ps.HasDepthROV() && config.ds_int && (config.ps.zint == GSHWDrawConfig::PS_Z_INTEGER::READ_WRITE);
+	const u32 ds_as_rt_slot = ds_as_rt_write ? config.ps.z_rt_slot : 0;
 	GSTexture* draw_rt_rov = config.ps.HasColorROV() ? config.rt : nullptr;
-	GSTexture* draw_ds_rov = config.ps.HasDepthROV() ? config.ds : nullptr;
+	GSTexture* draw_ds_rov = config.ps.HasDepthROV() ? (config.ds_int ? config.ds_int : config.ds) : nullptr;
 	GSTexture* draw_rt_clone = nullptr;
 	GSTexture* draw_ds_clone = nullptr;
+	GSTexture* draw_ds_as_rt_clone = nullptr;
 	GSTexture* primid_texture = nullptr;
 	
 	ScopedGuard recycle_temp_textures([&]() {
@@ -3214,7 +3234,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		const OMBlendSelector blend(GSHWDrawConfig::ColorMaskSelector(1),
 			GSHWDrawConfig::BlendState(true, CONST_ONE, CONST_ONE, 3 /* MIN */, CONST_ONE, CONST_ZERO, false, 0));
 		SetupOM(dss, blend, 0);
-		OMSetRenderTargets(primid_texture, nullptr, config.ds, nullptr, nullptr, &config.scissor, read_only_dsv);
+		OMSetRenderTargets(primid_texture, nullptr, draw_ds, nullptr, nullptr, &config.scissor, read_only_dsv);
 		SetRenderHWShaderResources(config, nullptr);
 		Draw(config);
 
@@ -3243,8 +3263,8 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		draw_ds_rov = m_state.current_ds_uav;
 	}
 
-	const bool rt_feedbackloop_pass1 = config.IsFeedbackLoopRT(config.ps);
-	const bool rt_feedbackloop_pass2 = config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
+	const bool rt_feedbackloop_pass1 = draw_rt && config.IsFeedbackLoopRT(config.ps);
+	const bool rt_feedbackloop_pass2 = draw_rt && config.IsFeedbackLoopRT(config.alpha_second_pass.ps);
 	if (draw_rt && !draw_rt_rov && (((config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(rt_feedbackloop_pass1 || rt_feedbackloop_pass2))))
 	{
@@ -3257,7 +3277,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
 	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
-	if (draw_ds && !draw_ds_rov && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+	if ((draw_ds || draw_ds_as_rt) && !draw_ds_rov && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
 	{
 		// Requires a copy of the DS.
@@ -3269,14 +3289,14 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 	OMSetRenderTargets(draw_rt, draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
 	SetRenderHWShaderResources(config, primid_texture);
-	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
+	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend, ds_as_rt_write, ds_as_rt_slot), config.blend.constant);
 
 	// Clear stencil as close as possible to the RT bind, to avoid framebuffer swaps.
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne && need_barrier)
 		m_ctx->ClearDepthStencilView(*static_cast<GSTexture11*>(draw_ds), D3D11_CLEAR_STENCIL, 0.0f, 1);
 
-	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr, draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
-		config.require_one_barrier, config.require_full_barrier, rtsize);
+	SendHWDraw(config, rt_feedbackloop_pass1 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass1 ? draw_ds_clone : nullptr,
+		draw_ds_as_rt ? draw_ds_as_rt : draw_ds, config.require_one_barrier, config.require_full_barrier, rtsize);
 
 	if (config.blend_multi_pass.enable)
 	{
@@ -3325,21 +3345,22 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 }
 
 void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
-	GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea)
+	GSTexture* rt, GSTexture* rt_clone,
+	GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea)
 {
 	if (rt_clone)
 	{
 		CopyRect(rt, rt_clone, copyarea, copyarea.left, copyarea.top);
-		PSSetShaderResource(2, rt_clone);
+		PSSetShaderResource(TEXTURE_RT, rt_clone);
 		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
-			PSSetShaderResource(0, rt_clone);
+			PSSetShaderResource(TEXTURE_TEXTURE, rt_clone);
 	}
 	if (ds_clone)
 	{
 		CopyRect(ds, ds_clone, copyarea, copyarea.left, copyarea.top);
-		PSSetShaderResource(4, ds_clone);
+		PSSetShaderResource(TEXTURE_DEPTH, ds_clone);
 		if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_DEPTH)
-			PSSetShaderResource(0, ds_clone);
+			PSSetShaderResource(TEXTURE_TEXTURE, ds_clone);
 	}
 }
 
@@ -3377,7 +3398,8 @@ void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
 };
 
 void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
-	GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
+	GSTexture* draw_rt_clone, GSTexture* draw_rt,
+	GSTexture* draw_ds_clone, GSTexture* draw_ds,
 	const bool one_barrier, const bool full_barrier, GSVector2i rtsize)
 {
 #ifdef PCSX2_DEVBUILD
@@ -3414,7 +3436,8 @@ void GSDevice11::SendHWDraw(const GSHWDrawConfig& config,
 
 	if (one_barrier)
 	{
-		FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone, config.drawarea, config.samplearea);
+		FeedbackCopyAndBind(config, draw_rt, draw_rt_clone, draw_ds, draw_ds_clone,
+			config.drawarea, config.samplearea);
 	}
 
 	Draw(config);

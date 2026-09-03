@@ -44,7 +44,7 @@ bool GSTexture::Save(const std::string& fn)
 {
 	// Depth textures need special treatment - we have a stencil component.
 	// Just re-use the existing conversion shader instead.
-	if (m_format == Format::DepthStencil || m_format == Format::DepthColor)
+	if (m_format == Format::DepthStencil || m_format == Format::DepthColor || m_format == Format::DepthInteger)
 	{
 		GSTexture* temp = g_gs_device->CreateRenderTarget(GetWidth(), GetHeight(), Format::Color, false);
 		if (!temp)
@@ -98,6 +98,7 @@ const char* GSTexture::GetFormatName(Format format)
 		case Format::ColorClip:    return "ColorClip";
 		case Format::DepthStencil: return "DepthStencil";
 		case Format::DepthColor:   return "DepthColor";
+		case Format::DepthInteger: return "DepthInteger";
 		case Format::UNorm8:       return "UNorm8";
 		case Format::UInt16:       return "UInt16";
 		case Format::UInt32:       return "UInt32";
@@ -201,12 +202,22 @@ u32 GSTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
 bool GSTexture::IsFeedbackFormat(Format format)
 {
 	return format == Format::Color || format == Format::ColorClip ||
-		format == Format::DepthColor || format == Format::DepthStencil;
+		format == Format::DepthColor || format == Format::DepthStencil ||
+		format == Format::DepthInteger;
 }
 
 bool GSTexture::IsShaderWriteFormat(Format format)
 {
-	return format == Format::Color || format == Format::DepthColor;
+	return format == Format::Color || format == Format::DepthColor || format == Format::DepthInteger;
+}
+
+bool GSTexture::AreFormatsEquivalent(Format format1, Format format2)
+{
+	return (format1 == format2) ||
+	       (format1 == Format::DepthColor && format2 == Format::PrimID) ||
+	       (format1 == Format::PrimID && format2 == Format::DepthColor) ||
+	       (format1 == Format::DepthInteger && format2 == Format::UInt32) ||
+	       (format1 == Format::UInt32 && format2 == Format::DepthInteger);
 }
 
 void GSTexture::GenerateMipmapsIfNeeded()
