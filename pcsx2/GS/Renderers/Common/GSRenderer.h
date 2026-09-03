@@ -39,6 +39,7 @@ public:
 	virtual void Destroy();
 
 	virtual void UpdateRenderFixes();
+	virtual void UpdateUpscalingAlignmentFixes() {}
 
 	virtual void VSync(u32 field, bool registers_written, bool idle_frame);
 	virtual bool CanUpscale() { return false; }

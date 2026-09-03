@@ -1208,21 +1208,6 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		m_dss_hw[i] = MRCTransfer([m_dev.dev newDepthStencilStateWithDescriptor:dssdesc]);
 	}
 
-	// Init HW Vertex Shaders
-	for (size_t i = 0; i < std::size(m_hw_vs); i++)
-	{
-		VSSelector sel;
-		sel.key = i;
-		if (sel.point_size && sel.expand != GSShader::VSExpand::None)
-			continue;
-		setFnConstantB(m_fn_constants, sel.fst,        GSMTLConstantIndex_FST);
-		setFnConstantB(m_fn_constants, sel.iip,        GSMTLConstantIndex_IIP);
-		setFnConstantB(m_fn_constants, sel.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
-		setFnConstantB(m_fn_constants, sel.round_uv,   GSMTLConstantIndex_VS_ROUND_UV);
-		setFnConstantI(m_fn_constants, sel.expand,     GSMTLConstantIndex_VS_EXPAND_TYPE);
-		m_hw_vs[i] = LoadShader(sel.expand == GSShader::VSExpand::None ? @"vs_main" : @"vs_main_expand");
-	}
-
 	// Init pipelines
 	auto vs_convert = LoadShader(@"vs_convert");
 	auto fs_triangle = LoadShader(@"fs_triangle");
@@ -1992,8 +1977,29 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 	vssel_mtl.iip = vssel.iip;
 	vssel_mtl.point_size = vssel.point_size;
 	vssel_mtl.round_uv = vssel.round_uv;
+	vssel_mtl.clamp_uv = vssel.clamp_uv;
+	vssel_mtl.align_uv = vssel.align_uv;
 	vssel_mtl.expand = vssel.expand;
-	id<MTLFunction> vs = m_hw_vs[vssel_mtl.key];
+
+	id<MTLFunction> vs;
+	auto idx1 = m_hw_vs.find(vssel_mtl.key);
+	if (idx1 != m_hw_vs.end())
+	{
+		vs = idx1->second;
+	}
+	else
+	{
+		setFnConstantB(m_fn_constants, vssel_mtl.fst,        GSMTLConstantIndex_FST);
+		setFnConstantB(m_fn_constants, vssel_mtl.iip,        GSMTLConstantIndex_IIP);
+		setFnConstantB(m_fn_constants, vssel_mtl.point_size, GSMTLConstantIndex_VS_POINT_SIZE);
+		setFnConstantB(m_fn_constants, vssel_mtl.round_uv,   GSMTLConstantIndex_VS_ROUND_UV);
+		setFnConstantI(m_fn_constants, vssel_mtl.clamp_uv,   GSMTLConstantIndex_VS_CLAMP_UV);
+		setFnConstantI(m_fn_constants, vssel_mtl.align_uv,   GSMTLConstantIndex_VS_ALIGN_UV);
+		setFnConstantI(m_fn_constants, vssel_mtl.expand,     GSMTLConstantIndex_VS_EXPAND_TYPE);
+		auto newvs = LoadShader(vssel_mtl.expand == GSShader::VSExpand::None ? @"vs_main" : @"vs_main_expand");
+		vs = newvs;
+		m_hw_vs.insert(std::make_pair(vssel.key, std::move(newvs)));
+	}
 
 	id<MTLFunction> ps;
 	auto idx2 = m_hw_ps.find(pssel);
@@ -2006,6 +2012,8 @@ void GSDeviceMTL::MRESetHWPipelineState(GSHWDrawConfig::VSSelector vssel, GSHWDr
 		setFnConstantB(m_fn_constants, pssel.fst,                   GSMTLConstantIndex_FST);
 		setFnConstantB(m_fn_constants, pssel.iip,                   GSMTLConstantIndex_IIP);
 		setFnConstantI(m_fn_constants, pssel.round_uv,              GSMTLConstantIndex_PS_ROUND_UV);
+		setFnConstantB(m_fn_constants, pssel.clamp_uv,              GSMTLConstantIndex_PS_CLAMP_UV);
+		setFnConstantB(m_fn_constants, pssel.align_uv,              GSMTLConstantIndex_PS_ALIGN_UV);
 		setFnConstantI(m_fn_constants, pssel.aem_fmt,               GSMTLConstantIndex_PS_AEM_FMT);
 		setFnConstantI(m_fn_constants, pssel.pal_fmt,               GSMTLConstantIndex_PS_PAL_FMT);
 		setFnConstantI(m_fn_constants, pssel.dst_fmt,               GSMTLConstantIndex_PS_DST_FMT);
