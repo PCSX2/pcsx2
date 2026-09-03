@@ -17,6 +17,9 @@ constant bool ROV_NEEDS_R32         [[function_constant(GSMTLConstantIndex_ROV_N
 constant bool BROKEN_SHADER_DEPTH   [[function_constant(GSMTLConstantIndex_BROKEN_SHADER_DEPTH)]];
 constant bool FST                   [[function_constant(GSMTLConstantIndex_FST)]];
 constant bool IIP                   [[function_constant(GSMTLConstantIndex_IIP)]];
+constant bool VS_ROUND_UV           [[function_constant(GSMTLConstantIndex_VS_ROUND_UV)]];
+constant uint VS_CLAMP_UV_RAW       [[function_constant(GSMTLConstantIndex_VS_CLAMP_UV)]];
+constant uint VS_ALIGN_UV_RAW       [[function_constant(GSMTLConstantIndex_VS_ALIGN_UV)]];
 constant bool VS_POINT_SIZE         [[function_constant(GSMTLConstantIndex_VS_POINT_SIZE)]];
 constant uint VS_EXPAND_TYPE_RAW    [[function_constant(GSMTLConstantIndex_VS_EXPAND_TYPE)]];
 constant uint PS_AEM_FMT            [[function_constant(GSMTLConstantIndex_PS_AEM_FMT)]];
@@ -79,6 +82,9 @@ constant bool PS_ABE                [[function_constant(GSMTLConstantIndex_PS_AB
 constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW_ANISO)]];
 constant bool PS_ROV_COLOR          [[function_constant(GSMTLConstantIndex_PS_ROV_COLOR)]];
 constant uint PS_ROV_DEPTH_RAW      [[function_constant(GSMTLConstantIndex_PS_ROV_DEPTH)]];
+constant uint PS_ROUND_UV_RAW       [[function_constant(GSMTLConstantIndex_PS_ROUND_UV)]];
+constant bool PS_CLAMP_UV           [[function_constant(GSMTLConstantIndex_PS_CLAMP_UV)]];
+constant bool PS_ALIGN_UV           [[function_constant(GSMTLConstantIndex_PS_ALIGN_UV)]];
 
 using GSShader::VSExpand;
 using AFAIL = GSShader::PS_AFAIL;
@@ -87,11 +93,14 @@ using GSShader::ZTST;
 using AA1 = GSShader::PS_AA1;
 using ROV_DEPTH = GSShader::PS_ROV_DEPTH;
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
+constant GSShader::VS_CLAMP_UV VS_CLAMP_UV = static_cast<GSShader::VS_CLAMP_UV>(VS_CLAMP_UV_RAW);
+constant GSShader::VS_ALIGN_UV VS_ALIGN_UV = static_cast<GSShader::VS_ALIGN_UV>(VS_ALIGN_UV_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
 constant ZTST  PS_ZTST  = static_cast<ZTST>(PS_ZTST_RAW);
 constant AA1   PS_AA1   = static_cast<AA1>(PS_AA1_RAW);
 constant ROV_DEPTH PS_ROV_DEPTH = static_cast<ROV_DEPTH>(PS_ROV_DEPTH_RAW);
+constant GSShader::PS_ROUND_UV PS_ROUND_UV = static_cast<GSShader::PS_ROUND_UV>(PS_ROUND_UV_RAW);
 
 #if defined(__METAL_MACOS__) && __METAL_VERSION__ >= 220
 	#define PRIMID_SUPPORT 1
@@ -134,8 +143,12 @@ constant bool PS_ZOUTPUT_COLOR = PS_ZOUTPUT_ANY && !DEPTH_FEEDBACK;
 constant bool VS_NEEDS_INDEX_BUFFER = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
 constant bool VS_COVERAGE = VS_EXPAND_TYPE == VSExpand::LineAA1 || VS_EXPAND_TYPE == VSExpand::TriangleAA1;
 constant bool VS_INTERIOR = VS_EXPAND_TYPE == VSExpand::TriangleAA1;
+constant bool VS_CLAMP_UV_ENABLED = VS_CLAMP_UV != GSShader::VS_CLAMP_UV::NONE;
+constant bool VS_SHADER_ALIGN = VS_ROUND_UV || VS_CLAMP_UV_ENABLED || VS_ALIGN_UV != GSShader::VS_ALIGN_UV::NONE;
 constant bool PS_COVERAGE = PS_AA1 != AA1::NONE;
 constant bool PS_INTERIOR = PS_AA1 == AA1::TRIANGLE_SW_Z;
+constant bool PS_ROUND_UV_ENABLED = PS_ROUND_UV != GSShader::PS_ROUND_UV::NONE;
+constant bool PS_SHADER_ALIGN = PS_ROUND_UV_ENABLED || PS_CLAMP_UV || PS_ALIGN_UV;
 
 struct MainVSIn
 {
@@ -157,6 +170,10 @@ struct MainVSOut
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(VS_COVERAGE)]];
 	uint interior [[function_constant(VS_INTERIOR)]];
+	uint4 rounduv [[flat, function_constant(VS_SHADER_ALIGN)]];
+	float4 scaleuv [[flat, function_constant(VS_ROUND_UV)]];
+	float4 clampuv [[flat, function_constant(VS_CLAMP_UV_ENABLED)]];
+	float2 window_pos [[flat, function_constant(VS_SHADER_ALIGN)]];
 	float point_size [[point_size, function_constant(VS_POINT_SIZE)]];
 };
 
@@ -169,6 +186,9 @@ struct MainPSIn
 	float4 fc [[flat, function_constant(NOT_IIP)]];
 	float inv_cov [[function_constant(PS_COVERAGE)]];
 	uint interior [[function_constant(PS_INTERIOR)]];
+	uint4 rounduv [[flat, function_constant(PS_SHADER_ALIGN)]];
+	float4 scaleuv [[flat, function_constant(PS_ROUND_UV_ENABLED)]];
+	float4 clampuv [[flat, function_constant(PS_CLAMP_UV)]];
 };
 
 struct MainResult
@@ -202,9 +222,48 @@ struct MainPSOut
 
 // MARK: - Vertex functions
 
+static uint4 extract_round_uv_bits(float q)
+{
+	uint qi = as_type<uint>(q);
+	return uint4(
+		(qi >> 0) & 0xFFF,  // Prim left
+		(qi >> 12) & 0xFFF, // Prim top
+		(qi >> 24) & 0xF,   // Round U flags
+		(qi >> 28) & 0xF    // Round V flags
+	);
+}
+
+float2 raw_coords_to_ndc(uint2 raw_pos, float2 vertex_scale, float2 vertex_offset)
+{
+	float2 ndc_pos = (float2(raw_pos) - 0.05f) * vertex_scale - vertex_offset;
+	ndc_pos.y = -ndc_pos.y; // Y axis is flipped in Metal
+	return ndc_pos;
+}
+
+float2 window_coords_to_ndc(float2 window_pos, float2 vertex_scale)
+{
+	// This function is only used by shader sprite align and always uses a native HPO.
+	float2 ndc_pos = (window_pos + 8.0f - 0.05f) * float2(vertex_scale) - 1.0f;
+	ndc_pos.y = -ndc_pos.y; // Y axis is flipped in DX
+	return ndc_pos;
+}
+
+float raw_z_to_ndc(uint z)
+{
+	return float(z) * 0x1p-32;
+}
+
 static void texture_coord(thread const MainVSIn& v, thread MainVSOut& out, constant GSMTLMainVSUniform& cb)
 {
-	float2 uv = float2(v.uv) - cb.texture_offset;
+	float2 uv;
+	if (!VS_SHADER_ALIGN)
+	{
+		uv = float2(v.uv) - cb.texture_offset;
+	}
+	else
+	{
+		uv = v.st - cb.texture_offset;
+	}
 	float2 st = v.st - cb.texture_offset;
 
 	// Float coordinate
@@ -224,18 +283,24 @@ static void texture_coord(thread const MainVSIn& v, thread MainVSOut& out, const
 		// Some games uses float coordinate for post-processing effects
 		out.ti.zw = st / cb.texture_scale;
 	}
+
+	if (VS_SHADER_ALIGN)
+	{
+		// Get UV rounding info saved in Q.
+		out.rounduv = extract_round_uv_bits(v.q);
+		out.t.w = 1.0f;
+	}
 }
 
 static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUniform& cb)
 {
-	constexpr float exp_min32 = 0x1p-32;
 	MainVSOut out;
 	// Clamp to max depth, gs doesn't wrap
 	uint z = min(v.z, cb.max_depth);
-	out.p.xy = float2(v.p) - float2(0.05, 0.05);
-	out.p.xy = out.p.xy * float2(cb.vertex_scale.x, -cb.vertex_scale.y) - float2(cb.vertex_offset.x, -cb.vertex_offset.y);
-	out.p.w = 1;
-	out.p.z = float(z) * exp_min32;
+	out.p = float4(raw_coords_to_ndc(v.p.xy, cb.vertex_scale, cb.vertex_offset), raw_z_to_ndc(v.z), 1.0f);
+
+	if (VS_SHADER_ALIGN)
+		out.window_pos = float2(v.p.xy) - float2(cb.xy_offset);
 
 	texture_coord(v, out, cb);
 
@@ -276,6 +341,101 @@ static MainVSIn load_vertex(GSMTLMainVertex base)
 	out.uv = uint2(base.uv);
 	out.f = float4(static_cast<float>(base.fog) / 255.f);
 	return out;
+}
+
+float4 sprite_clamp_uv_range(float4 pos, float4 tex, uint4 round_info, float scale_tex)
+{
+	bool rev_x = pos.x > pos.z;
+	bool rev_y = pos.y > pos.w;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
+
+	float4 pos_round = float4(ceil(pos.xy / 16.0f) * 16.0f, floor((pos.zw - 1.0f) / 16.0f) * 16.0f);
+
+	float4 d_tex = tex.zwzw - tex.xyxy;
+	float4 d_pos = pos.zwzw - pos.xyxy;
+
+	float4 grad = d_tex / d_pos;
+
+	tex += grad * (pos_round - pos);
+
+	// Do rounding of the endpoints.
+	uint4 topleft = uint4((pos / 16.0f) == float4(round_info.xyxy));
+	uint4 round_flags = round_info.zwzw & (ROUND_UV_DOWN | ROUND_UV_UP);
+	uint4 round_down = uint4(round_flags == ROUND_UV_DOWN) &  ~topleft;
+	uint4 round_up = uint4(round_flags == ROUND_UV_UP) |
+	                 (uint4(round_flags == ROUND_UV_DOWN) & topleft);
+	tex = select(tex, tex - 1 / 32.0f, bool4(round_down));
+	tex = select(tex, tex + 1 / 32.0f, bool4(round_up));
+
+	tex = float4(min(tex.xy, tex.zw), max(tex.xy, tex.zw));
+
+	if (VS_CLAMP_UV == GSShader::VS_CLAMP_UV::LINEAR)
+	{
+		// Bilinear: truncate to 1/16 texel;
+		tex = floor(tex) + ROUND_UV_THRESHOLD;
+	}
+	else if (VS_CLAMP_UV == GSShader::VS_CLAMP_UV::NEAREST)
+	{
+		// Nearest: place in texel center, accounting for upscaling.
+		tex = float4(floor(tex / 16.0f) * 16.0f) + float2(8.0f / scale_tex, 16.0f - 8.0f / scale_tex).xxyy;
+	}
+
+	return tex;
+}
+
+void sprite_align_and_round(thread float4& pos, thread float4& tex)
+{
+	bool rev_x = pos.x > pos.z;
+	bool rev_y = pos.y > pos.w;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
+
+	float4 d_tex = tex.zwzw - tex.xyxy;
+	float4 d_pos = pos.zwzw - pos.xyxy;
+
+	float4 grad = d_tex / d_pos;
+
+	float4 pos_round = float4(ceil(pos.xy / 16.0f) * 16.0f, floor((pos.zw - 1.0f) / 16.0f) * 16.0f);
+
+	pos_round.xy += -8.0f;
+	pos_round.zw += 8.0f;
+
+	tex += grad * (pos_round - pos);
+
+	pos = pos_round;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
 }
 
 // Convert XY from NDC to GS pixel coordinates (i.e. 1.0 = 1 GS pixel).
@@ -452,6 +612,37 @@ vertex MainVSOut vs_main_expand(
 
 			MainVSOut lt = vs_main_run(load_vertex(vertices[vid_lt]), cb);
 			MainVSOut rb = vs_main_run(load_vertex(vertices[vid_rb]), cb);
+
+			float4 scaleuv;
+			float4 clampuv;
+			if (VS_SHADER_ALIGN)
+			{
+				float4 pos = float4(lt.window_pos, rb.window_pos);
+				float4 tex = float4(lt.ti.zw, rb.ti.zw);
+
+				if (VS_ROUND_UV)
+				{
+					float4 d_tex = tex.zwzw - tex.xyxy;
+					float4 d_pos = pos.zwzw - pos.xyxy;
+					scaleuv = d_tex / d_pos;
+				}
+			
+				if (VS_CLAMP_UV_ENABLED)
+					clampuv = sprite_clamp_uv_range(pos, tex, lt.rounduv, cb.upscale.y);
+
+				if (VS_ALIGN_UV == GSShader::VS_ALIGN_UV::ALIGN)
+				{
+					sprite_align_and_round(pos, tex);
+					lt.p.xy = window_coords_to_ndc(pos.xy, cb.vertex_scale);
+					rb.p.xy = window_coords_to_ndc(pos.zw, cb.vertex_scale);
+
+					lt.ti.zw = tex.xy;
+					lt.ti.xy = lt.ti.zw * cb.texture_scale;
+					rb.ti.zw = tex.zw;
+					rb.ti.xy = rb.ti.zw * cb.texture_scale;
+				}
+			}
+
 			MainVSOut out = rb;
 
 			if (!is_right)
@@ -467,6 +658,12 @@ vertex MainVSOut vs_main_expand(
 				out.t.y = lt.t.y;
 				out.ti.yw = lt.ti.yw;
 			}
+
+			if (VS_ROUND_UV)
+				out.scaleuv = scaleuv;
+
+			if (VS_CLAMP_UV_ENABLED)
+				out.clampuv = clampuv;
 
 			return out;
 		}
@@ -565,6 +762,76 @@ vertex MainVSOut vs_main_expand(
 			
 				out.interior = 0;
 			}
+
+			return out;
+		}
+		case VSExpand::Triangle:
+		{
+			uint vid_0 = 3 * (vid / 3);
+			uint vid_1 = vid_0 + 1;
+			uint vid_2 = vid_0 + 2;
+
+			MainVSOut v0 = vs_main_run(load_vertex(vertices[vid_0]), cb); 
+			MainVSOut v1 = vs_main_run(load_vertex(vertices[vid_1]), cb);
+			MainVSOut v2 = vs_main_run(load_vertex(vertices[vid_2]), cb);
+			
+			float4 scaleuv;
+			float4 clampuv;
+			if (VS_SHADER_ALIGN)
+			{
+				float4 pos = float4(v0.window_pos, v1.window_pos.x, v2.window_pos.y);
+				float4 tex = float4(v0.ti.zw, v1.ti.z, v2.ti.w);
+
+				if (VS_ROUND_UV)
+				{
+					float4 d_tex = tex.zwzw - tex.xyxy;
+					float4 d_pos = pos.zwzw - pos.xyxy;
+					scaleuv = d_tex / d_pos;
+				}
+
+				if (VS_CLAMP_UV_ENABLED)
+					clampuv = sprite_clamp_uv_range(pos, tex, v0.rounduv, cb.upscale.y);
+
+				if (VS_ALIGN_UV == GSShader::VS_ALIGN_UV::ALIGN)
+				{
+					sprite_align_and_round(pos, tex);
+					v0.p.xy = window_coords_to_ndc(pos.xy, cb.vertex_scale);
+					v1.p.xy = window_coords_to_ndc(pos.zy, cb.vertex_scale);
+					v2.p.xy = window_coords_to_ndc(pos.xw, cb.vertex_scale);
+
+					v0.ti.zw = tex.xy;
+					v1.ti.zw = tex.zy;
+					v2.ti.zw = tex.xw;
+
+					// Swapping for rotated textures.
+					float2 texscale = select(cb.texture_scale, cb.texture_scale.yx, bool2(v0.rounduv.zw & ROUND_UV_SWAP));
+					v0.ti.xy = v0.ti.zw * texscale;
+					v1.ti.xy = v1.ti.zw * texscale;
+					v2.ti.xy = v2.ti.zw * texscale;
+				}
+			}
+
+			uint vid_mod = vid - vid_0;
+
+			MainVSOut out;
+			if (vid_mod == 0)
+			{
+				out = v0;
+			}
+			else if (vid_mod == 1)
+			{
+				out = v1;
+			}
+			else
+			{
+				out = v2;
+			}
+
+			if (VS_ROUND_UV)
+				out.scaleuv = scaleuv;
+
+			if (VS_CLAMP_UV_ENABLED)
+				out.clampuv = clampuv;
 
 			return out;
 		}
@@ -898,6 +1165,88 @@ struct PSMain
 		}
 
 		return uv;
+	}
+
+	float4 round_and_clamp_uv()
+	{
+		float scale_rt = cb.scale_factor.z;
+		float scale_tex = cb.scale_factor.w;
+
+		int2 native_xy_i, round_down, round_down_tl, round_up;
+
+		if (PS_ROUND_UV_ENABLED)
+		{
+			// Check if we're at the prim top or left.
+			native_xy_i = int2(in.p.xy) / int2(scale_rt);
+			int2 topleft = int2(native_xy_i == int2(in.rounduv.xy));
+
+			// Extract flags for whether to round U, V.
+			int2 round_per_pixel = int2(in.rounduv.zw) & ROUND_UV_PER_PIXEL;
+			int2 round_flags = int2(in.rounduv.zw) & (ROUND_UV_UP | ROUND_UV_DOWN);
+			round_flags = select(int2(0), round_flags, bool2(round_per_pixel));
+
+			// Being on the top or left pixels converts round down to round up.
+			round_down = int2(bool2(round_flags & ROUND_UV_DOWN)) & ~topleft;
+			round_down_tl = int2(bool2(round_flags & ROUND_UV_DOWN)) & topleft;
+			round_up = int2(bool2(round_flags & ROUND_UV_UP));
+		}
+
+		float2 uv = in.ti.zw; // Unnormalized UVs.
+
+		float2 upscale_offset;
+
+		if (PS_ROUND_UV == GSShader::PS_ROUND_UV::NEAREST)
+		{
+			// Find the equivalent native UV.
+			float2 native_xy = float2(native_xy_i) + 0.5f;
+			float2 upscale_xy = in.p.xy / scale_rt;
+			upscale_offset = upscale_xy - native_xy;
+			float2 native_uv = uv - 16.0f * in.scaleuv.xy * upscale_offset;
+			uv = native_uv;
+		}
+
+		float2 uvi;
+		if (PS_ROUND_UV_ENABLED)
+			uvi = round(uv / 16.0f) * 16.0f; // Nearest texel.
+			
+		if (PS_ROUND_UV == GSShader::PS_ROUND_UV::NEAREST)
+		{
+			// Round only if close to a texel boundary.
+			int2 close = int2(abs(uv - uvi) <= ROUND_UV_THRESHOLD);
+			round_down &= close;
+			round_down_tl &= close;
+			round_up &= close;
+		}
+
+		if (PS_ROUND_UV == GSShader::PS_ROUND_UV::LINEAR)
+		{
+			// Bilinear: round to 1/16 texel.
+			uv = select(uv, uv - ROUND_UV_THRESHOLD, bool2(round_down));
+			uv = select(uv, uv + ROUND_UV_THRESHOLD, bool2(round_up));
+			uv = floor(uv);
+		}
+		else if (PS_ROUND_UV == GSShader::PS_ROUND_UV::NEAREST)
+		{
+			// Nearest: get the center of the texel we would sample from at native.
+			uv = select(uv, uvi - 8.0f, bool2(round_down));
+			uv = select(uv, uvi + 8.0f, bool2(round_up));
+			uv = select(uv, floor(uv / 16.0f) * 16.0f + 8.0f, bool2(1 & ~(round_down | round_up)));
+
+			// Then offset UV based on the XY offset from native texel center.
+			uv += 16.0f * sign(in.scaleuv.xy) * upscale_offset;
+			uv = select(uv, uvi + 8.0f / scale_tex, bool2(round_down_tl));
+		}
+
+		if (PS_ROUND_UV_ENABLED)
+			uv += ROUND_UV_THRESHOLD; // Helps avoid rounding errors in sampling.
+
+		if (PS_CLAMP_UV)
+			uv = clamp(uv, in.clampuv.xy, in.clampuv.zw);
+
+		if (PS_SHADER_ALIGN)
+			uv = select(uv, uv.yx, bool2(in.rounduv.zw & ROUND_UV_SWAP));
+
+		return float4(uv / 16.0f / cb.wh.xy, uv); // Return normalized and unnormalized coords.
 	}
 
 	float4x4 sample_4c(float4 uv)
@@ -1246,6 +1595,14 @@ struct PSMain
 		{
 			st = in.t.xy / in.t.w;
 			st_int = in.ti.zw / in.t.w;
+		}
+		else if (PS_SHADER_ALIGN)
+		{
+			float4 ti_rounded = round_and_clamp_uv();
+			
+			// Note: xy are normalized coordinates
+			st = ti_rounded.xy;
+			st_int = ti_rounded.zw;
 		}
 		else
 		{

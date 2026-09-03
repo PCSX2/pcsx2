@@ -77,7 +77,7 @@ protected:
 	bool CheckTargetPages(const GSOffset::PageLooper* fb_pages, const GSOffset::PageLooper* zb_pages, const GSVector4i& r);
 	bool CheckSourcePages(SharedData* sd);
 
-	bool GetScanlineGlobalData(SharedData* data);
+	bool GetScanlineGlobalData(SharedData* data, bool round_uv);
 
 	template <u32 primclass>
 	void RewriteVerticesIfSTOverflow();
