@@ -1735,8 +1735,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						match = false;
 
 					// Situations where font has been uploaded to the alpha channel and they use a different buffer width, this can't currently be translated correctly.
-					GSLocalMemory::psm_t req_psm = GSLocalMemory::m_psm[psm];
-					if (!possible_shuffle && req_psm.trbpp <= 8 && req_psm.bpp == 32 && t->m_TEX0.TBW != bw && (bw * 64) != t->m_valid.z && r.w > req_psm.pgs.y)
+					const GSLocalMemory::psm_t req_psm = GSLocalMemory::m_psm[psm];
+					if (!possible_shuffle && req_psm.trbpp <= 8 && req_psm.bpp == 32 && t->m_TEX0.TBW != bw && static_cast<int>(bw * 64) != t->m_valid.z && r.w > req_psm.pgs.y)
 						match = false;
 
 					// Different swizzle, different width, and dirty, so probably not what we want.
