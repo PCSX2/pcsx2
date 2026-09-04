@@ -607,20 +607,6 @@ bool GSHwHack::GSC_TalesOfLegendia(GSRendererHW& r, int& skip)
 	return true;
 }
 
-bool GSHwHack::GSC_UltramanFightingEvolution(GSRendererHW& r, int& skip)
-{
-	if (skip == 0)
-	{
-		if (!s_nativeres && RTME && RFBP == 0x2a00 && RFPSM == PSMZ24 && RTBP0 == 0x1c00 && RTPSM == PSMZ24)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 5; // blur
-		}
-	}
-
-	return true;
-}
-
 bool GSHwHack::GSC_TalesofSymphonia(GSRendererHW& r, int& skip)
 {
 	if (skip == 0)
@@ -1468,9 +1454,6 @@ const GSHwHack::Entry<GSRendererHW::GSC_Ptr> GSHwHack::s_get_skip_count_function
 
 	// Depth Issue
 	CRC_F(GSC_BurnoutGames),
-
-	// Upscaling hacks
-	CRC_F(GSC_UltramanFightingEvolution),
 };
 
 const GSHwHack::Entry<GSRendererHW::OI_Ptr> GSHwHack::s_before_draw_functions[] = {
