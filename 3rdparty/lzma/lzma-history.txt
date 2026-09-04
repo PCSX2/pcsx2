@@ -1,6 +1,11 @@
 ISTORY of the LZMA SDK
 -----------------------
 
+26.03          2026-09-03
+-------------------------
+- Some bugs and vulnerabilities were fixed.
+
+
 26.02          2026-06-25
 -------------------------
 - Some bugs and vulnerabilities were fixed.
