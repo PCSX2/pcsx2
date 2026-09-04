@@ -62,7 +62,7 @@ static D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE GetLoadOpForTexture(GSTexture12* 
 
 GSDevice12::ShaderMacro::ShaderMacro()
 {
-	mlist.emplace_back("DX12", "1");
+	mlist.emplace_back("PCSX2_DX12", "1");
 }
 
 void GSDevice12::ShaderMacro::AddMacro(const char* n, int d)
@@ -964,10 +964,16 @@ bool GSDevice12::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	}
 
 	{
-		std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
+		std::optional<std::string> shader = ReadShaderSource("shaders/dx/tfx.fx");
 		if (!shader.has_value())
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/tfx.fx.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx/tfx.fx.");
+			return false;
+		}
+
+		if (!GetTFXShaderSource(&*shader))
+		{
+			Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
 			return false;
 		}
 
@@ -2289,7 +2295,7 @@ bool GSDevice12::CompileCASPipelines()
 	if (!m_cas_root_signature)
 		return false;
 
-	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx11/cas.hlsl");
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx/cas.hlsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
@@ -2317,7 +2323,7 @@ bool GSDevice12::CompileCASPipelines()
 
 bool GSDevice12::CompileImGuiPipeline()
 {
-	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
+	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx/imgui.fx");
 	if (!hlsl.has_value())
 	{
 		Console.Error("D3D12: Failed to read imgui.fx");
@@ -2817,10 +2823,10 @@ bool GSDevice12::CreateRootSignatures()
 
 bool GSDevice12::CompileConvertPipelines()
 {
-	std::optional<std::string> source = ReadShaderSource("shaders/dx11/convert.fx");
+	std::optional<std::string> source = ReadShaderSource("shaders/dx/convert.fx");
 	if (!source)
 	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/convert.fx.");
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx/convert.fx.");
 		return false;
 	}
 
@@ -2965,10 +2971,10 @@ bool GSDevice12::CompileConvertPipelines()
 
 bool GSDevice12::CompilePresentPipelines()
 {
-	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/present.fx");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx/present.fx");
 	if (!shader)
 	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/present.fx.");
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx/present.fx.");
 		return false;
 	}
 
@@ -3008,10 +3014,10 @@ bool GSDevice12::CompilePresentPipelines()
 
 bool GSDevice12::CompileInterlacePipelines()
 {
-	const std::optional<std::string> source = ReadShaderSource("shaders/dx11/interlace.fx");
+	const std::optional<std::string> source = ReadShaderSource("shaders/dx/interlace.fx");
 	if (!source)
 	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/interlace.fx.");
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx/interlace.fx.");
 		return false;
 	}
 
@@ -3044,10 +3050,10 @@ bool GSDevice12::CompileInterlacePipelines()
 
 bool GSDevice12::CompileMergePipelines()
 {
-	const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/merge.fx");
+	const std::optional<std::string> shader = ReadShaderSource("shaders/dx/merge.fx");
 	if (!shader)
 	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/merge.fx.");
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx/merge.fx.");
 		return false;
 	}
 
@@ -3114,10 +3120,10 @@ bool GSDevice12::CompilePostProcessingPipelines()
 	}
 
 	{
-		const std::optional<std::string> shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
+		const std::optional<std::string> shader = ReadShaderSource("shaders/dx/shadeboost.fx");
 		if (!shader)
 		{
-			Host::ReportErrorAsync("GS", "Failed to read shaders/dx11/shadeboost.fx.");
+			Host::ReportErrorAsync("GS", "Failed to read shaders/dx/shadeboost.fx.");
 			return false;
 		}
 
@@ -3221,7 +3227,7 @@ const ID3DBlob* GSDevice12::GetTFXVertexShader(GSHWDrawConfig::VSSelector sel)
 	sm.AddMacro("VS_TME", sel.tme);
 	sm.AddMacro("VS_FST", sel.fst);
 	sm.AddMacro("VS_IIP", sel.iip);
-	sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+	sm.AddMacro("VS_EXPAND_TYPE", static_cast<int>(sel.expand));
 
 	const char* entry_point = (sel.expand != GSHWDrawConfig::VSExpand::None) ? "vs_main_expand" : "vs_main";
 	ComPtr<ID3DBlob> vs(m_shader_cache.GetVertexShader(m_tfx_source, sm.GetPtr(), entry_point));
@@ -3268,7 +3274,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
 	sm.AddMacro("PS_READ16_SRC", sel.real16src);
 	sm.AddMacro("PS_WRITE_RG", sel.write_rg);
-	sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
+	sm.AddMacro("PS_CHANNEL", sel.channel);
 	sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 	sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 	sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
@@ -3299,7 +3305,7 @@ const ID3DBlob* GSDevice12::GetTFXPixelShader(const GSHWDrawConfig::PSSelector& 
 	sm.AddMacro("PS_ZTST", sel.ztst);
 	sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
 	sm.AddMacro("PS_ABE", sel.abe);
-	sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
+	sm.AddMacro("PS_SW_ANISO", sel.sw_aniso);
 	sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 	sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
