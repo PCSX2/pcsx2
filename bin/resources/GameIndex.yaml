@@ -60605,7 +60605,6 @@ SLPS-25529:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns DoF effects.
     nativeScaling: 2 # Fixes post effects.
-    getSkipCount: "GSC_UltramanFightingEvolution"
 SLPS-25530:
   name: "餓狼伝 Breakblow"
   name-sort: "がろうでん Breakblow"
@@ -62343,7 +62342,6 @@ SLPS-25800:
   gsHWFixes:
     halfPixelOffset: 4 # Aligns DoF effects.
     nativeScaling: 2 # Fixes post effects.
-    getSkipCount: "GSC_UltramanFightingEvolution"
 SLPS-25801:
   name: "今日からマ王！ 眞マ国の休日"
   name-sort: "きょうからまおう しんまこくのきゅうじつ"
