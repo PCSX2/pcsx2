@@ -62,7 +62,6 @@ namespace GSRunner
 	static bool InitializeConfig();
 	static void SettingsOverride();
 	static bool ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& params);
-	static void DumpStats();
 
 	static bool CreatePlatformWindow();
 	static void DestroyPlatformWindow();
@@ -80,43 +79,11 @@ static std::string s_output_prefix;
 static s32 s_loop_count = 1;
 static std::optional<bool> s_use_window;
 static bool s_no_console = false;
+static bool s_perf_enable = false;
 
 // Owned by the GS thread.
 static u32 s_dump_frame_number = 0;
 static u32 s_loop_number = s_loop_count;
-static double s_last_internal_draws = 0;
-static double s_last_draws = 0;
-static double s_last_render_passes = 0;
-static double s_last_barriers = 0;
-static double s_last_copies = 0;
-static double s_last_uploads = 0;
-static double s_last_readbacks = 0;
-static double s_last_depth_copies_rov = 0;
-static double s_last_draws_rov = 0;
-static double s_last_barriers_rov = 0;
-static u64 s_total_internal_draws = 0;
-static u64 s_total_draws = 0;
-static u64 s_total_render_passes = 0;
-static u64 s_total_barriers = 0;
-static u64 s_total_copies = 0;
-static u64 s_total_uploads = 0;
-static u64 s_total_readbacks = 0;
-static u64 s_total_copies_rov = 0;
-static u64 s_total_draws_rov = 0;
-static u64 s_total_barriers_rov = 0;
-static u32 s_total_frames = 0;
-static u32 s_total_drawn_frames = 0;
-
-static bool s_perf_enable = false;
-static float s_perf_updates = 0.0f;
-static float s_perf_sum_fps = 0.0f;
-static float s_perf_sum_internal_fps = 0.0f;
-static float s_perf_sum_cpu_thread_usage = 0.0f;
-static float s_perf_sum_cpu_thread_time = 0.0f;
-static float s_perf_sum_gs_thread_usage = 0.0f;
-static float s_perf_sum_gs_thread_time = 0.0f;
-static float s_perf_sum_gpu_time = 0.0f;
-static float s_perf_sum_gpu_usage = 0.0f;
 
 bool GSRunner::InitializeConfig()
 {
@@ -278,39 +245,6 @@ void Host::BeginPresentFrame()
 		std::string dump_path(fmt::format("{}_frame{:05}.png", s_output_prefix, s_dump_frame_number));
 		GSQueueSnapshot(dump_path);
 	}
-
-	if (GSIsHardwareRenderer())
-	{
-		const u32 last_draws = s_total_internal_draws;
-		const u32 last_uploads = s_total_uploads;
-
-		static constexpr auto update_stat = [](GSPerfMon::counter_t counter, u64& dst, double& last) {
-			// perfmon resets every 30 frames to zero
-			const double val = g_perfmon.GetCounter(counter);
-			dst += static_cast<u64>((val < last) ? val : (val - last));
-			last = val;
-		};
-
-		update_stat(GSPerfMon::Draw, s_total_internal_draws, s_last_internal_draws);
-		update_stat(GSPerfMon::DrawCalls, s_total_draws, s_last_draws);
-		update_stat(GSPerfMon::RenderPasses, s_total_render_passes, s_last_render_passes);
-		update_stat(GSPerfMon::Barriers, s_total_barriers, s_last_barriers);
-		update_stat(GSPerfMon::TextureCopies, s_total_copies, s_last_copies);
-		update_stat(GSPerfMon::TextureUploads, s_total_uploads, s_last_uploads);
-		update_stat(GSPerfMon::Readbacks, s_total_readbacks, s_last_readbacks);
-		update_stat(GSPerfMon::TextureCopiesROV, s_total_copies_rov, s_last_depth_copies_rov);
-		update_stat(GSPerfMon::DrawCallsROV, s_total_draws_rov, s_last_draws_rov);
-		update_stat(GSPerfMon::BarriersROV, s_total_barriers_rov, s_last_barriers_rov);
-
-		const bool idle_frame = s_total_frames && (last_draws == s_total_internal_draws && last_uploads == s_total_uploads);
-
-		if (!idle_frame)
-			s_total_drawn_frames++;
-
-		s_total_frames++;
-
-		std::atomic_thread_fence(std::memory_order_release);
-	}
 }
 
 void Host::RequestResizeHostDisplay(s32 width, s32 height)
@@ -344,18 +278,7 @@ void Host::OnGameChanged(const std::string& title, const std::string& elf_overri
 
 void Host::OnPerformanceMetricsUpdated()
 {
-	if (s_perf_enable)
-	{
-		s_perf_updates += 1.0f;
-		s_perf_sum_fps += PerformanceMetrics::GetFPS();
-		s_perf_sum_internal_fps += PerformanceMetrics::GetInternalFPS();
-		s_perf_sum_cpu_thread_usage += PerformanceMetrics::GetCPUThreadUsage();
-		s_perf_sum_cpu_thread_time += PerformanceMetrics::GetCPUThreadAverageTime();
-		s_perf_sum_gs_thread_usage += PerformanceMetrics::GetGSThreadUsage();
-		s_perf_sum_gs_thread_time += PerformanceMetrics::GetGSThreadAverageTime();
-		s_perf_sum_gpu_time += PerformanceMetrics::GetGPUAverageTime();
-		s_perf_sum_gpu_usage += PerformanceMetrics::GetGPUUsage();
-	}
+	GSDumpReplayer::UpdatePerformanceMetrics();
 }
 
 void Host::OnSaveStateLoading(const std::string_view filename)
@@ -655,6 +578,7 @@ bool GSRunner::ParseCommandLineArgs(int argc, char* argv[], VMBootParameters& pa
 			{
 				s_loop_count = StringUtil::FromChars<s32>(argv[++i]).value_or(0);
 				Console.WriteLn("Looping dump playback %d times.", s_loop_count);
+				s_settings_interface.SetIntValue("EmuCore/GS", "DumpReplayLoopCount", s_loop_count);
 				continue;
 			}
 			else if (CHECK_ARG_PARAM("-renderer"))
@@ -907,34 +831,6 @@ void GSRunner::SettingsOverride()
 	}
 }
 
-void GSRunner::DumpStats()
-{
-	std::atomic_thread_fence(std::memory_order_acquire);
-	Console.WriteLn(fmt::format("======= HW STATISTICS FOR {} ({}) FRAMES ========", s_total_frames, s_total_drawn_frames));
-	Console.WriteLn(fmt::format("@HWSTAT@ Draw Calls: {} (avg {})", s_total_draws, static_cast<u64>(std::ceil(s_total_draws / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Render Passes: {} (avg {})", s_total_render_passes, static_cast<u64>(std::ceil(s_total_render_passes / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Barriers: {} (avg {})", s_total_barriers, static_cast<u64>(std::ceil(s_total_barriers / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Copies: {} (avg {})", s_total_copies, static_cast<u64>(std::ceil(s_total_copies / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Uploads: {} (avg {})", s_total_uploads, static_cast<u64>(std::ceil(s_total_uploads / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Readbacks: {} (avg {})", s_total_readbacks, static_cast<u64>(std::ceil(s_total_readbacks / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Copies (ROV): {} (avg {})", s_total_copies_rov, static_cast<u64>(std::ceil(s_total_copies_rov / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Draws Calls (ROV): {} (avg {})", s_total_draws_rov, static_cast<u64>(std::ceil(s_total_draws_rov / static_cast<double>(s_total_drawn_frames)))));
-	Console.WriteLn(fmt::format("@HWSTAT@ Barriers (ROV): {} (avg {})", s_total_barriers_rov, static_cast<u64>(std::ceil(s_total_barriers_rov / static_cast<double>(s_total_drawn_frames)))));
-	if (s_perf_enable)
-	{
-		Console.WriteLn(fmt::format("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime()));
-		Console.WriteLn(fmt::format("@HWSTAT@ Average Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetAverageFrameTime(), 1000.0f / PerformanceMetrics::GetAverageFrameTime()));
-		Console.WriteLn(fmt::format("@HWSTAT@ Maximum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMaximumFrameTime(), 1000.0f / PerformanceMetrics::GetMaximumFrameTime()));
-		Console.WriteLn(fmt::format("@HWSTAT@ CPU Thread Usage: {:.3f} %", s_perf_sum_cpu_thread_usage / s_perf_updates));
-		Console.WriteLn(fmt::format("@HWSTAT@ GS Thread Usage: {:.3f} %", s_perf_sum_gs_thread_usage / s_perf_updates));
-		Console.WriteLn(fmt::format("@HWSTAT@ GPU Usage: {:.3f} %", s_perf_sum_gpu_usage / s_perf_updates));
-		Console.WriteLn(fmt::format("@HWSTAT@ Average CPU Thread Time: {:.3f} ms", s_perf_sum_cpu_thread_time / s_perf_updates));
-		Console.WriteLn(fmt::format("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_sum_gs_thread_time / s_perf_updates));
-		Console.WriteLn(fmt::format("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_sum_gpu_time / s_perf_updates));
-	}
-	Console.WriteLn("============================================");
-}
-
 #ifdef _WIN32
 // We can't handle unicode in filenames if we don't use wmain on Win32.
 #define main real_main
@@ -948,12 +844,11 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 	{
 		// apply new settings (e.g. pick up renderer change)
 		VMManager::ApplySettings();
-		GSDumpReplayer::SetIsDumpRunner(true);
+		GSDumpReplayer::SetIsDumpRunner(true, s_perf_enable);
 
 		if (VMManager::Initialize(*params) == VMBootResult::StartupSuccess)
 		{
 			// run until end
-			GSDumpReplayer::SetLoopCount(s_loop_count);
 			VMManager::SetState(VMState::Running);
 			if (s_perf_enable)
 			{
@@ -963,7 +858,6 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 			while (VMManager::GetState() == VMState::Running)
 				VMManager::Execute();
 			VMManager::Shutdown(false);
-			GSRunner::DumpStats();
 			ret->store(EXIT_SUCCESS);
 		}
 	}
