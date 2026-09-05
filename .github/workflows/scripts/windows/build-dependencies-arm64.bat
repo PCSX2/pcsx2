@@ -25,6 +25,9 @@ if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
 
 set SEVENZIP="C:\Program Files\7-Zip\7z.exe"
 set PATCH="C:\Program Files\Git\usr\bin\patch.exe"
+set BASH="C:\Program Files\Git\usr\bin\bash.exe"
+
+set "UNIX_TOOLS=C:\Program Files\Git\usr\bin\"
 
 if defined DEBUG (
   echo DEBUG=%DEBUG%
@@ -58,6 +61,15 @@ set QT=6.11.2
 set QTMINOR=6.11
 set QTAPNG=1.3.0
 
+set FFMPEG=9.0.1
+set GAS_PREPROC=ac1836309c2e77023c228b7184485597286289d3
+set MAKE=4.4.1
+set MESON=1.10.2
+set PKGCONF=2.5.1
+set LIBOPUS=1.6.1
+set LIBSVTAV1=4.2.0
+set LIBX264=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
+
 set FREETYPE=2.14.3
 set HARFBUZZ=14.2.0
 set SDL=SDL3-3.4.16
@@ -80,6 +92,7 @@ set SHADERC_SPIRVHEADERS=58006c901d1d5c37dece6b6610e9af87fa951375
 set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.2
+set DXHEADERS=1.619.1
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 8f8c16703a8170b235361aacdf0ec97d2445ae4e3e3d127eb1576f498269ef79 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" a303149d7b9f087d788135e9733fdac8e4cec694e5afc04bf33e10a516b33282 || goto error
@@ -87,6 +100,15 @@ call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/offic
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" bc80932ac2da0df129583eae62fa8a3d4b0d43ad9d1676fac9c1922e5958cd81 || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 850bc1b316149086512c17a77da51fec94933846fa84944508feb6dd9cbb35aa || goto error
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
+
+call :downloadfile "ffmpeg-%FFMPEG%.tar.xz" "https://ffmpeg.org/releases/ffmpeg-%FFMPEG%.tar.xz" cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635 || goto error
+call :downloadfile "gas-preprocessor.pl" "https://raw.githubusercontent.com/FFmpeg/gas-preprocessor/%GAS_PREPROC%/gas-preprocessor.pl" 7124d70cdecba7c5612f9a71fbf3f28514dd9c2ca3022f58ad793f88bb925fcf || goto error
+call :downloadfile "make-%MAKE%-without-guile-w32-bin.zip" "https://sourceforge.net/projects/ezwinports/files/make-%MAKE%-without-guile-w32-bin.zip/download" fb66a02b530f7466f6222ce53c0b602c5288e601547a034e4156a512dd895ee7 || goto error
+call :downloadfile "meson-%MESON%.tar.gz" "https://github.com/mesonbuild/meson/releases/download/%MESON%/meson-%MESON%.tar.gz" 7890287d911dd4ee1ebd0efb61ed0321bfcd87c725df923a837cf90c6508f96b || goto error
+call :downloadfile "pkgconf-pkgconf-%PKGCONF%.zip" "https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-%PKGCONF%.zip" c5b5f88a2ca2324dc5d857e35bb145e24290e326357ea94a86d47b8d7fa15477 || goto error
+call :downloadfile "opus-%LIBOPUS%.tar.gz" "https://downloads.xiph.org/releases/opus/opus-%LIBOPUS%.tar.gz" 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1 || goto error
+call :downloadfile "SVT-AV1-v%LIBSVTAV1%.zip" "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v%LIBSVTAV1%/SVT-AV1-v%LIBSVTAV1%.zip" 007d1bd64ae85eaeea51db7465c4b360d115dc2d33d2ad42491c7d2ae7a9124e || goto error
+call :downloadfile "x264-%LIBX264%.zip" "https://code.videolan.org/videolan/x264/-/archive/%LIBX264%.zip" d95d059eff81cc565165cd058b66e208f0cc9874106a8fe94a811a66cf8a85a2 || goto error
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download e61b31ab26358b946e767ed7eb7f4bb2e507da1cfefeb7a8861ace7fd5c899a1 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip bb2f83255706b1c92d731541c7cefaf98bb5b93e8f76d16f6deda05225ff20ee || goto error
@@ -102,6 +124,7 @@ call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/
 call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg/archive/v%PLUTOVG%.zip" 4fe4e48f28aa80171b2166d45c0976ab0f21eecedb52cd4c3ef73b5afb48fac9 || goto error
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" 82dee2c57ad712bdd6d6d81d3e76249d89caa4b5a4214353660fd5adff12201a || goto error
 call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" eb92d90bb23b2ec23410c41d791e41dbdbec942ab946924d1fdcb31eac6f0735 || goto error
+call :downloadfile "DirectX-Headers-%DXHEADERS%.zip" "https://github.com/microsoft/DirectX-Headers/archive/v%DXHEADERS%.zip" 9eb8b102a90a42e4ea72a825f7d249d55ec90d164f030966c9b7784b93374927 || goto error
 call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 96276f55b9fa7837ac8f3f72fd52965879cbb5d5d2e6af548c69a177fb078304 || goto error
 
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/google/shaderc/archive/refs/tags/v%SHADERC%.zip" f9401cc5cb36c276cd1e072b6595dbd728148e8dba389e50f7339e2d388dbc08 || goto error
@@ -117,6 +140,85 @@ if %DEBUG%==1 (
 
 set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL="/DEBUG"
 set ARM64TOOLCHAIN=-DCMAKE_TOOLCHAIN_FILE="%SCRIPTDIR%\cmake-toolchain-windows-arm64.cmake"
+
+if not "%INSTALLDIR%"=="%INSTALLDIR: =%" (
+  echo FFmpeg does not support building in paths with spaces.
+  goto error
+)
+
+echo "Installing libopus"
+rmdir /S /Q "opus-%LIBOPUS%"
+tar -xf "opus-%LIBOPUS%.tar.gz" || goto error
+cd "opus-%LIBOPUS%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo "Installing gas-preprocessor..."
+copy "gas-preprocessor.pl" "%INSTALLDIR%\bin\gas-preprocessor.pl" || goto error
+echo.
+
+echo "Installing libsvtav1"
+rmdir /S /Q "SVT-AV1-v%LIBSVTAV1%"
+tar -xf "SVT-AV1-v%LIBSVTAV1%.zip" || goto error
+cd "SVT-AV1-v%LIBSVTAV1%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\libsvtav1-arm64-msvc.patch" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DBUILD_APPS=OFF -DSVT_AV1_LTO=ON -B build -G Ninja ^
+  -DCMAKE_ASM_COMPILER="%SCRIPTDIR%\libsvtav1-gas-preprocessor.bat" -DCMAKE_ASM_COMPILER_ID="MSVC" -DCMAKE_ASM_COMPILE_OPTIONS_MSVC_RUNTIME_LIBRARY_MultiThreadedDLL="" || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+set PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+set PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+Set "PKG_CONFIG_PATH=%INSTALLDIR%\lib\pkgconfig"
+
+set MAKE_EXE="%X64INSTALLDIR%\bin\make.exe"
+
+set "OLD_PATH=%PATH%"
+rem Also add INSTALLDIR to add gas-preprocessor.pl to path
+set "PATH=%PATH%;%UNIX_TOOLS%;%INSTALLDIR%\bin"
+
+set CC=cl
+set CXX=cl
+
+echo "Installing libx264"
+rmdir /S /Q "x264-%LIBX264%"
+%SEVENZIP% x "x264-%LIBX264%.zip" || goto error
+cd "x264-%LIBX264%" || goto error
+%BASH% configure --prefix="%INSTALLDIR%" --disable-cli --enable-static --extra-cflags="-MD -w -Os -GL" || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
+cd .. || goto error
+echo.
+
+echo "Installing FFmpeg..."
+rmdir /S /Q "ffmpeg-%FFMPEG%"
+tar xf "ffmpeg-%FFMPEG%.tar.xz" || goto error
+cd "ffmpeg-%FFMPEG%"
+%PATCH% -p1 < "%SCRIPTDIR%\ffmpeg-configure-escape.patch" || goto error
+rem FFmpeg's build seems to choke when extra-cflags contain `\`, so use `/` as the path separator.
+set HOST_CC_PATH=%SCRIPTDIR:\=/%/ffmpeg-host-cl.bat
+set HOST_LD_PATH=%SCRIPTDIR:\=/%/ffmpeg-host-link.bat
+rem --enable-small removes the display names of codecs, so instead we specify optflag for minsize
+%BASH% configure --prefix="%INSTALLDIR%" --disable-all --disable-autodetect --disable-static --enable-shared --disable-debug ^
+  --toolchain=msvc --extra-ldflags="-LTCG" --pkg-config="%X64INSTALLDIR%\bin\pkgconf.exe" ^
+  --enable-cross-compile --arch=aarch64 --host-cc="%HOST_CC_PATH%" --host-ld="%HOST_LD_PATH%" ^
+  --extra-cflags="-MD -GL" --extra-cxxflags="-MD -GL" --optflags="-O1" ^
+  --enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale ^
+  --enable-gpl --enable-libx264 --enable-libsvtav1 --enable-libopus ^
+  --enable-d3d11va --enable-mediafoundation ^
+  --enable-encoder=ffv1,qtrle,libx264*,libsvtav1,aac,flac,libopus,pcm_s16be,pcm_s16le ^
+  --enable-encoder=h264_mf,hevc_mf,av1_mf ^
+  --enable-muxer=avi,matroska,mov,mp3,mp4,wav ^
+  --enable-protocol=file || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
+cd ..
+echo.
+
+set "PATH=!OLD_PATH!"
 
 echo Building Zlib...
 rmdir /S /Q "zlib-%ZLIB%"
@@ -345,6 +447,16 @@ copy "build\native\bin\arm64\D3D12Core.dll" "%INSTALLDIR%\bin\D3D12\D3D12Core.dl
 if %DEBUG%==1 (
   copy "build\native\bin\arm64\d3d12SDKLayers.dll" "%INSTALLDIR%\bin\D3D12\d3d12SDKLayers.dll" || goto error
 )
+cd .. || goto error
+
+rem DirectX Headers include a CMakeList file, which is absent in the Nuget package
+echo Unpacking DirectX Headers
+rmdir /S /Q "DirectX-Headers-%DXHEADERS%"
+%SEVENZIP% x "DirectX-Headers-%DXHEADERS%.zip" || goto error
+cd "DirectX-Headers-%DXHEADERS%" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DDXHEADERS_BUILD_TEST=OFF -DDXHEADERS_BUILD_GOOGLE_TEST=OFF -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
 cd .. || goto error
 
 echo Building shaderc...
