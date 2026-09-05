@@ -12,6 +12,9 @@
 
 #include "IconsPromptFont.h"
 
+#include <algorithm>
+#include <cmath>
+
 static const InputBindingInfo s_bindings[] = {
 	// clang-format off
 	{"Up", TRANSLATE_NOOP("Pad", "D-Pad Up"), ICON_PF_DPAD_UP, InputBindingInfo::Type::Button, PadDualshock2::Inputs::PAD_UP, GenericInputBinding::DPadUp},
@@ -62,9 +65,14 @@ static const SettingInfo s_settings[] = {
 		"0.00", "0.00", "1.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
 	{SettingInfo::Type::Float, "AxisScale", TRANSLATE_NOOP("Pad", "Analog Sensitivity"),
 		TRANSLATE_NOOP("Pad",
-			"Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent "
-			"controllers, e.g. DualShock 4, Xbox One Controller."),
+			"Sets the analog stick axis scaling factor. Modern controllers with square pickup zones, e.g. DualShock 4, Xbox One "
+			"have better diagonal inputs at a range between 130-140%, but this will cause axes to reach max input early."),
 		"1.33", "0.01", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
+	{SettingInfo::Type::Boolean, "UseDiagonalScaleCorrection", TRANSLATE_NOOP("Pad", "Use Diagonal Scale Correction"),
+		TRANSLATE_NOOP("Pad",
+			"Transforms analog stick pickup zone from a square to a circle, allows for full input at diagonals without also scaling the X and Y axes. "
+			"Ideal for modern controllers with square pickup zones, e.g. DualShock 4, Xbox One. Setting Analog Sensitivity to 100% is recommended with this setting."),
+		"false", "", "", "", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 0.0f},
 	{SettingInfo::Type::Float, "LargeMotorScale", TRANSLATE_NOOP("Pad", "Large Motor Vibration Scale"),
 		TRANSLATE_NOOP("Pad", "Increases or decreases the intensity of low frequency vibration sent by the game."),
 		"1.00", "0.00", "2.00", "0.01", TRANSLATE_NOOP("Pad", "%.0f%%"), nullptr, nullptr, 100.0f},
@@ -576,14 +584,48 @@ void PadDualshock2::Set(u32 index, float value)
 		if (index <= Inputs::PAD_L_LEFT)
 		{
 			// Left Stick
-			this->analogs.lx = this->analogs.lxInvert ? MERGE(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
-			this->analogs.ly = this->analogs.lyInvert ? MERGE(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
+			u8 combinedX = this->analogs.lxInvert ? MERGE(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
+			u8 combinedY = this->analogs.lyInvert ? MERGE(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
+
+			if (this->useDiagonalScaleCorrection)
+			{
+				float normalizedX = (combinedX - 127.5) / 127.5f;
+				float normalizedY = (combinedY - 127.5) / 127.5f;
+				float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
+				float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
+				float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+				float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+				this->analogs.lx = (scaledX * 127.5) + 127.5;
+				this->analogs.ly = (scaledY * 127.5) + 127.5;
+			}
+			else
+			{
+				this->analogs.lx = combinedX;
+				this->analogs.ly = combinedY;
+			}
 		}
 		else
 		{
 			// Right Stick
-			this->analogs.rx = this->analogs.rxInvert ? MERGE(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
-			this->analogs.ry = this->analogs.ryInvert ? MERGE(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
+			u8 combinedX = this->analogs.rxInvert ? MERGE(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
+			u8 combinedY = this->analogs.ryInvert ? MERGE(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
+
+			if (this->useDiagonalScaleCorrection)
+			{
+				float normalizedX = (combinedX - 127.5) / 127.5f;
+				float normalizedY = (combinedY - 127.5) / 127.5f;
+				float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
+				float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
+				float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+				float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+				this->analogs.rx = (scaledX * 127.5) + 127.5;
+				this->analogs.ry = (scaledY * 127.5) + 127.5;
+			}
+			else
+			{
+				this->analogs.rx = combinedX;
+				this->analogs.ry = combinedY;
+			}
 		}
 #undef MERGE
 
@@ -737,6 +779,11 @@ void PadDualshock2::SetAxisScale(float deadzone, float scale)
 {
 	this->axisDeadzone = deadzone;
 	this->axisScale = scale;
+}
+
+void PadDualshock2::SetDiagonalScaleCorrection(bool enabled)
+{
+	this->useDiagonalScaleCorrection = enabled;
 }
 
 float PadDualshock2::GetVibrationScale(u32 motor) const
