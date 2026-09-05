@@ -566,7 +566,7 @@ void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32
 		.srcBuffer = buffer, .dstImage = m_image, .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		.regionCount =  1, .pRegions = &bic };
 
-	vkCmdCopyBufferToImage2(cmdbuf, &copy_info);
+	vkCmdCopyBufferToImage2KHR(cmdbuf, &copy_info);
 
 	if (old_layout != Layout::CopyDst && old_layout != Layout::Undefined)
 		TransitionSubresourcesToLayout(cmdbuf, level, 1, Layout::CopyDst, old_layout);
@@ -762,7 +762,7 @@ void GSTextureVK::GenerateMipmap()
 			.dstImage = m_image, .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			.regionCount = 1, .pRegions = &blit, .filter = VK_FILTER_LINEAR };
 
-		vkCmdBlitImage2(cmdbuf, &blit_info);
+		vkCmdBlitImage2KHR(cmdbuf, &blit_info);
 
 		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, Layout::BlitSrc, m_layout);
 		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, Layout::BlitDst, m_layout);
@@ -869,7 +869,7 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 	VkDependencyInfo dependency = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
 		.dependencyFlags = GetFeedbackLoopDependencyFlags(), .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier };
 
-	vkCmdPipelineBarrier2(command_buffer, &dependency);
+	vkCmdPipelineBarrier2KHR(command_buffer, &dependency);
 
 	// Count as a UAV barrier if we transition to/from UAV.
 	if (IsRenderTargetOrDepthStencil() &&
@@ -1009,7 +1009,7 @@ void GSDownloadTextureVK::CopyFromTexture(
 		.dstBuffer = m_buffer, .regionCount = 1, .pRegions = &image_copy };
 
 	// do the copy
-	vkCmdCopyImageToBuffer2(cmdbuf, &image_copy_info);
+	vkCmdCopyImageToBuffer2KHR(cmdbuf, &image_copy_info);
 
 	// flush gpu cache
 	VkBufferMemoryBarrier2 buffer_info{ .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
@@ -1021,7 +1021,7 @@ void GSDownloadTextureVK::CopyFromTexture(
 	VkDependencyInfo barrier_info = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .bufferMemoryBarrierCount = 1,
 		.pBufferMemoryBarriers = &buffer_info };
 
-	vkCmdPipelineBarrier2(cmdbuf, &barrier_info);
+	vkCmdPipelineBarrier2KHR(cmdbuf, &barrier_info);
 
 	if (old_layout != GSTextureVK::Layout::CopySrc && old_layout != GSTextureVK::Layout::Undefined)
 		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, GSTextureVK::Layout::CopySrc, old_layout);

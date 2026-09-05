@@ -413,7 +413,7 @@ VkRenderPass Vulkan::RenderPassBuilder::Create(VkDevice device)
 		.pSubpasses = &subpass, .dependencyCount = m_num_subpass_dependencies, .pDependencies = m_subpass_dependency.data() };
 
 	VkRenderPass pass;
-	const VkResult res = vkCreateRenderPass2(device, &pass_info, nullptr, &pass);
+	const VkResult res = vkCreateRenderPass2KHR(device, &pass_info, nullptr, &pass);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkCreateRenderPass() failed: ");

@@ -81,6 +81,11 @@ static std::mutex s_instance_mutex;
 // Device extensions that are required for PCSX2.
 static constexpr const char* s_required_device_extensions[] = {
 	VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME,
+	VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+	VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
+	VK_KHR_COPY_COMMANDS_2_EXTENSION_NAME,
+	VK_KHR_MAINTENANCE_4_EXTENSION_NAME,
+	VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME,
 };
 
 GSDeviceVK::GSDeviceVK()
@@ -110,7 +115,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, OptionalExtens
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(
 		BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
-	app_info.apiVersion = VK_API_VERSION_1_3;
+	app_info.apiVersion = VK_API_VERSION_1_1;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -258,8 +263,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		vkGetPhysicalDeviceProperties2(device, &props2);
 		const VkPhysicalDeviceProperties& props = props2.properties;
 
-		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
-		if (props.apiVersion < VK_API_VERSION_1_3)
+		// Skip GPUs which don't support Vulkan 1.0, since we won't be able to create a device with them anyway.
+		if (props.apiVersion < VK_API_VERSION_1_1)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
@@ -417,6 +422,8 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_line_rasterization = SupportsExtension(VK_KHR_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_dynamic_rendering =
+		SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_dynamic_rendering_local_read =
 		SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
 
@@ -632,12 +639,13 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
+	VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR };
 	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR};
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR };
+	VkPhysicalDeviceSynchronization2FeaturesKHR synchonization_2_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR };
 
-	featuresVK13.dynamicRendering = VK_TRUE;
-	featuresVK13.synchronization2 = VK_TRUE;
-	Vulkan::AddPointerToChain(&device_info, &featuresVK13);
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
 		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
@@ -668,11 +676,19 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_ext_feature);
 	}
+	if (m_optional_extensions.vk_khr_dynamic_rendering)
+	{
+		dynamic_rendering_features.dynamicRendering= VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_features);
+	}
 	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
 	{
 		dynamic_rendering_local_read_features.dynamicRenderingLocalRead = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &dynamic_rendering_local_read_features);
 	}
+
+	synchonization_2_features.synchronization2 = VK_TRUE;
+	Vulkan::AddPointerToChain(&device_info, &synchonization_2_features);
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
 	if (res != VK_SUCCESS)
@@ -735,8 +751,6 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
 	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-	VkPhysicalDeviceVulkan13Features featuresVK13 = {
-		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesKHR line_rasterization_feature = {
@@ -750,11 +764,10 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
-	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+	VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamic_rendering_features = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR };
-
-	// Vulkan 1.3 features
-	Vulkan::AddPointerToChain(&features2, &featuresVK13);
+	VkPhysicalDeviceDynamicRenderingLocalReadFeaturesKHR dynamic_rendering_local_read_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_LOCAL_READ_FEATURES_KHR };
 
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
@@ -769,6 +782,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 	if (m_optional_extensions.vk_ext_fragment_shader_interlock)
 		Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_ext_feature);
+	if (m_optional_extensions.vk_khr_dynamic_rendering)
+		Vulkan::AddPointerToChain(&features2, &dynamic_rendering_features);
 	if (m_optional_extensions.vk_khr_dynamic_rendering_local_read)
 		Vulkan::AddPointerToChain(&features2, &dynamic_rendering_local_read_features);
 
@@ -781,12 +796,10 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &=
 		(attachment_feedback_loop_feature.attachmentFeedbackLoopLayout == VK_TRUE);
+	m_optional_extensions.vk_khr_dynamic_rendering &=
+		(dynamic_rendering_features.dynamicRendering == VK_TRUE);
 	m_optional_extensions.vk_khr_dynamic_rendering_local_read &=
 		(dynamic_rendering_local_read_features.dynamicRenderingLocalRead == VK_TRUE);
-	
-	// Features that should always be available with VK 1.3.
-	pxAssertRel(featuresVK13.synchronization2 == VK_TRUE, "Synchronization2 is not supported");
-	pxAssertRel(featuresVK13.dynamicRendering == VK_TRUE, "Dynamic rendering is not supported");
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
 
@@ -876,6 +889,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_dynamic_rendering is %s",
+		m_optional_extensions.vk_khr_dynamic_rendering ? "supported" : "NOT supported");
 	Console.WriteLn("VK_KHR_dynamic_rendering_local_read is %s",
 		m_optional_extensions.vk_khr_dynamic_rendering_local_read ? "supported" : "NOT supported");
 
@@ -885,7 +900,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 bool GSDeviceVK::CreateAllocator()
 {
 	VmaAllocatorCreateInfo ci = {};
-	ci.vulkanApiVersion = VK_API_VERSION_1_3;
+	ci.vulkanApiVersion = VK_API_VERSION_1_1;
 	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 	ci.physicalDevice = m_physical_device;
 	ci.device = m_device;
@@ -1227,7 +1242,7 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 	bool wants_timestamp = m_gpu_timing_enabled || m_spin_timer;
 	if (wants_timestamp && resources.timestamp_written)
 	{
-		vkCmdWriteTimestamp2(m_current_command_buffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool,
+		vkCmdWriteTimestamp2KHR(m_current_command_buffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool,
 			m_current_frame * 2 + 1);
 	}
 
@@ -1319,7 +1334,7 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 		submit_info.signalSemaphoreInfoCount = (spin_cycles != 0) ? 2 : 1;
 	}
 
-	res = vkQueueSubmit2(m_graphics_queue, 1, &submit_info, resources.fence);
+	res = vkQueueSubmit2KHR(m_graphics_queue, 1, &submit_info, resources.fence);
 	if (res != VK_SUCCESS)
 	{
 		LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
@@ -1442,7 +1457,7 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 	if (wants_timestamp)
 	{
 		vkCmdResetQueryPool(resources.command_buffers[1], m_timestamp_query_pool, index * 2, 2);
-		vkCmdWriteTimestamp2(
+		vkCmdWriteTimestamp2KHR(
 			resources.command_buffers[1], VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool, index * 2);
 	}
 
@@ -1920,7 +1935,7 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 		const VkDependencyInfo dependency{ .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
 			.bufferMemoryBarrierCount = 1, .pBufferMemoryBarriers = &barrier };
 
-		vkCmdPipelineBarrier2(resources.command_buffer, &dependency);
+		vkCmdPipelineBarrier2KHR(resources.command_buffer, &dependency);
 	}
 
 	if (m_spin_queue_is_graphics_queue)
@@ -1932,12 +1947,12 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 		const VkDependencyInfo dependency{ .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
 			.memoryBarrierCount = 1, .pMemoryBarriers = &barrier };
 
-		vkCmdPipelineBarrier2(resources.command_buffer, &dependency);
+		vkCmdPipelineBarrier2KHR(resources.command_buffer, &dependency);
 	}
 
 	const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
 	vkCmdResetQueryPool(resources.command_buffer, m_timestamp_query_pool, timestamp_base, 2);
-	vkCmdWriteTimestamp2(
+	vkCmdWriteTimestamp2KHR(
 		resources.command_buffer, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, m_timestamp_query_pool, timestamp_base);
 	vkCmdPushConstants(
 		resources.command_buffer, m_spin_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(u32), &cycles);
@@ -1945,7 +1960,7 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 	vkCmdBindDescriptorSets(resources.command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_spin_pipeline_layout, 0, 1,
 		&m_spin_descriptor_set, 0, nullptr);
 	vkCmdDispatch(resources.command_buffer, 1, 1, 1);
-	vkCmdWriteTimestamp2(
+	vkCmdWriteTimestamp2KHR(
 		resources.command_buffer, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, m_timestamp_query_pool, timestamp_base + 1);
 
 	if ((res = vkEndCommandBuffer(resources.command_buffer)) != VK_SUCCESS)
@@ -1971,7 +1986,7 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 		submit_info.pWaitSemaphoreInfos = &semaphore_info;
 	}
 
-	vkQueueSubmit2(m_spin_queue, 1, &submit_info, resources.fence);
+	vkQueueSubmit2KHR(m_spin_queue, 1, &submit_info, resources.fence);
 	resources.in_progress = true;
 	resources.cycles = cycles;
 }
@@ -2064,7 +2079,7 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 		.dstBuffer = *gpu_buffer, .regionCount = 1, .pRegions = &buf_copy };
 	fill_callback(cpu_ai.pMappedData);
 	vmaFlushAllocation(m_allocator, cpu_allocation, 0, size);
-	vkCmdCopyBuffer2(GetCurrentInitCommandBuffer(), &copy_info);
+	vkCmdCopyBuffer2KHR(GetCurrentInitCommandBuffer(), &copy_info);
 	DeferBufferDestruction(cpu_buffer, cpu_allocation);
 	return true;
 }
@@ -2988,7 +3003,7 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		.srcImage = sTexVK->GetImage(), .srcImageLayout = sTexVK->GetVkLayout(),
 		.dstImage = dTexVK->GetImage(), .dstImageLayout = dTexVK->GetVkLayout(), .regionCount = 1, .pRegions = &ic };
 
-	vkCmdCopyImage2(GetCurrentCommandBuffer(), &copy_info);
+	vkCmdCopyImage2KHR(GetCurrentCommandBuffer(), &copy_info);
 
 	dTexVK->SetState(GSTexture::State::Dirty);
 }
@@ -3271,7 +3286,7 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 		.dstImage = dTexVK->GetImage(), .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		.regionCount = 1, .pRegions = &ib, .filter = filter == Biln ? VK_FILTER_LINEAR : VK_FILTER_NEAREST };
 
-	vkCmdBlitImage2(GetCurrentCommandBuffer(), &blit_info);
+	vkCmdBlitImage2KHR(GetCurrentCommandBuffer(), &blit_info);
 }
 
 void GSDeviceVK::UpdateCLUTTexture(
@@ -5257,7 +5272,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 
 	pxAssert(m_is_presenting);
 	const VkSubpassEndInfo sub_end = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
-	vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub_end);
+	vkCmdEndRenderPass2KHR(GetCurrentCommandBuffer(), &sub_end);
 	ExecuteCommandBuffer(wait_for_completion);
 
 	GSTextureVK* swap_chain_texture = m_swap_chain->GetCurrentTexture();
@@ -5273,7 +5288,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 
 	const VkSubpassBeginInfo sub_begin = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
 
-	vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &rp, &sub_begin);
+	vkCmdBeginRenderPass2KHR(GetCurrentCommandBuffer(), &rp, &sub_begin);
 }
 
 void GSDeviceVK::ExecuteCommandBufferForReadback()
@@ -5563,7 +5578,7 @@ void GSDeviceVK::BeginRenderPass(const RenderPass& rp, const GSVector4i& rect)
 		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
 
 		m_command_buffer_render_passes++;
-		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+		vkCmdBeginRenderPass2KHR(GetCurrentCommandBuffer(), &begin_info, &sub);
 	}
 }
 
@@ -5609,7 +5624,7 @@ void GSDeviceVK::BeginDynamicRenderPass(const RenderPass& rp, const GSVector4i& 
 		.pDepthAttachment = depth_ptr, .pStencilAttachment = stencil_ptr };
 
 	m_command_buffer_render_passes++;
-	vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
+	vkCmdBeginRenderingKHR(GetCurrentCommandBuffer(), &begin_info);
 }
 
 void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count)
@@ -5633,7 +5648,7 @@ void GSDeviceVK::BeginClearRenderPass(const RenderPass& rp, const GSVector4i& re
 
 		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
 
-		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+		vkCmdBeginRenderPass2KHR(GetCurrentCommandBuffer(), &begin_info, &sub);
 	}
 }
 
@@ -5668,7 +5683,7 @@ bool GSDeviceVK::BeginPresentRenderPass(const RenderPass& rp, const GSVector4i& 
 			.layerCount = 1, .colorAttachmentCount = 1, .pColorAttachments = &color };
 
 		m_command_buffer_render_passes++;
-		vkCmdBeginRendering(GetCurrentCommandBuffer(), &begin_info);
+		vkCmdBeginRenderingKHR(GetCurrentCommandBuffer(), &begin_info);
 	}
 	else
 	{
@@ -5685,7 +5700,7 @@ bool GSDeviceVK::BeginPresentRenderPass(const RenderPass& rp, const GSVector4i& 
 		const VkSubpassBeginInfo sub = { .sType = VK_STRUCTURE_TYPE_SUBPASS_BEGIN_INFO, .contents = VK_SUBPASS_CONTENTS_INLINE };
 
 		m_command_buffer_render_passes++;
-		vkCmdBeginRenderPass2(GetCurrentCommandBuffer(), &begin_info, &sub);
+		vkCmdBeginRenderPass2KHR(GetCurrentCommandBuffer(), &begin_info, &sub);
 	}
 
 	return true;
@@ -5701,12 +5716,12 @@ void GSDeviceVK::EndRenderPass()
 
 	if (UseDynamicRendering())
 	{
-		vkCmdEndRendering(GetCurrentCommandBuffer());
+		vkCmdEndRenderingKHR(GetCurrentCommandBuffer());
 	}
 	else
 	{
 		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
-		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+		vkCmdEndRenderPass2KHR(GetCurrentCommandBuffer(), &sub);
 	}
 }
 
@@ -5716,12 +5731,12 @@ void GSDeviceVK::EndPresentRenderPass()
 
 	if (UseDynamicRendering())
 	{
-		vkCmdEndRendering(GetCurrentCommandBuffer());
+		vkCmdEndRenderingKHR(GetCurrentCommandBuffer());
 	}
 	else
 	{
 		const VkSubpassEndInfo sub = { VK_STRUCTURE_TYPE_SUBPASS_END_INFO };
-		vkCmdEndRenderPass2(GetCurrentCommandBuffer(), &sub);
+		vkCmdEndRenderPass2KHR(GetCurrentCommandBuffer(), &sub);
 	}
 
 	m_is_presenting = false;
@@ -6663,7 +6678,7 @@ void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
 		.dependencyFlags = GSTextureVK::GetFeedbackLoopDependencyFlags(),
 		.imageMemoryBarrierCount = num_barriers, .pImageMemoryBarriers = barriers.data() };
 
-	vkCmdPipelineBarrier2(GetCurrentCommandBuffer(), &dependency);
+	vkCmdPipelineBarrier2KHR(GetCurrentCommandBuffer(), &dependency);
 }
 
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,

@@ -58,6 +58,7 @@ public:
 		bool vk_khr_shader_non_semantic_info : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
+		bool vk_khr_dynamic_rendering : 1;
 		bool vk_khr_dynamic_rendering_local_read : 1;
 	};
 
@@ -86,7 +87,8 @@ public:
 	{
 		// Use dynamic rendering only if the local ready feature is present.
 		// Otherwise we can't use feedback barriers within a dynamic render pass.
-		return m_optional_extensions.vk_khr_dynamic_rendering_local_read;
+		return m_optional_extensions.vk_khr_dynamic_rendering &&
+			m_optional_extensions.vk_khr_dynamic_rendering_local_read;
 	}
 
 	void SetPipelineRenderPass(const RenderPass& rp, Vulkan::GraphicsPipelineBuilder& gpb);
