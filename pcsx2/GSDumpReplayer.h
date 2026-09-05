@@ -30,21 +30,6 @@ namespace GSDumpReplayer
 
 	void RenderUI();
 
-	struct PerfMetrics
-	{
-		float num_updates;
-		float fps;
-		float internal_fps;
-		float cpu_thread_usage;
-		float cpu_thread_time;
-		float gs_thread_usage;
-		float gs_thread_time;
-		float gpu_time;
-		float gpu_usage;
-	};
-
-	void UpdatePerformanceMetrics();
-
 	void UpdateGSStats();
 
 	void DumpStats();

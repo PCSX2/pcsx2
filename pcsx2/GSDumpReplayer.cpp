@@ -58,7 +58,6 @@ static u32 s_frame_end = 0;
 static u32 s_frame_start_packet = 0;
 static u32 s_frame_end_packet = 0;
 
-static GSDumpReplayer::PerfMetrics s_perf_metrics = {};
 static GSPerfMon s_total_gs_stats;
 static GSPerfMon s_last_g_perfmon;
 static u64 s_total_frames = 0;
@@ -223,7 +222,6 @@ void GSDumpReplayerCpuReset()
 	s_needs_state_loaded = true;
 	s_current_packet = 0;
 	s_dump_frame_number = 0;
-	s_perf_metrics = {};
 	s_total_gs_stats.Reset();
 	s_last_g_perfmon.Reset();
 	s_init_frame_range = false;
@@ -349,6 +347,7 @@ void GSDumpReplayerCpuStep()
 	{
 		GSDumpReplayerLoadInitialState();
 		s_needs_state_loaded = false;
+		PerformanceMetrics::StartSavingMetrics(UINT32_MAX);
 	}
 
 	// Get the next packet.
@@ -494,20 +493,6 @@ void GSDumpReplayer::RenderUI()
 #undef DRAW_LINE
 }
 
-void GSDumpReplayer::UpdatePerformanceMetrics()
-{
-	s_perf_metrics.num_updates += 1.0f;
-	s_perf_metrics.fps += PerformanceMetrics::GetFPS();
-	s_perf_metrics.internal_fps += PerformanceMetrics::GetInternalFPS();
-	s_perf_metrics.cpu_thread_usage += PerformanceMetrics::GetCPUThreadUsage();
-	s_perf_metrics.cpu_thread_time += PerformanceMetrics::GetCPUThreadAverageTime();
-	s_perf_metrics.gs_thread_usage += PerformanceMetrics::GetGSThreadUsage();
-	s_perf_metrics.gs_thread_time += PerformanceMetrics::GetGSThreadAverageTime();
-	s_perf_metrics.gpu_time += PerformanceMetrics::GetGPUAverageTime();
-	s_perf_metrics.gpu_usage += PerformanceMetrics::GetGPUUsage();
-	std::atomic_thread_fence(std::memory_order_release);
-}
-
 static void UpdateSingleGSStat(GSPerfMon::counter_t counter)
 {
 	const double curr = g_perfmon.GetCounter(counter);
@@ -569,16 +554,6 @@ void GSDumpReplayer::DumpStats()
 	DumpStatAndAvg("@HWSTAT@ Draws Calls (ROV): %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::DrawCallsROV));
 	DumpStatAndAvg("@HWSTAT@ Barriers (ROV): %" PRIu64 " (avg %" PRIu64 ")", s_total_gs_stats.GetCounter(GSPerfMon::BarriersROV));
 	if (s_dump_perf_metrics)
-	{
-		Console.WriteLnFmt("@HWSTAT@ Minimum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMinimumFrameTime(), 1000.0f / PerformanceMetrics::GetMinimumFrameTime());
-		Console.WriteLnFmt("@HWSTAT@ Average Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetAverageFrameTime(), 1000.0f / PerformanceMetrics::GetAverageFrameTime());
-		Console.WriteLnFmt("@HWSTAT@ Maximum Frame Time: {:.3f} ms ({:.3f} FPS)", PerformanceMetrics::GetMaximumFrameTime(), 1000.0f / PerformanceMetrics::GetMaximumFrameTime());
-		Console.WriteLnFmt("@HWSTAT@ Average CPU Thread Usage: {:.3f} %", s_perf_metrics.cpu_thread_usage / s_perf_metrics.num_updates);
-		Console.WriteLnFmt("@HWSTAT@ Average GS Thread Usage: {:.3f} %", s_perf_metrics.gs_thread_usage / s_perf_metrics.num_updates);
-		Console.WriteLnFmt("@HWSTAT@ Average GPU Usage: {:.3f} %", s_perf_metrics.gpu_usage / s_perf_metrics.num_updates);
-		Console.WriteLnFmt("@HWSTAT@ Average CPU Thread Time: {:.3f} ms", s_perf_metrics.cpu_thread_time / s_perf_metrics.num_updates);
-		Console.WriteLnFmt("@HWSTAT@ Average GS Thread Time: {:.3f} ms", s_perf_metrics.gs_thread_time / s_perf_metrics.num_updates);
-		Console.WriteLnFmt("@HWSTAT@ Average GPU Time: {:.3f} ms", s_perf_metrics.gpu_time / s_perf_metrics.num_updates);
-	}
+		PerformanceMetrics::DumpSavedMetrics();
 	Console.WriteLnFmt("============================================");
 }

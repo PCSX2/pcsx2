@@ -918,6 +918,7 @@ struct Pcsx2Config
 		int DumpReplayLoopCount = 0;
 		int DumpReplayFrameStart = 0;
 		int DumpReplayFrameEnd = 0;
+		u32 SavedMetricsCaptureSeconds = 10;
 
 		s8 ExclusiveFullscreenControl = -1;
 		GSScreenshotSize ScreenshotSize = GSScreenshotSize::WindowResolution;

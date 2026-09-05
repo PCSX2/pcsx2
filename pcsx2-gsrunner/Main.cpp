@@ -278,7 +278,6 @@ void Host::OnGameChanged(const std::string& title, const std::string& elf_overri
 
 void Host::OnPerformanceMetricsUpdated()
 {
-	GSDumpReplayer::UpdatePerformanceMetrics();
 }
 
 void Host::OnSaveStateLoading(const std::string_view filename)
