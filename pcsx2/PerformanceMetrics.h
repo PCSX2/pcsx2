@@ -62,4 +62,23 @@ namespace PerformanceMetrics
 
 	const FrameTimeHistory& GetFrameTimeHistory();
 	u32 GetFrameTimeHistoryPos();
+
+	struct SavedMetrics
+	{
+		float num_samples;
+		float frames;
+		float time;
+		float fps;
+		float internal_fps;
+		float cpu_thread_usage;
+		float cpu_thread_time;
+		float gs_thread_usage;
+		float gs_thread_time;
+		float gpu_time;
+		float gpu_usage;
+	};
+
+	void StartSavingMetrics(u32 seconds);
+	bool IsSavingMetrics();
+	void DumpSavedMetrics();
 } // namespace PerformanceMetrics

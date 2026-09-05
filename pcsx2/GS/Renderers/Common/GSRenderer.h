@@ -19,6 +19,7 @@ private:
 	std::string m_snapshot;
 	u32 m_dump_frames = 0;
 	u32 m_skipped_duplicate_frames = 0;
+	bool m_saving_metrics = false;
 
 	// Tracking draw counters for idle frame detection.
 	u64 m_last_draw_n = 0;
@@ -56,6 +57,9 @@ public:
 
 	void QueueSnapshot(const std::string& path, const u32 gsdump_frames);
 	void StopGSDump();
+	void StartSavingMetrics(u32 seconds);
+	void DumpSavedMetrics();
+	bool IsSavingMetrics();
 	void PresentCurrentFrame();
 	bool BeginCapture(std::string filename, const GSVector2i& size = GSVector2i(0, 0));
 	void EndCapture();

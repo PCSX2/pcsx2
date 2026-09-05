@@ -808,6 +808,10 @@ void GSRenderer::VSync(u32 field, bool registers_written, bool idle_frame)
 		}
 	}
 
+	// metrics
+	if (m_saving_metrics && !PerformanceMetrics::IsSavingMetrics())
+		DumpSavedMetrics();
+
 	// capture
 	if (GSCapture::IsCapturingVideo())
 	{
@@ -954,6 +958,29 @@ void GSRenderer::StopGSDump()
 {
 	m_snapshot = {};
 	m_dump_frames = 0;
+}
+
+void GSRenderer::StartSavingMetrics(u32 seconds)
+{
+	m_saving_metrics = true;
+	PerformanceMetrics::StartSavingMetrics(seconds);
+	Host::AddKeyedOSDMessage("GSMetrics",
+		fmt::format(TRANSLATE_FS("GS", "Started saving performance metrics{}"),
+			(0 < seconds && seconds < UINT32_MAX) ? fmt::format(" ({} seconds)", seconds) : ""),
+		Host::OSD_INFO_DURATION);
+}
+
+void GSRenderer::DumpSavedMetrics()
+{
+	m_saving_metrics = false;
+	PerformanceMetrics::DumpSavedMetrics();
+	Host::AddKeyedOSDMessage("GSMetrics", fmt::format(TRANSLATE_FS("GS", "Logging saved performance metrics")),
+		Host::OSD_INFO_DURATION);
+}
+
+bool GSRenderer::IsSavingMetrics()
+{
+	return m_saving_metrics;
 }
 
 void GSRenderer::PresentCurrentFrame()
