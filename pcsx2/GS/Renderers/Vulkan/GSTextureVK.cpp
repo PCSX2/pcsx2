@@ -13,18 +13,18 @@
 
 VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 {
-	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
+	const GSDeviceVK::RenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		VK_FORMAT_UNDEFINED,
 		VK_FORMAT_UNDEFINED,
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, false, false);
 
-	if (!rp)
+	if (rp.IsNull())
 		return VK_NULL_HANDLE;
 	
 	Vulkan::FramebufferBuilder fbb;
 	fbb.SetSize(w, h, 1);
-	fbb.SetRenderPass(rp);
+	fbb.SetRenderPass(GSDeviceVK::GetInstance()->GetVkRenderPass(rp));
 
 	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
 }
@@ -32,7 +32,7 @@ VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
 
-static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
+VkImageLayout GSTextureVK::GetVkImageLayout(GSTextureVK::Layout layout)
 {
 	static constexpr std::array<VkImageLayout, static_cast<u32>(GSTextureVK::Layout::Count)> s_vk_layout_mapping = {{
 		VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
@@ -41,24 +41,261 @@ static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // TransferSrc
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // TransferDst
-		VK_IMAGE_LAYOUT_GENERAL, // TransferSelf
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // CopySrc
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // CopyDst
+		VK_IMAGE_LAYOUT_GENERAL, // CopySelf
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // BlitSrc
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // BlitDst
+		VK_IMAGE_LAYOUT_GENERAL, // BlitSelf
 		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
 		VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
 		VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
 		VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
 		VK_IMAGE_LAYOUT_GENERAL, // General
 	}};
-	return (layout == GSTextureVK::Layout::FeedbackLoop && GSDeviceVK::GetInstance()->UseFeedbackLoopLayout()) ?
-	           VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT :
-	           s_vk_layout_mapping[static_cast<u32>(layout)];
+	if (layout == GSTextureVK::Layout::FeedbackLoop && GSDeviceVK::GetInstance()->UseFeedbackLoopLayout())
+		return VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT;
+	else
+		return s_vk_layout_mapping[static_cast<u32>(layout)];
 }
 
-static VkAccessFlagBits GetFeedbackLoopInputAccessBits()
+VkAccessFlagBits2 GSTextureVK::GetFeedbackLoopInputAccessBits()
 {
-	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT :
-	                                                            VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+	return GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ?
+		VK_ACCESS_2_SHADER_READ_BIT : VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
+}
+
+VkDependencyFlags GSTextureVK::GetFeedbackLoopDependencyFlags()
+{
+	return VK_DEPENDENCY_BY_REGION_BIT |
+		(GSDeviceVK::GetInstance()->UseFeedbackLoopLayout() ? VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT : 0);
+}
+
+VkMemoryBarrier2 GSTextureVK::GetBarrierFlags(Layout old_layout, Layout new_layout, bool color)
+{
+	// Leave stage/access flags empty and fill out below.
+	VkMemoryBarrier2 barrier = { VK_STRUCTURE_TYPE_MEMORY_BARRIER_2 };
+
+	switch (old_layout)
+	{
+		case Layout::Undefined:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
+			barrier.srcAccessMask = VK_ACCESS_2_NONE;
+			break;
+
+		case Layout::Preinitialized:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_HOST_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_HOST_WRITE_BIT;
+			break;
+
+		case Layout::ColorAttachment:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case Layout::DepthStencilAttachment:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case Layout::ShaderReadOnly:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			break;
+
+		case Layout::ClearDst:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_CLEAR_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::CopySrc:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			break;
+
+		case Layout::CopyDst:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::CopySelf:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::BlitSrc:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			break;
+
+		case Layout::BlitDst:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::BlitSelf:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::FeedbackLoop:
+			if (color)
+			{
+				barrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+				barrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits();
+			}
+			else
+			{
+				barrier.srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT |
+					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+				barrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+					GetFeedbackLoopInputAccessBits();
+			}
+			break;
+
+		case Layout::ReadWriteImage:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
+			break;
+
+		case Layout::ComputeReadWriteImage:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
+			break;
+
+		case Layout::General:
+		default:
+			barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			barrier.srcAccessMask = VK_ACCESS_2_NONE;
+			break;
+	}
+
+	switch (new_layout)
+	{
+		case Layout::Undefined:
+			barrier.dstStageMask = VK_ACCESS_2_NONE;
+			barrier.dstAccessMask = VK_PIPELINE_STAGE_2_NONE;
+			break;
+
+		case Layout::ColorAttachment:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case Layout::DepthStencilAttachment:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case Layout::ShaderReadOnly:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+			break;
+
+		case Layout::ClearDst:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_CLEAR_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::CopySrc:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			break;
+
+		case Layout::CopyDst:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::CopySelf:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::BlitSrc:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+			break;
+
+		case Layout::BlitDst:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::BlitSelf:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_BLIT_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT;
+			break;
+
+		case Layout::PresentSrc:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_NONE;
+			break;
+
+		case Layout::FeedbackLoop:
+			if (color)
+			{
+				barrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+				barrier.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT |
+					GetFeedbackLoopInputAccessBits();
+			}
+			else
+			{
+				barrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT |
+					VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+				barrier.dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits();
+			}
+			break;
+
+		case Layout::ReadWriteImage:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
+			break;
+
+		case Layout::ComputeReadWriteImage:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
+			break;
+
+		case Layout::General:
+		default:
+			barrier.dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+			barrier.dstAccessMask = VK_ACCESS_2_NONE;
+			break;
+	}
+
+	return barrier;
+}
+
+VkMemoryBarrier2 GSTextureVK::GetFeedbackBarrierFlags(bool color)
+{
+	VkMemoryBarrier2 barrier = { VK_STRUCTURE_TYPE_MEMORY_BARRIER_2 };
+
+	if (color)
+	{
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+		barrier.dstAccessMask = GetFeedbackLoopInputAccessBits();
+	}
+	else
+	{
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+		barrier.dstAccessMask = GetFeedbackLoopInputAccessBits();
+	}
+
+	return barrier;
+}
+
+VkImageAspectFlags GSTextureVK::GetBarrierImageAspectFlags(bool color)
+{
+	if (color)
+		return VK_IMAGE_ASPECT_COLOR_BIT;
+	else
+		return VK_IMAGE_ASPECT_DEPTH_BIT |
+			(GSDeviceVK::GetInstance()->Features().stencil_buffer ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
 }
 
 GSTextureVK::GSTextureVK(Usage usage, Format format, int width, int height, int levels, VkImage image,
@@ -87,18 +324,18 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Usage usage, Format format, int
 
 	const VkFormat vk_format = GSDeviceVK::GetInstance()->LookupNativeFormat(format);
 
-	VkImageCreateInfo ici = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, nullptr, 0, VK_IMAGE_TYPE_2D, vk_format,
-		{static_cast<u32>(width), static_cast<u32>(height), 1}, static_cast<u32>(levels), 1, VK_SAMPLE_COUNT_1_BIT,
-		VK_IMAGE_TILING_OPTIMAL};
+	VkImageCreateInfo ici = { .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, .imageType = VK_IMAGE_TYPE_2D, .format = vk_format,
+		.extent = {static_cast<u32>(width), static_cast<u32>(height), 1}, .mipLevels = static_cast<u32>(levels), .arrayLayers = 1,
+		.samples = VK_SAMPLE_COUNT_1_BIT, .tiling = VK_IMAGE_TILING_OPTIMAL};
 
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	aci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
 	aci.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-	VkImageViewCreateInfo vci = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, VK_NULL_HANDLE,
-		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
-		{VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
+	VkImageViewCreateInfo vci = { .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+		.viewType = VK_IMAGE_VIEW_TYPE_2D, .format = vk_format, .components = s_identity_swizzle,
+		.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
 
 	ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
@@ -176,12 +413,13 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
 	VkImage image, Usage usage, Format format, int width, int height, int levels, VkFormat vk_format)
 {
 	// Only need to create the image view, this is mainly for swap chains.
-	const VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, image,
-		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
-		{IsDepthStencil(usage) ?
+	const VkImageViewCreateInfo view_info = { .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, .image = image,
+		.viewType = VK_IMAGE_VIEW_TYPE_2D, .format = vk_format, .components = s_identity_swizzle,
+		.subresourceRange = {
+			IsDepthStencil(usage) ?
 				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
 				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
-			0u, static_cast<u32>(levels), 0u, 1u}};
+			0u, static_cast<u32>(levels), 0u, 1u } };
 
 	// Memory is managed by the owner of the image.
 	VkImageView view = VK_NULL_HANDLE;
@@ -281,8 +519,8 @@ void GSTextureVK::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch
 VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const
 {
 	const u32 size = upload_pitch * height;
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, static_cast<VkDeviceSize>(size),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
+	const VkBufferCreateInfo bci = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size = static_cast<VkDeviceSize>(size),
+		.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
 
 	// Don't worry about setting the coherent bit for this upload, the main reason we had
 	// that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
@@ -315,18 +553,23 @@ void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32
 {
 	const Layout old_layout = m_layout;
 	if (old_layout == Layout::Undefined)
-		TransitionToLayout(cmdbuf, Layout::TransferDst);
-	else if (old_layout != Layout::TransferDst)
-		TransitionSubresourcesToLayout(cmdbuf, level, 1, old_layout, Layout::TransferDst);
+		TransitionToLayout(cmdbuf, Layout::CopyDst);
+	else if (old_layout != Layout::CopyDst)
+		TransitionSubresourcesToLayout(cmdbuf, level, 1, old_layout, Layout::CopyDst);
 
-	const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset), row_length, buffer_height,
-		{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), 0u, 1u}, {static_cast<s32>(x), static_cast<s32>(y), 0},
-		{width, height, 1u}};
+	const VkBufferImageCopy2 bic{ .sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2,
+		.bufferOffset = static_cast<VkDeviceSize>(buffer_offset), .bufferRowLength = row_length,
+		.bufferImageHeight = buffer_height, .imageSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), 0u, 1u },
+		.imageOffset = { static_cast<s32>(x), static_cast<s32>(y), 0 }, .imageExtent = { width, height, 1u } };
 
-	vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bic);
+	VkCopyBufferToImageInfo2 copy_info = { .sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2,
+		.srcBuffer = buffer, .dstImage = m_image, .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		.regionCount =  1, .pRegions = &bic };
 
-	if (old_layout != Layout::TransferDst && old_layout != Layout::Undefined)
-		TransitionSubresourcesToLayout(cmdbuf, level, 1, Layout::TransferDst, old_layout);
+	vkCmdCopyBufferToImage2(cmdbuf, &copy_info);
+
+	if (old_layout != Layout::CopyDst && old_layout != Layout::Undefined)
+		TransitionSubresourcesToLayout(cmdbuf, level, 1, Layout::CopyDst, old_layout);
 }
 
 bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int layer)
@@ -387,7 +630,7 @@ bool GSTextureVK::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	// first time the texture is used? don't leave it undefined
 	if (m_layout == Layout::Undefined)
-		TransitionToLayout(cmdbuf, Layout::TransferDst);
+		TransitionToLayout(cmdbuf, Layout::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
 	if (IsRenderTarget())
@@ -469,7 +712,7 @@ void GSTextureVK::Unmap()
 
 	// first time the texture is used? don't leave it undefined
 	if (m_layout == Layout::Undefined)
-		TransitionToLayout(cmdbuf, Layout::TransferDst);
+		TransitionToLayout(cmdbuf, Layout::CopyDst);
 
 	// if we're an rt and have been cleared, and the full rect isn't being uploaded, do the clear
 	if (IsRenderTarget())
@@ -494,7 +737,7 @@ void GSTextureVK::GenerateMipmap()
 	const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
 
 	if (m_layout == Layout::Undefined)
-		TransitionToLayout(cmdbuf, Layout::TransferSrc);
+		TransitionToLayout(cmdbuf, Layout::BlitSrc);
 
 	for (int dst_level = 1; dst_level < m_mipmap_levels; dst_level++)
 	{
@@ -504,21 +747,25 @@ void GSTextureVK::GenerateMipmap()
 		const int dst_width = std::max<int>(m_size.x >> dst_level, 1);
 		const int dst_height = std::max<int>(m_size.y >> dst_level, 1);
 
-		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, m_layout, Layout::TransferSrc);
-		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, m_layout, Layout::TransferDst);
+		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, m_layout, Layout::BlitSrc);
+		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, m_layout, Layout::BlitDst);
 
-		const VkImageBlit blit = {
-			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(src_level), 0u, 1u}, // srcSubresource
-			{{0, 0, 0}, {src_width, src_height, 1}}, // srcOffsets
-			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(dst_level), 0u, 1u}, // dstSubresource
-			{{0, 0, 0}, {dst_width, dst_height, 1}} // dstOffsets
+		const VkImageBlit2 blit = { .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+			.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(src_level), 0u, 1u},
+			.srcOffsets = {{0, 0, 0}, {src_width, src_height, 1}},
+			.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(dst_level), 0u, 1u},
+			.dstOffsets = {{0, 0, 0}, {dst_width, dst_height, 1}}
 		};
 
-		vkCmdBlitImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+		const VkBlitImageInfo2 blit_info = { .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+			.srcImage = m_image, .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			.dstImage = m_image, .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			.regionCount = 1, .pRegions = &blit, .filter = VK_FILTER_LINEAR };
 
-		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, Layout::TransferSrc, m_layout);
-		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, Layout::TransferDst, m_layout);
+		vkCmdBlitImage2(cmdbuf, &blit_info);
+
+		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, Layout::BlitSrc, m_layout);
+		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, Layout::BlitDst, m_layout);
 	}
 }
 
@@ -609,179 +856,20 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 		old_layout = Layout::ColorAttachment;
 	}
 
-	VkImageAspectFlags aspect;
-	if (IsDepthStencil())
-	{
-		aspect = g_gs_device->Features().stencil_buffer ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) :
-		                                                  VK_IMAGE_ASPECT_DEPTH_BIT;
-	}
-	else
-	{
-		aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-	}
+	const VkImageAspectFlags aspect = GetBarrierImageAspectFlags(!IsDepthStencil());
 
-	VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, 0, GetVkImageLayout(old_layout),
-		GetVkImageLayout(new_layout), VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image,
-		{aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0u, 1u}};
+	VkMemoryBarrier2 flags = GetBarrierFlags(old_layout, new_layout, aspect == VK_IMAGE_ASPECT_COLOR_BIT);
+	VkImageMemoryBarrier2 barrier = { .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+		.srcStageMask = flags.srcStageMask, .srcAccessMask = flags.srcAccessMask,
+		.dstStageMask = flags.dstStageMask, .dstAccessMask = flags.dstAccessMask,
+		.oldLayout = GetVkImageLayout(old_layout), .newLayout = GetVkImageLayout(new_layout),
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = m_image, .subresourceRange = { aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0, 1} };
 
-	// srcStageMask -> Stages that must complete before the barrier
-	// dstStageMask -> Stages that must wait for after the barrier before beginning
-	VkPipelineStageFlags srcStageMask, dstStageMask;
-	switch (old_layout)
-	{
-		case Layout::Undefined:
-			// Layout undefined therefore contents undefined, and we don't care what happens to it.
-			barrier.srcAccessMask = 0;
-			srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			break;
+	VkDependencyInfo dependency = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+		.dependencyFlags = GetFeedbackLoopDependencyFlags(), .imageMemoryBarrierCount = 1, .pImageMemoryBarriers = &barrier };
 
-		case Layout::Preinitialized:
-			// Image has been pre-initialized by the host, so ensure all writes have completed.
-			barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_HOST_BIT;
-			break;
-
-		case Layout::ColorAttachment:
-			// Image was being used as a color attachment, so ensure all writes have completed.
-			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			break;
-
-		case Layout::DepthStencilAttachment:
-			// Image was being used as a depthstencil attachment, so ensure all writes have completed.
-			barrier.srcAccessMask =
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			break;
-
-		case Layout::ShaderReadOnly:
-			// Image was being used as a shader resource, make sure all reads have finished.
-			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			break;
-
-		case Layout::ClearDst:
-			// Image was being used as a clear destination, ensure all writes have finished.
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferSrc:
-			// Image was being used as a copy source, ensure all reads have finished.
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferDst:
-			// Image was being used as a copy destination, ensure all writes have finished.
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferSelf:
-			// Image was being used as a copy source and destination, ensure all reads and writes have finished.
-			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::FeedbackLoop:
-			barrier.srcAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT)
-			                      ? (VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits())
-			                      : (VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits());
-			srcStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT)
-			             ? (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-			             : (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-			break;
-
-		case Layout::ReadWriteImage:
-			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			break;
-
-		case Layout::ComputeReadWriteImage:
-			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-			break;
-
-		case Layout::General:
-		default:
-			srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			break;
-	}
-
-	switch (new_layout)
-	{
-		case Layout::Undefined:
-			barrier.dstAccessMask = 0;
-			dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			break;
-
-		case Layout::ColorAttachment:
-			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			break;
-
-		case Layout::DepthStencilAttachment:
-			barrier.dstAccessMask =
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-			break;
-
-		case Layout::ShaderReadOnly:
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			break;
-
-		case Layout::ClearDst:
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferSrc:
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferDst:
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::TransferSelf:
-			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-			break;
-
-		case Layout::PresentSrc:
-			srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-			break;
-
-		case Layout::FeedbackLoop:
-			barrier.dstAccessMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT)
-			                      ? (VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits())
-			                      : (VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | GetFeedbackLoopInputAccessBits());
-			dstStageMask = (aspect == VK_IMAGE_ASPECT_COLOR_BIT)
-			             ? (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-			             : (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-			break;
-
-		case Layout::ReadWriteImage:
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-			break;
-
-		case Layout::ComputeReadWriteImage:
-			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-			dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-			break;
-
-		case Layout::General:
-		default:
-			dstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-			break;
-	}
-	vkCmdPipelineBarrier(command_buffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vkCmdPipelineBarrier2(command_buffer, &dependency);
 
 	// Count as a UAV barrier if we transition to/from UAV.
 	if (IsRenderTargetOrDepthStencil() &&
@@ -807,12 +895,13 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 			return fb;
 	}
 
-	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
+	GSDeviceVK::RenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		!IsDepthStencil() ? m_vk_format : VK_FORMAT_UNDEFINED,
 		!IsDepthStencil() ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) : m_vk_format,
 		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
-	if (!rp)
+		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		feedback_loop_color, feedback_loop_depth);
+	if (rp.IsNull())
 		return VK_NULL_HANDLE;
 
 	Vulkan::FramebufferBuilder fbb;
@@ -820,7 +909,7 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	if (depth_texture)
 		fbb.AddAttachment(depth_texture->m_view);
 	fbb.SetSize(m_size.x, m_size.y, 1);
-	fbb.SetRenderPass(rp);
+	fbb.SetRenderPass(GSDeviceVK::GetInstance()->GetVkRenderPass(rp));
 
 	VkFramebuffer fb = fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
 	if (!fb)
@@ -849,8 +938,8 @@ std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 
 	const u32 buffer_size =
 		GetBufferSize(width, height, format, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};
+	const VkBufferCreateInfo bci = { .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, .size = buffer_size,
+		.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT, .sharingMode = VK_SHARING_MODE_EXCLUSIVE };
 
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
@@ -902,11 +991,11 @@ void GSDownloadTextureVK::CopyFromTexture(
 
 	GSTextureVK::Layout old_layout = vkTex->GetLayout();
 	if (old_layout == GSTextureVK::Layout::Undefined)
-		vkTex->TransitionToLayout(cmdbuf, GSTextureVK::Layout::TransferSrc);
-	else if (old_layout != GSTextureVK::Layout::TransferSrc)
-		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, old_layout, GSTextureVK::Layout::TransferSrc);
+		vkTex->TransitionToLayout(cmdbuf, GSTextureVK::Layout::CopySrc);
+	else if (old_layout != GSTextureVK::Layout::CopySrc)
+		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, old_layout, GSTextureVK::Layout::CopySrc);
 
-	VkBufferImageCopy image_copy = {};
+	VkBufferImageCopy2 image_copy = { VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2 };
 	const VkImageAspectFlags aspect = vkTex->IsDepthStencil() ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	image_copy.bufferOffset = copy_offset;
 	image_copy.bufferRowLength = GSTexture::CalcUploadRowLengthFromPitch(m_format, m_current_pitch);
@@ -915,26 +1004,27 @@ void GSDownloadTextureVK::CopyFromTexture(
 	image_copy.imageOffset = {src.left, src.top, 0};
 	image_copy.imageExtent = {static_cast<u32>(src.width()), static_cast<u32>(src.height()), 1u};
 
+	VkCopyImageToBufferInfo2 image_copy_info = { .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2,
+		.srcImage = vkTex->GetImage(), .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		.dstBuffer = m_buffer, .regionCount = 1, .pRegions = &image_copy };
+
 	// do the copy
-	vkCmdCopyImageToBuffer(cmdbuf, vkTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &image_copy);
+	vkCmdCopyImageToBuffer2(cmdbuf, &image_copy_info);
 
 	// flush gpu cache
-	const VkBufferMemoryBarrier buffer_info = {
-		VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER, // VkStructureType    sType
-		nullptr, // const void*        pNext
-		VK_ACCESS_TRANSFER_WRITE_BIT, // VkAccessFlags      srcAccessMask
-		VK_ACCESS_HOST_READ_BIT, // VkAccessFlags      dstAccessMask
-		VK_QUEUE_FAMILY_IGNORED, // uint32_t           srcQueueFamilyIndex
-		VK_QUEUE_FAMILY_IGNORED, // uint32_t           dstQueueFamilyIndex
-		m_buffer, // VkBuffer           buffer
-		0, // VkDeviceSize       offset
-		copy_size // VkDeviceSize       size
-	};
-	vkCmdPipelineBarrier(
-		cmdbuf, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &buffer_info, 0, nullptr);
+	VkBufferMemoryBarrier2 buffer_info{ .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2,
+		.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT, .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT, .dstAccessMask = VK_ACCESS_2_HOST_READ_BIT,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.buffer = m_buffer, .size = copy_size };
 
-	if (old_layout != GSTextureVK::Layout::TransferSrc && old_layout != GSTextureVK::Layout::Undefined)
-		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, GSTextureVK::Layout::TransferSrc, old_layout);
+	VkDependencyInfo barrier_info = { .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO, .bufferMemoryBarrierCount = 1,
+		.pBufferMemoryBarriers = &buffer_info };
+
+	vkCmdPipelineBarrier2(cmdbuf, &barrier_info);
+
+	if (old_layout != GSTextureVK::Layout::CopySrc && old_layout != GSTextureVK::Layout::Undefined)
+		vkTex->TransitionSubresourcesToLayout(cmdbuf, src_level, 1, GSTextureVK::Layout::CopySrc, old_layout);
 
 	m_copy_fence_counter = GSDeviceVK::GetInstance()->GetCurrentFenceCounter();
 	m_needs_cache_invalidate = true;
