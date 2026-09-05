@@ -237,7 +237,8 @@ public:
 				// if we're using the flag hack, ignore the mac flags going in to the new block too if an exact match wasn't requested.
 				if (mVUsFlagHack)
 				{
-					if ((ref.quick & ~0x0C04) != (quick64 & ~0x0C04)) continue;
+					if ((ref.quick & ~0x3002) != (quick64 & ~0x3002))
+						continue;
 				}
 				else if (ref.quick != quick64) continue;
 
