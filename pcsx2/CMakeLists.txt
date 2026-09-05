@@ -388,14 +388,15 @@ set(pcsx2USBSources
 	USB/usb-pad/lg/lg_ff.cpp
 	USB/usb-pad/usb-buzz.cpp
 	USB/usb-pad/usb-gametrak.cpp
-	USB/usb-pad/usb-realplay.cpp
 	USB/usb-pad/usb-pad-ff.cpp
 	USB/usb-pad/usb-pad-sdl-ff.cpp
-	USB/usb-pad/usb-pad.cpp
+	USB/usb-pad/usb-realplay.cpp
+	USB/usb-pad/usb-rhythm.cpp
 	USB/usb-pad/usb-seamic.cpp
 	USB/usb-pad/usb-train.cpp
 	USB/usb-pad/usb-trance-vibrator.cpp
 	USB/usb-pad/usb-turntable.cpp
+	USB/usb-pad/usb-wheel.cpp
 	USB/usb-printer/usb-printer.cpp
 )
 
@@ -427,11 +428,13 @@ set(pcsx2USBHeaders
 	USB/usb-pad/lg/lg_ff.h
 	USB/usb-pad/usb-buzz.h
 	USB/usb-pad/usb-gametrak.h
-	USB/usb-pad/usb-realplay.h
+	USB/usb-pad/usb-pad-ff.h
 	USB/usb-pad/usb-pad-sdl-ff.h
-	USB/usb-pad/usb-pad.h
+	USB/usb-pad/usb-realplay.h
+	USB/usb-pad/usb-rhythm.h
 	USB/usb-pad/usb-train.h
 	USB/usb-pad/usb-trance-vibrator.h
+	USB/usb-pad/usb-wheel.h
 	USB/usb-printer/usb-printer.h
 )
 

@@ -85,12 +85,11 @@ namespace usb_pad
 		const char* Name() const override;
 		const char* TypeName() const override;
 		const char* IconName() const override;
-		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
-		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
-		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
 		std::span<const InputBindingInfo> Bindings(u32 subtype) const override;
 		std::span<const SettingInfo> Settings(u32 subtype) const override;
 		USBDevice* CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const override;
+		float GetBindingValue(const USBDevice* dev, u32 bind_index) const override;
+		void SetBindingValue(USBDevice* dev, u32 bind_index, float value) const override;
+		bool Freeze(USBDevice* dev, StateWrapper& sw) const override;
 	};
-
 } // namespace usb_pad
