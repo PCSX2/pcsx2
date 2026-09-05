@@ -30,6 +30,9 @@ namespace Sessions
 
 	public:
 		const u16 port = 0;
+		// When true, accept inbound packets from any source even without
+		// a matching child session (for pre-bound listening ports).
+		bool isListening{false};
 
 	private:
 		std::mutex connectionSentry;
