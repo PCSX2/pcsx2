@@ -2033,7 +2033,7 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 	IASetInputLayout(i->second.il.get());
 }
 
-void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel)
+void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel, const bool read_only_depth)
 {
 	auto i = std::as_const(m_ps).find(sel);
 
@@ -2043,7 +2043,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 
 		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", m_conservative_depth);
-		sm.AddMacro("PS_DEPTH_FEEDBACK_SUPPORT", m_features.depth_feedback ? 1 : 2);
+		sm.AddMacro("PS_DEPTH_FEEDBACK_SUPPORT", read_only_depth ? 0 : m_features.depth_feedback ? 1 : 2);
 		sm.AddMacro("PS_FST", sel.fst);
 		sm.AddMacro("PS_WMS", sel.wms);
 		sm.AddMacro("PS_WMT", sel.wmt);
@@ -3208,8 +3208,19 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			read_only_dsv = static_cast<GSTexture11*>(config.ds)->ReadOnlyDepthStencilView();
 	}
 
+	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
+	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
+
+	// It is possible to skip one barrier copy when using draw_ds_as_rt if only one pass needs a barrier, we already have a copy and draw_ds_as_rt doesn't need updating.
+	// Aka we can make depth read only and not written as we don't care what the result is in this case.
+	const bool can_skip_ds_barrier = draw_ds_as_rt &&
+	                              // Pass 1 needs barrier only.
+	                              ((ds_feedbackloop_pass1 && config.require_one_barrier && !ds_feedbackloop_pass2 && !config.alpha_second_pass.require_one_barrier) ||
+									  // Pass 2 needs barrier only.
+									  (!ds_feedbackloop_pass1 && !config.require_one_barrier && ds_feedbackloop_pass2 && config.alpha_second_pass.require_one_barrier));
+
 	SetupVS(config.vs, &config.cb_vs);
-	SetupPS(config.ps, &config.cb_ps, config.sampler);
+	SetupPS(config.ps, &config.cb_ps, config.sampler, can_skip_ds_barrier);
 
 	if (primid_texture)
 	{
@@ -3224,25 +3235,25 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 
 		config.ps.date = 3;
 		config.alpha_second_pass.ps.date = 3;
-		SetupPS(config.ps, nullptr, config.sampler);
+		SetupPS(config.ps, nullptr, config.sampler, can_skip_ds_barrier);
 	}
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	// Make sure no tex is bound as both rtv and srv at the same time.
 	// All conflicts should've been taken care of by PSUnbindConflictingSRVs.
-	if (!(draw_rt || draw_rt_rov || draw_ds_as_rt) && draw_ds && m_state.current_rt && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
+	if (!(draw_rt || draw_rt_rov || (draw_ds_as_rt && !can_skip_ds_barrier)) && draw_ds && m_state.current_rt && config.tex != m_state.current_rt && m_state.current_rt->GetSize() == draw_ds->GetSize())
 	{
 		draw_rt = m_state.current_rt;
 	}
-	else if (!(draw_ds || draw_ds_rov || draw_ds_as_rt) && draw_rt && m_state.current_ds && config.tex != m_state.current_ds && m_state.current_ds->GetSize() == draw_rt->GetSize())
+	else if (!(draw_ds || draw_ds_rov || (draw_ds_as_rt && !can_skip_ds_barrier)) && draw_rt && m_state.current_ds && config.tex != m_state.current_ds && m_state.current_ds->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = m_state.current_ds;
 	}
-	else if (!(draw_rt || draw_rt_rov || draw_ds_as_rt) && draw_ds_rov && m_state.current_rt_uav && config.tex != m_state.current_rt_uav)
+	else if (!(draw_rt || draw_rt_rov || (draw_ds_as_rt && !can_skip_ds_barrier)) && draw_ds_rov && m_state.current_rt_uav && config.tex != m_state.current_rt_uav)
 	{
 		draw_rt_rov = m_state.current_rt_uav;
 	}
-	else if (!(draw_ds || draw_ds_rov || draw_ds_as_rt) && draw_rt_rov && m_state.current_ds_uav && config.tex != m_state.current_ds_uav)
+	else if (!(draw_ds || draw_ds_rov || (draw_ds_as_rt && !can_skip_ds_barrier)) && draw_rt_rov && m_state.current_ds_uav && config.tex != m_state.current_ds_uav)
 	{
 		draw_ds_rov = m_state.current_ds_uav;
 	}
@@ -3259,30 +3270,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("D3D11: Failed to allocate temp texture for RT copy.");
 	}
 
-	const bool ds_feedbackloop_pass1 = config.IsFeedbackLoopDepth(config.ps);
-	const bool ds_feedbackloop_pass2 = config.IsFeedbackLoopDepth(config.alpha_second_pass.ps);
-
-	// It is possible to skip one barrier copy when using draw_ds_as_rt if only one pass needs a barrier, we already have a copy and draw_ds_as_rt doesn't need updating.
-	const bool can_skip_ds_barrier = draw_ds_as_rt &&
-	                              // Pass 1 needs barrier only.
-	                              ((ds_feedbackloop_pass1 && config.require_one_barrier && !ds_feedbackloop_pass2 && !config.alpha_second_pass.require_one_barrier) ||
-									  // Pass 2 needs barrier only.
-									  (!ds_feedbackloop_pass1 && !config.require_one_barrier && ds_feedbackloop_pass2 && config.alpha_second_pass.require_one_barrier));
-
-	if (draw_ds && !draw_ds_rov && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
+	if (draw_ds && !draw_ds_rov && !can_skip_ds_barrier && (config.require_one_barrier || (config.require_full_barrier && m_features.multidraw_fb_copy)) &&
 		(ds_feedbackloop_pass1 || ds_feedbackloop_pass2))
 	{
-		// Requires a copy of the DS.
-		if (can_skip_ds_barrier)
-			draw_ds_clone = CreateFeedbackTarget(rtsize.x, rtsize.y, (draw_ds_as_rt ? draw_ds_as_rt : draw_ds)->GetFormat(), false, true);
-		else
-			draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, (draw_ds_as_rt ? draw_ds_as_rt : draw_ds)->GetFormat(), true);
+		draw_ds_clone = CreateTexture(rtsize.x, rtsize.y, 1, (draw_ds_as_rt ? draw_ds_as_rt : draw_ds)->GetFormat(), true);
 
 		if (!draw_ds_clone)
 			Console.Warning("D3D11: Failed to allocate temp texture for DS copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, can_skip_ds_barrier ? draw_ds_clone : draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
+	OMSetRenderTargets(draw_rt, can_skip_ds_barrier ? nullptr : draw_ds_as_rt, draw_ds, draw_rt_rov, draw_ds_rov, &config.scissor, read_only_dsv);
 	SetRenderHWShaderResources(config, primid_texture);
 	SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend), config.blend.constant);
 
@@ -3298,7 +3295,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		config.ps.no_color1 = config.blend_multi_pass.no_color1;
 		config.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		config.ps.dither = config.blend_multi_pass.dither;
-		SetupPS(config.ps, &config.cb_ps, config.sampler);
+		SetupPS(config.ps, &config.cb_ps, config.sampler, can_skip_ds_barrier);
 		SetupOM(config.depth, OMBlendSelector(config.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
 		Draw(config);
 	}
@@ -3308,12 +3305,12 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		if (config.cb_ps.FogColor_AREF.a != config.alpha_second_pass.ps_aref)
 		{
 			config.cb_ps.FogColor_AREF.a = config.alpha_second_pass.ps_aref;
-			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler, can_skip_ds_barrier);
 		}
 		else
 		{
 			// ps cbuffer hasn't changed, so don't bother checking
-			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler);
+			SetupPS(config.alpha_second_pass.ps, nullptr, config.sampler, can_skip_ds_barrier);
 		}
 
 		const bool one_barrier = config.alpha_second_pass.require_one_barrier && m_features.multidraw_fb_copy;
@@ -3353,6 +3350,7 @@ void GSDevice11::FeedbackCopyAndBind(const GSHWDrawConfig& config,
 	{
 		if (skip_ds_barrier)
 		{
+			Console.Warning("SKIP DS BARRIER");
 			PSSetShaderResource(TEXTURE_DEPTH, ds);
 		}
 		else
