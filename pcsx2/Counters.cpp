@@ -494,9 +494,12 @@ static __fi void VSyncStart(u64 sCycle)
 
 	// Don't bother throttling if we're going to pause.
 	if (!VMManager::Internal::IsExecutionInterrupted())
-		VMManager::Internal::Throttle();
+		VMManager::Internal::Throttle(true);
 
-	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	if (!EmuConfig.GS.AdvancedFrameDisplay)
+	{
+		gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
+	}
 
 	// Poll input after MTGS frame push, just in case it has to stall to catch up.
 	VMManager::Internal::PollInputOnCPUThread();
@@ -566,6 +569,12 @@ static __fi void GSVSync()
 static __fi void VSyncEnd(u64 sCycle)
 {
 	EECNT_LOG("    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount);
+	VMManager::Internal::Throttle(false);
+
+	if (EmuConfig.GS.AdvancedFrameDisplay)
+	{
+		gsPostVsyncStart();
+	}
 
 	g_FrameCount++;
 	if (!GSSMODE1reg.SINT)
