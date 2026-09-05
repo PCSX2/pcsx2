@@ -410,7 +410,7 @@ public:
 	void UpdateSubresource(ID3D11Buffer* buffer, const void* cb_uniforms, void* cached_cb_uniforms, size_t cb_uniforms_size);
 
 	void SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer* cb);
-	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel);
+	void SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstantBuffer* cb, PSSamplerSelector ssel, const bool read_only_depth = false);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
 	void RenderHW(GSHWDrawConfig& config) override;
