@@ -369,6 +369,43 @@ std::optional<IP_Address> AdapterUtils::GetAdapterIP(const Adapter* adapter)
 }
 #endif
 
+// Netmask.
+#ifdef _WIN32
+std::optional<IP_Address> AdapterUtils::GetNetmask(const Adapter* adapter)
+{
+	PIP_ADAPTER_UNICAST_ADDRESS address = nullptr;
+	if (adapter != nullptr)
+	{
+		address = adapter->FirstUnicastAddress;
+		while (address != nullptr && ReadAddressFamily(address->Address.lpSockaddr) != AF_INET)
+			address = address->Next;
+	}
+
+	if (address != nullptr)
+	{
+		ULONG mask;
+		if (ConvertLengthToIpv4Mask(address->OnLinkPrefixLength, &mask) == NO_ERROR)
+			return std::bit_cast<IP_Address>(mask);
+	}
+	return std::nullopt;
+}
+#elif defined(__POSIX__)
+std::optional<IP_Address> AdapterUtils::GetNetmask(const ifaddrs* adapter)
+{
+	sockaddr_in* netmask = nullptr;
+	if (adapter != nullptr)
+	{
+		if (adapter->ifa_netmask != nullptr && ReadAddressFamily(adapter->ifa_netmask) == AF_INET)
+			netmask = reinterpret_cast<sockaddr_in*>(adapter->ifa_netmask);
+	}
+
+	if (netmask != nullptr)
+		return std::bit_cast<IP_Address>(netmask->sin_addr);
+
+	return std::nullopt;
+}
+#endif
+
 // Gateways.
 #ifdef _WIN32
 std::vector<IP_Address> AdapterUtils::GetGateways(const Adapter* adapter)
