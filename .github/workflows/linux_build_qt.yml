@@ -95,8 +95,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .ccache
-          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ccache
+          key: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.cmakeBuildType }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ inputs.os }} ${{ inputs.platform }} ${{ inputs.compiler }} ${{ inputs.cmakeBuildType }} ccache
 
       - name: Install Packages
         run: |
@@ -134,7 +134,7 @@ jobs:
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE="${{ inputs.cmakeBuildType }}" \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ case(inputs.cmakeBuildType == 'Debug', 'OFF', 'ON') }} \
             -DCMAKE_PREFIX_PATH="$HOME/deps" \
             -DCMAKE_C_COMPILER=clang-17 \
             -DCMAKE_CXX_COMPILER=clang++-17 \
@@ -162,6 +162,12 @@ jobs:
       - name: Run Tests
         working-directory: ./build
         run: ninja unittests
+
+      - name: Clean Caches
+        run: |
+          ccache -s
+          ccache --evict-older-than 1d
+          ccache -s
 
       - name: Package AppImage
         if: inputs.buildAppImage == true
