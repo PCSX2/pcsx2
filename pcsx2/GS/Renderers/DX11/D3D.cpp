@@ -8,7 +8,7 @@
 #include "GS/GSExtra.h"
 #include "Host.h"
 
-#ifdef ARCH_X86
+#ifdef ENABLE_VULKAN
 #include "GS/Renderers/Vulkan/GSDeviceVK.h"
 #endif
 
