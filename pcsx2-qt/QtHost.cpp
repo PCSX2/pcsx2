@@ -2136,7 +2136,8 @@ void QtHost::PrintCommandLineHelp(const std::string_view progname)
 	std::fprintf(stderr, "  -portable: Force enable portable mode to store data in local PCSX2 path instead of the default configuration path. Overrides '-datapath'.\n");
 	std::fprintf(stderr, "  -datapath <path>: Specify the directory to be used for all application data.\n");
 	std::fprintf(stderr, "  -elf <file>: Overrides the boot ELF with the specified filename.\n");
-	std::fprintf(stderr, "  -gameargs <string>: passes the specified quoted space-delimited string of launch arguments.\n");
+	std::fprintf(stderr, "  -gameargs <string>: Passes the specified quoted space-delimited string of launch arguments.\n");
+	std::fprintf(stderr, "  -gamecfg <file>: Overrides the game settings with the ones in the specified INI file.\n");
 	std::fprintf(stderr, "  -disc <path>: Uses the specified host DVD drive as a source.\n");
 	std::fprintf(stderr, "  -logfile <path>: Writes the application log to path instead of emulog.txt.\n");
 	std::fprintf(stderr, "  -bios: Starts the BIOS (System Menu/OSDSYS).\n");
@@ -2247,6 +2248,11 @@ bool QtHost::ParseCommandLineOptions(const QStringList& args, std::shared_ptr<VM
 			else if (CHECK_ARG_PARAM(QStringLiteral("-gameargs")))
 			{
 				EmuConfig.CurrentGameArgs = (++it)->toStdString();
+				continue;
+			}
+			else if (CHECK_ARG_PARAM(QStringLiteral("-gamecfg")))
+			{
+				AutoBoot(autoboot)->game_config = (++it)->toStdString();
 				continue;
 			}
 			else if (CHECK_ARG_PARAM(QStringLiteral("-disc")))
