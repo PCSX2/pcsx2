@@ -1159,7 +1159,7 @@ void Pcsx2Config::GSOptions::MaskUserHacks()
 	UserHacks_BilinearHack = GSBilinearDirtyMode::Automatic;
 	SkipDrawStart = 0;
 	SkipDrawEnd = 0;
-	ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
+	//ShaderSpriteAlign = GSShaderSpriteAlignMode::Off;
 }
 
 void Pcsx2Config::GSOptions::MaskUpscalingHacks()
