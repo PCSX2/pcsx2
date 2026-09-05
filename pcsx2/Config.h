@@ -471,9 +471,9 @@ enum class GSNativeScaling : u8
 
 enum class GSDepthFeedbackMode : u8
 {
-	None      = 0,
-	Auto      = 1,
-	Depth     = 2,
+	None = 0,
+	Auto = 1,
+	Depth = 2,
 	DepthAsRT = 3,
 };
 
@@ -1158,7 +1158,6 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct DebugAnalysisOptions
 	{
-
 		static const char* RunConditionNames[];
 		static const char* FunctionScanModeNames[];
 
@@ -1281,8 +1280,35 @@ struct Pcsx2Config
 	struct McdOptions
 	{
 		std::string Filename; // user-configured location of this memory card
-		bool Enabled; // memory card enabled (if false, memcard will not show up in-game)
-		MemoryCardType Type; // the memory card implementation that should be used
+		bool Enabled = false; // memory card enabled (if false, memcard will not show up in-game)
+		MemoryCardType Type = MemoryCardType::Empty; // the memory card implementation that should be used
+
+		friend auto operator<=>(const McdOptions& lhs, const McdOptions& rhs) = default;
+	};
+
+	struct MemoryCardBackupOptions
+	{
+		bool EnableAutomaticBackups = true;
+		bool EnableZstdCompression = true;
+		u32 MinimumBackupsToKeep = 3;
+		u32 MaximumBackupsToKeep = 100;
+		u32 DriveSpaceUsageLimitMiB = 200;
+
+		void LoadSave(SettingsWrapper& wrap);
+
+		friend auto operator<=>(const MemoryCardBackupOptions& lhs, const MemoryCardBackupOptions& rhs) = default;
+	};
+
+	// ------------------------------------------------------------------------
+	struct MemoryCardOptions
+	{
+		static constexpr u32 NUM_SLOTS = 8;
+
+		std::array<McdOptions, NUM_SLOTS> Slots;
+		MemoryCardBackupOptions Backup;
+
+		MemoryCardOptions();
+		void LoadSave(SettingsWrapper& wrap);
 	};
 
 	// ------------------------------------------------------------------------
@@ -1384,6 +1410,7 @@ struct Pcsx2Config
 	DEV9Options DEV9;
 	USBOptions USB;
 	PadOptions Pad;
+	MemoryCardOptions MemoryCard;
 
 	TraceLogFilters Trace;
 
@@ -1391,9 +1418,6 @@ struct Pcsx2Config
 
 	AchievementsOptions Achievements;
 
-	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
-	// slots (3 each)
-	McdOptions Mcd[8];
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	int PINESlot;
@@ -1418,7 +1442,6 @@ struct Pcsx2Config
 	Pcsx2Config();
 	void LoadSave(SettingsWrapper& wrap);
 	void LoadSaveCore(SettingsWrapper& wrap);
-	void LoadSaveMemcards(SettingsWrapper& wrap);
 
 	/// Reloads options affected by patches.
 	void ReloadPatchAffectingOptions();
@@ -1453,6 +1476,7 @@ namespace EmuFolders
 	extern std::string Snapshots;
 	extern std::string Savestates;
 	extern std::string MemoryCards;
+	extern std::string MemoryCardBackups;
 	extern std::string Logs;
 	extern std::string Cheats;
 	extern std::string Patches;
