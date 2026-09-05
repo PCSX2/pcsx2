@@ -25,6 +25,9 @@ if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
 
 set SEVENZIP="C:\Program Files\7-Zip\7z.exe"
 set PATCH="C:\Program Files\Git\usr\bin\patch.exe"
+set BASH="C:\Program Files\Git\usr\bin\bash.exe"
+
+set "UNIX_TOOLS=C:\Program Files\Git\usr\bin\"
 
 if defined DEBUG (
   echo DEBUG=%DEBUG%
@@ -58,6 +61,15 @@ set QT=6.11.2
 set QTMINOR=6.11
 set QTAPNG=1.3.0
 
+set FFMPEG=9.0.1
+set GAS_PREPROC=ac1836309c2e77023c228b7184485597286289d3
+set MAKE=4.4.1
+set MESON=1.10.2
+set PKGCONF=2.5.1
+set LIBOPUS=1.6.1
+set LIBSVTAV1=4.2.0
+set LIBX264=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
+
 set FREETYPE=2.14.3
 set HARFBUZZ=14.2.0
 set SDL=SDL3-3.4.16
@@ -89,6 +101,15 @@ call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/off
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 850bc1b316149086512c17a77da51fec94933846fa84944508feb6dd9cbb35aa || goto error
 call :downloadfile "QtApng-%QTAPNG%.zip" "https://github.com/jurplel/QtApng/archive/refs/tags/%QTAPNG%.zip" 5176082cdd468047a7eb1ec1f106b032f57df207aa318d559b29606b00d159ac || goto error
 
+call :downloadfile "ffmpeg-%FFMPEG%.tar.xz" "https://ffmpeg.org/releases/ffmpeg-%FFMPEG%.tar.xz" cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635 || goto error
+call :downloadfile "gas-preprocessor.pl" "https://raw.githubusercontent.com/FFmpeg/gas-preprocessor/%GAS_PREPROC%/gas-preprocessor.pl" 7124d70cdecba7c5612f9a71fbf3f28514dd9c2ca3022f58ad793f88bb925fcf || goto error
+call :downloadfile "make-%MAKE%-without-guile-w32-bin.zip" "https://sourceforge.net/projects/ezwinports/files/make-%MAKE%-without-guile-w32-bin.zip/download" fb66a02b530f7466f6222ce53c0b602c5288e601547a034e4156a512dd895ee7 || goto error
+call :downloadfile "meson-%MESON%.tar.gz" "https://github.com/mesonbuild/meson/releases/download/%MESON%/meson-%MESON%.tar.gz" 7890287d911dd4ee1ebd0efb61ed0321bfcd87c725df923a837cf90c6508f96b || goto error
+call :downloadfile "pkgconf-pkgconf-%PKGCONF%.zip" "https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-%PKGCONF%.zip" c5b5f88a2ca2324dc5d857e35bb145e24290e326357ea94a86d47b8d7fa15477 || goto error
+call :downloadfile "opus-%LIBOPUS%.tar.gz" "https://downloads.xiph.org/releases/opus/opus-%LIBOPUS%.tar.gz" 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1 || goto error
+call :downloadfile "SVT-AV1-v%LIBSVTAV1%.zip" "https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v%LIBSVTAV1%/SVT-AV1-v%LIBSVTAV1%.zip" 007d1bd64ae85eaeea51db7465c4b360d115dc2d33d2ad42491c7d2ae7a9124e || goto error
+call :downloadfile "x264-%LIBX264%.zip" "https://code.videolan.org/videolan/x264/-/archive/%LIBX264%.zip" d95d059eff81cc565165cd058b66e208f0cc9874106a8fe94a811a66cf8a85a2 || goto error
+
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://sourceforge.net/projects/freetype/files/freetype2/%FREETYPE%/freetype-%FREETYPE%.tar.gz/download e61b31ab26358b946e767ed7eb7f4bb2e507da1cfefeb7a8861ace7fd5c899a1 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip bb2f83255706b1c92d731541c7cefaf98bb5b93e8f76d16f6deda05225ff20ee || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1658.zip b32f170855dbbe3e6d9e645af40b538137041773672c3ba3e02db5816c82d376 || goto error
@@ -119,6 +140,85 @@ if %DEBUG%==1 (
 
 set FORCEPDB=-DCMAKE_SHARED_LINKER_FLAGS_RELEASE="/DEBUG" -DCMAKE_SHARED_LINKER_FLAGS_MINSIZEREL="/DEBUG"
 set ARM64TOOLCHAIN=-DCMAKE_TOOLCHAIN_FILE="%SCRIPTDIR%\cmake-toolchain-windows-arm64.cmake"
+
+if not "%INSTALLDIR%"=="%INSTALLDIR: =%" (
+  echo FFmpeg does not support building in paths with spaces.
+  goto error
+)
+
+echo "Installing libopus"
+rmdir /S /Q "opus-%LIBOPUS%"
+tar -xf "opus-%LIBOPUS%.tar.gz" || goto error
+cd "opus-%LIBOPUS%" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo "Installing gas-preprocessor..."
+copy "gas-preprocessor.pl" "%INSTALLDIR%\bin\gas-preprocessor.pl" || goto error
+echo.
+
+echo "Installing libsvtav1"
+rmdir /S /Q "SVT-AV1-v%LIBSVTAV1%"
+tar -xf "SVT-AV1-v%LIBSVTAV1%.zip" || goto error
+cd "SVT-AV1-v%LIBSVTAV1%" || goto error
+%PATCH% -p1 < "%SCRIPTDIR%\libsvtav1-arm64-msvc.patch" || goto error
+cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF -DBUILD_APPS=OFF -DSVT_AV1_LTO=ON -B build -G Ninja ^
+  -DCMAKE_ASM_COMPILER="%SCRIPTDIR%\libsvtav1-gas-preprocessor.bat" -DCMAKE_ASM_COMPILER_ID="MSVC" -DCMAKE_ASM_COMPILE_OPTIONS_MSVC_RUNTIME_LIBRARY_MultiThreadedDLL="" || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+set PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+set PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+Set "PKG_CONFIG_PATH=%INSTALLDIR%\lib\pkgconfig"
+
+set MAKE_EXE="%X64INSTALLDIR%\bin\make.exe"
+
+set "OLD_PATH=%PATH%"
+rem Also add INSTALLDIR to add gas-preprocessor.pl to path
+set "PATH=%PATH%;%UNIX_TOOLS%;%INSTALLDIR%\bin"
+
+set CC=cl
+set CXX=cl
+
+echo "Installing libx264"
+rmdir /S /Q "x264-%LIBX264%"
+%SEVENZIP% x "x264-%LIBX264%.zip" || goto error
+cd "x264-%LIBX264%" || goto error
+%BASH% configure --prefix="%INSTALLDIR%" --disable-cli --enable-static --extra-cflags="-MD -w -Os -GL" || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
+cd .. || goto error
+echo.
+
+echo "Installing FFmpeg..."
+rmdir /S /Q "ffmpeg-%FFMPEG%"
+tar xf "ffmpeg-%FFMPEG%.tar.xz" || goto error
+cd "ffmpeg-%FFMPEG%"
+%PATCH% -p1 < "%SCRIPTDIR%\ffmpeg-configure-escape.patch" || goto error
+rem FFmpeg's build seems to choke when extra-cflags contain `\`, so use `/` as the path separator.
+set HOST_CC_PATH=%SCRIPTDIR:\=/%/ffmpeg-host-cl.bat
+set HOST_LD_PATH=%SCRIPTDIR:\=/%/ffmpeg-host-link.bat
+rem --enable-small removes the display names of codecs, so instead we specify optflag for minsize
+%BASH% configure --prefix="%INSTALLDIR%" --disable-all --disable-autodetect --disable-static --enable-shared --disable-debug ^
+  --toolchain=msvc --extra-ldflags="-LTCG" --pkg-config="%X64INSTALLDIR%\bin\pkgconf.exe" ^
+  --enable-cross-compile --arch=aarch64 --host-cc="%HOST_CC_PATH%" --host-ld="%HOST_LD_PATH%" ^
+  --extra-cflags="-MD -GL" --extra-cxxflags="-MD -GL" --optflags="-O1" ^
+  --enable-avcodec --enable-avformat --enable-avutil --enable-swresample --enable-swscale ^
+  --enable-gpl --enable-libx264 --enable-libsvtav1 --enable-libopus ^
+  --enable-d3d11va --enable-mediafoundation ^
+  --enable-encoder=ffv1,qtrle,libx264*,libsvtav1,aac,flac,libopus,pcm_s16be,pcm_s16le ^
+  --enable-encoder=h264_mf,hevc_mf,av1_mf ^
+  --enable-muxer=avi,matroska,mov,mp3,mp4,wav ^
+  --enable-protocol=file || goto error
+!MAKE_EXE! -j%NUMBER_OF_PROCESSORS% || goto error
+!MAKE_EXE! install || goto error
+cd ..
+echo.
+
+set "PATH=!OLD_PATH!"
 
 echo Building Zlib...
 rmdir /S /Q "zlib-%ZLIB%"
