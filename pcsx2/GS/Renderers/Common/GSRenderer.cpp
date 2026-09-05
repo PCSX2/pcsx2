@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <deque>
 #include <thread>
 #include <mutex>
@@ -46,6 +47,10 @@ std::unique_ptr<GSRenderer> g_gs_renderer;
 // Since we read this on the EE thread, we can't put it in the renderer, because
 // we might be switching while the other thread reads it.
 static GSVector4 s_last_draw_rect;
+// Relaxed is enough: nothing else is ordered against it, and both components
+// must come from the same frame, hence one atomic rather than two.
+static std::atomic<GSVector2i> s_last_display_resolution;
+static_assert(std::atomic<GSVector2i>::is_always_lock_free);
 
 // Last time we reset the renderer due to a GPU crash, if any.
 static Common::Timer::Value s_last_gpu_reset_time;
@@ -57,6 +62,7 @@ GSRenderer::GSRenderer()
 	: m_shader_time_start(Common::Timer::GetCurrentValue())
 {
 	s_last_draw_rect = GSVector4::zero();
+	s_last_display_resolution.store(GSVector2i(0, 0), std::memory_order_relaxed);
 }
 
 GSRenderer::~GSRenderer() = default;
@@ -219,6 +225,7 @@ bool GSRenderer::Merge(int field)
 	}
 
 	const GSVector2i resolution = PCRTCDisplays.GetResolution();
+	s_last_display_resolution.store(resolution, std::memory_order_relaxed);
 	fs = GSVector2i(static_cast<int>(static_cast<float>(resolution.x) * GetUpscaleMultiplier()),
 		static_cast<int>(static_cast<float>(resolution.y) * GetUpscaleMultiplier()));
 
@@ -993,6 +1000,13 @@ void GSTranslateWindowToDisplayCoordinates(float window_x, float window_y, float
 
 	*display_x = rel_x / draw_width;
 	*display_y = rel_y / draw_height;
+}
+
+void GSgetDisplayResolution(int* width, int* height)
+{
+	const GSVector2i res = s_last_display_resolution.load(std::memory_order_relaxed);
+	*width = res.x;
+	*height = res.y;
 }
 
 void GSSetDisplayAlignment(GSDisplayAlignment alignment)
