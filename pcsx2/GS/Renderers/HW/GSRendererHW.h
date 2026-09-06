@@ -424,4 +424,5 @@ public:
 
 	/// Handle UV rounding and sprite alignment/clamping.
 	void SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex);
+	void SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& info, float tex_scale);
 };
