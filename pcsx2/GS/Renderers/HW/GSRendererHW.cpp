@@ -11090,6 +11090,53 @@ bool GSRendererHW::IsCoverageAlphaSupported()
 	return IsCoverageAlpha() && IsRTWritten() && g_gs_device->Features().aa1;
 }
 
+void GSRendererHW::SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& info, float tex_scale)
+{
+	// Shift to remove the native half texel offset used to blur image.
+	constexpr float shift = 8.0f;
+
+	const GSVector4 pos_rect = m_vt.m_min.p.xyxy(m_vt.m_max.p);
+	const GSVector4 tex_rect = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+
+	for (int i = 0; i < 2; i++)
+	{
+		const bool half_offset = (i == 0) ? info.half_offset_XU : info.half_offset_YV;
+		const bool same_dir = (i == 0) ? info.same_dir_XU : info.same_dir_YV;
+		const float pos_range = (i == 0) ? pos_rect.width() : pos_rect.height();
+		const float tex_range = (i == 0) ? tex_rect.width() : tex_rect.height();
+		const float pos_start = pos_rect.v[i];
+		const float tex_start = tex_rect.v[i];
+
+		// Only allow corrects when the X and U (or Y and V) ranges are similar and the
+		// coordinates are in the same direction.
+		if (half_offset && same_dir && (std::abs(pos_range - tex_range) <= 1.0f))
+		{
+			float shift_dir = 0.0f;
+			if (std::abs(pos_start - tex_start) <= 1.0f)
+			{
+				// Rectangles have similar coordinates (Shadow of Rome, Dragon Quest VIII).
+				shift_dir = (tex_start >= pos_start + 0.5f) ? -1.0f : 1.0f;
+			}
+			else if (pos_start == 0.0f || tex_start == 0.0f)
+			{
+				// Texture appears to be drawing to or sampled from a scratch buffer (Jax and Daxter TPL).
+				shift_dir = 1.0f;
+			}
+
+			if (shift_dir != 0.0f)
+			{
+				const float shift_with_dir = shift_dir * shift;
+
+				// Texture offset is subtracted from UV so subtract here.
+				m_conf.cb_vs.texture_offset.v[i] -= shift_with_dir;
+
+				GL_INS("HW: Removing %s bilinear blur, by adding %.4f texels to %s.",
+					(i == 0) ? "XU" : "YV", shift / 16.0f, (i == 0) ? "U" : "V");
+			}
+		}
+	}
+}
+
 // Setup shader based sprite round/clamp/align.
 void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSTextureCache::Target* ds, GSTextureCache::Source* tex)
 {
@@ -11105,9 +11152,9 @@ void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSText
 	const bool aligning = GSConfig.ShaderSpriteAlign != GSShaderSpriteAlignMode::Off;
 	const bool clamping = (GSConfig.ShaderSpriteAlign == GSShaderSpriteAlignMode::AlignClamp) && (rt && rt->GetScale() != 1.0f);
 
-	bool pixel_centers_aligned = true;
+	VertexUVRoundingInfo info;
 
-	if (GetVertexUVRoundingInfo(tex_enabled, target->GetScale() != 1.0, tex_enabled ? &pixel_centers_aligned : nullptr))
+	if (GetVertexUVRoundingInfo(tex_enabled, target->GetScale() != 1.0, tex_enabled ? &info : nullptr))
 	{
 		GL_INS("HW: Doing shader UV rounding.%s", PRIM->FST ? "" : " Converting ST to UV (pre-divide Q).");
 
@@ -11116,24 +11163,32 @@ void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSText
 
 		if (tex_enabled)
 		{
-			// Hackfix: make shuffle/deswizzle always round up since they usually use powers of 2.
+			// Hack: Make shuffle/deswizzle always round up since they usually use powers of 2.
 			if (m_channel_shuffle || m_texture_shuffle || m_manual_deswizzle)
 			{
+				const u32 round_up_all = ((ROUND_UV_UP | ROUND_UV_PER_PIXEL) << 28) | 
+				                         ((ROUND_UV_UP | ROUND_UV_PER_PIXEL) << 24);
 				for (int i = 0; i < static_cast<int>(m_index->tail); i++)
 				{
 					m_vertex->buff[m_index->buff[i]].RGBAQ.U32[1] =
-						(m_vertex->buff[m_index->buff[i]].RGBAQ.U32[1] & 0xFFFFFF) | 0x55000000;
+						(m_vertex->buff[m_index->buff[i]].RGBAQ.U32[1] & 0xFFFFFF) | round_up_all;
 				}
 			}
 
-			bool linear = m_vt.IsRealLinear() && !pixel_centers_aligned;
+			bool linear = m_vt.IsRealLinear() && !info.one_to_one_XU_YV;
 
-			if (m_vt.IsRealLinear() && pixel_centers_aligned)
+			if (m_vt.IsRealLinear() && info.one_to_one_XU_YV)
 			{
 				GL_INS("HW: Disable bilinear due to pixel/texel centers being aligned.");
 				m_conf.sampler = GSHWDrawConfig::SamplerSelector::Point();
 				m_conf.ps.ltf = false;
 			}
+
+			// Hack: Detect cases where it appears that the game is blurring the image
+			// by using bilinear and shifting the UV's by half a pixel compared to XY.
+			// To avoid an overly blurred look, unshift U/V to remove the blurring.
+			if (linear && tex_scale > 1.0f)
+				SpriteAlignRemoveBilinearBlur(info, tex_scale);
 
 			m_conf.ps.round_uv = rounding ?
 				(linear ? GSHWDrawConfig::PS_ROUND_UV::LINEAR : GSHWDrawConfig::PS_ROUND_UV::NEAREST) :
@@ -11147,7 +11202,7 @@ void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSText
 				(linear ? GSHWDrawConfig::VS_CLAMP_UV::LINEAR : GSHWDrawConfig::VS_CLAMP_UV::NEAREST) :
 				GSHWDrawConfig::VS_CLAMP_UV::NONE;
 
-			// STQ coordinates are projected down to UVs in the vertex shader.
+			// UVs are saved in ST for higher precision, but we treat them at UV in the shaders.
 			m_conf.ps.fst = true;
 			m_conf.vs.fst = true;
 
