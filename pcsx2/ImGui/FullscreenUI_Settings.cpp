@@ -3238,7 +3238,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				"UserHacks_EstimateTextureRegion", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_CSTR("Rewrite Large ST"),
 				FSUI_CSTR("Rewrite large ST coordinates and clamp the values."), "EmuCore/GS",
-				"UserHacks_RewriteLargeST", false, manual_hw_fixes);
+				"UserHacks_RewriteLargeSTCoords", false, manual_hw_fixes);
 			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PALETTE, "GPU Palette Conversion"),
 				FSUI_CSTR("When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU."),
 				"EmuCore/GS", "paltex", false, manual_hw_fixes);

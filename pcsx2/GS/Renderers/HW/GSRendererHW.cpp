@@ -2904,7 +2904,7 @@ void GSRendererHW::Draw()
 	
 	// Ridge Racer V and Destruction Derby Arena have large ST coordinates in reflection map draws that cause
 	// speckled artifacts on cars. Detect and rewrite such vertices here.
-	if (GSConfig.UserHacks_RewriteLargeST)
+	if (GSConfig.UserHacks_RewriteLargeSTCoords)
 	{
 		// The threshold is chosen to be low enough to fix the artifacts in Ridge Racer V and Destruction Derby Arena
 		// while not breaking anything.

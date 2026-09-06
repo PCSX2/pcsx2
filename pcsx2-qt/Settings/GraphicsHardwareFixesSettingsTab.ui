@@ -272,7 +272,7 @@
    <item row="7" column="0" colspan="2">
    <layout class="QGridLayout" name="hwFixesLayout">
      <item row="5" column="0">
-      <widget class="QCheckBox" name="rewriteLargeST">
+      <widget class="QCheckBox" name="rewriteLargeSTCoords">
        <property name="text">
         <string>Rewrite Large ST</string>
        </property>
@@ -396,7 +396,7 @@
   <tabstop>disableRenderFixes</tabstop>
   <tabstop>readTCOnClose</tabstop>
   <tabstop>estimateTextureRegion</tabstop>
-  <tabstop>rewriteLargeST</tabstop>
+  <tabstop>rewriteLargeSTCoords</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -308,7 +308,7 @@ MULTI_ISA_UNSHARED_END
 void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
-	if (!GSConfig.UserHacks_RewriteLargeST)
+	if (!GSConfig.UserHacks_RewriteLargeSTCoords)
 	{
 		// SW rasterizer stores UV in 1.15.16 format so clamp to +/- (2^15 - 2) (-2 so bilinear doesn't overflow).
 		// Also only do this for CLAMP and CLAMP_REGION modes to reduce the performance impact.
