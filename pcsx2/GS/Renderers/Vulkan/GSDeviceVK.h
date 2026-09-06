@@ -641,9 +641,10 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
-	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
+	VkImageLayout GetFeedbackLoopLayout() const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	VkAccessFlagBits2 GetFeedbackLoopInputAccessBits() const;
+	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier);
 
