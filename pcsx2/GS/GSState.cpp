@@ -4995,7 +4995,7 @@ bool GSState::SpriteDrawWithoutGaps()
 // likely due to internal precision of GS). This is only implemented for sprites and axis-aligned triangles forming quads.
 // Return true if we determined that accurate rounding can be done.
 template<u32 primclass, bool tme, bool fst>
-bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_centers_aligned)
+bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, VertexUVRoundingInfo* info)
 {
 	// Native scaling: only AccurateUVRounding is used.
 	// Upscaling: must enable ShaderSpriteAlign as AccurateUVRounding without
@@ -5105,8 +5105,8 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_cent
 	GSVertex* RESTRICT vtx = m_vertex->buff;
 	const u32 count = m_index->tail;
 
-	if (pixel_centers_aligned)
-		*pixel_centers_aligned = true;
+	if (info)
+		*info = VertexUVRoundingInfo();
 
 	for (u32 i = 0; i < count; i += n)
 	{
@@ -5171,32 +5171,47 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_cent
 			const bool pow2_dX = IsPow2(abs_dX);
 			const bool pow2_dY = IsPow2(abs_dY);
 
-			// Check if the first/last pixel center correspond to half texel boundaries.
-			const auto EndpointsAligned = []<bool centers_aligned>(int pos0, int pos1, int tex0, int tex1, int scale) {
+			if (info)
+			{
+				info->same_dir_XU &= ((dX > 0) == (dU > 0));
+				info->same_dir_YV &= ((dY > 0) == (dV > 0));
+				info->reverse_dir_XU &= ((dX > 0) != (dU > 0));
+				info->reverse_dir_YV &= ((dY > 0) != (dV > 0));
+			}
+
+			// Check if the first/last pixel center correspond:
+			// centered == false: whether pixel centers correspond to texel boundaries.
+			// centered == true: whether pixel centers correspond to texel centers.
+			const auto EndpointsAligned = []<bool centered>(int pos0, int pos1, int tex0, int tex1, int scale) {
 				const int pos0_round = (pos0 + 0xF) & ~0xF;
 				const int pos1_round = pos1 & ~0xF;
 				const int tex0_round = tex0 + (pos0_round - pos0) * scale;
 				const int tex1_round = tex1 + (pos1_round - pos1) * scale;
-				return centers_aligned ?
-					((tex0_round | tex1_round) & 0xF) == 8 : // Pixel centers correspond to texel centers.
-					((tex0_round | tex1_round) & 7) == 0; // Pixel centers correspond to texel centers or boundaries.
+				return ((tex0_round | tex1_round) & 0xF) == (centered ? 8 : 0);
 			};
 
-			const auto EndpointsAlignedHalf = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
-				return EndpointsAligned.template operator()<false>(pos0, pos1, tex0, tex1, scale);
+			const auto EndpointsAlignedEither = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
+				return EndpointsAligned.template operator()<true>(pos0, pos1, tex0, tex1, scale) || 
+				       EndpointsAligned.template operator()<false>(pos0, pos1, tex0, tex1, scale);
 			};
 
 			const auto EndpointsAlignedCentered = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
 				return EndpointsAligned.template operator()<true>(pos0, pos1, tex0, tex1, scale);
 			};
 
-			// First condition: dU/dX is an integer and pixel centers correspond to texel boundaries.
-			const bool scaled_aligned_U = ((dU % dX) == 0) && EndpointsAlignedHalf(X0, X1, U0, U1, dU / dX);
-			const bool scaled_aligned_V = ((dV % dY) == 0) && EndpointsAlignedHalf(Y0, Y1, V0, V1, dV / dY);
+			const auto EndpointsAlignedBoundaries = [EndpointsAligned](int pos0, int pos1, int tex0, int tex1, int scale) {
+				return EndpointsAligned.template operator()<false>(pos0, pos1, tex0, tex1, scale);
+			};
 
-			// Save this for determining the pixel centering flag later.
+			// First condition: dU/dX is an integer and pixel centers correspond to texel centers or boundaries.
+			const bool scaled_aligned_U = ((dU % dX) == 0) && EndpointsAlignedEither(X0, X1, U0, U1, dU / dX);
+			const bool scaled_aligned_V = ((dV % dY) == 0) && EndpointsAlignedEither(Y0, Y1, V0, V1, dV / dY);
+
+			// Save this for determining info flags later.
 			const bool scaled_aligned_U_centered = scaled_aligned_U && EndpointsAlignedCentered(X0, X1, U0, U1, dU / dX);
 			const bool scaled_aligned_V_centered = scaled_aligned_V && EndpointsAlignedCentered(Y0, Y1, V0, V1, dV / dY);
+			const bool scaled_aligned_U_boundaries = scaled_aligned_U && EndpointsAlignedBoundaries(X0, X1, U0, U1, dU / dX);
+			const bool scaled_aligned_V_boundaries = scaled_aligned_V && EndpointsAlignedBoundaries(Y0, Y1, V0, V1, dV / dY);
 
 			// Maximum denominator to round. Only allow integer scaling with upscaling.
 			const int max_denominator = upscaling ? 1 : ROUND_UV_DENOMINATOR;
@@ -5220,16 +5235,17 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_cent
 			bool bias_U_down = false;
 			bool bias_V_up = false;
 			bool bias_V_down = false;
-			if (!linear)
 			{
+				constexpr int bias_threshold = 0x10;
+
 				const bool anchor_XU0 = ((X0 | U0) & 0xF) == 0;
 				const bool anchor_YV0 = ((Y0 | V0) & 0xF) == 0;
 				const bool anchor_XU1 = ((X1 | U1) & 0xF) == 0;
 				const bool anchor_YV1 = ((Y1 | V1) & 0xF) == 0;
-				const bool bias_dU_up = (abs_dU > abs_dX) && (abs_dU <= abs_dX + 0x10);
-				const bool bias_dU_down = (abs_dU < abs_dX) && (abs_dU >= abs_dX - 0x10);
-				const bool bias_dV_up = (abs_dV > abs_dY) && (abs_dV <= abs_dY + 0x10);
-				const bool bias_dV_down = (abs_dV < abs_dY) && (abs_dV >= abs_dY - 0x10);
+				const bool bias_dU_up = (abs_dU > abs_dX) && (abs_dU <= abs_dX + bias_threshold);
+				const bool bias_dU_down = (abs_dU < abs_dX) && (abs_dU >= abs_dX - bias_threshold);
+				const bool bias_dV_up = (abs_dV > abs_dY) && (abs_dV <= abs_dY + bias_threshold);
+				const bool bias_dV_down = (abs_dV < abs_dY) && (abs_dV >= abs_dY - bias_threshold);
 
 				// The sign of dU and dV, and the anchor point of where the coordinates are aligned
 				// flips whether the nudge becomes an upward or downward bias. The logic could
@@ -5301,10 +5317,14 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_cent
 
 				// Determine whether this quad had pixel to texel centers perfectly aligned.
 				// This helps determine whether we can disable bilinear.
-				if (pixel_centers_aligned)
+				// The half offset flags are to determine whether XU and/or YV appear approximately shifted
+				// by half a pixel, which is sometimes done to intentionally blur an image with bilinear.
+				if (info)
 				{
-					(*pixel_centers_aligned) &= (round_U == ROUND_UV_UP) && scaled_aligned_U_centered;
-					(*pixel_centers_aligned) &= (round_V == ROUND_UV_UP) && scaled_aligned_V_centered;
+					info->one_to_one_XU_YV &= (round_U == ROUND_UV_UP) && scaled_aligned_U_centered;
+					info->one_to_one_XU_YV &= (round_V == ROUND_UV_UP) && scaled_aligned_V_centered;
+					info->half_offset_XU &= (bias_U_up || bias_U_down || scaled_aligned_U_boundaries);
+					info->half_offset_YV &= (bias_V_up || bias_V_down || scaled_aligned_V_boundaries);
 				}
 
 				if (swap_uv)
@@ -5367,7 +5387,7 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, bool* pixel_cent
 	return true;
 }
 
-bool GSState::GetVertexUVRoundingInfo(const bool tex, const bool upscaling, bool* pixel_centers_aligned)
+bool GSState::GetVertexUVRoundingInfo(const bool tex, const bool upscaling, VertexUVRoundingInfo* info)
 {
 	switch (m_vt.m_primclass)
 	{
@@ -5375,25 +5395,25 @@ bool GSState::GetVertexUVRoundingInfo(const bool tex, const bool upscaling, bool
 			if (tex)
 			{
 				if (PRIM->FST)
-					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, true>(upscaling, pixel_centers_aligned);
+					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, true>(upscaling, info);
 				else
-					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, false>(upscaling, pixel_centers_aligned);
+					return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, true, false>(upscaling, info);
 			}
 			else
 			{
-				return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, false, false>(upscaling, pixel_centers_aligned);
+				return GetVertexUVRoundingInfoImpl<GS_TRIANGLE_CLASS, false, false>(upscaling, info);
 			}
 		case GS_SPRITE_CLASS:
 			if (tex)
 			{
 				if (PRIM->FST)
-					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, true>(upscaling, pixel_centers_aligned);
+					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, true>(upscaling, info);
 				else
-					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, false>(upscaling, pixel_centers_aligned);
+					return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, true, false>(upscaling, info);
 			}
 			else
 			{
-				return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, false, false>(upscaling, pixel_centers_aligned);
+				return GetVertexUVRoundingInfoImpl<GS_SPRITE_CLASS, false, false>(upscaling, info);
 			}
 		default:
 			return false;
