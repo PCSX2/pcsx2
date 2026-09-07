@@ -589,12 +589,12 @@ void PadDualshock2::Set(u32 index, float value)
 
 			if (this->useDiagonalScaleCorrection)
 			{
-				float normalizedX = (combinedX - 127.5) / 127.5f;
-				float normalizedY = (combinedY - 127.5) / 127.5f;
-				float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
-				float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
-				float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
-				float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+				const float normalizedX = (combinedX - 127.5) / 127.5f;
+				const float normalizedY = (combinedY - 127.5) / 127.5f;
+				const float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
+				const float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
+				const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+				const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
 				this->analogs.lx = (scaledX * 127.5) + 127.5;
 				this->analogs.ly = (scaledY * 127.5) + 127.5;
 			}
@@ -612,12 +612,12 @@ void PadDualshock2::Set(u32 index, float value)
 
 			if (this->useDiagonalScaleCorrection)
 			{
-				float normalizedX = (combinedX - 127.5) / 127.5f;
-				float normalizedY = (combinedY - 127.5) / 127.5f;
-				float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
-				float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
-				float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
-				float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+				const float normalizedX = (combinedX - 127.5) / 127.5f;
+				const float normalizedY = (combinedY - 127.5) / 127.5f;
+				const float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
+				const float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
+				const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+				const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
 				this->analogs.rx = (scaledX * 127.5) + 127.5;
 				this->analogs.ry = (scaledY * 127.5) + 127.5;
 			}
