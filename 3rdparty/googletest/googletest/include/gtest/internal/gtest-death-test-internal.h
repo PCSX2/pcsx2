@@ -43,6 +43,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "gtest/gtest-matchers.h"
 #include "gtest/internal/gtest-internal.h"
@@ -62,6 +63,10 @@ const char kInternalRunDeathTestFlag[] = "internal_run_death_test";
 inline Matcher<const ::std::string&> MakeDeathTestMatcher(
     ::testing::internal::RE regex) {
   return ContainsRegex(regex.pattern());
+}
+inline Matcher<const ::std::string&> MakeDeathTestMatcher(
+    std::string_view regex) {
+  return ContainsRegex(regex);
 }
 inline Matcher<const ::std::string&> MakeDeathTestMatcher(const char* regex) {
   return ContainsRegex(regex);
@@ -96,7 +101,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 //               by wait(2)
 // exit code:    The integer code passed to exit(3), _Exit(2), or
 //               returned from main()
-class GTEST_API_ DeathTest {
+class GTEST_API_ [[nodiscard]] DeathTest {
  public:
   // Create returns false if there was an error determining the
   // appropriate action to take for the current death test; for example,
@@ -172,7 +177,7 @@ class GTEST_API_ DeathTest {
 GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4251
 
 // Factory interface for death tests.  May be mocked out for testing.
-class DeathTestFactory {
+class [[nodiscard]] DeathTestFactory {
  public:
   virtual ~DeathTestFactory() = default;
   virtual bool Create(const char* statement,
@@ -181,7 +186,7 @@ class DeathTestFactory {
 };
 
 // A concrete DeathTestFactory implementation for normal use.
-class DefaultDeathTestFactory : public DeathTestFactory {
+class [[nodiscard]] DefaultDeathTestFactory : public DeathTestFactory {
  public:
   bool Create(const char* statement, Matcher<const std::string&> matcher,
               const char* file, int line, DeathTest** test) override;
@@ -229,7 +234,8 @@ GTEST_API_ bool ExitedUnsuccessfully(int exit_status);
       goto GTEST_CONCAT_TOKEN_(gtest_label_, __LINE__);                        \
     }                                                                          \
     if (gtest_dt != nullptr) {                                                 \
-      std::unique_ptr< ::testing::internal::DeathTest> gtest_dt_ptr(gtest_dt); \
+      const std::unique_ptr< ::testing::internal::DeathTest> gtest_dt_ptr(     \
+          gtest_dt);                                                           \
       switch (gtest_dt->AssumeRole()) {                                        \
         case ::testing::internal::DeathTest::OVERSEE_TEST:                     \
           if (!gtest_dt->Passed(predicate(gtest_dt->Wait()))) {                \
@@ -256,19 +262,19 @@ GTEST_API_ bool ExitedUnsuccessfully(int exit_status);
 // must accept a streamed message even though the message is never printed.
 // The regex object is not evaluated, but it is used to prevent "unused"
 // warnings and to avoid an expression that doesn't compile in debug mode.
-#define GTEST_EXECUTE_STATEMENT_(statement, regex_or_matcher)    \
-  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                  \
-  if (::testing::internal::AlwaysTrue()) {                       \
-    GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);   \
-  } else if (!::testing::internal::AlwaysTrue()) {               \
-    ::testing::internal::MakeDeathTestMatcher(regex_or_matcher); \
-  } else                                                         \
+#define GTEST_EXECUTE_STATEMENT_(statement, regex_or_matcher)          \
+  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                        \
+  if (::testing::internal::AlwaysTrue()) {                             \
+    GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);         \
+  } else if (!::testing::internal::AlwaysTrue()) {                     \
+    (void)::testing::internal::MakeDeathTestMatcher(regex_or_matcher); \
+  } else                                                               \
     ::testing::Message()
 
 // A class representing the parsed contents of the
 // --gtest_internal_run_death_test flag, as it existed when
 // RUN_ALL_TESTS was called.
-class InternalRunDeathTestFlag {
+class [[nodiscard]] InternalRunDeathTestFlag {
  public:
   InternalRunDeathTestFlag(const std::string& a_file, int a_line, int an_index,
                            int a_write_fd)

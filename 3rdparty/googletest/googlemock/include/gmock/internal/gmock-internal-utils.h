@@ -41,6 +41,7 @@
 
 #include <stdio.h>
 
+#include <iterator>
 #include <ostream>  // NOLINT
 #include <string>
 #include <type_traits>
@@ -193,11 +194,11 @@ using LosslessArithmeticConvertibleImpl = std::integral_constant<
        // Converting between integers of different widths is allowed so long
        // as the conversion does not go from signed to unsigned.
       (((sizeof(From) < sizeof(To)) &&
-        !(std::is_signed<From>::value && !std::is_signed<To>::value)) ||
+        !(std::is_signed_v<From> && !std::is_signed_v<To>)) ||
        // Converting between integers of the same width only requires the
        // two types to have the same signedness.
        ((sizeof(From) == sizeof(To)) &&
-        (std::is_signed<From>::value == std::is_signed<To>::value)))
+        (std::is_signed_v<From> == std::is_signed_v<To>)))
        ) ? true
       // Floating point conversions are lossless if and only if `To` is at least
       // as wide as `From`.
@@ -220,7 +221,7 @@ using LosslessArithmeticConvertible =
 
 // This interface knows how to report a Google Mock failure (either
 // non-fatal or fatal).
-class FailureReporterInterface {
+class [[nodiscard]] FailureReporterInterface {
  public:
   // The type of a failure (either non-fatal or fatal).
   enum FailureType { kNonfatal, kFatal };
@@ -296,14 +297,13 @@ GTEST_API_ void Log(LogSeverity severity, const std::string& message,
 //
 //    ON_CALL(mock, Method({}, nullptr))...
 //
-class WithoutMatchers {
+class [[nodiscard]] WithoutMatchers {
  private:
-  WithoutMatchers() {}
-  friend GTEST_API_ WithoutMatchers GetWithoutMatchers();
-};
+  WithoutMatchers() = default;
 
-// Internal use only: access the singleton instance of WithoutMatchers.
-GTEST_API_ WithoutMatchers GetWithoutMatchers();
+ public:
+  GTEST_API_ static WithoutMatchers Get();
+};
 
 // Invalid<T>() is usable as an expression of type T, but will terminate
 // the program with an assertion failure if actually run.  This is useful
@@ -323,6 +323,24 @@ inline T Invalid() {
 #endif
 }
 
+void GetValueType(const void*);
+
+template <class T>
+typename std::iterator_traits<
+    decltype(std::begin(std::declval<T&>()))>::value_type
+GetValueType(T*);
+
+template <class T, class = void>
+struct RangeTraits {
+  typedef decltype(internal::GetValueType(
+      static_cast<std::remove_reference_t<T>*>(nullptr))) value_type;
+};
+
+template <class T>
+struct RangeTraits<T, std::conditional_t<true, void, typename T::value_type>> {
+  typedef typename T::value_type value_type;
+};
+
 // Given a raw type (i.e. having no top-level reference or const
 // modifier) RawContainer that's either an STL-style container or a
 // native array, class StlContainerView<RawContainer> has the
@@ -340,13 +358,13 @@ inline T Invalid() {
 // This generic version is used when RawContainer itself is already an
 // STL-style container.
 template <class RawContainer>
-class StlContainerView {
+class [[nodiscard]] StlContainerView {
  public:
   typedef RawContainer type;
   typedef const type& const_reference;
 
   static const_reference ConstReference(const RawContainer& container) {
-    static_assert(!std::is_const<RawContainer>::value,
+    static_assert(!std::is_const_v<RawContainer>,
                   "RawContainer type must not be const");
     return container;
   }
@@ -355,7 +373,7 @@ class StlContainerView {
 
 // This specialization is used when RawContainer is a native array type.
 template <typename Element, size_t N>
-class StlContainerView<Element[N]> {
+class [[nodiscard]] StlContainerView<Element[N]> {
  public:
   typedef typename std::remove_const<Element>::type RawElement;
   typedef internal::NativeArray<RawElement> type;
@@ -367,7 +385,7 @@ class StlContainerView<Element[N]> {
   typedef const type const_reference;
 
   static const_reference ConstReference(const Element (&array)[N]) {
-    static_assert(std::is_same<Element, RawElement>::value,
+    static_assert(std::is_same_v<Element, RawElement>,
                   "Element type must not be const");
     return type(array, N, RelationToSourceReference());
   }
@@ -379,7 +397,7 @@ class StlContainerView<Element[N]> {
 // This specialization is used when RawContainer is a native array
 // represented as a (pointer, size) tuple.
 template <typename ElementPointer, typename Size>
-class StlContainerView< ::std::tuple<ElementPointer, Size> > {
+class [[nodiscard]] StlContainerView< ::std::tuple<ElementPointer, Size> > {
  public:
   typedef typename std::remove_const<
       typename std::pointer_traits<ElementPointer>::element_type>::type
@@ -429,14 +447,13 @@ auto ApplyImpl(F&& f, Tuple&& args, std::index_sequence<Idx...>)
 
 // Apply the function to a tuple of arguments.
 template <typename F, typename Tuple>
-auto Apply(F&& f, Tuple&& args)
-    -> decltype(ApplyImpl(
-        std::forward<F>(f), std::forward<Tuple>(args),
-        std::make_index_sequence<std::tuple_size<
-            typename std::remove_reference<Tuple>::type>::value>())) {
+auto Apply(F&& f, Tuple&& args) -> decltype(ApplyImpl(
+    std::forward<F>(f), std::forward<Tuple>(args),
+    std::make_index_sequence<
+        std::tuple_size_v<std::remove_reference_t<Tuple>>>())) {
   return ApplyImpl(std::forward<F>(f), std::forward<Tuple>(args),
-                   std::make_index_sequence<std::tuple_size<
-                       typename std::remove_reference<Tuple>::type>::value>());
+                   std::make_index_sequence<
+                       std::tuple_size_v<std::remove_reference_t<Tuple>>>());
 }
 
 // Template struct Function<F>, where F must be a function type, contains
@@ -472,7 +489,7 @@ struct Function<R(Args...)> {
 // See: https://github.com/google/googletest/issues/3931
 // Can be replaced with std::tuple_element_t in C++14.
 template <size_t I, typename T>
-using TupleElement = typename std::tuple_element<I, T>::type;
+using TupleElement = std::tuple_element_t<I, T>;
 
 bool Base64Unescape(const std::string& encoded, std::string* decoded);
 
