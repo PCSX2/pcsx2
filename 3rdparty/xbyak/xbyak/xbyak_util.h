@@ -179,6 +179,8 @@ private:
 	uint32_t coresSharingDataCache_[maxNumberCacheLevels];
 	uint32_t dataCacheLevels_;
 	uint32_t avx10version_;
+	uint32_t aceVersion_;
+	uint32_t maxPalette_;
 
 	uint32_t get32bitAsBE(const char *x) const
 	{
@@ -582,7 +584,7 @@ public:
 	XBYAK_DEFINE_TYPE(88, tSSE4a);
 	XBYAK_DEFINE_TYPE(89, tCLWB);
 	XBYAK_DEFINE_TYPE(90, tTSXLDTRK);
-	XBYAK_DEFINE_TYPE(91, tAMX_TRANSPOSE);
+//	XBYAK_DEFINE_TYPE(91, tAMX_TRANSPOSE);
 	XBYAK_DEFINE_TYPE(92, tAMX_TF32);
 	XBYAK_DEFINE_TYPE(93, tAMX_AVX512);
 	XBYAK_DEFINE_TYPE(94, tAMX_MOVRS);
@@ -590,6 +592,9 @@ public:
 	XBYAK_DEFINE_TYPE(96, tMOVRS);
 	XBYAK_DEFINE_TYPE(97, tHYBRID);
 	XBYAK_DEFINE_TYPE(98, tAMX_COMPLEX);
+	XBYAK_DEFINE_TYPE(99, tACE);
+	XBYAK_DEFINE_TYPE(100, tAVX10_V1_AUX);
+	XBYAK_DEFINE_TYPE(101, tAVX10_V2_AUX);
 
 #undef XBYAK_SPLIT_ID
 #undef XBYAK_DEFINE_TYPE
@@ -601,6 +606,8 @@ public:
 		, coresSharingDataCache_()
 		, dataCacheLevels_(0)
 		, avx10version_(0)
+		, aceVersion_(0)
+		, maxPalette_(0)
 	{
 		uint32_t data[4] = {};
 		const uint32_t& eax = data[0];
@@ -748,13 +755,19 @@ public:
 				if (edx & (1U << 14)) type_ |= tPREFETCHITI;
 				if (edx & (1U << 19)) type_ |= tAVX10;
 				if (edx & (1U << 21)) type_ |= tAPX_F;
-
-				getCpuidEx(0x1e, 1, data);
-				if (eax & (1U << 4)) type_ |= tAMX_FP8;
-				if (eax & (1U << 5)) type_ |= tAMX_TRANSPOSE;
-				if (eax & (1U << 6)) type_ |= tAMX_TF32;
-				if (eax & (1U << 7)) type_ |= tAMX_AVX512;
-				if (eax & (1U << 8)) type_ |= tAMX_MOVRS;
+				if (ecx & (1U << 11)) type_ |= tACE;
+			}
+			if (maxNum >= 0x1e) {
+				getCpuidEx(0x1e, 0, data);
+				if (eax /* maxNumSubLeaves */ >= 1) { // 0 on SPR/EMR
+					getCpuidEx(0x1e, 1, data);
+					// eax bits 0-3 (AMX-INT8/BF16/COMPLEX/FP16) mirror the leaf 7 bits, so use leaf 7
+					if (eax & (1U << 4)) type_ |= tAMX_FP8;
+//					if (eax & (1U << 5)) type_ |= tAMX_TRANSPOSE; // removed at 319433-059
+					if (eax & (1U << 6)) type_ |= tAMX_TF32;
+					if (eax & (1U << 7)) type_ |= tAMX_AVX512;
+					if (eax & (1U << 8)) type_ |= tAMX_MOVRS;
+				}
 			}
 		}
 		if (maxNum >= 0x19) {
@@ -765,7 +778,21 @@ public:
 		}
 		if (has(tAVX10) && maxNum >= 0x24) {
 			getCpuidEx(0x24, 0, data);
+			const uint32_t maxNumSubLeaves = eax;
 			avx10version_ = ebx & mask(7);
+			if (maxNumSubLeaves >= 1) {
+				getCpuidEx(0x24, 1, data);
+				if (ecx & (1U << 2)) type_ |= tAVX10_V1_AUX;
+				if (ecx & (1U << 3)) type_ |= tAVX10_V2_AUX;
+			}
+		}
+		if (has(tAMX_TILE) && maxNum >= 0x1d) {
+			getCpuidEx(0x1d, 0, data);
+			maxPalette_ = eax;
+			if (has(tACE) && maxPalette_ >= 2) {
+				getCpuidEx(0x1d, 2, data);
+				aceVersion_ = eax & mask(8);
+			}
 		}
 		setFamily();
 		setNumCores();
@@ -784,6 +811,8 @@ public:
 		return (type & type_) == type;
 	}
 	int getAVX10version() const { return avx10version_; }
+	int getACEVersion() const { return aceVersion_; }
+	int getMaxPalette() const { return maxPalette_; }
 };
 #ifdef _MSC_VER
 	#pragma warning(pop)
@@ -1834,7 +1863,22 @@ const int UseRCX = 1 << 6;
 const int UseRDX = 1 << 7;
 const int UseRSI = 1 << 8;
 const int UseRDI = 1 << 9;
-const int UseRBPAsFramePointer = UseRBP | (1 << 10);
+const int UseR30R31 = 1 << 10; // reserve r30/r31 (APX EGPRs), pushed/popped unconditionally
+const int UseRBX = 1 << 11;
+const int UseRBPAsFramePointer = UseRBP | (1 << 30);
+const int UsePUSH2 = 1 << 28; // use push2/pop2 where RSP is 16-byte aligned, push/pop otherwise
+const int UsePPX   = 1 << 29; // use pushp/popp (or push2p/pop2p with UsePUSH2) with the PPX store-forwarding hint
+
+namespace local {
+const int UseVecNumShift = 16; // bits 16..21 : vector register count for UseSSE/UseAVX
+const int UseVecSSE = 1 << 22;
+const int UseVecAVX = 1 << 23;
+} // local
+const int NoVzeroupper = 1 << 24; // suppress vzeroupper in close() (UseAVX required)
+// declare the use of xmm0, ..., xmm(n-1) with SSE instructions (0 <= n <= 16)
+inline int UseSSE(int n) { return local::UseVecSSE | (n << local::UseVecNumShift); }
+// declare the use of xmm/ymm/zmm 0, ..., n-1 with AVX instructions (0 <= n <= 32)
+inline int UseAVX(int n) { return local::UseVecAVX | (n << local::UseVecNumShift); }
 
 class StackFrame {
 #ifdef XBYAK64_WIN
@@ -1845,7 +1889,9 @@ class StackFrame {
 	static const int maxPnum = 4;
 	static const int maxRegNum = 14; // maxRegNum = 16 - rsp - rax
 	static const int calleeSaveNum = maxRegNum - noSaveNum;
-	static const int UseMASK = UseRCX|UseRDX|UseRSI|UseRDI|UseRBP;
+	static const int maxSaveRegNum = calleeSaveNum + 2; // +2 for r30/r31 (UseR30R31)
+	static const int UseMASK = UseRBX|UseRCX|UseRDX|UseRSI|UseRDI|UseRBP|UseR30R31|UsePUSH2|UsePPX;
+	static const int UseVecMASK = (63 << local::UseVecNumShift)|local::UseVecSSE|local::UseVecAVX|NoVzeroupper;
 	Xbyak::CodeGenerator *code_;
 	Xbyak::Reg64 pTbl_[maxPnum];
 	Xbyak::Reg64 tTbl_[maxRegNum];
@@ -1855,8 +1901,12 @@ class StackFrame {
 	int tNum_;
 	int useRegs_;
 	int saveNum_;
-	int saveRegs_[calleeSaveNum];
+	int saveRegs_[maxSaveRegNum];
 	int P_;
+	int vecSaveNum_; // number of saved xmm registers (Win64 only)
+	int vecPos_; // offset of the xmm save area from rsp after the prolog
+	bool vzeroupper_; // emit vzeroupper at the top of close()
+	bool useVmovaps_; // save/restore with vmovaps instead of movaps
 	bool makeEpilog_;
 	StackFrame(const StackFrame&);
 	void operator=(const StackFrame&);
@@ -1867,7 +1917,7 @@ public:
 		make stack frame
 		@param sf [in] this
 		@param pNum [in] number of function parameters(0 <= pNum <= 4)
-		@param tNum [in] number of temporary registers(0 <= tNum, can be OR-ed with Use{RCX,RDX,RSI,RDI,RBP}, e.g., 3|UseRCX)
+		@param tNum [in] number of temporary registers(0 <= tNum, can be OR-ed with Use{RBX,RCX,RDX,RSI,RDI,RBP,R30R31}, e.g., 3|UseRCX)
 		@param stackSizeByte [in] local stack size
 		@param makeEpilog [in] automatically call close() if true
 
@@ -1877,22 +1927,53 @@ public:
 		rax
 		p[0], ..., p[pNum-1] as function parameters
 		t[0], ..., t[tNum-1] as temporary registers
-		{rcx,rdx,rsi,rdi,rbp} are explicitly available by specifying Use{RCX,RDX,RSI,RDI,RBP} in tNum
+		{rbx,rcx,rdx,rsi,rdi,rbp} are explicitly available by specifying Use{RBX,RCX,RDX,RSI,RDI,RBP} in tNum
+		r30, r31 are explicitly available by specifying UseR30R31 in tNum
 		rsp[0..stackSizeByte-1] if stackSizeByte > 0
+		xmm0, ..., xmm(n-1) are declared by UseSSE(n) (0 <= n <= 16) : only SSE instructions are emitted
+		xmm/ymm/zmm 0, ..., n-1 are declared by UseAVX(n) (0 <= n <= 32) : vzeroupper is emitted at the top of close() unless NoVzeroupper is specified
+		on Win64 the lower 128 bits of xmm6, ..., xmm(min(n,16)-1) are saved/restored automatically (xmm16-31 are volatile everywhere and need not be counted in n)
 	*/
 	StackFrame(Xbyak::CodeGenerator *code, int pNum, int tNum = 0, int stackSizeByte = 0, bool makeEpilog = true)
 		: code_(code)
 		, pNum_(pNum)
-		, tNum_(tNum & ~(UseMASK|UseRBPAsFramePointer))
+		, tNum_(tNum & ~(UseMASK|UseRBPAsFramePointer|UseVecMASK))
 		, useRegs_(tNum & UseMASK) // drop UseRBPAsFramePointer bit
 		, saveNum_(0)
 		, P_(0)
+		, vecSaveNum_(0)
+		, vecPos_(0)
+		, vzeroupper_(false)
+		, useVmovaps_(false)
 		, makeEpilog_(makeEpilog)
 		, p(p_)
 		, t(t_)
 	{
 		if (pNum < 0 || pNum > 4) XBYAK_THROW(ERR_BAD_PNUM)
-		if (tNum < 0) XBYAK_THROW(ERR_BAD_TNUM)
+		if (tNum_ < 0) XBYAK_THROW(ERR_BAD_TNUM)
+		const int vecKind = tNum & (local::UseVecSSE|local::UseVecAVX);
+		const int vecNum = (tNum >> local::UseVecNumShift) & 63;
+		if (vecKind == (local::UseVecSSE|local::UseVecAVX)) XBYAK_THROW(ERR_BAD_TNUM)
+		// NoVzeroupper requires UseAVX
+		if ((tNum & NoVzeroupper) && vecKind != local::UseVecAVX) XBYAK_THROW(ERR_BAD_TNUM)
+		if (vecKind == 0) {
+			if (vecNum > 0) XBYAK_THROW(ERR_BAD_TNUM)
+		} else {
+			// UseSSE rejects n > 16 because SSE encodings cannot reach xmm16+
+			if (vecNum > ((vecKind == local::UseVecAVX) ? 32 : 16)) XBYAK_THROW(ERR_BAD_TNUM)
+			if (vecKind == local::UseVecAVX) {
+				if (tNum & NoVzeroupper) {
+					// the upper state may be dirty at the prolog/epilog; avoid legacy SSE movaps
+					useVmovaps_ = true;
+				} else {
+					vzeroupper_ = true;
+				}
+			}
+#ifdef XBYAK64_WIN
+			// Win64 requires saving the lower 128 bits of xmm6-15; xmm16+ are volatile everywhere
+			if (vecNum > 6) vecSaveNum_ = local::min_(vecNum, 16) - 6;
+#endif
+		}
 		const int *const fullTbl = getRegEntryTbl();
 		const int *const calleeTbl = fullTbl + noSaveNum;
 		int callerUseNum = 0;
@@ -1911,24 +1992,64 @@ public:
 		const int baseSaveNum = local::max_(0, pNum + tNum_ + useNum - noSaveNum);
 		bool pushedRbp = false;
 		if (useRegs_ & UseRBP) {
-			code->push(rbp);
+			// keep the pushp/popp pair matched because close() pops rbp with popp
+			if (useRegs_ & UsePPX) {
+				code->pushp(rbp);
+			} else {
+				code->push(rbp);
+			}
 			saveRegs_[saveNum_++] = Operand::RBP;
 			pushedRbp = true;
 			if ((tNum & UseRBPAsFramePointer) == UseRBPAsFramePointer) code->mov(rbp, rsp);
+		}
+		if (useRegs_ & UseR30R31) {
+			saveRegs_[saveNum_++] = Operand::R30;
+			saveRegs_[saveNum_++] = Operand::R31;
 		}
 		for (int i = 0; i < calleeSaveNum; i++) {
 			int r = calleeTbl[i];
 			if (i < baseSaveNum || isUseReg(r)) {
 				if (pushedRbp && r == Operand::RBP) continue;
 				saveRegs_[saveNum_++] = r;
-				code->push(Reg64(r));
 			}
 		}
-		P_ = (stackSizeByte + 7) / 8;
-		// (rsp % 16) == 8, then increment P_ for 16 byte alignment
-		if (P_ > 0 && (P_ & 1) == (saveNum_ & 1)) P_++;
-		P_ *= 8;
-		if (P_ > 0) code->sub(rsp, P_);
+		// RSP is 8 mod 16 at function entry; each push subtracts 8, so an odd
+		// loop index means RSP is 16-byte aligned before saveRegs_[i] is pushed.
+		for (int i = pushedRbp ? 1 : 0; i < saveNum_; i++) {
+			if ((useRegs_ & UsePUSH2) && (i & 1) && i + 1 < saveNum_) {
+				if (useRegs_ & UsePPX) {
+					code->push2p(Reg64(saveRegs_[i]), Reg64(saveRegs_[i + 1]));
+				} else {
+					code->push2(Reg64(saveRegs_[i]), Reg64(saveRegs_[i + 1]));
+				}
+				i++;
+			} else if (useRegs_ & UsePPX) {
+				code->pushp(Reg64(saveRegs_[i]));
+			} else {
+				code->push(Reg64(saveRegs_[i]));
+			}
+		}
+		if (vecSaveNum_ > 0) {
+			// layout from the lower address : local stack (stackSizeByte) / xmm save area (16-byte aligned) / padding (0 or 8)
+			vecPos_ = (stackSizeByte + 15) & ~15;
+			P_ = vecPos_ + vecSaveNum_ * 16;
+			// after the pushes (rsp % 16) == 8 * ((1 + saveNum_) % 2), so make rsp 16-byte aligned for movaps
+			if ((saveNum_ & 1) == 0) P_ += 8;
+			code->sub(rsp, P_);
+			for (int i = 0; i < vecSaveNum_; i++) {
+				if (useVmovaps_) {
+					code->vmovaps(ptr[rsp + (vecPos_ + i * 16)], Xmm(6 + i));
+				} else {
+					code->movaps(ptr[rsp + (vecPos_ + i * 16)], Xmm(6 + i));
+				}
+			}
+		} else {
+			P_ = (stackSizeByte + 7) / 8;
+			// (rsp % 16) == 8, then increment P_ for 16 byte alignment
+			if (P_ > 0 && (P_ & 1) == (saveNum_ & 1)) P_++;
+			P_ *= 8;
+			if (P_ > 0) code->sub(rsp, P_);
+		}
 		int pos = 0;
 		for (int i = 0; i < pNum; i++) {
 			pTbl_[i] = Xbyak::Reg64(getRegIdx(pos));
@@ -1952,9 +2073,30 @@ public:
 	*/
 	void close(bool callRet = true)
 	{
+		// vzeroupper comes before the restores so that legacy SSE movaps does not run with a dirty upper state
+		if (vzeroupper_) code_->vzeroupper();
+		for (int i = 0; i < vecSaveNum_; i++) {
+			if (useVmovaps_) {
+				code_->vmovaps(Xmm(6 + i), ptr[rsp + (vecPos_ + i * 16)]);
+			} else {
+				code_->movaps(Xmm(6 + i), ptr[rsp + (vecPos_ + i * 16)]);
+			}
+		}
 		if (P_ > 0) code_->add(code_->rsp, P_);
+		const int start = (useRegs_ & UseRBP) ? 1 : 0;
 		for (int i = saveNum_ - 1; i >= 0; i--) {
-			code_->pop(Reg64(saveRegs_[i]));
+			if ((useRegs_ & UsePUSH2) && !(i & 1) && i - 1 >= start) {
+				if (useRegs_ & UsePPX) {
+					code_->pop2p(Reg64(saveRegs_[i]), Reg64(saveRegs_[i - 1]));
+				} else {
+					code_->pop2(Reg64(saveRegs_[i]), Reg64(saveRegs_[i - 1]));
+				}
+				i--;
+			} else if (useRegs_ & UsePPX) {
+				code_->popp(Reg64(saveRegs_[i]));
+			} else {
+				code_->pop(Reg64(saveRegs_[i]));
+			}
 		}
 		if (callRet) code_->ret();
 	}
@@ -1967,6 +2109,7 @@ private:
 	static int useFlagOf(int r)
 	{
 		switch (r) {
+		case Operand::RBX: return UseRBX;
 		case Operand::RCX: return UseRCX;
 		case Operand::RDX: return UseRDX;
 		case Operand::RSI: return UseRSI;
