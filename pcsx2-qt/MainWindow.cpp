@@ -2626,12 +2626,6 @@ void MainWindow::showEvent(QShowEvent* event)
 {
 	QMainWindow::showEvent(event);
 
-	// This is a bit silly, but for some reason resizing *before* the window is shown
-	// gives the incorrect sizes for columns, if you set the style before setting up
-	// the rest of the window... so, instead, let's just force it to be resized on show.
-	if (isShowingGameList())
-		m_game_list_widget->resizeTableViewColumnsToFit();
-
 #ifdef ENABLE_RAINTEGRATION
 	if (Achievements::IsUsingRAIntegration())
 		Achievements::RAIntegration::MainWindowChanged((void*)winId());
@@ -3182,7 +3176,6 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 		if (show_game_list)
 		{
 			m_ui.mainContainer->setCurrentIndex(0);
-			m_game_list_widget->resizeTableViewColumnsToFit();
 		}
 	}
 

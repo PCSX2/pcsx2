@@ -48,7 +48,6 @@ public:
 	__fi GameListModel* getModel() const { return m_model; }
 
 	void initialize();
-	void resizeTableViewColumnsToFit();
 
 	void refresh(bool invalidate_cache, bool popup_on_error);
 	void cancelRefresh();
