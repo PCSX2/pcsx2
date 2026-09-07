@@ -246,15 +246,12 @@ GTEST_API_ std::string WideStringToUtf8(const wchar_t* str, int num_chars);
 // be created, prints an error and exits.
 void WriteToShardStatusFileIfNeeded();
 
-// Checks whether sharding is enabled by examining the relevant
-// environment variable values. If the variables are present,
-// but inconsistent (e.g., shard_index >= total_shards), prints
-// an error and exits. If in_subprocess_for_death_test, sharding is
+// Checks whether sharding is enabled by examining the relevant flag values.
+// If the flags are set, but inconsistent (e.g., shard_index >= total_shards),
+// prints an error and exits. If in_subprocess_for_death_test, sharding is
 // disabled because it must only be applied to the original test
 // process. Otherwise, we could filter out death tests we intended to execute.
-GTEST_API_ bool ShouldShard(const char* total_shards_str,
-                            const char* shard_index_str,
-                            bool in_subprocess_for_death_test);
+GTEST_API_ bool ShouldShard(bool in_subprocess_for_death_test);
 
 // Parses the environment variable var as a 32-bit integer. If it is unset,
 // returns default_val. If it is not a 32-bit integer, prints an error and
@@ -590,7 +587,7 @@ class GTEST_API_ UnitTestImpl {
   // total_test_suite_count() - 1. If i is not in that range, returns NULL.
   const TestSuite* GetTestSuite(int i) const {
     const int index = GetElementOr(test_suite_indices_, i, -1);
-    return index < 0 ? nullptr : test_suites_[static_cast<size_t>(i)];
+    return index < 0 ? nullptr : test_suites_[static_cast<size_t>(index)];
   }
 
   //  Legacy API is deprecated but still available
@@ -1109,7 +1106,7 @@ class StreamingListener : public EmptyTestEventListener {
       GTEST_CHECK_(sockfd_ != -1)
           << "Send() can be called only when there is a connection.";
 
-      const auto len = static_cast<size_t>(message.length());
+      const size_t len = message.length();
       if (write(sockfd_, message.c_str(), len) != static_cast<ssize_t>(len)) {
         GTEST_LOG_(WARNING) << "stream_result_to: failed to stream to "
                             << host_name_ << ":" << port_num_;

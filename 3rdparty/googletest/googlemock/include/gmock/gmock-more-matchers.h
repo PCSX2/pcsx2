@@ -61,7 +61,7 @@ namespace internal {
 // Implements the polymorphic IsEmpty matcher, which
 // can be used as a Matcher<T> as long as T is either a container that defines
 // empty() and size() (e.g. std::vector or std::string), or a C-style string.
-class IsEmptyMatcher {
+class [[nodiscard]] IsEmptyMatcher {
  public:
   // Matches anything that defines empty() and size().
   template <typename MatcheeContainerType>
@@ -76,8 +76,21 @@ class IsEmptyMatcher {
 
   // Matches C-style strings.
   bool MatchAndExplain(const char* s, MatchResultListener* listener) const {
+    if (s == nullptr) {
+      return false;
+    }
     return MatchAndExplain(std::string(s), listener);
   }
+
+#if GTEST_HAS_STD_WSTRING
+  // Matches C-style wide strings.
+  bool MatchAndExplain(const wchar_t* s, MatchResultListener* listener) const {
+    if (s == nullptr) {
+      return false;
+    }
+    return MatchAndExplain(std::wstring(s), listener);
+  }
+#endif  // GTEST_HAS_STD_WSTRING
 
   // Describes what this matcher matches.
   void DescribeTo(std::ostream* os) const { *os << "is empty"; }

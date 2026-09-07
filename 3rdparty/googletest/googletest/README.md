@@ -25,7 +25,7 @@ When building GoogleTest as a standalone project, the typical workflow starts
 with
 
 ```
-git clone https://github.com/google/googletest.git -b v1.17.0
+git clone https://github.com/google/googletest.git -b v1.18.0
 cd googletest        # Main directory of the cloned repository.
 mkdir build          # Create a directory to hold the build output.
 cd build
@@ -145,9 +145,9 @@ We list the most frequently used macros below. For a complete list, see file
 ### Multi-threaded Tests
 
 GoogleTest is thread-safe where the pthread library is available. After
-`#include <gtest/gtest.h>`, you can check the
-`GTEST_IS_THREADSAFE` macro to see whether this is the case (yes if the macro is
-`#defined` to 1, no if it's undefined.).
+`#include <gtest/gtest.h>`, you can check the `GTEST_IS_THREADSAFE` macro to see
+whether this is the case (yes if the macro is `#defined` to 1, no if it's
+undefined.).
 
 If GoogleTest doesn't correctly detect whether pthread is available in your
 environment, you can force it with
