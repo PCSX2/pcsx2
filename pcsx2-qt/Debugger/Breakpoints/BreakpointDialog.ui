@@ -320,6 +320,9 @@
       <property name="toolTip">
        <string>Logged to the console when the breakpoint is hit. Wrap an expression in braces to substitute its value, e.g. "ra={ra} val={[sp,4]}". Use "{{" and "}}" for literal braces.</string>
       </property>
+      <property name="placeholderText">
+       <string>Hit breakpoint @ {pc}</string>
+      </property>
      </widget>
     </item>
     <item row="1" column="0" colspan="2">
