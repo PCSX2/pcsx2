@@ -1358,6 +1358,8 @@ void Pcsx2Config::DEV9Options::LoadSave(SettingsWrapper& wrap)
 		SettingsWrapEntry(AutoGateway);
 		SettingsWrapEnumEx(ModeDNS1, "ModeDNS1", DnsModeNames);
 		SettingsWrapEnumEx(ModeDNS2, "ModeDNS2", DnsModeNames);
+
+		SettingsWrapEntry(EthUDPPorts);
 	}
 
 	if (wrap.IsLoading())
@@ -1431,6 +1433,8 @@ bool Pcsx2Config::DEV9Options::operator==(const DEV9Options& right) const
 		   OpEqu(ModeDNS2) &&
 
 		   OpEqu(EthHosts) &&
+
+		   OpEqu(EthUDPPorts) &&
 
 		   OpEqu(HddEnable) &&
 		   OpEqu(HddFile);
