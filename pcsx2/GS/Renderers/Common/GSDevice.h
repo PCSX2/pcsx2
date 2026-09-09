@@ -465,7 +465,7 @@ static inline ShaderConvertSelector GetConvertShader(GSTexture::Format src, GSTe
 			switch (dst)
 			{
 				case GSTexture::Format::Color:
-					pxAssert(src_bpp == 32 && dst_bpp == 32);
+					pxAssert(src_bpp == dst_bpp);
 					shader = ShaderConvert::COPY; // bpp is handled by mask
 					break;
 				case GSTexture::Format::DepthColor:
