@@ -19,6 +19,8 @@ public:
 	
 	bool Precache2(ProgressCallback* progress, Error* error) override;
 
+	std::vector<toc_entry> ReadTOC() override;
+
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void* dst, s64 blockID) override;
 
@@ -26,7 +28,7 @@ public:
 	uint GetBlockCount(void) const override;
 
 private:
-	bool ParseTOC(u64* out_frame_count);
+	bool ParseTOC(u64* out_frame_count, std::vector<toc_entry>& entries);
 
 	chd_file* ChdFile = nullptr;
 	u64 file_size = 0;

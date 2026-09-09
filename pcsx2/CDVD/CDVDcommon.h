@@ -66,6 +66,14 @@ struct cdvdTN
 	u8 etrack; //number of the last track
 };
 
+struct toc_entry
+{
+	u32 lba;
+	u8 track;
+	u8 adr : 4;
+	u8 control : 4;
+};
+
 // SpindleCtrl Masks
 #define CDVD_SPINDLE_SPEED 0x7 // Speed ranges from 0-3 (1, 2, 3, 4x for DVD) and 0-5 (1, 2, 4, 12, 24x for CD)
 #define CDVD_SPINDLE_NOMINAL 0x40 // Changes the speed to be constant (CLV) based on current speed
