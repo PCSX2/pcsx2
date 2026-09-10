@@ -9,9 +9,9 @@ using std::endl;
 // this block must be skipped (MSVC: defining it here collides with the SDK's
 // non-identical types, C2371/C2011) and absent exactly when it must be active
 // (mingw-w64 defines NO RIO types anywhere). Do NOT key on
-// WSA_FLAG_REGISTERED_IO — BOTH toolchains define that flag (mingw
-// winsock2.h:526), it says nothing about the types; that key skipped the
-// block on mingw and broke the build, which is why it was once commented out.
+// WSA_FLAG_REGISTERED_IO: both toolchains define that flag (mingw
+// winsock2.h:526) and it says nothing about the types. Keying on it skips the
+// block on mingw and breaks the build.
 #if defined(_WIN32) && !defined(RIO_INVALID_CQ)
 #define WSA_FLAG_REGISTERED_IO 0x100
 #define SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER _WSAIORW(IOC_WS2, 36)

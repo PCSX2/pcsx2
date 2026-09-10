@@ -1,9 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-// Deliberately does NOT include GroovyMiSTerOutput.h: that header pulls in the GS device,
-// sockets and threads. The four things worth testing here are pure logic, and keeping them
-// in their own translation units is what makes them testable at all.
+// Deliberately does not include GroovyMiSTerOutput.h, which pulls in the GS device, sockets
+// and threads. What is tested here is pure logic living in its own translation units.
 #include "GroovyMiSTer/GroovyMiSTerAudioTap.h"
 #include "GroovyMiSTer/GroovyMiSTerKeepAlive.h"
 #include "GroovyMiSTer/GroovyMiSTerModeline.h"
@@ -20,11 +19,11 @@
 //  Pixel packing
 // =====================================================================================
 //
-// These three tests are the guard against a red/blue swap, which is the single easiest way
-// to get a subtly-wrong picture that still *looks* like it is working.
+// Guard against a red/blue swap, which produces a subtly wrong picture that still looks
+// like a working stream.
 //
-// PCSX2 reads back RGBA8 (byte 0 = R). The MiSTer's wire layout is NOT what its format
-// names suggest - the FPGA unpacks a pixel as `{r,g,b} <= word64[0 +: 24]`, a Verilog
+// PCSX2 reads back RGBA8 (byte 0 = R). The MiSTer's wire layout is not what its format
+// names suggest: the FPGA unpacks a pixel as `{r,g,b} <= word64[0 +: 24]`, a Verilog
 // concat, so blue ends up in the least-significant byte. Every mode needs a channel swap.
 
 namespace
@@ -140,14 +139,13 @@ TEST(GroovyMiSTerPack, HonoursSourcePitchPadding)
 //  CRT safety cap
 // =====================================================================================
 //
-// This one is not merely cosmetic: a modeline far outside a CRT's designed envelope can
-// physically damage an arcade monitor. The cap is on by default and these tests exist so
-// nobody quietly widens it.
+// A modeline far outside a CRT's designed envelope can physically damage an arcade
+// monitor. The cap is on by default; these tests hold the envelope where it is.
 
 namespace
 {
-	// Bytes per pixel of each wire format, spelled out so the expectations below read as the
-	// user-facing setting rather than a magic number.
+	// Bytes per pixel of each wire format, so the expectations below read as the setting
+	// rather than a magic number.
 	constexpr u32 BPP_565 = 2, BPP_888 = 3, BPP_8888 = 4;
 
 	GroovyMiSTer::Modeline MakeModeline(u16 h_active, u16 v_active)
@@ -180,7 +178,7 @@ TEST(GroovyMiSTerModeline, AcceptsTypicalPs2Modes)
 
 TEST(GroovyMiSTerModeline, CapRejectsModesBeyondCrtEnvelope)
 {
-	// 720p / 1080i class modes must be refused while the cap is on. This is the whole point.
+	// 720p / 1080i class modes must be refused while the cap is on.
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(1280, 720), BPP_888, true));
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(1920, 1080), BPP_888, true));
 
@@ -191,17 +189,17 @@ TEST(GroovyMiSTerModeline, CapRejectsModesBeyondCrtEnvelope)
 
 TEST(GroovyMiSTerModeline, DisablingCapAllowsLargeModes)
 {
-	// The user can turn the cap off (behind a warning) - then modes outside the CRT envelope
-	// are permitted, as long as they still fit the client's blit buffer. 1280x480 at RGB565 is
-	// 1,228,800 bytes: well past the 1024-wide cap, just inside the budget.
+	// With the cap off, modes outside the CRT envelope are permitted as long as they still
+	// fit the client's blit buffer. 1280x480 at RGB565 is 1,228,800 bytes: well past the
+	// 1024-wide cap, just inside the budget.
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(1280, 480), BPP_565, /*enforce_cap=*/true));
 	EXPECT_TRUE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(1280, 480), BPP_565, /*enforce_cap=*/false));
 }
 
 TEST(GroovyMiSTerModeline, MalformedIsAlwaysRejectedEvenWithCapOff)
 {
-	// Well-formedness is NOT the user's choice: a malformed modeline would drive the FPGA's
-	// PLL into an undefined state regardless of what the display can tolerate.
+	// Well-formedness is not the user's choice: a malformed modeline drives the FPGA's PLL
+	// into an undefined state whatever the display tolerates.
 	GroovyMiSTer::Modeline zero{};
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(zero, BPP_888, false));
 
@@ -219,14 +217,13 @@ TEST(GroovyMiSTerModeline, MalformedIsAlwaysRejectedEvenWithCapOff)
 // =====================================================================================
 //
 // The vendored client allocates its blit buffers once at BUFFER_SIZE (720x576x3) and takes
-// the stream length straight from our modeline - it never clamps. Overrunning that is a heap
-// overflow into RIO-registered memory, not a graphical glitch, so these tests guard the only
-// check standing in the way.
+// the stream length from the modeline it is given, without clamping. Overrunning it is a
+// heap overflow into RIO-registered memory rather than a graphical glitch.
 
 TEST(GroovyMiSTerModeline, ByteBudgetTracksTheRgbMode)
 {
-	// 720x576 is a real PAL mode and the exact size the client's buffer was cut for: it fits
-	// in RGB888 with ~1KB to spare, and does not fit at all in RGBA8888.
+	// 720x576 is a real PAL mode and the size the client's buffer was cut for: it fits in
+	// RGB888 with ~1KB to spare and does not fit in RGBA8888.
 	const GroovyMiSTer::Modeline pal = MakeModeline(720, 576);
 
 	EXPECT_EQ(GroovyMiSTer::BlitBytes(pal, BPP_888), 1244160u);
@@ -237,15 +234,15 @@ TEST(GroovyMiSTerModeline, ByteBudgetTracksTheRgbMode)
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(pal, BPP_8888, true))
 		<< "RGBA8888 at 720x576 overruns the client's blit buffer";
 
-	// 640x576 is under the CRT cap on both axes and still does not fit in RGBA8888 - which is
-	// why the check has to be on the byte product, not on the resolution.
+	// 640x576 is under the CRT cap on both axes and still does not fit in RGBA8888, so the
+	// check has to be on the byte product rather than the resolution.
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(640, 576), BPP_8888, true));
 }
 
 TEST(GroovyMiSTerModeline, ByteBudgetIsNotTheUsersChoice)
 {
-	// Turning the CRT cap off must not turn this off with it: the cap is about what a display
-	// tolerates, the budget is about what the client's allocation can hold.
+	// Turning the CRT cap off must not turn this off with it: the cap is what a display
+	// tolerates, the budget is what the client's allocation holds.
 	EXPECT_FALSE(GroovyMiSTer::IsModelineAcceptable(MakeModeline(720, 576), BPP_8888, /*enforce_cap=*/false));
 
 	// The cap-off path is also the one that can produce genuinely huge modes.
@@ -392,20 +389,20 @@ TEST(GroovyMiSTerAudioTap, SurvivesRingWraparound)
 //  Keepalive scheduling
 // =====================================================================================
 //
-// The Groovy core ends a session that puts NOTHING on the video socket for its idle
-// timeout (OSD: Server -> Idle timeout, 5s default) and frees the CRT. PCSX2 is silent
-// whenever it is alive but not blitting - paused, loading a savestate, swapping discs, or
-// holding off because no acceptable modeline could be produced - so without a keepalive,
-// pausing kills the stream.
+// Having advertised GM_CAP_KEEPALIVE at CMD_INIT, the core ends a session that puts nothing
+// on the video socket for its idle timeout (OSD: Server -> Idle timeout, 5s default) and
+// frees the CRT. PCSX2 is silent whenever it is alive but not blitting - paused, loading a
+// savestate, swapping discs, or held off because no acceptable modeline could be produced -
+// so without a keepalive, pausing kills the stream.
 //
-// Two properties matter and neither is observable from the socket code, which is why the
-// decision lives in its own header:
+// Two properties matter, neither observable from the socket code, which is why the decision
+// lives in its own header:
 //
-//   1. It must NEVER fire during normal play. It is gated on the timestamp of our last
-//      outbound datagram, so at 60fps the threshold is simply never reached.
-//   2. Worst-case silence is `idle threshold + poll period`, not `idle threshold`, because
-//      a poll landing just under the threshold defers the send by a whole period. That
-//      total has to stay inside half the core's timeout so one lost datagram is survivable.
+//   1. It must never fire during normal play. It is gated on the timestamp of the last
+//      outbound datagram, so at 60fps the threshold is never reached.
+//   2. Worst-case silence is `idle threshold + poll period`, not `idle threshold`, since a
+//      poll landing just under the threshold defers the send by a whole period. That total
+//      has to stay inside half the core's timeout for one lost datagram to be survivable.
 
 TEST(GroovyMiSTerKeepAlive, NeverFiresDuringNormalPlay)
 {

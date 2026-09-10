@@ -5,7 +5,7 @@ add_library(groovymister STATIC
 )
 
 # Static link into PCSX2: makes the gmw_* wrapper symbols non-dllexport, so there
-# is no runtime dlopen surface. See PROVENANCE.md.
+# is no runtime dlopen surface.
 target_compile_definitions(groovymister PUBLIC
 	GROOVYMISTER_WIN32_STATIC
 )
@@ -26,8 +26,7 @@ target_link_libraries(groovymister PUBLIC LZ4::LZ4)
 
 if(WIN32)
 	# Winsock. RIO (the low-latency UDP send path) is resolved at runtime via
-	# WSAIoctl into a function-pointer table, so mswsock.lib is NOT required —
-	# see PROVENANCE.md "Windows linkage".
+	# WSAIoctl into a function-pointer table, so mswsock.lib is not required.
 	target_link_libraries(groovymister PUBLIC ws2_32)
 endif()
 

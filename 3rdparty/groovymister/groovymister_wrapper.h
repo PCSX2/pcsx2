@@ -88,10 +88,14 @@ extern "C" {
 
 /* CMD_INIT byte[5] capability flags for gmw_set_input_caps. The client
    negotiates them internally (CMD_GET_VERSION probe before CMD_INIT), so
-   requesting caps against a pre-v2 core simply lands on a v1 session —
-   check gmw_get_input_caps() for what was actually granted. */
+   requesting caps against a pre-v2 core simply lands on a v1 session.
+   Check gmw_get_input_caps() for what was actually granted. */
 #define GMW_CAP_INPUTS_V2 0x01 /* joystick packets v2: 32-bit masks + analog triggers */
 #define GMW_CAP_RUMBLE    0x02 /* client may send rumble messages on the inputs socket */
+/* Promises this client sends keepalives while idle, which is what licenses the core to close
+   a silent session. Set it with gmw_set_keepalive(1), NOT gmw_set_input_caps - it is not an
+   input capability. Without it the core holds a quiet session indefinitely. */
+#define GMW_CAP_KEEPALIVE 0x04 /* client sends CMD_GET_STATUS keepalives while idle */
 
 /* FPGA data received on ACK */
 typedef struct MODULE_API_GMW
@@ -103,7 +107,8 @@ typedef struct MODULE_API_GMW
 
 	uint8_t vramEndFrame; 	//1-fpga has all pixels on vram for last CmdBlit
 	uint8_t vramReady;	//1-fpga has free space on vram
-	uint8_t vramSynced;	//1-fpga has synced (not red screen)
+	uint8_t vramSynced;	//1-fpga is up. NOT an underrun detector: the condition self-clears
+			//within about a raster line, so this per-blit sample almost never catches one
 	uint8_t vgaFrameskip;	//1-fpga used framebuffer (volatile framebuffer off)
 	uint8_t vgaVblank;	//1-fpga is on vblank
 	uint8_t vgaF1;		//1-field for interlaced
@@ -111,8 +116,8 @@ typedef struct MODULE_API_GMW
 	uint8_t vramQueue; 	//1-fpga has pixels prepared on vram
 } gmw_fpgaStatus;
 
-/* NOTE (inputs v2): joy1/joy2 widened uint16_t -> uint32_t and the four
-   trigger fields appended — struct layout changed, RECOMPILE consumers. */
+/* Inputs v2: joy1/joy2 widened uint16_t -> uint32_t and the four trigger
+   fields appended. The struct layout changed, so consumers must recompile. */
 typedef struct MODULE_API_GMW{
 	uint32_t joyFrame;	//joystick blit frame
 	uint8_t  joyOrder;	//joystick blit order
@@ -151,7 +156,7 @@ enum Lz4FramesCode { //gmw_init lz4Frames
     LZ4_ADPTATIVE = 5,
     LZ4_ADPTATIVE_DELTA = 6,
     // NLC near-lossless codec. The entropy front-end (TILED / RICE) is a separate
-    // knob — see gmw_set_nlc_pack; also tune via gmw_set_near_level.
+    // knob; see gmw_set_nlc_pack, and tune quality via gmw_set_near_level.
     NLC = 7
 };
 
@@ -187,6 +192,8 @@ MODULE_API_GMW void gmw_close(void);
 MODULE_API_GMW void gmw_send_close(void);
 // Send a 1-byte CMD_GET_STATUS keepalive on the video socket to hold an idle
 // session against the core's idle timeout. Call while alive but not blitting.
+// Only matters if you advertised GMW_CAP_KEEPALIVE via gmw_set_keepalive(1):
+// without it the core never closes a silent session in the first place.
 MODULE_API_GMW void gmw_send_keepalive(void);
 // 1 if the shared connection (from gmw_init) is live. Pad code should check
 // this before touching the input socket so it never creates a second client.
@@ -196,7 +203,9 @@ MODULE_API_GMW uint8_t gmw_is_connected(void);
 // own modeline state can watch this to know a reconnect happened.
 MODULE_API_GMW uint32_t gmw_reconnect_epoch(void);
 // Change resolution (check https://github.com/antonioginer/switchres) for modeline generation (interlace=2 for progressive framebuffer)
-// Returns 0 on success (ACK'd), -1 if not connected or the ACK never arrived after retrying.
+// Returns 0 once the core has acknowledged the modeline, -1 if it never did. That failure is worth
+// handling: the core only sets its expected frame length from a CmdSwitchres it actually processed,
+// so a lost one leaves it discarding every frame of the session with nothing else to show for it.
 MODULE_API_GMW int gmw_switchres(double pClock, uint16_t hActive, uint16_t hBegin, uint16_t hEnd, uint16_t hTotal, uint16_t vActive, uint16_t vBegin, uint16_t vEnd, uint16_t vTotal, uint8_t interlace);
 // This buffer are registered and aligned for sending rgb. Populate it before gmw_blit
 MODULE_API_GMW char* gmw_get_pBufferBlit(uint8_t field);
@@ -233,10 +242,15 @@ MODULE_API_GMW void gmw_set_input_caps(uint8_t caps);
 // the probe landed on v1). Gate rumble/trigger handling on this, not on what
 // was requested.
 MODULE_API_GMW uint8_t gmw_get_input_caps(void);
+// Advertise GMW_CAP_KEEPALIVE, before gmw_init. Enable it ONLY if you actually call
+// gmw_send_keepalive() while idle, more often than the core's shortest OSD idle timeout
+// (5s today): opting in is what allows the core to close you for going quiet. Off by
+// default, so a client that never opts in may pause indefinitely.
+MODULE_API_GMW void gmw_set_keepalive(uint8_t on);
 // Rumble player 0/1's pad (strong/weak motor 0..255). Requires GMW_CAP_RUMBLE
 // negotiated; the MiSTer gates it per pad in OSD -> System -> Controllers ->
 // <player> -> Rumble (default On), and force-stops motors on session
-// close. Send on STATE CHANGE only — the core repeats the last value until
+// close. Send on state change only: the core repeats the last value until
 // replaced (0/0 stops). Internally guarded: no-op when not connected, inputs
 // not bound, or rumble not negotiated.
 MODULE_API_GMW void gmw_send_rumble(uint8_t player, uint8_t strong, uint8_t weak);
@@ -273,13 +287,25 @@ MODULE_API_GMW void gmw_set_near_level(uint8_t k);
 // to TILED.
 MODULE_API_GMW void gmw_set_nlc_pack(uint8_t pack);
 // NLC display path (CMD_INIT byte[1] bits [6:5]): 0 = stream, 2 = autonomous
-// engine (default; the rock-solid display path). Call BEFORE gmw_init.
+// decode engine (the default). Call before gmw_init.
 MODULE_API_GMW void gmw_set_nlc_disp_mode(uint8_t mode);
 // Opt-in ACK watchdog (default OFF): after 10 blits with no frameEcho advance
-// the client reconnects transparently inside gmw_blit — video side only, the
-// inputs socket survives — and replays the stashed modeline. Observe via
-// gmw_reconnect_epoch().
+// the client reconnects transparently inside gmw_blit and replays the stashed
+// modeline. The reconnect is video side only, so the inputs socket survives.
+// Observe via gmw_reconnect_epoch().
 MODULE_API_GMW void gmw_set_auto_reconnect(uint8_t on);
+
+// NLC pre-encode fast path. The per-blit software encode can dominate the frame period on a slow
+// CPU, so a host may encode a unique frame once, off the blit thread, and hand the result straight
+// to the next blit. Order matters: gmw_switchres first (the encoder takes its width from the live
+// modeline), then write an gmw_encode_nlc result into gmw_get_pBufferPreEncoded(), then
+// gmw_set_pre_encoded_size(cSize) and gmw_blit. The size is one-shot - it applies to the next blit
+// only, and that blit skips the software encoder. NLC codec (lz4Frames 7) only.
+MODULE_API_GMW char* gmw_get_pBufferPreEncoded(void);
+MODULE_API_GMW void gmw_set_pre_encoded_size(uint32_t cSize);
+// Encode one frame with the exact parameters gmw_blit would use. Returns the encoded size, 0 on
+// failure. Call after gmw_switchres.
+MODULE_API_GMW uint32_t gmw_encode_nlc(const char* rgbFrame, char* out);
 
 
 /* Inspired by https://stackoverflow.com/a/1067684 */
@@ -287,14 +313,14 @@ typedef struct MODULE_API_GMW
 {
 	int  (*init)(const char* misterHost, uint8_t lz4Frames, uint32_t soundRate, uint8_t soundChan, uint8_t rgbMode, uint16_t mtu);
 	void (*close)(void);
-	void (*switchres)(double pClock, uint16_t hActive, uint16_t hBegin, uint16_t hEnd, uint16_t hTotal, uint16_t vActive, uint16_t vBegin, uint16_t vEnd, uint16_t vTotal, uint8_t interlace);
+	int  (*switchres)(double pClock, uint16_t hActive, uint16_t hBegin, uint16_t hEnd, uint16_t hTotal, uint16_t vActive, uint16_t vBegin, uint16_t vEnd, uint16_t vTotal, uint8_t interlace);
 	char*(*get_pBufferBlit)(uint8_t field);
 	char*(*get_pBufferBlitDelta)(void);
 	void (*blit)(uint32_t frame, uint8_t field, uint16_t vCountSync, uint32_t margin, uint32_t matchDeltaBytes);
 	char*(*get_pBufferAudio)(void);
 	void (*audio)(uint16_t soundSize);
 	void (*waitSync)(void);
-	void (*diffTimeRaster)(void);
+	int  (*diffTimeRaster)(void);   /* was declared void: the symbol has always returned int */
 	uint32_t (*getACK)(uint8_t dwMilliseconds);
 	void (*getStatus)(gmw_fpgaStatus* status);
 	void (*bindInputs)(const char* misterHost);
@@ -303,7 +329,7 @@ typedef struct MODULE_API_GMW
 	void (*getPS2Inputs)(gmw_fpgaPS2Inputs* ps2Inputs);
 	const char* (*get_version)(void);
 	void (*set_log_level) (int level);
-	/* v2 additions — appended only, existing offsets unchanged */
+	/* v2 additions, appended only; existing offsets unchanged */
 	void (*send_close)(void);
 	uint8_t (*is_connected)(void);
 	uint32_t (*reconnect_epoch)(void);
@@ -317,7 +343,11 @@ typedef struct MODULE_API_GMW
 	void (*set_nlc_pack)(uint8_t pack);
 	void (*set_nlc_disp_mode)(uint8_t mode);
 	void (*set_auto_reconnect)(uint8_t on);
-	void (*send_keepalive)(void);   /* appended only — existing offsets unchanged */
+	void (*send_keepalive)(void);   /* appended only; existing offsets unchanged */
+	char*(*get_pBufferPreEncoded)(void);
+	void (*set_pre_encoded_size)(uint32_t cSize);
+	uint32_t (*encode_nlc)(const char* rgbFrame, char* out);
+	void (*set_keepalive)(uint8_t on);   /* appended only; existing offsets unchanged */
 } gmwAPI;
 
 

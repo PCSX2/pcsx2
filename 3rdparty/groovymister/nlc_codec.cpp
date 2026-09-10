@@ -1,4 +1,4 @@
-// nlc_codec.cpp — Near-Lossless Codec for Groovy_MiSTer (reference / golden model)
+// nlc_codec.cpp: near-lossless codec for Groovy_MiSTer (reference model)
 // See nlc_codec.h for the pipeline and bit-order spec.
 //
 // This file is deliberately written as a clear, dependency-free reference so it
@@ -8,7 +8,7 @@
 #include "nlc_codec.h"
 #include <stdlib.h>
 #include <string.h>
-#include <thread>    // /61: plane-parallel encode (PC-side; the HPS never calls nlc_encode)
+#include <thread>    // plane-parallel encode (host side; the HPS never calls nlc_encode)
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -25,9 +25,10 @@ static inline int bitlen(uint32_t u) { int b = 0; while (u) { b++; u >>= 1; } re
 
 // JPEG-LS near-lossless residual quantiser / dequantiser
 static inline int nl_quant(int e, int near_lvl) {
-    // /61: constant-divisor branches — the runtime divisor cost >1M idivs/frame on the
-    // encode hot path (~+3 ms/frame whenever near>0); constants let the compiler emit
-    // multiply-by-reciprocal. Same rounding math as before, bit-identical results.
+    // Constant-divisor branches. A runtime divisor here costs over 1M integer divides per
+    // frame on the encode hot path, about 3 ms/frame whenever near > 0, whereas constants let
+    // the compiler emit multiply-by-reciprocal. The rounding is unchanged and the results are
+    // bit-identical.
     int a, q;
     switch (near_lvl) {
         case 0:  return e;
@@ -46,7 +47,7 @@ static inline int nl_dequant(int qe, int near_lvl) { return qe * (2 * near_lvl +
 
 void nlc_rgb_to_ycocg(int R, int G, int B, int* Y, int* Co, int* Cg) {
     int co = R - B;
-    int t  = B + (co >> 1);   // arithmetic (floor) shift — consistent both ways
+    int t  = B + (co >> 1);   // arithmetic (floor) shift, consistent both ways
     int cg = G - t;
     int y  = t + (cg >> 1);
     *Y = y; *Co = co; *Cg = cg;
@@ -103,8 +104,8 @@ struct BitR {
 //
 // The codec is LINE-INTERLEAVED: the bitstream stores, per scanline, the tiles
 // of plane 0, then 1, then 2 (then alpha). A hardware decoder can therefore
-// reconstruct one RGB line at a time from just per-plane line buffers — no
-// whole-plane buffering — so these operate on a single row.
+// reconstruct one RGB line at a time from just per-plane line buffers, with no
+// whole-plane buffering, so these operate on a single row.
 //
 // neighbour rule (must match RTL): `prev` = previous reconstructed row of this
 // plane, `cur` = the row being reconstructed.
@@ -190,10 +191,10 @@ static int rice_k_for_tile(const uint32_t* u, int off, int T) {
     return k;
 }
 static void rice_put(BitW& bw, uint32_t u, int k) {
-    // /61: the unary run "q zeros then a stop-1" IS the value (1<<q) written LSB-first in
-    // q+1 bits — one put() instead of up to 21 (the per-bit loop cost ~+3 ms/frame on the
-    // PC encode path). Bit-identical output. q+1 <= 20 (non-escape) / 21 (escape) <= the
-    // put() limit of 24 bits.
+    // The unary run "q zeros then a stop-1" is the value (1<<q) written LSB-first in q+1
+    // bits, so it takes one put() instead of up to 21. The per-bit loop cost about 3 ms per
+    // frame on the host encode path. Output is bit-identical, and q+1 <= 20 non-escape or 21
+    // escape, both within the put() limit of 24 bits.
     uint32_t q = u >> k;
     if (q < NLC_RICE_LIMIT) {
         bw.put(1u << q, (int)q + 1);
@@ -289,7 +290,14 @@ static void combine_line(int16_t** cur, const nlc_params* p, uint8_t* outrow, in
 
 int nlc_encode(const uint8_t* src, uint8_t* dst, size_t dst_cap, const nlc_params* p) {
     if (!src || !dst || !p) return -1;
-    if (p->rgb == NLC_RGB565) return -1;              // TODO: 565 expansion
+    // RGB565 is not supported and is not planned. Adding it would mean a new packing mode in
+    // the FPGA decoder, which has three plane cores and a fixed 3 bytes/pixel output with no
+    // pixel-format input (rtl/nlc_decode_ddr.v), plus a new bitstream and hardware
+    // validation. It would also not pay for itself: on the 720x480 capture corpus, rice/ycc
+    // on RGB888 runs 276 Mbps lossless and 199 Mbps at near=1, against 332 Mbps for
+    // uncompressed 565. near_lvl is the better control anyway, since it quantises the
+    // prediction residual rather than putting a fixed 5/6/5 grid across smooth gradients.
+    if (p->rgb == NLC_RGB565) return -1;
     int W = p->width, H = p->height, N = W * H, np = plane_count(p->rgb);
     int wbits = p->width_bits > 0 ? p->width_bits : 4;
     int tile  = p->tile > 0 ? p->tile : 16;
@@ -310,12 +318,13 @@ int nlc_encode(const uint8_t* src, uint8_t* dst, size_t dst_cap, const nlc_param
     // The little-endian u16 lengths are the PADDED byte size of each plane's independently-
     // packed segment. Word alignment everywhere means the HW line loader routes whole 64-bit
     // words to per-plane buffers (no byte steering), and np bit-readers start simultaneously.
-    // /61: PLANE-PARALLEL encode — the per-sample MED/quant/pack work dominated the PC
-    // frame budget (~12-18 ms serial = the /61 41fps lag). Planes are fully independent
-    // (own MED recurrence, own per-line segment), so each encodes ALL its lines into a
-    // private buffer on its own thread; a serial pass then assembles the v2 line records
-    // in the SAME order as before. Each plane's segment bytes are untouched by the split,
-    // so the output is BIT-IDENTICAL to the serial encoder (corpus-verified).
+    // Plane-parallel encode. The per-sample MED, quantize and pack work dominated the host
+    // frame budget at 12-18 ms serial, which held the sender to about 41 fps. Planes are
+    // fully independent, each with its own MED recurrence and its own per-line segment, so
+    // each encodes all of its lines into a private buffer on its own thread and a serial pass
+    // then assembles the v2 line records in the same order as before. The split leaves every
+    // plane's segment bytes untouched, so the output is bit-identical to the serial encoder,
+    // verified against the capture corpus.
     uint8_t*  segbuf[4]  = {0,0,0,0};
     uint16_t* seglen[4]  = {0,0,0,0};
     bool      povf[4]    = {false,false,false,false};

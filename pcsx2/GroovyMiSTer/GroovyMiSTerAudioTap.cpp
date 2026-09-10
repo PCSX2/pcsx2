@@ -10,8 +10,8 @@ namespace GroovyMiSTer
 {
 	static inline s16 FloatToS16(float v)
 	{
-		// SPU2 hands us roughly [-1, 1], but the DC filter and volume scaling can push it
-		// slightly past that, so clamp before scaling or loud passages wrap and click.
+		// SPU2 delivers roughly [-1, 1], but the DC filter and volume scaling can push past
+		// it, so clamp before scaling or loud passages wrap and click.
 		v = std::clamp(v, -1.0f, 1.0f);
 		return static_cast<s16>(v * 32767.0f);
 	}
@@ -36,8 +36,8 @@ namespace GroovyMiSTer
 		if (m_buffer.size() != CAPACITY) [[unlikely]]
 			m_buffer.assign(CAPACITY, 0);
 
-		// A single write larger than the whole ring can only mean something upstream has
-		// gone very wrong; keep the newest tail rather than corrupting the ring.
+		// A write larger than the ring itself means something upstream is wrong; keep the
+		// newest tail rather than corrupt the ring.
 		if (bytes >= CAPACITY)
 		{
 			const u32 keep_frames = static_cast<u32>(CAPACITY / BYTES_PER_SAMPLE);
@@ -75,8 +75,7 @@ namespace GroovyMiSTer
 	{
 		std::lock_guard<std::mutex> guard(m_lock);
 
-		// Only whole stereo frames: a half-frame would desync the L/R interleave for
-		// everything that follows it.
+		// Whole stereo frames only; a half-frame desyncs the L/R interleave from there on.
 		u32 avail = static_cast<u32>(std::min<size_t>(m_size, max_bytes));
 		avail -= (avail % BYTES_PER_SAMPLE);
 		if (avail == 0)

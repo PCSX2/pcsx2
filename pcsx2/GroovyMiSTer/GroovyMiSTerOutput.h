@@ -36,8 +36,8 @@ namespace GroovyMiSTer
 		bool interlaced = false;
 		Modeline modeline{};
 		std::string monitor_preset;
-		// Latency, straight from the FPGA: how far the raster had travelled when it
-		// received our frame, versus where it is scanning out now.
+		// Latency from the FPGA: how far the raster had travelled when it received our
+		// frame, against where it is scanning out now.
 		float latency_ms = 0.0f;
 		u32 frames_sent = 0;
 		u32 frames_dropped = 0;
@@ -45,33 +45,28 @@ namespace GroovyMiSTer
 		float encoded_mbps = 0.0f;
 	};
 
-	/// Owns the whole streaming pipeline. One instance, created by Open().
+	/// Owns the streaming pipeline. One instance, created by Open().
 	///
-	/// THREADING - this is the part to get right:
+	/// Threading:
 	///
-	///   GS thread     Capture(): scale + read back + pack pixels, push to m_queue.
-	///                 Never touches the socket, never encodes (NLC costs ~7ms and would
-	///                 throttle emulation through the MTGS ring).
+	///   GS thread     Capture(): scale, read back and pack pixels, push to m_queue. Never
+	///                 touches the socket and never encodes - NLC costs ~7ms and would
+	///                 throttle emulation through the MTGS ring.
 	///
-	///   Sender thread SOLE OWNER of the Groovy video/audio socket (UDP 32100). Applies
+	///   Sender thread Sole owner of the Groovy video/audio socket (UDP 32100). Applies
 	///                 pending switchres, drains the audio tap, encodes, blits, paces.
-	///                 Close must also happen here: the Windows RIO send path defers
-	///                 sends, so a CMD_CLOSE issued from another thread is silently
-	///                 dropped and the MiSTer freezes on our last frame.
-	///                 It also owns the idle KEEPALIVE, and that placement is the whole
-	///                 trick: the core drops a session that sends nothing for its idle
-	///                 timeout (5s default), and every way PCSX2 goes quiet - pause,
-	///                 savestate load, disc swap, a refused modeline - stops the GS
-	///                 thread, not this one. Nothing can stall the sender (under
-	///                 MisterMaster the GS thread blocks on IT, never the reverse), so a
-	///                 timed wait here survives all of them. Hosts driving Groovy from a
-	///                 frame loop or a message pump have to reach for a WM_TIMER to
-	///                 escape modal dialogs; we do not.
+	///                 Close belongs here too: the Windows RIO send path defers sends, so
+	///                 a CMD_CLOSE issued from another thread is dropped and the MiSTer
+	///                 holds our last frame. It also owns the idle keepalive, because
+	///                 every way PCSX2 goes quiet - pause, savestate load, disc swap, a
+	///                 refused modeline - stops the GS thread, not this one, and nothing
+	///                 can stall the sender (under MisterMaster the GS thread blocks on
+	///                 it, never the reverse).
 	///
 	///   SPU2 thread   AudioTap::Write() only.
 	///
-	///   CPU thread    GroovyMiSTerInputSource polls the *input* socket (UDP 32101).
-	///                 Different socket, so it never races the sender.
+	///   CPU thread    GroovyMiSTerInputSource polls the input socket (UDP 32101), which
+	///                 is a different socket and never races the sender.
 	class Output
 	{
 	public:
@@ -100,8 +95,8 @@ namespace GroovyMiSTer
 		// --- switchres ----------------------------------------------------------------
 		bool InitSwitchres();
 		void ShutdownSwitchres();
-		/// Recompute the modeline if the PS2's video mode changed. Returns false if we have
-		/// no usable mode (e.g. the safety cap refused it), in which case we do not stream.
+		/// Recompute the modeline if the PS2's video mode changed. False when there is no
+		/// usable mode, in which case nothing is streamed.
 		bool EnsureMode(int src_w, int src_h, float refresh_hz, bool interlaced);
 
 		// --- capture ------------------------------------------------------------------
@@ -158,14 +153,12 @@ namespace GroovyMiSTer
 		u32 m_readback_idx = 0;
 		int m_dst_w = 0, m_dst_h = 0;
 		bool m_logged_first_frame = false;
-		// One-shot so the sender's oversized-frame guard cannot spam the console per frame.
+		// One-shot: the sender's oversized-frame guard must not log per frame.
 		bool m_logged_oversized_frame = false;
 
 		// --- GS -> sender queue --------------------------------------------------------
-		// Deliberately tiny. Under Pcsx2Master we drop the older frame rather than let a
-		// backlog build (a stale frame on a CRT is worse than a dropped one). Under
-		// MisterMaster the push blocks, which is exactly how the CRT's raster ends up
-		// throttling the EE.
+		// Deliberately tiny. Pcsx2Master drops the older frame rather than build a backlog;
+		// MisterMaster blocks the push, which is how the raster throttles the EE.
 		static constexpr size_t MAX_QUEUED_FRAMES = 1;
 		std::mutex m_queue_lock;
 		std::condition_variable m_queue_cv;

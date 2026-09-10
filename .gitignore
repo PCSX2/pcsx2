@@ -125,3 +125,4 @@ CMakeSettings.json
 /ci-artifacts/
 /out/
 /.cache/
+/.notes/

@@ -29,10 +29,8 @@
 // =====================================================================================
 //  Protocol constants, pinned.
 // =====================================================================================
-// These values go straight onto the wire in CMD_INIT. The vendored client is tracking an
-// actively-developed branch (Groovy_MiSTer proto/nlc-B), and the codec model has already
-// been reshaped once mid-development. If a re-sync renumbers any of these, we want a
-// compile error here rather than a garbled picture on someone's CRT.
+// These go on the wire in CMD_INIT. Pinned so a re-vendor that renumbers any of them
+// fails to build.
 static_assert(static_cast<int>(GroovyMiSTerCodec::Raw) == LZ4_OFF);
 static_assert(static_cast<int>(GroovyMiSTerCodec::LZ4) == LZ4);
 static_assert(static_cast<int>(GroovyMiSTerCodec::LZ4HC) == LZ4_HC);
@@ -41,8 +39,8 @@ static_assert(static_cast<int>(GroovyMiSTerRgbMode::RGBA8888) == RGB_A888);
 static_assert(static_cast<int>(GroovyMiSTerRgbMode::RGB565) == RGB_565);
 static_assert(static_cast<int>(GroovyMiSTerNlcPack::Tiled) == 1, "NLC_PACK_TILED");
 static_assert(static_cast<int>(GroovyMiSTerNlcPack::Rice) == 2, "NLC_PACK_RICE");
-// Codec id 7 = NLC. It is deliberately NOT in the vendored Lz4FramesCode enum any more
-// (pack became a separate knob), so it cannot be cross-checked against a symbol.
+// Codec id 7 = NLC. Not in the vendored Lz4FramesCode enum (pack is a separate knob), so
+// there is no symbol to check it against.
 static_assert(static_cast<int>(GroovyMiSTerCodec::NLC) == 7, "Groovy NLC codec id");
 
 namespace GroovyMiSTer
@@ -59,7 +57,7 @@ namespace GroovyMiSTer
 
 		void SrLogSink(const char* fmt_str, ...)
 		{
-			// switchres logs printf-style. Keep it short; this is only modeline maths.
+			// switchres logs printf-style.
 			char buf[512];
 			va_list ap;
 			va_start(ap, fmt_str);
@@ -79,16 +77,14 @@ namespace GroovyMiSTer
 			}
 		}
 
-		// The tri-sync arcade monitor (15/25/31 kHz) - the safe default and the correct
-		// match for the reference hardware. A compiled-in switchres preset, no ini needed.
+		// Tri-sync arcade monitor (15/25/31 kHz), compiled into switchres; no ini needed.
 		constexpr const char* DEFAULT_MONITOR = "arcade_15_25_31";
 
-		// Every compiled-in switchres monitor preset (3rdparty/switchres/monitor.cpp,
-		// monitor_set_preset). An unknown name silently falls back to generic_15 (15 kHz only)
-		// inside switchres, which would refuse every 31 kHz mode, so we validate against this
-		// list rather than trust the string. "custom" is handled separately (it takes its
-		// timings from the Switchres INI). MUST stay in sync with the dropdown in
-		// pcsx2-qt/Settings/GroovyMiSTerSettingsWidget.cpp (s_monitor_values).
+		// Every compiled-in switchres preset (3rdparty/switchres/monitor.cpp,
+		// monitor_set_preset). switchres falls back to generic_15 on an unknown name without
+		// reporting it, and generic_15 refuses every 31 kHz mode, so validate here instead.
+		// "custom" takes its timings from the Switchres INI and is handled separately. Keep in
+		// sync with s_monitor_values in pcsx2-qt/Settings/GroovyMiSTerSettingsWidget.cpp.
 		bool IsKnownMonitorPreset(const std::string& p)
 		{
 			static const char* const kKnown[] = {
@@ -97,9 +93,9 @@ namespace GroovyMiSTer
 				"arcade_15", "arcade_15ex", "arcade_25", "arcade_31",
 				// Generic / broadcast
 				"generic_15", "ntsc", "pal",
-				// Specific monitor models. "d9400" and "polo" are switchres aliases of "d9800"
-				// and "h9110"; they are accepted here (a hand-edited INI may use them) even
-				// though the dropdown only lists the primary name.
+				// Monitor models. "d9400" and "polo" are switchres aliases of "d9800" and
+				// "h9110"; accepted for hand-edited INIs, though the dropdown lists only the
+				// primary name.
 				"d9800", "d9400", "d9200", "k7000", "k7131", "m3129", "m2929",
 				"h9110", "polo", "pstar", "ms2930", "ms929", "r666b",
 				// PC CRT / VESA GTF
@@ -157,11 +153,20 @@ namespace GroovyMiSTer
 
 		m_codec = static_cast<u8>(m_cfg.Codec);
 		m_rgb_mode = static_cast<u8>(m_cfg.RgbMode);
-		m_bpp = BytesPerPixel(m_cfg.RgbMode);
 
-		// The sample rate is baked into CMD_INIT, so we must know it up front. PS2 mixes at
-		// 48kHz; PS1 mode is 44.1kHz. If it changes later, SPU2 calls OnSampleRateChanged()
-		// and we reconnect.
+		// NLC is RGB888-only: the FPGA decoder has three plane cores and no pixel-format
+		// input, and CmdInit refuses any other rgbMode outright. The settings page gates the
+		// pairing, so this only catches a hand-edited INI - fall back rather than fail to
+		// connect, which would surface as an unreachable host and retry forever.
+		if (m_cfg.Codec == GroovyMiSTerCodec::NLC && m_cfg.RgbMode != GroovyMiSTerRgbMode::RGB888)
+		{
+			Console.Warning("[MiSTer] NLC requires RGB888; ignoring the configured RGB Mode.");
+			m_rgb_mode = static_cast<u8>(GroovyMiSTerRgbMode::RGB888);
+		}
+		m_bpp = BytesPerPixel(static_cast<GroovyMiSTerRgbMode>(m_rgb_mode));
+
+		// The rate is baked into CMD_INIT, so it has to be known up front. PS2 mixes at 48kHz,
+		// PS1 mode at 44.1kHz; a later change comes back through OnSampleRateChanged().
 		if (m_cfg.TapAudio)
 		{
 			m_sound_rate = SoundRateCodeFor(SPU2::GetConsoleSampleRate());
@@ -184,8 +189,8 @@ namespace GroovyMiSTer
 
 		if (!TryConnect())
 		{
-			// Non-fatal on purpose: a MiSTer that is off/asleep must never stop the user
-			// from booting a game. The sender thread keeps retrying in the background.
+			// Non-fatal: a MiSTer that is off or asleep must not stop a game from booting.
+			// The sender thread keeps retrying.
 			Console.Warning(fmt::format("[MiSTer] Could not reach {} yet; will keep retrying.", m_cfg.Host));
 		}
 
@@ -204,8 +209,8 @@ namespace GroovyMiSTer
 	{
 		if (!m_active.exchange(false, std::memory_order_acq_rel))
 		{
-			// Never connected (or already closed) - still tear down switchres if Open()
-			// got that far before bailing.
+			// Never connected, or already closed. switchres may still be up if Open() bailed
+			// after initialising it.
 			ShutdownSwitchres();
 			return;
 		}
@@ -220,8 +225,8 @@ namespace GroovyMiSTer
 		m_queue_cv.notify_all();
 		m_space_cv.notify_all();
 
-		// The sender owns the socket, so it must also be the one to close it (see the
-		// RIO note in the header). DoGroovyClose() runs at the end of SenderLoop().
+		// The sender owns the socket and must be the one to close it (see the RIO note in the
+		// header); DoGroovyClose() runs at the end of SenderLoop().
 		if (m_sender.joinable())
 			m_sender.join();
 
@@ -243,9 +248,8 @@ namespace GroovyMiSTer
 		{
 			if (m_cfg.NlcPack == GroovyMiSTerNlcPack::Rice)
 			{
-				// There is no negotiation for this. A core without the Rice decoder ignores
-				// the bit and parses our Rice bytes as Tiled, which looks like a garbage
-				// picture rather than an error - so say it out loud.
+				// Not negotiated. A core without the Rice decoder ignores the bit and parses
+				// Rice bytes as Tiled, which produces a garbage picture rather than an error.
 				Console.WriteLn(fmt::format(
 					"[MiSTer] NLC codec: pack=Rice NEAR={} - REQUIRES a core with the Rice decoder "
 					"(rbf_rice_r3 kit or newer). On an older core the picture will be garbage; "
@@ -261,20 +265,14 @@ namespace GroovyMiSTer
 		// Drop anything half-alive from a previous attempt.
 		gmw_close();
 
-		// ORDER MATTERS, three times over:
+		// Everything below has to happen before gmw_init(); afterwards it is a silent no-op.
 		//
-		// 1. The input subscription must be sent BEFORE CMD_INIT. The MiSTer core reads the
-		//    subscribe datagram synchronously inside its CMD_INIT handler; gmw_bindInputs
-		//    already sends it, the extra resubscribe is UDP-loss insurance.
-		//
-		// 2. The NLC knobs ride CMD_INIT byte[1], so they must be set before gmw_init() too.
-		//    Calling them afterwards is a silent no-op.
-		//
-		// 3. The input caps ride CMD_INIT byte[5], same rule again. The client probes the
-		//    core version (CMD_GET_VERSION) inside gmw_init and drops to a caps-less v1
-		//    handshake on a pre-v2 core by itself - no app-side fallback loop needed.
-		//    A v1 session still delivers all 16 digital buttons; only analog triggers and
-		//    rumble need the caps.
+		// 1. The core reads the input subscribe datagram synchronously inside its CMD_INIT
+		//    handler. gmw_bindInputs sends it; the resubscribe is UDP-loss insurance.
+		// 2. The NLC knobs ride CMD_INIT byte[1].
+		// 3. The caps byte is CMD_INIT byte[5]. The client probes the core version itself and
+		//    drops to a caps-less v1 handshake on a pre-v2 core, which still carries all 16
+		//    digital buttons; only analog triggers and rumble need the caps.
 		gmw_bindInputs(m_cfg.Host.c_str());
 		gmw_resubscribe_inputs();
 
@@ -285,14 +283,22 @@ namespace GroovyMiSTer
 		}
 		gmw_set_input_caps(GMW_CAP_INPUTS_V2 | GMW_CAP_RUMBLE);
 
-		// The reconnect watchdog is opt-in since the convergence sync; arm it to keep the
-		// old always-on behavior. It now re-subscribes inputs across the internal reconnect.
+		// Advertise GM_CAP_KEEPALIVE. The core applies its idle timeout only to clients that
+		// ask for it, which is what lets a crashed PCSX2 release the CRT instead of leaving
+		// its last frame up. It commits us to sending while idle, which SenderLoop's timed
+		// wait does. A separate setter from the input caps, though both ride byte[5].
+		gmw_set_keepalive(1);
+
+		// The reconnect watchdog is opt-in; arm it, and it re-subscribes inputs across an
+		// internal reconnect.
 		gmw_set_auto_reconnect(1);
 
 		if (gmw_init(m_cfg.Host.c_str(), m_codec, m_sound_rate, m_sound_chan, m_rgb_mode, m_cfg.Mtu) < 0)
 			return false;
 
-		if (gmw_get_input_caps() != 0)
+		// getInputCaps() reports the caps actually granted, keepalive included, so test the
+		// specific bit rather than the byte.
+		if ((gmw_get_input_caps() & GMW_CAP_INPUTS_V2) != 0)
 			Console.WriteLn("[MiSTer] Inputs v2 negotiated (PS-semantic buttons, analog triggers, rumble).");
 		else
 			Console.WriteLn("[MiSTer] Inputs v1 session (16 buttons + sticks; no analog triggers/rumble).");
@@ -302,16 +308,14 @@ namespace GroovyMiSTer
 			m_status.connected = true;
 		}
 
-		// A fresh CMD_INIT restarts the core's own frame counter at zero, so ours has to
-		// restart with it - otherwise we blit numbers thousands ahead of a core that just
-		// began counting, which desyncs the raster servo (the client clamps the resulting
-		// sleep rather than hanging, but stays unaligned until we realign).
+		// A fresh CMD_INIT restarts the core's frame counter at zero, so ours restarts with
+		// it. That is safe here but not on the watchdog's reconnect path: gmw_close() above
+		// destroys the wrapper's singleton, so the client's input filter starts clean too
+		// (see the note in SenderLoop).
 		//
-		// Re-seed the epoch from the client rather than assuming a value: the gmw_close()
-		// above DESTROYS the wrapper's singleton, so the epoch it counts is per-object and
-		// restarts at 0 here, while the client's internal watchdog reconnects increment it
-		// within an object's life. It is therefore not monotonic across a session - which
-		// is why the sender loop compares it for inequality, not for growth.
+		// Re-seed the epoch from the client rather than assuming a value. It is per-object and
+		// restarts at 0 here, while the client's watchdog increments it within an object's
+		// life, so the sender loop compares it for inequality, not for growth.
 		m_blit_frame = 0;
 		m_reconnect_epoch = gmw_reconnect_epoch();
 		m_keepalive.Reset(static_cast<u64>(
@@ -327,9 +331,8 @@ namespace GroovyMiSTer
 
 	void Output::DoGroovyClose()
 	{
-		// Tell the MiSTer we are leaving, so it drops back to its "searching for a
-		// connection" screen instead of sitting on our last frame forever. Sent a few times
-		// because a single lost UDP datagram would strand it.
+		// Tell the MiSTer we are leaving so it returns to its connection-search screen instead
+		// of holding the last frame. Sent three times; one lost datagram would strand it.
 		for (int i = 0; i < 3; i++)
 			gmw_send_close();
 
@@ -353,10 +356,9 @@ namespace GroovyMiSTer
 		sr_set_log_callback_info(reinterpret_cast<void*>(&SrLogSink));
 		sr_set_log_callback_debug(reinterpret_cast<void*>(&SrLogSink));
 
-		// Decide the monitor to use. switchres's OWN default is generic_15 - a 15 kHz-only
-		// band that refuses every 31 kHz mode (i.e. all PS2 480p) - so we must never leave it
-		// unset. switchres also matches preset names with a raw strcmp and silently falls back
-		// to generic_15 on an unknown name, so lowercase and validate before trusting it.
+		// switchres defaults to generic_15, a 15 kHz-only band that refuses every 31 kHz mode
+		// (all PS2 480p), and matches preset names with a raw strcmp, falling back to that
+		// default on an unknown name. Lowercase and validate before trusting the setting.
 		std::string preset = ToLowerAscii(m_cfg.MonitorPreset);
 		if (preset.empty() || !IsKnownMonitorPreset(preset))
 		{
@@ -365,9 +367,8 @@ namespace GroovyMiSTer
 			preset = DEFAULT_MONITOR;
 		}
 
-		// "custom" means the timings come from a Switchres INI (monitor custom + crt_range*).
-		// Without an INI there is nothing to define the ranges, so fall back rather than run
-		// on an empty custom monitor.
+		// "custom" takes its timings from a Switchres INI (monitor custom + crt_range*).
+		// Without one there is nothing to define the ranges.
 		if (preset == "custom" && m_cfg.SwitchresIni.empty())
 		{
 			Console.Warning(fmt::format("[MiSTer] Monitor preset is 'custom' but no Switchres INI is set; using '{}'.",
@@ -375,16 +376,14 @@ namespace GroovyMiSTer
 			preset = DEFAULT_MONITOR;
 		}
 
-		// Set the built-in monitor explicitly. Doing this AFTER sr_init() (which parses any
-		// stray switchres.ini in the working directory) also means our monitor overrides a
-		// stray ini's `monitor` line. For "custom" we deliberately do not set a monitor - the
-		// INI's own `monitor custom` line supplies it.
+		// After sr_init(), which parses any switchres.ini in the working directory, so this
+		// overrides a stray ini's `monitor` line. "custom" is left unset: the INI's own
+		// `monitor custom` line supplies it.
 		if (preset != "custom")
 			sr_set_monitor(preset.c_str());
 
-		// "dummy" == calculate only. switchres must never touch the *host's* display; we
-		// only want the modeline maths, which we then ship to the FPGA. (The library is
-		// also compiled with SR_CALC_ONLY, so the real backends are not even linked in.)
+		// "dummy" is calculate-only: switchres must never touch the host's display, only do
+		// the modeline maths. The library is compiled SR_CALC_ONLY, so no backend is linked.
 		sr_init_disp("dummy", nullptr);
 
 		if (!m_cfg.SwitchresIni.empty())
@@ -392,9 +391,8 @@ namespace GroovyMiSTer
 
 		m_sr_inited = true;
 
-		// Log what switchres actually settled on. If this does not match `preset`, a stray
-		// switchres.ini or an unexpected fallback is in play - which is exactly the kind of
-		// thing that makes "no valid signal" hard to diagnose.
+		// Log what switchres settled on. A mismatch with `preset` means a stray switchres.ini
+		// or a fallback is in play, which otherwise surfaces only as "no valid signal".
 		sr_state st{};
 		sr_get_state(&st);
 		Console.WriteLn(fmt::format("[MiSTer] switchres ready (requested monitor '{}', active '{}').",
@@ -413,12 +411,10 @@ namespace GroovyMiSTer
 
 	bool Output::EnsureMode(int src_w, int src_h, float refresh_hz, bool interlaced)
 	{
-		// Reject an obviously-not-ready source triple WITHOUT caching it, so it is retried on
-		// the next vsync rather than latched as a failed mode. The GS video mode can be briefly
-		// unstable right after a connection or a mode change (e.g. refresh reported as 0), and
-		// we do not want that transient to wedge the stream until the game happens to switch
-		// modes again. The window is wide on purpose - it only screens out garbage; switchres
-		// applies its own per-monitor refresh tolerance.
+		// Reject a not-yet-ready source triple without caching it, so it is retried next vsync
+		// rather than latched as a failed mode: the GS video mode is briefly unstable after a
+		// mode change (refresh reported as 0, say). The window is deliberately wide - it only
+		// screens out garbage, and switchres applies its own per-monitor refresh tolerance.
 		if (src_w <= 0 || src_h <= 0 || refresh_hz < 40.0f || refresh_hz > 130.0f)
 			return false;
 
@@ -435,13 +431,11 @@ namespace GroovyMiSTer
 		m_have_mode = false;
 		m_mode_refused = false;
 
-		// Whether we ask switchres for an interlaced modeline. "Force progressive" (the user
-		// picking Interlace == Progressive) never does, so a 480i source is turned into a 480p
-		// (31 kHz) modeline. Otherwise interlace tracks the source: an interlaced frame gets a
-		// 15 kHz interlaced modeline, a progressive one stays progressive. This flag matters
-		// because switchres tries the *progressive* band first for a generated mode, so a 480i
-		// source that also fits progressively (e.g. 448 lines on a 31 kHz band) comes back as
-		// 480p unless we tell it the source is interlaced (see modeline.cpp scan_penalty).
+		// Whether to ask switchres for an interlaced modeline. Interlace == Progressive never
+		// does, turning a 480i source into a 480p (31 kHz) modeline; otherwise it tracks the
+		// source. The flag is needed because switchres tries the progressive band first, so a
+		// 480i source that also fits progressively (448 lines on a 31 kHz band) comes back as
+		// 480p without it (modeline.cpp, scan_penalty).
 		const bool prefer_progressive = (m_cfg.Interlace == GroovyMiSTerInterlace::Progressive);
 		const int sr_flags = (interlaced && !prefer_progressive) ? SR_MODE_INTERLACED : 0;
 
@@ -466,9 +460,9 @@ namespace GroovyMiSTer
 		ml.v_end = static_cast<u16>(srm.vend);
 		ml.v_total = static_cast<u16>(srm.vtotal);
 
-		// The interlace value we put on the wire is the user's choice, not switchres's:
-		// a progressive modeline is always 0, but an interlaced one can be sent either as
-		// true fields (1) or as a progressive framebuffer over an interlaced signal (2).
+		// The wire value is the user's choice, not switchres's: a progressive modeline is
+		// always 0, an interlaced one is either true fields (1) or a progressive framebuffer
+		// over an interlaced signal (2).
 		ml.interlace = srm.interlace ? static_cast<u8>(m_cfg.Interlace) : 0;
 		if (srm.interlace && ml.interlace == 0)
 			ml.interlace = static_cast<u8>(GroovyMiSTerInterlace::ProgressiveFB);
@@ -478,9 +472,9 @@ namespace GroovyMiSTer
 			const bool malformed = !IsWellFormed(ml);
 			const bool too_big = !malformed && !FitsBlitBuffer(ml, m_bpp);
 
-			// The byte-budget case is the only one the user can actually act on, so it names
-			// the remedy - and works out whether there is one, because past a certain size no
-			// pixel format fits. BytesPerPixel() values: RGB565 = 2, RGB888 = 3, RGBA8888 = 4.
+			// The byte-budget case is the only one the user can act on, so it names the remedy
+			// if there is one - past a certain size no pixel format fits. BytesPerPixel():
+			// RGB565 = 2, RGB888 = 3, RGBA8888 = 4.
 			std::string reason;
 			std::string osd_reason;
 			if (malformed)
@@ -550,9 +544,7 @@ namespace GroovyMiSTer
 			m_status.monitor_preset = m_cfg.MonitorPreset.empty() ? "generic_15" : m_cfg.MonitorPreset;
 		}
 
-		// Tell the user what the game is actually running at, and what we turned it into.
-		// This is the answer to "how do I know the game's native resolution?" - it is the
-		// PCRTC output, i.e. the real thing, not a guess.
+		// Report the game's native resolution (the PCRTC output) and what it became.
 		const std::string msg = fmt::format("MiSTer: PS2 {}x{}{} @ {:.2f}Hz -> {}x{} {:.2f}kHz ({})",
 			src_w, src_h, interlaced ? "i" : "p", refresh_hz,
 			ml.h_active, ml.v_active, srm.hfreq / 1000.0,
@@ -620,9 +612,9 @@ namespace GroovyMiSTer
 
 		if (m_cfg.Pacing == GroovyMiSTerPacing::MisterMaster)
 		{
-			// The CRT is the clock. Block until the sender has room; that backpressure
-			// travels GS thread -> MTGS ring -> EE thread, which is precisely how the
-			// emulator ends up paced by the raster rather than by its own frame limiter.
+			// The CRT is the clock. Blocking until the sender has room sends backpressure down
+			// GS thread -> MTGS ring -> EE thread, which is what paces the emulator from the
+			// raster rather than from its own frame limiter.
 			m_space_cv.wait(lock, [this]() {
 				return m_queue.size() < MAX_QUEUED_FRAMES || m_quit.load(std::memory_order_acquire);
 			});
@@ -631,8 +623,7 @@ namespace GroovyMiSTer
 		}
 		else
 		{
-			// PCSX2 is the clock. Newest-wins: a frame the CRT has not shown yet is worth
-			// less than the one we are holding, so drop it rather than grow a backlog.
+			// PCSX2 is the clock. Newest wins: drop rather than grow a backlog.
 			while (m_queue.size() >= MAX_QUEUED_FRAMES)
 			{
 				m_queue.pop_front();
@@ -653,24 +644,22 @@ namespace GroovyMiSTer
 
 		if (m_reconnect_requested.exchange(false, std::memory_order_relaxed))
 		{
-			// Sample rate changed; the rate is part of CMD_INIT so we have to redo it.
-			// Cheapest correct thing: tear down and let Open() rebuild.
+			// The rate is part of CMD_INIT, so a change means a fresh handshake.
 			Console.WriteLn("[MiSTer] Console sample rate changed; reconnecting.");
 			Close();
 			Open();
 			return;
 		}
 
-		// The PS2's real display resolution - the PCRTC output, not our upscaled internal
-		// buffer. This is exactly the (w, h, hz) triple switchres wants.
+		// The PS2's real display resolution: the PCRTC output, not the upscaled internal
+		// buffer, and the (w, h, hz) triple switchres wants.
 		const GSVector2i native = g_gs_renderer->GetInternalResolution();
 		const float refresh = g_gs_renderer->GetTvRefreshRate();
-		// Whether this frame is an interlaced scanout. Use isReallyInterlaced() (SMODE1.CMOD +
-		// the SYNCV field toggle), NOT GetVideoMode(): a game can render 240p while the video mode
-		// is still NTSC/PAL, and mislabelling that as interlaced would ask switchres for a
-		// nonsensical interlaced 240-line modeline. This is the same predicate the merge circuit
-		// uses to decide it must deinterlace, i.e. exactly when GetCurrent() is a full-height
-		// interlaced-derived frame.
+		// isReallyInterlaced() (SMODE1.CMOD plus the SYNCV field toggle) rather than
+		// GetVideoMode(): a game can render 240p while the video mode is still NTSC/PAL, and
+		// that would ask switchres for an interlaced 240-line modeline. It is also the
+		// predicate the merge circuit deinterlaces on, so it matches exactly when GetCurrent()
+		// is a full-height interlaced-derived frame.
 		const bool interlaced = g_gs_renderer->isReallyInterlaced();
 
 		if (!EnsureMode(native.x, native.y, refresh, interlaced))
@@ -679,18 +668,16 @@ namespace GroovyMiSTer
 		if (!EnsureGpuResources())
 			return;
 
-		// The FPGA derives the interlaced field cadence from the modeline itself, so a progressive
-		// framebuffer over an interlaced signal (ProgressiveFB) must be blitted as field 0. Sending
-		// the PS2's alternating field there would make the core read consecutive frames from its two
-		// field buffers (DDR_FB/DDR_FD) and comb on horizontal motion. Only a true-field stream
-		// carries real alternating fields.
+		// The FPGA derives the field cadence from the modeline, so ProgressiveFB must blit as
+		// field 0: sending the PS2's alternating field there makes the core read consecutive
+		// frames from its two field buffers (DDR_FB/DDR_FD) and comb on horizontal motion.
+		// Only a true-field stream carries real alternating fields.
 		const u8 blit_field = (m_modeline.interlace == static_cast<u8>(GroovyMiSTerInterlace::Field))
 								  ? static_cast<u8>(field) : 0;
 
-		// The valid sub-rect matters. `current` can be larger than the video mode when a
-		// game flips an over-allocated render-target surface; the host window only blits
-		// this rect. Capturing the whole texture streams the stale region and shows up as a
-		// duplicated, offset image. Clamp to what is actually displayed.
+		// `current` can be larger than the video mode when a game flips an over-allocated
+		// render-target surface, and the host window blits only this rect. Capturing the whole
+		// texture streams the stale region as a duplicated, offset image.
 		const GSVector4i valid = src_rect.rintersect(GSVector4i::loadh(current->GetSize()));
 		if (valid.rempty())
 			return;
@@ -702,9 +689,8 @@ namespace GroovyMiSTer
 				current->GetWidth(), current->GetHeight(), valid.width(), valid.height(), m_dst_w, m_dst_h));
 		}
 
-		// Scale to the modeline's active area. If the user runs at native 1x this is a
-		// straight copy of the same size, but we still go through StretchRect so the
-		// download texture always has a known, tightly-packed geometry.
+		// Scale to the modeline's active area. At native 1x this is a same-size copy, but it
+		// still goes through StretchRect so the download texture has a known, packed geometry.
 		GSTexture* readback_src = current;
 		GSVector4i readback_rect = valid;
 
@@ -732,9 +718,8 @@ namespace GroovyMiSTer
 
 		if (m_cfg.Readback == GroovyMiSTerReadback::Deferred1)
 		{
-			// Drain the frame we started last vsync. By now the GPU has certainly finished
-			// it, so Flush() is effectively free - we trade exactly one frame of latency for
-			// never blocking the GS thread.
+			// Drain the frame started last vsync. The GPU has finished it by now, so Flush() is
+			// effectively free: one frame of latency in exchange for never blocking the GS thread.
 			if (slot.pending)
 			{
 				if (slot.tex->NeedsFlush())
@@ -743,7 +728,7 @@ namespace GroovyMiSTer
 				if (slot.tex->Map(dst_rect))
 				{
 					std::vector<u8> packed;
-					PackFrame(m_cfg.RgbMode, slot.tex->GetMapPointer(), slot.tex->GetMapPitch(),
+					PackFrame(static_cast<GroovyMiSTerRgbMode>(m_rgb_mode), slot.tex->GetMapPointer(), slot.tex->GetMapPitch(),
 						static_cast<u32>(m_dst_w), static_cast<u32>(m_dst_h), packed);
 					slot.tex->Unmap();
 					PushFrame(std::move(packed), slot.field);
@@ -758,11 +743,9 @@ namespace GroovyMiSTer
 			return;
 		}
 
-		// Sync: flush and map in-frame. Zero added frames. This blocks the GS thread on the
-		// GPU for a fraction of a millisecond - which is affordable here precisely because
-		// PCSX2 puts the MTGS ring between the GS thread and the EE, so the stall is
-		// absorbed rather than passed straight to emulation. (RPCS3 cannot do this: the
-		// equivalent readback stalls its RSX thread directly, which is why it defers.)
+		// Sync: flush and map in-frame, adding no latency. This blocks the GS thread on the GPU
+		// for a fraction of a millisecond, which is affordable because the MTGS ring sits
+		// between the GS thread and the EE and absorbs the stall.
 		slot.tex->CopyFromTexture(dst_rect, readback_src, readback_rect, 0);
 		if (slot.tex->NeedsFlush())
 			slot.tex->Flush();
@@ -771,7 +754,7 @@ namespace GroovyMiSTer
 			return;
 
 		std::vector<u8> packed;
-		PackFrame(m_cfg.RgbMode, slot.tex->GetMapPointer(), slot.tex->GetMapPitch(),
+		PackFrame(static_cast<GroovyMiSTerRgbMode>(m_rgb_mode), slot.tex->GetMapPointer(), slot.tex->GetMapPitch(),
 			static_cast<u32>(m_dst_w), static_cast<u32>(m_dst_h), packed);
 		slot.tex->Unmap();
 
@@ -786,15 +769,11 @@ namespace GroovyMiSTer
 	{
 		Threading::SetNameOfCurrentThread("GroovyMiSTer Sender");
 
-		// CMD_AUDIO carries its payload size in a u16, so one send can never exceed 65535
-		// bytes - and the cast to u16 must never be able to wrap. It previously could: the
-		// scratch buffer was exactly 65536 bytes, Read() could fill it completely, and
-		// static_cast<u16>(65536) == 0, which put an empty CMD_AUDIO on the wire that the core
-		// rejected with UDP_ERROR. That fired whenever a large backlog had built up (e.g. the
-		// several seconds between the output coming up and the first video frame, which fills
-		// the tap's ring). Cap the drain instead: comfortably inside u16, a whole number of
-		// 4-byte stereo frames, and small enough that we never dump a huge stale burst in one
-		// packet (~85ms @ 48kHz stereo; steady state is only ~3.2KB per frame).
+		// CMD_AUDIO carries its payload size in a u16, so the cast below must not be able to
+		// wrap: a 65536-byte drain casts to 0 and puts an empty CMD_AUDIO on the wire, which the
+		// core rejects with UDP_ERROR. Cap it well inside u16, at a whole number of 4-byte stereo
+		// frames, and small enough not to dump a large stale burst in one packet (~85ms @ 48kHz
+		// stereo; steady state is ~3.2KB per frame).
 		static constexpr u32 MAX_AUDIO_SEND_BYTES = 16 * 1024;
 		static_assert(MAX_AUDIO_SEND_BYTES <= 65535, "CMD_AUDIO size must fit in a u16");
 		static_assert((MAX_AUDIO_SEND_BYTES % AudioTap::BYTES_PER_SAMPLE) == 0, "whole stereo frames only");
@@ -802,7 +781,7 @@ namespace GroovyMiSTer
 		std::vector<u8> audio_scratch(MAX_AUDIO_SEND_BYTES);
 		Common::Timer reconnect_timer;
 
-		// Monotonic milliseconds for the keepalive scheduler. Taken once per iteration.
+		// Monotonic milliseconds for the keepalive scheduler, taken once per iteration.
 		const auto now_ms = []() -> u64 {
 			return static_cast<u64>(
 				Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue()));
@@ -812,12 +791,11 @@ namespace GroovyMiSTer
 
 		while (!m_quit.load(std::memory_order_acquire))
 		{
-			// Wake on a frame OR on a keepalive poll tick. The timed wait is what makes an
-			// idle session survivable: every way PCSX2 stops producing frames (pause,
-			// savestate load, disc swap, a modeline the safety gate refused) used to park
-			// this thread here indefinitely, and a session that sends nothing for the
-			// core's idle timeout - 5s by default - is closed core-side and the CRT is
-			// freed. Poll well under the send threshold; see KeepAliveScheduler.
+			// Wake on a frame or on a keepalive poll tick. The timed wait is what keeps an idle
+			// session alive: every way PCSX2 stops producing frames (pause, savestate load, disc
+			// swap, a modeline the safety gate refused) parks this thread here, and a session that
+			// sends nothing for the core's idle timeout is closed core-side. Poll well under the send
+			// threshold; see KeepAliveScheduler.
 			OutFrame frame;
 			bool have_frame = false;
 			{
@@ -841,9 +819,8 @@ namespace GroovyMiSTer
 
 			if (!gmw_is_connected())
 			{
-				// Retry at a human pace, not a spin. This also runs on idle ticks, so a
-				// session lost while the emulator is paused comes back on its own instead
-				// of waiting for frames to resume.
+				// Retry at a human pace, not a spin. This also runs on idle ticks, so a session lost
+				// while the emulator is paused comes back without waiting for frames to resume.
 				if (reconnect_timer.GetTimeSeconds() >= 2.0)
 				{
 					reconnect_timer.Reset();
@@ -853,42 +830,39 @@ namespace GroovyMiSTer
 					continue;
 			}
 
-			// The client's internal watchdog may have reconnected underneath us. The core
-			// restarts its own frame counter on the fresh session, so ours has to restart
-			// too - see the note on m_blit_frame below for why only this direction needs
-			// handling.
+			// The client's internal watchdog may have reconnected underneath us. The counter is
+			// deliberately NOT restarted here, even though the core's has been: that reconnect
+			// happens inside the same client object, and resetSessionState() clears fpga.* but
+			// not joyInputs/ps2Inputs, whose last-seen (frame, order) the input filter still
+			// compares against. Lowering the counter there drops every inputs datagram until it
+			// climbs back past its old value, which at 60 Hz is minutes of dead pads. The blit
+			// below realigns upward from status.frame instead.
 			const u32 epoch = gmw_reconnect_epoch();
 			if (epoch != m_reconnect_epoch)
 			{
 				m_reconnect_epoch = epoch;
-				m_blit_frame = 0;
-				Console.WriteLn(fmt::format("[MiSTer] Client reconnected (epoch {}); realigning frame counter.", epoch));
+				Console.WriteLn(fmt::format("[MiSTer] Client reconnected (epoch {}).", epoch));
 			}
 
-			// Receive any pending ACKs from the FPGA. This is not optional: the vendored
-			// client only updates fpga.frameEcho inside getACK(), and its CmdBlit watchdog
-			// force-reconnects when frameEcho stops advancing for 10 blits. getStatus() below
-			// merely copies the cache, and gmw_blit() never receives - so if nothing polls,
-			// frameEcho is stuck at 0 and every blit drives an endless reconnect loop (each
-			// reconnect sends CMD_CLOSE, which drops the FPGA's video output, so the CRT can
-			// never lock). In MisterMaster gmw_waitSync() does this poll for us as a side
-			// effect of raster pacing; in Pcsx2Master nothing did, which is the bug. A
-			// non-blocking poll (0 ms) is enough - the previous frame's ACK has long since
-			// arrived by the time we loop back here at 60 Hz.
+			// Receive pending ACKs. Not optional: the client updates fpga.frameEcho only inside
+			// getACK(), and its CmdBlit watchdog force-reconnects when frameEcho stops advancing for
+			// 10 blits. getStatus() below only copies the cache and gmw_blit() never receives, so
+			// without this frameEcho sticks at 0 and every blit drives a reconnect loop - each
+			// reconnect sending CMD_CLOSE, which drops the FPGA's video output so the CRT never
+			// locks. MisterMaster gets this for free from gmw_waitSync(); Pcsx2Master does not. A
+			// non-blocking poll is enough at 60 Hz.
 			//
-			// Polling on IDLE ticks as well is not cosmetic. fpga.frame is the core's own
-			// GPU counter and it free-runs at the CRT's refresh rate whether or not we are
-			// blitting, so without this it would freeze at its pre-pause value: the first
-			// frame after a long pause would be numbered thousands behind where the core
-			// actually is, and discarded as stale.
+			// Polling on idle ticks matters too: fpga.frame is the core's GPU counter and free-runs
+			// at the CRT's refresh rate whether or not we blit, so otherwise it would hold its
+			// pre-pause value and the first frame after a long pause would be numbered thousands
+			// behind the core and discarded as stale.
 			gmw_getACK(0);
 
-			// Hold the session open if nothing has gone out lately. Deliberately evaluated
-			// on EVERY iteration rather than only on idle ticks: an iteration can carry a
-			// frame and still send nothing (the oversized-frame drop below, or a null blit
-			// buffer), and gating this on !have_frame would let that case starve the core's
-			// idle timer while looking busy. During normal play ShouldSend() is false
-			// because every blit refreshes the timestamp, so this costs one comparison.
+			// Hold the session open if nothing has gone out lately. Evaluated on every iteration, not
+			// only on idle ticks: an iteration can carry a frame and still send nothing (the
+			// oversized-frame drop below, or a null blit buffer), and gating on !have_frame would let
+			// that starve the core's idle timer while looking busy. During normal play ShouldSend()
+			// is false because every blit refreshes the timestamp, so this costs one comparison.
 			const u64 tick_ms = now_ms();
 			if (m_keepalive.ShouldSend(tick_ms))
 			{
@@ -896,8 +870,7 @@ namespace GroovyMiSTer
 				m_keepalive.NotifyWireActivity(tick_ms);
 			}
 
-			// Idle tick: holding the session is all there is to do. No switchres, no audio,
-			// no frame counter movement.
+			// Idle tick: holding the session is all there is to do.
 			if (!have_frame)
 				continue;
 
@@ -910,17 +883,16 @@ namespace GroovyMiSTer
 					if (gmw_switchres(m.pclock, m.h_active, m.h_begin, m.h_end, m.h_total,
 							m.v_active, m.v_begin, m.v_end, m.v_total, m.interlace) < 0)
 					{
-						// Already retried internally; the connection is likely dead right now.
-						// The gmw_is_connected()/TryConnect() loop above will catch that, and the
-						// client's own auto-reconnect watchdog replays the last-stashed modeline
-						// once it reconnects.
+						// Already retried internally, so the connection is likely down. The
+						// gmw_is_connected()/TryConnect() loop above catches that, and the client's own
+						// watchdog replays the last-stashed modeline once it reconnects.
 						Console.Warning("[MiSTer] Switchres ACK failed; video may stay blank until the next reconnect.");
 					}
 					m_switchres_pending = false;
 				}
 			}
 
-			// Audio first - the core wants it ahead of the frame it belongs to.
+			// Audio first: the core wants it ahead of the frame it belongs to.
 			gmw_fpgaStatus status{};
 			gmw_getStatus(&status);
 			if (status.audio && m_audio_tap.IsActive())
@@ -933,30 +905,20 @@ namespace GroovyMiSTer
 				}
 			}
 
-			// The FPGA displays frames in counter order, so ours has to stay ahead of what
-			// it is currently showing or the frame is discarded as stale.
+			// The FPGA displays frames in counter order, so ours must stay ahead of what it is
+			// showing or the frame is discarded as stale.
 			//
-			// This forward jump is deliberately UNBOUNDED, which is a considered departure
-			// from the Groovy integration handoff (§11.5, "bound that resync"). That advice
-			// predates the keepalive: now that we hold a paused session open, status.frame
-			// free-runs while we are quiet, so after a 60s pause the core is legitimately
-			// ~3600 frames ahead and clamping the jump would leave us permanently numbering
-			// behind the display position - every frame stale, forever. The failure the
-			// bound guarded against was jumping onto a DEAD session's counter, and that is
-			// no longer reachable: the vendored client's resetSessionState() zeroes fpga.*
-			// at the top of every CmdInit, so status.frame can only ever describe the
-			// session we are actually talking to.
-			//
-			// The direction that does still need handling is backwards - a reconnect
-			// restarts the core at zero while we would otherwise keep counting - and that
-			// is what the reconnectEpoch check above and TryConnect() take care of.
+			// The forward jump is unbounded on purpose. status.frame free-runs while a paused
+			// session is held open, so after a 60s pause the core is legitimately ~3600 frames
+			// ahead; clamping the jump would leave us numbering behind the display position with
+			// every frame stale. Jumping onto a dead session's counter is not a risk here,
+			// because resetSessionState() zeroes fpga.* at the top of every CmdInit.
 			m_blit_frame = std::max(m_blit_frame + 1, status.frame + 1);
 
-			// Belt and braces. EnsureMode() already refuses any mode whose blit would not fit
-			// (GroovyMiSTerModeline.h, FitsBlitBuffer), so reaching this means the queued
-			// geometry and the negotiated pixel format have disagreed somewhere. Dropping the
-			// frame is survivable; the memcpy below - into a fixed-size, RIO-registered
-			// allocation - is not.
+			// EnsureMode() already refuses any mode whose blit would not fit
+			// (GroovyMiSTerModeline.h, FitsBlitBuffer), so reaching this means the queued geometry
+			// and the negotiated pixel format have disagreed. Dropping the frame is survivable; the
+			// memcpy below, into a fixed-size RIO-registered allocation, is not.
 			if (frame.pixels.size() > Pcsx2Config::GroovyMiSTerOptions::MAX_BLIT_BYTES)
 			{
 				if (!m_logged_oversized_frame)
@@ -978,23 +940,21 @@ namespace GroovyMiSTer
 			{
 				std::memcpy(blit_buf, frame.pixels.data(), frame.pixels.size());
 
-				// vCountSync = 1: raster-chase at line 1. (The client's "auto frame delay"
-				// mode assumes a synchronous per-frame caller, which we are not.)
+				// vCountSync = 1: raster-chase at line 1. The client's automatic frame delay mode
+				// assumes a synchronous per-frame caller, which this is not.
 				gmw_blit(m_blit_frame, frame.field, 1, 0, 0);
 
-				// Gate the keepalive on real wire activity rather than a free-running
-				// heartbeat: at 60fps this lands every ~16ms, so the idle threshold is
-				// never reached and a keepalive during normal play is structurally
-				// impossible, not merely unlikely. (Any CmdAudio above rode the same
-				// socket a few lines earlier, so one update here covers both.)
+				// Gate the keepalive on real wire activity rather than a free-running heartbeat: at 60fps
+				// this lands every ~16ms, so the idle threshold is never reached during play. Any
+				// CmdAudio above rode the same socket, so one update covers both.
 				m_keepalive.NotifyWireActivity(now_ms());
 
 				std::lock_guard<std::mutex> guard(m_status_lock);
 				m_status.frames_sent++;
 				m_status.last_encoded_bytes = static_cast<u32>(frame.pixels.size());
 				m_status.connected = true;
-				// frameEcho/vCountEcho say where the raster was when the FPGA got our frame;
-				// frame/vCount say where it is now. The gap is the real end-to-end latency.
+				// frameEcho/vCountEcho say where the raster was when the FPGA got our frame; frame/vCount
+				// say where it is now. The gap is the end-to-end latency.
 				if (m_modeline.v_total > 0 && m_src_hz > 0.0f)
 				{
 					const float lines = static_cast<float>(m_modeline.v_total);
@@ -1006,8 +966,8 @@ namespace GroovyMiSTer
 
 			if (m_cfg.Pacing == GroovyMiSTerPacing::MisterMaster)
 			{
-				// Sleep until the CRT is ready for the next frame. This is what makes the
-				// raster - not PCSX2's frame limiter - the master clock.
+				// Sleep until the CRT is ready for the next frame, making the raster rather than PCSX2's
+				// frame limiter the master clock.
 				gmw_waitSync();
 			}
 		}

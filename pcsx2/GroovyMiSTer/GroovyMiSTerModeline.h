@@ -8,7 +8,7 @@
 
 namespace GroovyMiSTer
 {
-	// A CRT modeline, in exactly the shape gmw_switchres() wants.
+	// A CRT modeline, in the shape gmw_switchres() wants.
 	struct Modeline
 	{
 		double pclock = 0.0; // pixel clock, MHz
@@ -26,10 +26,9 @@ namespace GroovyMiSTer
 		bool operator!=(const Modeline& r) const { return !(*this == r); }
 	};
 
-	/// Structural sanity. A modeline that fails this is malformed, not merely aggressive:
-	/// zero-sized, or with blanking that does not enclose the active area. Such a modeline
-	/// would drive the FPGA's PLL into an undefined state, so it is ALWAYS rejected,
-	/// regardless of the user's safety-cap setting.
+	/// Structural sanity: zero-sized, or blanking that does not enclose the active area.
+	/// Such a modeline drives the FPGA's PLL into an undefined state, so it is rejected
+	/// regardless of the safety-cap setting.
 	constexpr bool IsWellFormed(const Modeline& m)
 	{
 		return m.pclock > 0.0 &&
@@ -40,10 +39,9 @@ namespace GroovyMiSTer
 
 	/// Bytes the FPGA client will stream for one blit of this modeline.
 	///
-	/// A true-field stream (interlace == 1) sends one half-height field per blit, so it
-	/// costs half as much; the other two modes send every line every time. `bytes_per_pixel`
-	/// is the wire format's, i.e. GroovyMiSTer::BytesPerPixel(cfg.RgbMode) - taken as a
-	/// parameter so this header stays dependency-free and trivially testable.
+	/// A true-field stream (interlace == 1) sends one half-height field per blit; the other
+	/// two modes send every line every time. `bytes_per_pixel` is the wire format's, from
+	/// GroovyMiSTer::BytesPerPixel() - a parameter so this header stays dependency-free.
 	constexpr u32 BlitBytes(const Modeline& m, u32 bytes_per_pixel)
 	{
 		const u32 lines = (m.interlace == static_cast<u8>(GroovyMiSTerInterlace::Field)) ?
@@ -54,10 +52,9 @@ namespace GroovyMiSTer
 	/// Does one blit fit the client's fixed-size buffer?
 	///
 	/// The vendored client allocates its blit buffers once at BUFFER_SIZE and derives the
-	/// stream length from whatever modeline we send it, with no clamp anywhere in between -
-	/// so if this check is not here, it is nowhere, and an oversized mode walks off the end
-	/// of a RIO-registered allocation. This is a property of the client, not of the user's
-	/// display, so it is ALWAYS enforced (see MAX_BLIT_BYTES).
+	/// stream length from the modeline it is given, with no clamp in between, so an
+	/// oversized mode walks off the end of a RIO-registered allocation. A property of the
+	/// client rather than of the display, so it is always enforced (see MAX_BLIT_BYTES).
 	constexpr bool FitsBlitBuffer(const Modeline& m, u32 bytes_per_pixel)
 	{
 		return BlitBytes(m, bytes_per_pixel) <= Pcsx2Config::GroovyMiSTerOptions::MAX_BLIT_BYTES;
@@ -65,14 +62,10 @@ namespace GroovyMiSTer
 
 	/// The CRT safety cap.
 	///
-	/// An arcade/consumer CRT driven far outside its designed envelope can be damaged -
-	/// the horizontal output stage and flyback are the parts that let go. A 15kHz arcade
-	/// monitor asked to sync a 1080i-class modeline is the canonical way to kill one.
-	///
-	/// So this is deliberately conservative and ON by default (EmuCore/GroovyMiSTer
-	/// CrtSafetyCap). It is the same envelope RPCS3 settled on. Users with a multisync or
-	/// a genuine 31kHz display can turn it off, but the UI makes them acknowledge the risk
-	/// first - we do not want a silent default that can cook someone's cabinet.
+	/// An arcade or consumer CRT driven far outside its designed envelope can be damaged;
+	/// the horizontal output stage and flyback are what let go. Conservative and on by
+	/// default (EmuCore/GroovyMiSTer CrtSafetyCap). A multisync or genuine 31kHz display
+	/// can turn it off, with the UI asking for acknowledgement first.
 	constexpr bool IsWithinCrtSafeEnvelope(const Modeline& m)
 	{
 		return m.v_active <= Pcsx2Config::GroovyMiSTerOptions::MAX_SAFE_V_ACTIVE &&
@@ -81,10 +74,9 @@ namespace GroovyMiSTer
 
 	/// Full gate applied before any modeline is sent to the FPGA.
 	///
-	/// Two tiers: well-formedness and the blit-buffer budget are structural - they are what
-	/// stands between us and an undefined PLL state or a heap overrun - so they are never
-	/// optional. Only the CRT envelope cap follows the user's CrtSafetyCap setting, because
-	/// that one is a judgement call about their display.
+	/// Well-formedness and the blit-buffer budget are structural - an undefined PLL state
+	/// and a heap overrun respectively - and never optional. Only the CRT envelope cap
+	/// follows the CrtSafetyCap setting.
 	constexpr bool IsModelineAcceptable(const Modeline& m, u32 bytes_per_pixel, bool enforce_cap)
 	{
 		return IsWellFormed(m) && FitsBlitBuffer(m, bytes_per_pixel) &&

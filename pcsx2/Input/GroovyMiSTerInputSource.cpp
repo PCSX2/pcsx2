@@ -16,17 +16,16 @@
 #include <cmath>
 
 // Display names, in the order the Groovy protocol packs them into its button bitmap.
-// Groovy's button space is generic positions (Button 1..12 on bits 4..15; D-pad on bits
-// 0-3) - the MiSTer OSD shows per-controller-type labels (DualShock/Xbox names) only as a
-// mapping aid, but positions are what travel and the physical pad may not be a DualShock.
-// So the position number is the truthful, controller-agnostic label; we show it as the same
-// B# used in the setting identifier. See Groovy_MiSTer build_output/INPUTS_V2_HANDOFF.md.
+// Groovy's button space is generic positions (Button 1..12 on bits 4..15, D-pad on bits
+// 0-3). The MiSTer OSD's per-controller-type labels are a mapping aid only; positions are
+// what travel, and the physical pad may not be a DualShock. The position number is
+// therefore the label, matching the B# used in the setting identifier.
 static const char* s_button_names[GroovyMiSTerInputSource::NUM_BUTTONS] = {
 	"D-Pad Right", "D-Pad Left", "D-Pad Down", "D-Pad Up",
 	"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12"};
 
-// Stable identifiers written into the INI. Never reorder these: doing so would silently
-// remap every existing user binding.
+// Stable identifiers written into the INI. Reordering silently remaps every existing
+// binding.
 static const char* s_button_setting_names[GroovyMiSTerInputSource::NUM_BUTTONS] = {
 	"DPadRight", "DPadLeft", "DPadDown", "DPadUp",
 	"B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12"};
@@ -37,10 +36,10 @@ static const char* s_axis_names[GroovyMiSTerInputSource::NUM_AXES] = {
 static const char* s_axis_setting_names[GroovyMiSTerInputSource::NUM_AXES] = {
 	"LeftX", "LeftY", "RightX", "RightY", "LeftTrigger", "RightTrigger"};
 
-// Default generic mapping, following the canonical Groovy PS layout (inputs v2; see
-// GMW_JOY_CROSS..GMW_JOY_R3). NOTE: cores older than inputs v2 used RetroArch's
-// mister_joypad order for B5..B8 (Select,Start,L1,R1) - on those, Automatic Mapping
-// will cross those four buttons and the user must bind manually.
+// Default generic mapping, following the Groovy PS layout (inputs v2, see
+// GMW_JOY_CROSS..GMW_JOY_R3). Cores older than inputs v2 use RetroArch's mister_joypad
+// order for B5..B8 (Select, Start, L1, R1), where Automatic Mapping crosses those four
+// and they have to be bound by hand.
 static const GenericInputBinding s_generic_binding_button_mapping[GroovyMiSTerInputSource::NUM_BUTTONS] = {
 	GenericInputBinding::DPadRight, // GMW_JOY_RIGHT
 	GenericInputBinding::DPadLeft, // GMW_JOY_LEFT
@@ -60,10 +59,10 @@ static const GenericInputBinding s_generic_binding_button_mapping[GroovyMiSTerIn
 	GenericInputBinding::R3, // B12
 };
 
-// The trigger axes deliberately map to Unknown: L2/R2 default to the digital bits above,
-// which work in every MiSTer OSD mode (analog triggers only stream with Joysticks=Analog
-// on a v2 session). Users wanting analog L2/R2 pressure can bind +LeftTrigger/+RightTrigger
-// manually.
+// The trigger axes map to Unknown on purpose: L2/R2 default to the digital bits above,
+// which work in every MiSTer OSD mode, where analog triggers stream only with
+// Joysticks=Analog on a v2 session. Analog pressure is bound manually via
+// +LeftTrigger/+RightTrigger.
 static const GenericInputBinding s_generic_binding_axis_mapping[GroovyMiSTerInputSource::NUM_AXES][2] = {
 	{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},
 	{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown},
@@ -79,16 +78,14 @@ GroovyMiSTerInputSource::~GroovyMiSTerInputSource() = default;
 
 bool GroovyMiSTerInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
-	// Nothing to open. The Groovy connection - including the input subscription - is owned
-	// by the video path, because the core only accepts an input subscribe inside its
-	// CMD_INIT handshake. We just read whatever that connection has cached.
+	// Nothing to open. The Groovy connection, input subscription included, is owned by the
+	// video path, because the core accepts an input subscribe only inside its CMD_INIT
+	// handshake; this reads what that connection has cached.
 	//
-	// The two MiSTer pads are advertised statically via EnumerateDevices() for the whole time
-	// the source is enabled, so the Controller Settings window (which enumerates on open) shows
-	// them and they can be Automatic-Mapped with the game stopped. We deliberately do not fire
-	// per-device connect/disconnect signals: they are not hotplug hardware, and Initialize is
-	// also called for a source that is about to be disabled, which would spam signals for every
-	// non-MiSTer user.
+	// Both pads are advertised statically via EnumerateDevices() while the source is enabled,
+	// so the Controller Settings window, which enumerates on open, lists them for Automatic
+	// Mapping with the game stopped. No per-device connect/disconnect signals: they are not
+	// hotplug hardware, and Initialize also runs for a source about to be disabled.
 	m_initialized = true;
 	m_streaming = false;
 	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
@@ -111,8 +108,8 @@ bool GroovyMiSTerInputSource::ReloadDevices()
 
 void GroovyMiSTerInputSource::Shutdown()
 {
-	// Held-button release happens in PollEvents on stream-drop (no settings lock held there);
-	// we avoid calling InvokeEvents from here since Shutdown runs under the settings lock.
+	// Held-button release happens in PollEvents on stream drop, which holds no settings lock.
+	// Shutdown runs under that lock, so InvokeEvents must not be called from here.
 	m_initialized = false;
 	m_streaming = false;
 }
@@ -124,8 +121,8 @@ bool GroovyMiSTerInputSource::IsInitialized()
 
 void GroovyMiSTerInputSource::ReleaseHeldInputs()
 {
-	// Emit a release for anything currently held, so the emulated pad does not latch a button
-	// or a deflected stick when the MiSTer stream drops (or the source is disabled).
+	// Release anything held, so the emulated pad does not latch a button or a deflected
+	// stick when the stream drops or the source is disabled.
 	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
 	{
 		ControllerData& cd = m_controllers[i];
@@ -148,18 +145,17 @@ void GroovyMiSTerInputSource::ReleaseHeldInputs()
 
 		cd.last_buttons = 0;
 		cd.last_axes.fill(0);
-		// No 0/0 rumble datagram needed: the core force-stops motors on session close, and
-		// with the stream down there is nobody listening anyway. Clearing the cache makes a
-		// future session start from a known-idle state.
+		// No 0/0 rumble datagram: the core force-stops motors on session close, and with the
+		// stream down nothing is listening. Clearing the cache starts the next session idle.
 		cd.last_rumble.fill(0);
 	}
 }
 
 void GroovyMiSTerInputSource::PollEvents()
 {
-	// Pad state only exists while the Groovy video connection is live (the shared client is
-	// owned by the video path, and the input socket rides that connection). Device *presence*
-	// is separate - the pads stay advertised for binding (EnumerateDevices) either way.
+	// Pad state exists only while the Groovy video connection is live; the shared client is
+	// owned by the video path and the input socket rides that connection. Presence is
+	// separate: the pads stay advertised for binding (EnumerateDevices) either way.
 	if (!gmw_is_connected())
 	{
 		if (m_streaming)
@@ -194,9 +190,8 @@ void GroovyMiSTerInputSource::PollEvents()
 	constexpr u32 button_mask = (1u << NUM_BUTTONS) - 1;
 	const u32 buttons[NUM_CONTROLLERS] = {joy.joy1 & button_mask, joy.joy2 & button_mask};
 
-	// Diagnostic (LogVerbosity >= 1): the MiSTer side has to actually forward pad data, and a
-	// session log showed the input socket registered but no packets. Log on change so we can
-	// confirm whether PCSX2 is receiving anything at all.
+	// Diagnostic (LogVerbosity >= 1). Logged on change, to tell "the MiSTer is not
+	// forwarding pad data" apart from "the socket is registered but nothing arrives".
 	if (EmuConfig.GroovyMiSTer.LogVerbosity >= 1 &&
 		(buttons[0] != m_controllers[0].last_buttons || buttons[1] != m_controllers[1].last_buttons))
 	{
@@ -219,8 +214,8 @@ float GroovyMiSTerInputSource::NormalizeAxis(u32 axis, s16 raw)
 	if (axis == AXIS_LEFTTRIGGER || axis == AXIS_RIGHTTRIGGER)
 		return static_cast<float>(raw) / 255.0f;
 
-	// Sticks carry a signed char (-128..127). Normalise to -1..1, taking the asymmetry
-	// of two's complement into account so full deflection really reaches 1.0.
+	// Sticks carry a signed char (-128..127). Normalise to -1..1, allowing for the
+	// asymmetry of two's complement so full deflection reaches 1.0.
 	return static_cast<float>(raw) / (raw < 0 ? 128.0f : 127.0f);
 }
 
@@ -261,10 +256,10 @@ void GroovyMiSTerInputSource::CheckForStateChanges(u32 index, u32 buttons, const
 
 std::vector<std::pair<std::string, std::string>> GroovyMiSTerInputSource::EnumerateDevices()
 {
-	// Always advertise both pads while the source is enabled - even when not streaming. They
-	// are network devices with no hotplug, so this is what makes them appear in the Automatic
-	// Mapping menu / Detected Devices list with the game stopped. Events only actually flow
-	// while streaming (PollEvents), which is fine: bindings are just INI strings.
+	// Advertise both pads while the source is enabled, streaming or not. They are network
+	// devices with no hotplug, and this is what lists them in Automatic Mapping and Detected
+	// Devices with the game stopped. Events flow only while streaming; bindings are just INI
+	// strings.
 	std::vector<std::pair<std::string, std::string>> ret;
 	for (u32 i = 0; i < NUM_CONTROLLERS; i++)
 		ret.emplace_back(fmt::format("MiSTer-{}", i), fmt::format("MiSTer Joystick {}", i + 1));
@@ -273,16 +268,12 @@ std::vector<std::pair<std::string, std::string>> GroovyMiSTerInputSource::Enumer
 
 std::vector<InputBindingKey> GroovyMiSTerInputSource::EnumerateMotors()
 {
-	// Inputs v2 added a rumble channel (client -> core on the inputs socket). Advertise the
-	// motors unconditionally, like the pads themselves: whether they do anything depends on
-	// runtime state, but the bindings are just INI strings and gmw_send_rumble() no-ops when
-	// it cannot be delivered. MiSTer-side gating, in the order it is applied: the negotiated
-	// cap, then MiSTer.ini RUMBLE (global, default On), then the PER-PAD toggle under
-	// OSD -> System -> Controllers -> <player> -> Rumble (default On). If a user reports no
-	// vibration, check them in that order. (The redundant global OSD Rumble option that used
-	// to sit alongside these was removed upstream - it shared status bit [42] with Jumbo
-	// frames, so enabling MTU 3800 read back as Rumble = Off. On a current core the two
-	// coexist; on the older 3738621a... binary they are mutually exclusive.)
+	// Inputs v2 carries a rumble channel (client -> core on the inputs socket). The motors
+	// are advertised unconditionally, like the pads: bindings are just INI strings and
+	// gmw_send_rumble() no-ops when it cannot be delivered. MiSTer-side gating, in the order
+	// it is applied: the negotiated cap, MiSTer.ini RUMBLE (global, default On), then the
+	// per-pad toggle under OSD -> System -> Controllers -> <player> -> Rumble (default On).
+	// Check them in that order when there is no vibration.
 	std::vector<InputBindingKey> ret;
 
 	InputBindingKey key = {};
@@ -309,28 +300,25 @@ void GroovyMiSTerInputSource::SendRumble(u32 index)
 	const u8 small = cd.last_rumble[1];
 	const bool caps_rumble = (gmw_get_input_caps() & GMW_CAP_RUMBLE) != 0;
 
-	// Rumble diagnostic (LogVerbosity >= 1): logged on every would-be send, BEFORE the caps
-	// gate, so the trace distinguishes the three failure modes - motors not driving us at all
-	// (no lines), driving us but caps not negotiated (caps=0, v1 fallback), or emitting fine.
-	// It also exposes the value/rate stream to correlate with the MiSTer's [RUMBLE] log
-	// (groovy.cpp, LOG level 2). Keep it: it is a cheap, permanent parallel to the input log.
+	// Rumble diagnostic (LogVerbosity >= 1), logged before the caps gate so the trace tells
+	// three cases apart: nothing driving the motors (no lines), driving them without the cap
+	// negotiated (caps=0, v1 fallback), and emitting normally. Correlates with the MiSTer's
+	// own [RUMBLE] log at its level 2.
 	if (EmuConfig.GroovyMiSTer.LogVerbosity >= 1)
 		INFO_LOG("MiSTer rumble: player={} large={} small={} caps_rumble={}", index, large, small, caps_rumble ? 1 : 0);
 
-	// The Groovy core repeats the last value until replaced, so only a change may hit the
-	// wire; the core force-stops motors on session close, and drops rumble entirely unless
-	// GMW_CAP_RUMBLE was negotiated - don't bother it (or an old core) otherwise. Note the
-	// per-pad OSD toggle also silences a running effect when switched off mid-session.
+	// The core repeats the last value until it is replaced, so only a change goes on the
+	// wire, and it drops rumble entirely unless GMW_CAP_RUMBLE was negotiated. The per-pad
+	// OSD toggle also silences a running effect when switched off mid-session.
 	if (!caps_rumble)
 		return;
 
-	// UDP has no delivery guarantee, and the core holds the last value it saw (its FF effect
-	// runs for ~32s), so a single dropped "stop" datagram would leave a motor buzzing long
-	// after the game silenced it. A stop is a one-shot transition - UpdateMotorState only
-	// reaches SendRumble on a change, so a (0,0) here means we just went from buzzing to idle
-	// - which makes re-sending it a few times cheap insurance: the core de-dupes identical
-	// values, so the extra datagrams are harmless no-ops. Non-zero values are sent once (the
-	// game re-drives them continuously anyway; spamming them would only restart the effect).
+	// UDP has no delivery guarantee and the core holds the last value it saw, with its FF
+	// effect running ~32s, so one dropped stop would leave a motor buzzing after the game
+	// silenced it. A stop is a one-shot transition - SendRumble is only reached on a change,
+	// so (0, 0) here means buzzing to idle - and the core de-dupes identical values, so the
+	// repeats are no-ops. Non-zero values go once; the game re-drives them anyway, and
+	// repeating them would restart the effect.
 	constexpr int STOP_RESENDS = 3;
 	const int sends = (large == 0 && small == 0) ? STOP_RESENDS : 1;
 	for (int i = 0; i < sends; i++)

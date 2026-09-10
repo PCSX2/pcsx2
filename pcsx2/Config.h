@@ -595,17 +595,17 @@ struct TraceLogFilters
 //  GroovyMiSTer streaming output
 // --------------------------------------------------------------------------------------
 // Streams the emulated PS2 frame/audio to a MiSTer FPGA over UDP, and reads MiSTer-side
-// controllers back. See pcsx2/GroovyMiSTer/ and 3rdparty/groovymister/PROVENANCE.md.
+// controllers back. See pcsx2/GroovyMiSTer/.
 
-// Wire-side codec. The values are NOT arbitrary: they are the Groovy protocol's
-// Lz4FramesCode, which rides CMD_INIT.
+// Wire-side codec. The values are the Groovy protocol's Lz4FramesCode, which rides
+// CMD_INIT.
 enum class GroovyMiSTerCodec : u8
 {
 	Raw = 0, // uncompressed
 	LZ4 = 1,
 	LZ4HC = 3,
-	// Near-lossless codec. The entropy front-end (Pack) and quantization (NearLevel)
-	// are separate knobs below - they are not part of this codec id.
+	// Near-lossless codec, RGB888 only. The entropy front-end (Pack) and quantization
+	// (NearLevel) are separate knobs below, not part of this codec id.
 	NLC = 7,
 };
 
@@ -616,10 +616,9 @@ enum class GroovyMiSTerNlcPack : u8
 	// content (Rice has a 1-bit-per-sample floor).
 	Tiled = 1,
 	// Golomb-Rice entropy coding. Better on 3D content, and what brings heavy scenes
-	// under the core's ~38 MB/s ingest ceiling.
-	// WARNING: REQUIRES a core with the Rice decoder (rbf_rice_r3 kit or newer).
-	// There is no negotiation - an older core ignores bit 7 and misparses Rice as
-	// Tiled, producing a garbage picture.
+	// under the core's ~38 MB/s ingest ceiling. Requires a core with the Rice decoder
+	// (rbf_rice_r3 kit or newer): there is no negotiation, and an older core ignores
+	// bit 7 and misparses Rice as Tiled, producing a garbage picture.
 	Rice = 2,
 };
 
@@ -631,17 +630,18 @@ enum class GroovyMiSTerInterlace : u8
 	ProgressiveFB = 2, // progressive framebuffer over an interlaced modeline
 };
 
-// Wire pixel format (Groovy RGBModeCode).
+// Wire pixel format (Groovy RGBModeCode). Only RGB888 is valid with the NLC codec: the
+// FPGA decoder has three plane cores and no pixel-format input, and CmdInit rejects the
+// other two outright.
 //
-// NOTE ON BYTE ORDER: the MiSTer's wire layout is *not* what the names suggest.
-// Confirmed against the FPGA RTL (Groovy.sv decode_pixel), where a pixel is
-// unpacked as {r,g,b} <= word64[0 +: 24] - a Verilog concat, so blue lands in the
-// least-significant byte, and DDR is little-endian:
+// Byte order is not what the names suggest. From the FPGA RTL (Groovy.sv decode_pixel),
+// where a pixel is unpacked as {r,g,b} <= word64[0 +: 24] - a Verilog concat, so blue
+// lands in the least-significant byte, and DDR is little-endian:
 //   RGB888   -> bytes are B, G, R
 //   RGBA8888 -> bytes are B, G, R, A   (the 4th byte is ignored by the core)
 //   RGB565   -> a little-endian u16, (r << 11) | (g << 5) | b
-// PCSX2 reads back RGBA8 (byte 0 = red), so EVERY mode needs a channel swap.
-// None of them is a memcpy. See GroovyMiSTerOutput.cpp PackFrame().
+// PCSX2 reads back RGBA8 (byte 0 = red), so every mode needs a channel swap and none is
+// a memcpy. See GroovyMiSTerPixels.cpp, PackFrame().
 enum class GroovyMiSTerRgbMode : u8
 {
 	RGB888 = 0, // 3 B/px
@@ -652,19 +652,19 @@ enum class GroovyMiSTerRgbMode : u8
 // Who owns the frame clock.
 enum class GroovyMiSTerPacing : u8
 {
-	// PCSX2's frame limiter runs as normal; frames are raster-chased via vCountSync.
-	// A network hiccup can never stall emulation.
+	// PCSX2's frame limiter runs as normal, frames raster-chased via vCountSync, so a
+	// network hiccup cannot stall emulation.
 	Pcsx2Master,
-	// The CRT raster is the clock: gmw_waitSync() paces the sender, backpressure
-	// propagates through the ring -> MTGS -> EE. Lowest, most deterministic latency.
+	// The CRT raster is the clock: gmw_waitSync() paces the sender and backpressure
+	// propagates ring -> MTGS -> EE. Lowest and most deterministic latency.
 	MisterMaster,
 };
 
 // GPU readback strategy.
 enum class GroovyMiSTerReadback : u8
 {
-	// Flush + map in-frame. Zero added frames. Briefly blocks the GS thread, which
-	// the MTGS ring decouples from emulation.
+	// Flush and map in-frame, adding no frames. Briefly blocks the GS thread, which the
+	// MTGS ring decouples from emulation.
 	Sync,
 	// Copy this frame, map the next. Costs exactly one frame; never blocks.
 	Deferred1,
@@ -1436,16 +1436,15 @@ struct Pcsx2Config
 		static constexpr u16 MAX_SAFE_V_ACTIVE = 576;
 		static constexpr u16 MAX_SAFE_H_ACTIVE = 1024;
 
-		// Hard ceiling on a single blit, in BYTES. Mirrors BUFFER_SIZE (720*576*3) in
+		// Hard ceiling on a single blit, in bytes. Mirrors BUFFER_SIZE (720*576*3) in
 		// 3rdparty/groovymister/groovymister.h: the client's blit buffers are allocated at
-		// exactly that size (and RIO-registered on Windows), and nothing in the client
-		// clamps against it - it sizes its stream straight from the modeline we hand it.
+		// exactly that size, RIO-registered on Windows, and nothing in the client clamps
+		// against it - it sizes its stream from the modeline it is given.
 		//
-		// Note this is a byte budget, so it moves with RgbMode: the CRT cap above allows
-		// 1024x576, which is 1.7MB in RGB888, and RGBA8888 blows it at any 576-line mode.
-		// Unlike the CRT cap this is not a judgement call about displays - overrunning it
-		// corrupts the client's heap - so it is never user-disableable.
-		// MUST be re-checked against BUFFER_SIZE on every vendored-client re-sync.
+		// A byte budget, so it moves with RgbMode: the CRT cap above allows 1024x576, which
+		// is 1.7MB in RGB888, and RGBA8888 exceeds it at any 576-line mode. Overrunning it
+		// corrupts the client's heap, so unlike the CRT cap it is not user-disableable.
+		// Re-check against BUFFER_SIZE on every vendored-client re-sync.
 		static constexpr u32 MAX_BLIT_BYTES = 1245312;
 
 		BITFIELD32()
@@ -1453,8 +1452,8 @@ struct Pcsx2Config
 			Enabled : 1,
 			// Mirror SPU2's mixed output to the MiSTer.
 			TapAudio : 1,
-			// Refuse modelines outside the CRT-safe envelope. DEFAULT ON - only turn
-			// this off if you know your display tolerates the mode.
+			// Refuse modelines outside the CRT-safe envelope. On by default; turn it off
+			// only for a display known to tolerate the mode.
 			CrtSafetyCap : 1,
 			// Drop the GS upscale multiplier to 1x while streaming. Above 1x we pay a
 			// downscale pass and extra readback bytes for detail a CRT cannot show.
@@ -1463,9 +1462,8 @@ struct Pcsx2Config
 
 		GroovyMiSTerCodec Codec = GroovyMiSTerCodec::NLC;
 		GroovyMiSTerNlcPack NlcPack = GroovyMiSTerNlcPack::Rice;
-		// NLC quantization, 0-3. 0 is lossless; 1 is the HW-validated default (NEAR 0/1/2
-		// were confirmed visually identical on a CRT, and 1 keeps heavy 3D scenes well
-		// under the core's ingest ceiling).
+		// NLC quantization, 0-3. 0 is lossless. 1 is the default: NEAR 0/1/2 are visually
+		// identical on a CRT, and 1 keeps heavy 3D scenes under the core's ingest ceiling.
 		u8 NlcNearLevel = 1;
 
 		GroovyMiSTerInterlace Interlace = GroovyMiSTerInterlace::ProgressiveFB;
@@ -1478,10 +1476,10 @@ struct Pcsx2Config
 		u8 LogVerbosity = 0; // vendored client log verbosity, 0-2
 
 		std::string Host{"127.0.0.1"};
-		// switchres monitor preset - a compiled-in switchres monitor name (no ini needed).
-		// Defaults to the tri-sync arcade monitor (15/25/31 kHz), which covers every PS2
-		// output the CRT safety cap allows. Do NOT default this empty: switchres's own
-		// default is generic_15 (15 kHz only), which refuses all 31 kHz / 480p modes.
+		// A compiled-in switchres monitor name, no ini needed. The tri-sync arcade monitor
+		// (15/25/31 kHz) covers every PS2 output the CRT safety cap allows. Never default
+		// this empty: switchres's own default is generic_15, 15 kHz only, which refuses all
+		// 31 kHz / 480p modes.
 		std::string MonitorPreset{"arcade_15_25_31"};
 		// Optional path to a switchres.ini (sr_load_ini) for power users.
 		std::string SwitchresIni;

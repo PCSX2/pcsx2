@@ -13,15 +13,14 @@ class SettingsInterface;
 
 /// Controllers plugged into the MiSTer, streamed back to us over UDP 32101.
 ///
-/// This is a first-class InputSource rather than a bespoke pad backend, which means MiSTer
-/// pads show up in PCSX2's normal controller-binding UI and can be rebound like any other
-/// device. (RPCS3 hardcodes its mapping; we get the binding system for free.)
+/// A first-class InputSource rather than a bespoke pad backend, so MiSTer pads appear in
+/// the normal controller-binding UI and rebind like any other device.
 ///
-/// We do NOT own the connection. The Groovy client is a single shared object owned by the
-/// video path (GroovyMiSTer::Output), which subscribes for inputs during its CMD_INIT
-/// handshake. We only poll the cached state, and only while that connection is live - hence
+/// This does not own the connection. The Groovy client is a single shared object owned by
+/// the video path (GroovyMiSTer::Output), which subscribes for inputs during its CMD_INIT
+/// handshake; this polls the cached state, and only while that connection is live - hence
 /// the gmw_is_connected() guard in PollEvents(). The input socket is separate from the
-/// video socket, so polling here never races the sender thread.
+/// video socket, so polling never races the sender thread.
 class GroovyMiSTerInputSource final : public InputSource
 {
 public:
@@ -29,10 +28,10 @@ public:
 	{
 		// The Groovy protocol carries two joysticks.
 		NUM_CONTROLLERS = 2,
-		// GMW_JOY_RIGHT/LEFT/DOWN/UP then B1..B12. Since inputs v2 the core's button space
-		// is semantically PlayStation and fixed: B1..B12 = Cross, Circle, Square, Triangle,
-		// L1, R1, Select, Start, L2, R2, L3, R3. Bits 14/15 (L3/R3) arrive even from a v1
-		// 16-bit packet, so all 16 buttons work regardless of the negotiated protocol.
+		// GMW_JOY_RIGHT/LEFT/DOWN/UP then B1..B12. Under inputs v2 the core's button space is
+		// PlayStation-semantic and fixed: B1..B12 = Cross, Circle, Square, Triangle, L1, R1,
+		// Select, Start, L2, R2, L3, R3. Bits 14/15 (L3/R3) arrive even from a v1 16-bit
+		// packet, so all 16 buttons work whichever protocol was negotiated.
 		NUM_BUTTONS = 16,
 		// Motors for MiSTer-side rumble (inputs v2): 0 = large/strong, 1 = small/weak.
 		NUM_MOTORS = 2,
@@ -79,7 +78,7 @@ private:
 	{
 		u32 last_buttons = 0;
 		// Sticks are signed (-128..127), triggers unsigned (0..255); s16 holds both raw
-		// encodings so change detection stays exact. NormalizeAxis() maps to -1..1 / 0..1.
+		// encodings exactly, so change detection is exact. NormalizeAxis() maps them.
 		std::array<s16, NUM_AXES> last_axes{};
 		// Last rumble values sent to the MiSTer (large, small). The Groovy core repeats the
 		// last value until replaced, so we must only send on change.
@@ -94,8 +93,8 @@ private:
 
 	std::array<ControllerData, NUM_CONTROLLERS> m_controllers;
 	bool m_initialized = false;
-	// The MiSTer only streams pad state while the video connection is live. This tracks that
-	// so we can release held buttons when the stream drops. It is NOT device presence: the two
-	// pads are advertised for the whole time the source is enabled (see EnumerateDevices).
+	// The MiSTer streams pad state only while the video connection is live; this tracks that
+	// so held buttons can be released when the stream drops. Not device presence: both pads
+	// stay advertised while the source is enabled (see EnumerateDevices).
 	bool m_streaming = false;
 };

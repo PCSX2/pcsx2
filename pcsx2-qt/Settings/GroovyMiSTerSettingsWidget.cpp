@@ -23,12 +23,12 @@ static constexpr int MAX_SAFE_H = static_cast<int>(Pcsx2Config::GroovyMiSTerOpti
 
 // Codec combo row -> the value actually written to the INI.
 //
-// These are Groovy *wire* values (Lz4FramesCode), not display indices, and they are
-// deliberately NOT contiguous: Raw=0, LZ4=1, LZ4HC=3, NLC=7. SettingWidgetBinder's combo
-// accessor stores currentIndex(), so binding this box with BindWidgetToIntSetting would
-// write 2 for "LZ4 HC" and 3 for "NLC" - values that mean something else, or nothing, to the
-// FPGA. The result would be a garbage picture rather than an error, so this one box gets a
-// hand-rolled mapping (same shape as eeCycleRate in EmulationSettingsWidget).
+// These are Groovy wire values (Lz4FramesCode), not display indices, and are not
+// contiguous: Raw=0, LZ4=1, LZ4HC=3, NLC=7. SettingWidgetBinder's combo accessor stores
+// currentIndex(), so BindWidgetToIntSetting would write 2 for "LZ4 HC" and 3 for "NLC",
+// which mean something else to the FPGA and produce a garbage picture rather than an
+// error. Hand-mapped instead, in the same shape as eeCycleRate in
+// EmulationSettingsWidget.
 static constexpr std::array<int, 4> CODEC_VALUES = {
 	static_cast<int>(GroovyMiSTerCodec::Raw), // 0
 	static_cast<int>(GroovyMiSTerCodec::LZ4), // 1
@@ -36,15 +36,14 @@ static constexpr std::array<int, 4> CODEC_VALUES = {
 	static_cast<int>(GroovyMiSTerCodec::NLC), // 7
 };
 
-// Interlace combo row -> the Interlace enum value written to the INI. Like CODEC_VALUES, these are
-// NOT in row order and are non-contiguous: row 0 "Automatic" = ProgressiveFB(2), row 1 "Force
-// progressive" = Progressive(0). Storing currentIndex() would write 0/1 - one of which (1) means
-// GroovyMiSTerInterlace::Field - so this box is hand-mapped rather than bound with
-// BindWidgetToIntSetting.
+// Interlace combo row -> the Interlace enum value written to the INI. Like CODEC_VALUES,
+// not in row order and not contiguous: row 0 "Automatic" = ProgressiveFB(2), row 1 "Force
+// progressive" = Progressive(0). Storing currentIndex() would write 0/1, and 1 means
+// GroovyMiSTerInterlace::Field, so this box is hand-mapped too.
 //
-// "Automatic" tracks the game per-frame (interlaced source -> 480i, progressive -> 480p); "Force
-// progressive" always deinterlaces to 480p. GroovyMiSTerInterlace::Field (true interlaced fields)
-// is deliberately absent: its capture path is not implemented yet.
+// "Automatic" tracks the game per frame (interlaced source -> 480i, progressive -> 480p);
+// "Force progressive" always deinterlaces to 480p. GroovyMiSTerInterlace::Field is absent
+// because its capture path is not implemented.
 // TODO(true-fields): add a third "Interlaced fields" row (Field == 1) here and in the .ui, in the
 // matching position, once per-field capture works.
 static constexpr std::array<int, 2> INTERLACE_VALUES = {
@@ -53,15 +52,13 @@ static constexpr std::array<int, 2> INTERLACE_VALUES = {
 };
 
 // Every compiled-in switchres monitor preset (3rdparty/switchres/monitor.cpp,
-// monitor_set_preset) - no ini required for any of them. The labels use switchres's own
-// descriptions from that file, since they are the authoritative statement of what each
-// profile actually is. Ordered most-useful-first for PS2 on an arcade CRT rather than
-// alphabetically. MUST stay in sync with the allowlist in GroovyMiSTerOutput.cpp
-// (IsKnownMonitorPreset). Null-terminated for BindWidgetToEnumSetting.
+// monitor_set_preset), none of which needs an ini. Labels are switchres's own descriptions
+// from that file. Ordered most-useful-first for PS2 on an arcade CRT rather than
+// alphabetically, and null-terminated for BindWidgetToEnumSetting. Keep in sync with
+// IsKnownMonitorPreset in GroovyMiSTerOutput.cpp.
 //
-// Two switchres names are omitted here because they are pure aliases of entries below:
-// "d9400" (== d9800) and "polo" (== h9110). Both are still accepted by the core allowlist,
-// so a hand-edited INI using them keeps working.
+// "d9400" (== d9800) and "polo" (== h9110) are omitted as pure aliases of entries below.
+// The allowlist still accepts them, so a hand-edited INI using them keeps working.
 static const char* s_monitor_names[] = {
 	// Arcade multi-sync
 	QT_TRANSLATE_NOOP("GroovyMiSTerSettingsWidget", "Arcade 15.7/25.0/31.5 kHz - tri-sync (default)"),
@@ -227,8 +224,8 @@ void GroovyMiSTerSettingsWidget::onEnabledChanged()
 
 void GroovyMiSTerSettingsWidget::onCodecChanged()
 {
-	// Pack and NEAR ride CMD_INIT byte[1] and are only read when the codec is NLC; they mean
-	// nothing for the raw/LZ4 paths, so don't pretend they're live.
+	// Pack and NEAR ride CMD_INIT byte[1] and are read only when the codec is NLC, so they
+	// mean nothing on the raw/LZ4 paths.
 	const bool is_nlc = (m_ui.codec->currentIndex() >= 0 &&
 						 CODEC_VALUES[m_ui.codec->currentIndex()] == static_cast<int>(GroovyMiSTerCodec::NLC));
 
@@ -237,6 +234,15 @@ void GroovyMiSTerSettingsWidget::onCodecChanged()
 	m_ui.nlcNearLevel->setEnabled(is_nlc);
 	m_ui.labelNlcNearLevel->setEnabled(is_nlc);
 	m_ui.riceWarning->setVisible(is_nlc);
+
+	// NLC is RGB888-only - the FPGA decoder has three plane cores and no pixel-format
+	// input, and CmdInit refuses anything else - so pin the format rather than leave a
+	// combination that cannot connect. Combo row order matches GroovyMiSTerRgbMode, and
+	// setting the row writes the setting through the binder.
+	if (is_nlc)
+		m_ui.rgbMode->setCurrentIndex(static_cast<int>(GroovyMiSTerRgbMode::RGB888));
+	m_ui.rgbMode->setEnabled(!is_nlc);
+	m_ui.labelRgbMode->setEnabled(!is_nlc);
 
 	onNlcPackChanged();
 }
@@ -398,7 +404,8 @@ void GroovyMiSTerSettingsWidget::addTooltips()
 		   "Raise it only if you are still seeing dropped frames."));
 
 	dialog()->registerWidgetHelp(m_ui.rgbMode, tr("Pixel Format"), tr("RGB888"),
-		tr("Colour depth on the wire.<br><br>"
+		tr("Colour depth on the wire. Fixed at RGB888 when the codec is NLC, which the MiSTer decodes "
+		   "three bytes per pixel.<br><br>"
 		   "<b>RGB888</b> (24-bit) is the default.<br><br>"
 		   "<b>RGB565</b> (16-bit) halves the raw data before compression, at the cost of slight banding in "
 		   "gradients - useful on a constrained link.<br><br>"

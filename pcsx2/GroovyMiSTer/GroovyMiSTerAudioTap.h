@@ -13,17 +13,14 @@ namespace GroovyMiSTer
 {
 	/// Bridges SPU2's mixed output to the Groovy sender thread.
 	///
-	/// Why a bridge at all: the Groovy video/audio socket may only be driven by the sender
-	/// thread (the RIO send path is not thread-safe, and cross-thread sends get silently
-	/// dropped), but audio is mixed on the SPU2 thread. So SPU2 deposits samples here and
-	/// the sender drains them.
+	/// Audio is mixed on the SPU2 thread, but only the sender thread may drive the Groovy
+	/// socket: the RIO send path is not thread-safe and cross-thread sends are dropped
+	/// without error. SPU2 deposits samples here and the sender drains them.
 	///
 	/// Producer: SPU2 thread (Write). Consumer: sender thread (Read). Exactly one of each.
 	///
-	/// Overflow policy is DROP-OLDEST. If the sender stalls, we would rather throw away
-	/// stale audio than let latency grow without bound - audio that is seconds behind the
-	/// picture is worse than a dropout, and dropping old samples lets the stream
-	/// self-correct instead of drifting forever.
+	/// Overflow drops oldest, so a stalled sender costs stale samples rather than unbounded
+	/// latency, and the stream self-corrects instead of drifting.
 	class AudioTap
 	{
 	public:
@@ -31,8 +28,8 @@ namespace GroovyMiSTer
 		static constexpr u32 CHANNELS = 2;
 		static constexpr u32 BYTES_PER_SAMPLE = sizeof(s16) * CHANNELS;
 
-		/// ~256KB is about 1.3 seconds at 48kHz stereo - far more headroom than we ever
-		/// want to use, but it means a brief sender hiccup costs nothing.
+		/// ~256KB, about 1.3 seconds at 48kHz stereo: more headroom than should ever be
+		/// used, so a brief sender hiccup costs nothing.
 		static constexpr size_t CAPACITY = 256 * 1024;
 
 		void Reset();

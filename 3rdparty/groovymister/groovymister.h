@@ -46,10 +46,10 @@
 #define GM_JOY_B11   (1 << 14)
 #define GM_JOY_B12   (1 << 15)
 
-// The wire is GENERIC: bits 4..15 are Button 1..12 (GM_JOY_B1..B12) — Groovy fronts
-// many platforms, not just PlayStation. The defines below are the DualShock-type
-// LABELING CONVENTION for those positions (the MiSTer OSD shows per-controller-type
-// labels; equivalent positions line up across types, e.g. pos 1 = Cross = Xbox A).
+// The wire format is generic: bits 4..15 are Button 1..12 (GM_JOY_B1..B12). Groovy fronts
+// many platforms, not just PlayStation, so the defines below are only the DualShock-type
+// labelling convention for those positions. The MiSTer OSD shows per-controller-type
+// labels, and equivalent positions line up across types, e.g. pos 1 = Cross = Xbox A.
 // Per-device .map files on the MiSTer translate physical buttons to positions.
 #define GM_JOY_CROSS    GM_JOY_B1
 #define GM_JOY_CIRCLE   GM_JOY_B2
@@ -65,13 +65,19 @@
 #define GM_JOY_R3       GM_JOY_B12
 
 // CMD_INIT byte[5] capability flags (setInputCaps; sent as a len-6 init).
-// NOTE: only cores with GROOVY_VERSION >= 2 accept a len-6 CMD_INIT — older
-// cores validate the datagram length and silently DISCARD it (no ACK), so a
+// Only cores with GROOVY_VERSION >= 2 accept a len-6 CMD_INIT. Older
+// cores validate the datagram length and silently discard it (no ACK), so a
 // caps client could never connect to them. CmdInit therefore probes the core
 // with CMD_GET_VERSION first and falls back to a len-5 init (caps dropped) on
 // version < 2; getInputCaps() reports what was actually negotiated.
 #define GM_CAP_INPUTS_V2 0x01 // joystick packet v2: 32-bit masks + analog triggers
 #define GM_CAP_RUMBLE    0x02 // client may send rumble messages on the inputs socket
+// Promises that this client sends keepalives while idle, which is what licenses the core to
+// close a silent session. Without it the core leaves a quiet session alone, so a client that
+// does not opt in may pause indefinitely. Opting in is a contract: call CmdSendKeepAlive()
+// more often than the core's shortest OSD idle timeout (5s today) for as long as you are
+// connected but not blitting, pauses and long loads included.
+#define GM_CAP_KEEPALIVE 0x04 // client sends CMD_GET_STATUS keepalives while idle
 
 /*! fpgaStatus :
  *  Data received after CmdInit and CmdBlit calls
@@ -84,7 +90,8 @@ typedef struct fpgaStatus{
 
 	uint8_t vramEndFrame; 	//1-fpga has all pixels on vram for last CmdBlit
 	uint8_t vramReady;	//1-fpga has free space on vram
-	uint8_t vramSynced;	//1-fpga has synced (not red screen)
+	uint8_t vramSynced;	//1-fpga is up. NOT an underrun detector: the condition self-clears
+			//within about a raster line, so this per-blit sample almost never catches one
 	uint8_t vgaFrameskip;	//1-fpga used framebuffer (volatile framebuffer off)
 	uint8_t vgaVblank;	//1-fpga is on vblank
 	uint8_t vgaF1;		//1-field for interlaced
@@ -154,10 +161,13 @@ class GroovyMister
 	void CmdClose(void);
 	// Init streaming with ip, port
 	int CmdInit(const char* misterHost, uint16_t misterPort, int lz4Frames, uint32_t soundRate, uint8_t soundChan, uint8_t rgbMode, uint16_t mtu);
-	void setNlcDispMode(uint8_t mode);   // /47 NLC display path: 0=stream(/45), 2=autonomous engine
-	void setNlcPack(uint8_t pack);       // R0/R5: NLC entropy front-end: 1=TILED (default), 2=RICE (CMD_INIT byte[1] bit 7)
+	void setNlcDispMode(uint8_t mode);   // NLC display path: 0=streaming, 2=autonomous decode engine
+	void setNlcPack(uint8_t pack);       // NLC entropy front-end: 1=TILED (default), 2=RICE (CMD_INIT byte[1] bit 7)
 	void setNearLevel(uint8_t lvl);      // NLC near-lossless level 0-3 (0=lossless default; CMD_INIT byte[1] bits [3:2])
-	void setInputCaps(uint8_t caps);     // GM_CAP_* input capabilities — set before CmdInit (0 = legacy v1 inputs)
+	void setInputCaps(uint8_t caps);     // GM_CAP_* input capabilities, set before CmdInit (0 = legacy v1 inputs)
+	// Advertise GM_CAP_KEEPALIVE, set before CmdInit. Only enable it if you actually call
+	// CmdSendKeepAlive() while idle - see the contract at GM_CAP_KEEPALIVE. Off by default.
+	void setKeepAlive(uint8_t on);
 	// Change resolution (check https://github.com/antonioginer/switchres) with modeline.
 	// Returns 0 on success (ACK'd), -1 if not connected or the ACK never arrived after retrying.
 	int CmdSwitchres(double pClock, uint16_t hActive, uint16_t hBegin, uint16_t hEnd, uint16_t hTotal, uint16_t vActive, uint16_t vBegin, uint16_t vEnd, uint16_t vTotal, uint8_t interlace);
@@ -183,7 +193,7 @@ class GroovyMister
 
 	// Send only the CMD_CLOSE datagram via plain sendto (no RIO, no teardown).
 	// For shutdown paths on threads that no longer drain the RIO completion
-	// queues — an async RIOSend there can be silently dropped, leaving the
+	// queues, where an async RIOSend can be silently dropped, leaving the
 	// core frozen on the last frame instead of returning to connection-search.
 	void CmdSendClose(void);
 	// Send a 1-byte CMD_GET_STATUS keepalive on the video socket (normal send
@@ -202,8 +212,8 @@ class GroovyMister
 	// after the CMD_GET_VERSION probe dropped the caps byte)
 	uint8_t getInputCaps(void);
 	// Opt-in ACK watchdog (default OFF): after 10 blits with no frameEcho
-	// advance, CmdBlit transparently reconnects — video side only, the inputs
-	// socket and its local port survive — and replays the stashed modeline.
+	// advance, CmdBlit transparently reconnects and replays the stashed modeline.
+	// The reconnect is video side only: the inputs socket and its local port survive.
 	// CmdInit re-zeroes fpga.* + m_frame on every (re)connect, so a stale
 	// session's counter can never leak into the raster servo, and DiffTimeRaster
 	// clamps an implausible echo/gpu spread to skip (never hang) the sync. The
@@ -278,9 +288,10 @@ class GroovyMister
 	uint8_t m_rgbMode;
 	uint32_t m_RGBSize;
 	uint16_t m_nlcWidth;   // active width, stored at CmdSwitchres for nlc_encode (NLC codec, lz4Frames==7)
-	uint8_t m_nlcPack;     // 1=TILED (default), 2=RICE — set before CmdInit
-	uint8_t m_nearLevel;   // 0-3 near-lossless quantization — set before CmdInit
-	uint8_t m_inputCaps;   // GM_CAP_* flags sent as CMD_INIT byte[5] — set before CmdInit
+	uint8_t m_nlcPack;     // 1=TILED (default), 2=RICE. Set before CmdInit
+	uint8_t m_nearLevel;   // 0-3 near-lossless quantization. Set before CmdInit
+	uint8_t m_inputCaps;   // GM_CAP_* flags sent as CMD_INIT byte[5]. Set before CmdInit
+	uint8_t m_keepAlive;   // GM_CAP_KEEPALIVE opt-in, OR'd into the caps byte at CmdInit
 	uint32_t m_preEncodedSize; // one-shot pre-encoded payload size for the next CmdBlit (0 = encode normally)
 	void buildNlcParams(void* np); // shared CmdBlit/EncodeNLC NLC parameter block (nlc_params*)
 	uint8_t  m_interlace;
@@ -338,8 +349,8 @@ class GroovyMister
 
 	void teardownVideo(void);
 	void resetSessionState(void); // zero the per-session raster state (fpga.* + m_frame); constructor + every CmdInit
-	void rioServiceQueues(void);   // PCSX2 LOCAL PATCH: drain + telemetry, from WaitSync/CmdBlit/CmdSendKeepAlive
 	uint32_t drainSendCompletions(void);
+	void rioServiceQueues(void);  // PCSX2 LOCAL PATCH: drain + telemetry, from WaitSync/CmdBlit/CmdSendKeepAlive
 	uint8_t inputsBound(void);
 	uint64_t monotonicMs(void);
 	char *AllocateBufferSpace(const DWORD bufSize, const DWORD bufCount, DWORD& totalBufferSize, DWORD& totalBufferCount);
