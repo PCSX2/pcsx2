@@ -289,16 +289,12 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 
 	// Create the actual device.
 	// Intel Haswell DX12 support is specific:
-	// Newerest drivers have dx12 support disabled so the last driver to support dx12 is 15.40.42.5063.
+	// Newer drivers have dx12 support disabled so the last driver to support dx12 is 15.40.42.5063.
 	// Shader cache must be also disabled, and make sure Debug Device option is disabled as well.
-	// Let's enable it on dev/debug for testing purposes so we don't have to change this all the time.
+	// Let's enable it for testing purposes so we don't have to change this all the time, and
+	// might be handy for the tweakers that want to run dx12.
 	// TODO: Find out the status of Broadwell.
-#ifdef PCSX2_DEVBUILD
 	hr = D3D12CreateDevice(m_adapter.get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
-#else
-	const bool isIntel = (vendor_id == 0x163C || vendor_id == 0x8086 || vendor_id == 0x8087);
-	hr = D3D12CreateDevice(m_adapter.get(), isIntel ? D3D_FEATURE_LEVEL_12_0 : D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device));
-#endif
 
 	if (FAILED(hr))
 	{
