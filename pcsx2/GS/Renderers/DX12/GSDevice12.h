@@ -385,6 +385,10 @@ private:
 	bool m_enhanced_barriers = false;
 	bool m_device_lost = false;
 
+	// Drivers are allowed to move barriers to the start of a renderpass.
+	// Only Adreno drivers are known to do this.
+	bool m_rp_reorders_barriers = false;
+
 	ComPtr<ID3D12RootSignature> m_tfx_root_signature;
 	ComPtr<ID3D12RootSignature> m_utility_root_signature;
 
