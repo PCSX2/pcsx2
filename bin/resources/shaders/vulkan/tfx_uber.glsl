@@ -1676,7 +1676,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		else if (PS_BLEND_A == 1)
 			A = Cd;
 		else
-			vec3 A = vec3(0.0f);
+			A = vec3(0.0f);
 
 		vec3 B;
 		if (PS_BLEND_B == 0)
@@ -1684,7 +1684,7 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 		else if (PS_BLEND_B == 1)
 			B = Cd;
 		else
-			vec3 B = vec3(0.0f);
+			B = vec3(0.0f);
 
 		float C;
 		if (PS_BLEND_C == 0)
@@ -1769,9 +1769,9 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 
 		vec3 Alpha;
 		if (PS_BLEND_C == 2)
-			vec3 Alpha = vec3(Af);
+			Alpha = vec3(Af);
 		else
-			vec3 Alpha = vec3(As);
+			Alpha = vec3(As);
 
 		if (PS_BLEND_HW == 1)
 		{
