@@ -81,10 +81,13 @@ namespace Vulkan
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
 			MAX_ATTACHMENTS = 2,
-			MAX_DYNAMIC_STATE = 8
+			MAX_DYNAMIC_STATE = 16
 		};
 
 		GraphicsPipelineBuilder();
+
+		GraphicsPipelineBuilder(const GraphicsPipelineBuilder& other);
+		GraphicsPipelineBuilder& operator=(const GraphicsPipelineBuilder& other);
 
 		void Clear();
 
@@ -141,7 +144,14 @@ namespace Vulkan
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+		bool HasVertexShader() const;
+		bool HasGeometryShader() const;
+		bool HasFragmentShader() const;
+
+		const VkGraphicsPipelineCreateInfo& GetCI() const { return m_ci; }
 	private:
+		void SetPointersAfterCopy();
+
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
 
@@ -167,7 +177,9 @@ namespace Vulkan
 		VkPipelineMultisampleStateCreateInfo m_multisample_state;
 
 		VkPipelineRasterizationProvokingVertexStateCreateInfoEXT m_provoking_vertex;
+		bool m_set_provoking_vertex;
 		VkPipelineRasterizationLineStateCreateInfoEXT m_line_rasterization_state;
+		bool m_set_line_rasterization_state;
 	};
 
 	class ComputePipelineBuilder
