@@ -581,7 +581,7 @@ public:
 		}
 		else
 		{
-			return m_tfx_render_pass[rt][ds][colclip][stencil][fbl][dsp][rt_op][ds_op];
+			return m_tfx_render_pass[rt][ds][colclip][stencil][rt_feedback][depth_feedback][rt_op][ds_op];
 		}
 	}
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
