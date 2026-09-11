@@ -721,7 +721,8 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.depth_feedback = m_features.multidraw_fb_copy && GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
-	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled && m_features.vs_expand;
+	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled && 
+	                           m_features.vs_expand && m_features.feedback_loops();
 
 	m_max_texture_size = (m_feature_level >= D3D_FEATURE_LEVEL_11_0) ?
 	                         D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION :

@@ -926,7 +926,8 @@ bool GSDeviceOGL::CheckFeatures()
 	
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 	
-	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled && m_features.vs_expand;
+	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled &&
+	                           m_features.vs_expand && m_features.feedback_loops();
 
 	return true;
 }

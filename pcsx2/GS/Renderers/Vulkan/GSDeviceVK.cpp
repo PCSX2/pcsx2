@@ -2837,7 +2837,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.depth_feedback = m_features.feedback_loops();
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled &&
-		m_features.vs_expand && m_features.feedback_loops();
+	                           m_features.vs_expand && m_features.feedback_loops();
 
 	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
