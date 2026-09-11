@@ -760,6 +760,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
+	HWZIntegerShaderWriteGL = true;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -919,6 +920,7 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(HWAA1) &&
 		   ((HWZIntegerMode == GSHardwareZIntegerMode::Disabled) ==
 			   (right.HWZIntegerMode == GSHardwareZIntegerMode::Disabled)) &&
+	       (Renderer != GSRendererType::OGL || OpEqu(HWZIntegerShaderWriteGL)) &&
 		   OpEqu(ExclusiveFullscreenControl);
 }
 
@@ -1056,6 +1058,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWROV);
 	SettingsWrapBitBool(HWROVLogging);
 	SettingsWrapBitBool(HWROVBarriersVK);
+	SettingsWrapBitBool(HWZIntegerShaderWriteGL);
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
