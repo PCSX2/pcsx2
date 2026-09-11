@@ -66,7 +66,7 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 			s_drop_indicators,
 			s_drop_indicators,
 			s_drop_indicators[0],
-			"DebugUserInterfaceSettingsWidget");
+			"DebugSettingsWidget");
 		dialog()->registerWidgetHelp(
 			m_user_interface.dropIndicator, tr("Drop Indicator Style"), tr("Classic"),
 			tr("Choose how the drop indicators that appear when you drag dock windows in the debugger are styled. "
