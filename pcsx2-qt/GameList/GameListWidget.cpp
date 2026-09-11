@@ -881,17 +881,22 @@ bool GameListWidget::eventFilter(QObject* watched, QEvent* event)
 
 void GameListWidget::resizeTableViewColumnsToFit()
 {
+	const auto column_width = [this](int column) {
+		return (DEFAULT_COLUMN_WIDTHS[column] < 0) ? DEFAULT_COLUMN_WIDTHS[column] :
+		                                             m_table_view->columnWidth(column);
+	};
+
 	QtUtils::ResizeColumnsForTableView(m_table_view, {
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Type],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Serial],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Title],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_FileTitle],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_CRC],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_TimePlayed],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_LastPlayed],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Size],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Region],
-														 DEFAULT_COLUMN_WIDTHS[GameListModel::Column_Compatibility],
+														 column_width(GameListModel::Column_Type),
+														 column_width(GameListModel::Column_Serial),
+														 column_width(GameListModel::Column_Title),
+														 column_width(GameListModel::Column_FileTitle),
+														 column_width(GameListModel::Column_CRC),
+														 column_width(GameListModel::Column_TimePlayed),
+														 column_width(GameListModel::Column_LastPlayed),
+														 column_width(GameListModel::Column_Size),
+														 column_width(GameListModel::Column_Region),
+														 column_width(GameListModel::Column_Compatibility),
 													 });
 }
 
