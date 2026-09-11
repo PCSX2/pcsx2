@@ -41,7 +41,7 @@ static const InputBindingInfo s_bindings[] = {
 	{"RDown", TRANSLATE_NOOP("Pad", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_DOWN, GenericInputBinding::RightStickDown},
 	{"RLeft", TRANSLATE_NOOP("Pad", "Right Stick Left"), ICON_PF_RIGHT_ANALOG_LEFT, InputBindingInfo::Type::HalfAxis, PadDualshock2::Inputs::PAD_R_LEFT, GenericInputBinding::RightStickLeft},
 	{"LargeMotor", TRANSLATE_NOOP("Pad", "Large (Low Frequency) Motor"), nullptr, InputBindingInfo::Type::Motor, 0, GenericInputBinding::LargeMotor},
-	{"SmallMotor", TRANSLATE_NOOP("Pad", "Small (High Frequency) Motor"), nullptr, InputBindingInfo::Type::Motor, 0, GenericInputBinding::SmallMotor},
+	{"SmallMotor", TRANSLATE_NOOP("Pad", "Small (High Frequency) Motor"), nullptr, InputBindingInfo::Type::Motor, 1, GenericInputBinding::SmallMotor},
 	// clang-format on
 };
 
