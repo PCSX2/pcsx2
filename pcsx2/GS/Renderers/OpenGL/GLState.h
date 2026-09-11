@@ -51,6 +51,7 @@ namespace GLState
 	extern bool ds_written; // Depth Stencil written
 
 	extern GLuint tex_unit[8]; // shader input texture
+	extern GLuint image_unit[8]; // shader read/write image
 
 	extern u32 UpdateDrawBuffers();
 	extern void Clear();

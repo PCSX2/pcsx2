@@ -142,6 +142,7 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		case Format::ColorClip:    return 8;  // ColorClip/RGBA16
 		case Format::DepthStencil: return 4;  // DepthStencil
 		case Format::DepthColor:   return 4;  // DepthColor/R32
+		case Format::DepthInteger: return 4;  // DepthInteger/R32
 		case Format::UNorm8:       return 1;  // UNorm8/R8
 		case Format::UInt16:       return 2;  // UInt16/R16UI
 		case Format::UInt32:       return 4;  // UInt32/R32UI

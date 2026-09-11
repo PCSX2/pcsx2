@@ -122,6 +122,7 @@ public:
 		TEXTURE_RT,
 		TEXTURE_PRIMID,
 		TEXTURE_DEPTH,
+		IMAGE_DEPTH,
 	};
 
 	struct alignas(16) ProgramSelector
@@ -314,6 +315,7 @@ private:
 
 	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
 
+	void FeedbackBarriers(bool shader_write);
 protected:
 	using GSDevice::DoStretchRect; // Suppress overloaded virtual function warning
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -405,7 +407,7 @@ public:
 		GSTexture* draw_rt_clone, GSTexture* draw_rt,
 		GSTexture* draw_ds_as_rt_clone, GSTexture* draw_ds_as_rt,
 		GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier);
+		const bool one_barrier, const bool full_barrier, const bool shader_write);
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);
@@ -419,6 +421,7 @@ public:
 	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderImage(int i, GSTexture* tex);
 	void PSSetSamplerState(GLuint ss);
 	void ClearSamplerCache() override;
 
