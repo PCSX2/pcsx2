@@ -584,8 +584,8 @@ void PadDualshock2::Set(u32 index, float value)
 		if (index <= Inputs::PAD_L_LEFT)
 		{
 			// Left Stick
-			u8 combinedX = this->analogs.lxInvert ? MERGE(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
-			u8 combinedY = this->analogs.lyInvert ? MERGE(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
+			const u8 combinedX = this->analogs.lxInvert ? MERGE(Inputs::PAD_L_LEFT, Inputs::PAD_L_RIGHT) : MERGE(Inputs::PAD_L_RIGHT, Inputs::PAD_L_LEFT);
+			const u8 combinedY = this->analogs.lyInvert ? MERGE(Inputs::PAD_L_UP, Inputs::PAD_L_DOWN) : MERGE(Inputs::PAD_L_DOWN, Inputs::PAD_L_UP);
 
 			if (this->useDiagonalScaleCorrection)
 			{
@@ -607,8 +607,8 @@ void PadDualshock2::Set(u32 index, float value)
 		else
 		{
 			// Right Stick
-			u8 combinedX = this->analogs.rxInvert ? MERGE(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
-			u8 combinedY = this->analogs.ryInvert ? MERGE(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
+			const u8 combinedX = this->analogs.rxInvert ? MERGE(Inputs::PAD_R_LEFT, Inputs::PAD_R_RIGHT) : MERGE(Inputs::PAD_R_RIGHT, Inputs::PAD_R_LEFT);
+			const u8 combinedY = this->analogs.ryInvert ? MERGE(Inputs::PAD_R_UP, Inputs::PAD_R_DOWN) : MERGE(Inputs::PAD_R_DOWN, Inputs::PAD_R_UP);
 
 			if (this->useDiagonalScaleCorrection)
 			{
