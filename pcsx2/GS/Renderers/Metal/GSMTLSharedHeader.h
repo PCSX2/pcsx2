@@ -169,6 +169,7 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_BROKEN_SHADER_DEPTH,
 	GSMTLConstantIndex_FST,
 	GSMTLConstantIndex_IIP,
+	GSMTLConstantIndex_VS_ROUND_UV,
 	GSMTLConstantIndex_VS_POINT_SIZE,
 	GSMTLConstantIndex_VS_EXPAND_TYPE,
 	GSMTLConstantIndex_PS_AEM_FMT,
@@ -231,4 +232,5 @@ enum GSMTLFnConstants
 	GSMTLConstantIndex_PS_SW_ANISO,
 	GSMTLConstantIndex_PS_ROV_COLOR,
 	GSMTLConstantIndex_PS_ROV_DEPTH,
+	GSMTLConstantIndex_PS_ROUND_UV,
 };
