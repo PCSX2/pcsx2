@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "USB/usb-pad/usb-pad.h"
+#include "USB/usb-pad/usb-wheel.h"
 #include "Input/SDLInputSource.h"
 
 namespace usb_pad

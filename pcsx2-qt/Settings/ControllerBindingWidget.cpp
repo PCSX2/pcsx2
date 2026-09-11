@@ -1413,12 +1413,12 @@ USBBindingWidget* USBBindingWidget::createInstance(
 
 	if (type == "Pad")
 	{
-		if (subtype == 0) // Generic or Driving Force
+		if (subtype == 0) // Driving Force
 		{
 			Ui::USBBindingWidget_DrivingForce().setupUi(widget);
 			has_template = true;
 		}
-		else if (subtype == 3) // GT Force
+		else if (subtype == 2) // GT Force
 		{
 			Ui::USBBindingWidget_GTForce().setupUi(widget);
 			has_template = true;
