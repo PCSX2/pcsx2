@@ -9,6 +9,7 @@
 #include "common/SmallString.h"
 
 #include <optional>
+#include <utility>
 
 // Helper class which loads or saves depending on the derived class.
 class SettingsWrapper
@@ -29,6 +30,7 @@ public:
 	// This special form of Entry is provided for bitfields, which cannot be passed by reference.
 	virtual bool EntryBitBool(const char* section, const char* var, bool value, const bool defvalue = false) = 0;
 	virtual int EntryBitfield(const char* section, const char* var, int value, const int defvalue = 0) = 0;
+	int EntryFlagsBitfield(const char* section, const char* var_prefix, int value, const std::pair<int, const char*>* entries, const int defvalue = 0);
 
 	template <typename T>
 	void EnumEntry(const char* section, const char* var, T& value, const char* const* enumArray = nullptr, const T defvalue = (T)0)
