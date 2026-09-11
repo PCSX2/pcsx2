@@ -53,8 +53,41 @@ namespace GSTextureReplacements
 	/// Get the number of replacement textures that have been loaded/cached.
 	u32 GetLoadedTextureCount();
 
+	class File
+	{
+	public:
+		virtual bool Read(void* data, size_t amt) = 0;
+		virtual bool Seek(size_t offset) = 0;
+		virtual s64 Size() = 0;
+
+		template <typename T>
+		bool ReadRawStruct(T* out) { return Read(out, sizeof(*out)); }
+	};
+
+	class CFile : public File
+	{
+		FILE* file;
+	public:
+		CFile(FILE* file_): file(file_) {};
+		bool Read(void* data, size_t amt) override;
+		bool Seek(size_t offset) override;
+		s64 Size() override;
+	};
+
+	class MemoryFile : public File
+	{
+		const u8* buffer;
+		size_t len;
+		size_t pos;
+	public:
+		MemoryFile(const void* buffer_, size_t len_): buffer(static_cast<const u8*>(buffer_)), len(len_), pos(0) {};
+		bool Read(void* data, size_t amt) override;
+		bool Seek(size_t offset) override;
+		s64 Size() override;
+	};
+
 	/// Loader will take a filename and interpret the format (e.g. DDS, PNG, etc).
-	using ReplacementTextureLoader = bool (*)(const std::string& filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
+	using ReplacementTextureLoader = bool (*)(File& file, const char* filename, GSTextureReplacements::ReplacementTexture* tex, bool only_base_image);
 	ReplacementTextureLoader GetLoader(const std::string_view filename);
 
 	/// Saves an image buffer to a PNG file (for dumping).
