@@ -47,6 +47,7 @@ namespace GLState
 	u32 draw_buffers;
 
 	GLuint tex_unit[8];
+	GLuint image_unit[8];
 
 	u32 UpdateDrawBuffers()
 	{
@@ -93,5 +94,6 @@ namespace GLState
 		draw_buffers = 0;
 
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+		std::fill(std::begin(image_unit), std::end(image_unit), 0);
 	}
 } // namespace GLState
