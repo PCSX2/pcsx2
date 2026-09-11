@@ -374,6 +374,8 @@ GSRendererType D3D::GetPreferredRenderer()
 		Console.WriteLn("D3D11 feature level for autodetection: %x", static_cast<unsigned>(feature_level));
 		return feature_level;
 	};
+
+	/*
 	const auto get_d3d12_device = [&adapter]() {
 		wil::com_ptr_nothrow<ID3D12Device> device;
 		const HRESULT hr = D3D12CreateDevice(adapter.get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(device.put()));
@@ -381,6 +383,7 @@ GSRendererType D3D::GetPreferredRenderer()
 			Console.Error("D3D12CreateDevice() for automatic renderer failed: %08X", hr);
 		return device;
 	};
+	
 #ifdef ENABLE_VULKAN
 	static constexpr auto check_vulkan_supported = []() {
 		if (!GSDeviceVK::EnumerateGPUs().empty())
@@ -395,6 +398,7 @@ GSRendererType D3D::GetPreferredRenderer()
 #else
 	static constexpr auto check_vulkan_supported = []() { return false; };
 #endif
+	*/
 
 	switch (GetVendorID(adapter.get()))
 	{
@@ -432,26 +436,37 @@ GSRendererType D3D::GetPreferredRenderer()
 
 			// Sampler feedback Tier 0.9 is only present in Tiger Lake/Xe/Arc, so we can use that to
 			// differentiate between them. Unfortunately, that requires a D3D12 device.
-			const auto device12 = get_d3d12_device();
-			if (device12)
+			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
+			if (!feature_level.has_value())
+				return GSRendererType::DX11;
+			else if (feature_level == D3D_FEATURE_LEVEL_12_0)
 			{
-				D3D12_FEATURE_DATA_D3D12_OPTIONS7 opts = {};
-				if (SUCCEEDED(device12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &opts, sizeof(opts))) &&
-					(opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9) &&
-					check_vulkan_supported())
+				return GSRendererType::DX12;
+				/*
+				// Keep the old code as a reference if we need it.
+				const auto device12 = get_d3d12_device();
+				if (device12)
 				{
-					Console.WriteLn("Sampler feedback tier 0.9 found for Intel GPU, defaulting to Vulkan.");
-					return GSRendererType::VK;
+					D3D12_FEATURE_DATA_D3D12_OPTIONS7 opts = {};
+					if (SUCCEEDED(device12->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &opts, sizeof(opts))) &&
+						(opts.SamplerFeedbackTier >= D3D12_SAMPLER_FEEDBACK_TIER_0_9) &&
+						check_vulkan_supported())
+					{
+						Console.WriteLn("Sampler feedback tier 0.9 found for Intel GPU, defaulting to Vulkan.");
+						return GSRendererType::VK;
+					}
+					else
+						return GSRendererType::OGL;
 				}
+				
 				else
-				{
-					Console.WriteLn("Sampler feedback tier 0.9 or Vulkan not found for Intel GPU, using OpenGL.");
 					return GSRendererType::OGL;
-				}
+				*/
 			}
-
-			Console.WriteLn("Sampler feedback tier 0.9 or Direct3D 12 not found for Intel GPU, using Direct3D 11.");
-			return GSRendererType::DX11;
+			else if (feature_level == D3D_FEATURE_LEVEL_11_1)
+				return GSRendererType::OGL;
+			else
+				return GSRendererType::DX11;
 		}
 		break;
 
