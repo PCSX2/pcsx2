@@ -2364,6 +2364,23 @@ void GSRendererHW::Move()
 	if (g_texture_cache->Move(m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM, sx, sy,
 			m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM, dx, dy, w, h))
 	{
+		// Store the transfer for preloading new RT's.
+		if ((m_draw_transfers.size() > 0 && m_env.BITBLTBUF.DBP == m_draw_transfers.back().blit.DBP && m_draw_transfers.back().transfer_type == EEGS_TransferType::GS_to_GS))
+		{
+			// Same BP, let's update the rect.
+			GSUploadQueue transfer = m_draw_transfers.back();
+			m_draw_transfers.pop_back();
+			transfer.rect = transfer.rect.runion(GSVector4i(dx, dy, dx + w, dy + h));
+			transfer.draw = s_n;
+			transfer.was_hardware_only = true;
+			m_draw_transfers.push_back(transfer);
+		}
+		else
+		{
+			const GSUploadQueue new_transfer = {m_env.BITBLTBUF, s_n, GSVector4i(dx, dy, dx + w, dy + h), EEGS_TransferType::GS_to_GS, true};
+			m_draw_transfers.push_back(new_transfer);
+		}
+
 		m_env.TRXDIR.XDIR = 3;
 		// Handled entirely in TC, no need to update local memory.
 		return;
@@ -10321,6 +10338,7 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 			clear_queue.blit.DBP = m_cached_ctx.FRAME.Block();
 			clear_queue.blit.DBW = m_cached_ctx.FRAME.FBW;
 			clear_queue.blit.DPSM = m_cached_ctx.FRAME.PSM;
+			clear_queue.was_hardware_only = false;
 			m_draw_transfers.push_back(clear_queue);
 		}
 		else
@@ -10351,6 +10369,7 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 			clear_queue.blit.DBP = m_cached_ctx.ZBUF.Block();
 			clear_queue.blit.DBW = m_cached_ctx.FRAME.FBW;
 			clear_queue.blit.DPSM = m_cached_ctx.ZBUF.PSM;
+			clear_queue.was_hardware_only = false;
 			m_draw_transfers.push_back(clear_queue);
 		}
 	}
