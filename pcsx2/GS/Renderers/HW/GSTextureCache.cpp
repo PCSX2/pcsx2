@@ -4105,6 +4105,9 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 			if (last_draw - iter->draw > 500)
 				break;
 
+			if (iter->was_hardware_only)
+				continue;
+
 			const u32 transfer_end = GSLocalMemory::GetUnwrappedEndBlockAddress(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect);
 
 			// If the format, and location doesn't overlap
