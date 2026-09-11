@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <BakeShadersInCpp>true</BakeShadersInCpp>
+    <ShaderCppDir>$(OutDir)shaders_cpp\</ShaderCppDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="BakeShadersInCpp">
+      <Value>$(BakeShadersInCpp)</Value>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions Condition="'$(BakeShadersInCpp)'=='true'">BAKE_SHADERS_IN_CPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(BakeShadersInCpp)'=='true'">%(AdditionalIncludeDirectories);$(ShaderCppDir)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Target Name="ShaderToCpp" BeforeTargets="ClCompile" Condition="'@(ShaderToCpp)'!='' And '$(BakeShadersInCpp)'=='true'">
+    <!--Ensure output directory exists-->
+    <MakeDir Directories="$(ShaderCppDir)" Condition="!Exists('$(ShaderCppDir)')" />
+    <!--Setup metadata for following tasks-->
+    <ItemGroup>
+      <ShaderToCpp>
+        <Command>
+          "python" "$(SolutionDir)\tools\shader_to_cpp.py" "%(Identity)" "$(ShaderCppDir)%(VarName).cpp" "%(VarName)"
+        </Command>
+        <Outputs>$(ShaderCppDir)%(VarName).cpp</Outputs>
+      </ShaderToCpp>
+    </ItemGroup>
+    <!--Helper for dealing with tlogs-->
+    <!--https://learn.microsoft.com/en-us/visualstudio/msbuild/getoutofdateitems-task?view=vs-2022-->
+    <GetOutOfDateItems Sources="@(ShaderToCpp)" OutputsMetadataName="Outputs" CommandMetadataName="Command" TLogDirectory="$(TLogLocation)" TLogNamePrefix="ShaderToCpp">
+      <Output TaskParameter="OutOfDateSources" ItemName="OutOfDateShaderToCpp" />
+    </GetOutOfDateItems>
+    <CustomBuild Condition="'@(OutOfDateShaderToCpp)'!=''" Sources="@(OutOfDateShaderToCpp)" />
+    <Message Text="Shader to CPP: '%(OutOfDateShaderToCpp.Identity)' -&gt; '$(ShaderCppDir)%(OutOfDateShaderToCpp.VarName).cpp'" Importance="high" Condition="'@(OutOfDateShaderToCpp)'!=''" />
+  </Target>
+  <Target Name="ShaderToCppClean">
+    <Delete Files="@(ShaderToCpp->'$(ShaderCppDir)%(VarName).cpp')" />
+  </Target>
+</Project>
