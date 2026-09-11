@@ -166,16 +166,20 @@ in SHADER
 	layout(location = 0) TARGET_0_QUALIFIER vec4 o_col0;
 #endif
 
-// Depth feedback mode 2 is for depth as color.
-// Use FB fetch for the feedback if it's available.
-#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
-	#if HAS_FRAMEBUFFER_FETCH
-		layout(location = 1) inout DEPTH_TYPE o_col1;
-	#else
-		#if PS_Z_INTEGER
-			#if ZWRITE_FOR_ZINT
-				layout(location = 1) out DEPTH_TYPE o_col1;
-			#endif
+// Use FB fetch for depth feedback if it's available.
+#if SW_DEPTH && PS_NO_COLOR1
+	#if PS_Z_INTEGER
+		// Z integer always uses a color target for depth, 
+		// regardless of depth feedback setting.
+		#if HAS_FRAMEBUFFER_FETCH
+			layout(location = 1) inout DEPTH_TYPE o_col1;
+		#elif ZWRITE_FOR_ZINT
+			layout(location = 1) out DEPTH_TYPE o_col1;
+		#endif
+	#elif DEPTH_FEEDBACK_SUPPORT == 2
+		// Depth feedback mode 2 is for depth as color.
+		#if HAS_FRAMEBUFFER_FETCH
+			layout(location = 1) inout DEPTH_TYPE o_col1;
 		#else
 			layout(location = 1) out DEPTH_TYPE o_col1;
 		#endif
@@ -226,7 +230,7 @@ DEPTH_TYPE sample_from_depth()
 {
 #if !SW_DEPTH
 	return DEPTH_TYPE(0);
-#elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
+#elif HAS_FRAMEBUFFER_FETCH && ((DEPTH_FEEDBACK_SUPPORT == 2) || PS_Z_INTEGER)
 	return o_col1;
 #else
 	return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0).r;

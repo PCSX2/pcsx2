@@ -166,7 +166,7 @@ public:
 	}
 	static __fi bool IsDepthLike(Usage usage, Format format)
 	{
-		return IsDepthStencil(usage) || IsDepthColor(usage, format);
+		return IsDepthStencil(usage) || IsDepthColor(usage, format) || IsDepthInteger(usage, format);
 	}
 	static __fi bool IsFeedback(Usage usage)
 	{
