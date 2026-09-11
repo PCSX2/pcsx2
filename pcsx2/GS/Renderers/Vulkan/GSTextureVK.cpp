@@ -660,8 +660,7 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 
 	if (IsDepthStencil())
 	{
-		VkClearDepthStencilValue cv = {};
-		cv.depth = GetVkClearValue().depthStencil;
+		VkClearDepthStencilValue cv = GetVkClearValue().depthStencil;
 		VkImageSubresourceRange srr = {};
 		srr.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 		srr.levelCount = 1u;
