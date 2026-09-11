@@ -361,7 +361,7 @@ _vifT int nVifUnpack(const u8* data)
 				_nVifUnpack(idx, data, vifRegs.mode, isFill);
 		}
 		else
-			vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
+			vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, size);
 
 		vif.pass     = 0;
 		vif.tag.size = 0;
