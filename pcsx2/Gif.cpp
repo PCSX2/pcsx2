@@ -354,6 +354,9 @@ static __fi void GIFchain()
 
 	const int transferred = WRITERING_DMA((u32*)pMem, gifch.qwc);
 	gif.gscycles += transferred * BIAS;
+	
+	if (transferred > 16) // Assume we're going past the fast 16qw FIFO and in to the 2x slower 64bit FIFO.
+		g_vif1Cycles += (transferred - 16) *BIAS;
 
 	if (!gifUnit.Path3Masked() || (gif_fifo.fifoSize < 16))
 		GifDMAInt(gif.gscycles);

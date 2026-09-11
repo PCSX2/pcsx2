@@ -158,6 +158,7 @@ __fi int _vifCode_Direct(int pass, const u8* data, bool isDirectHL)
 
 		vif1.tag.size -= ret / 4; // Convert to u32's
 		vif1Regs.stat.VGW = false;
+		g_vif1Cycles += ((ret >> 3) * BIAS); // Add extra backpressure to the VIF (we do QW * BIAS for VIF, so double that)
 
 		if (ret & 3)
 			DevCon.Warning("Vif %s: Ret wasn't a multiple of 4!", name); // Shouldn't happen
