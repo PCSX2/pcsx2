@@ -34,7 +34,7 @@ GSTextureOGL::GSTextureOGL(Usage usage, int width, int height, int levels, Forma
 	// Bunch of constant parameter
 	switch (m_format)
 	{
-		// 1 Channel integer
+		// 1 channel integer
 		case Format::PrimID:
 			m_gl_format = GL_R32F;
 			m_int_format = GL_RED;
@@ -54,7 +54,7 @@ GSTextureOGL::GSTextureOGL(Usage usage, int width, int height, int levels, Forma
 			m_int_shift = 1;
 			break;
 
-		// 1 Channel normalized
+		// 1 channel normalized
 		case Format::UNorm8:
 			m_gl_format = GL_R8;
 			m_int_format = GL_RED;
@@ -72,15 +72,29 @@ GSTextureOGL::GSTextureOGL(Usage usage, int width, int height, int levels, Forma
 
 		// 4 channel normalized
 		case Format::Color:
-		case Format::ColorHQ:
-		case Format::ColorHDR:
 			m_gl_format = GL_RGBA8;
 			m_int_format = GL_RGBA;
 			m_int_type = GL_UNSIGNED_BYTE;
 			m_int_shift = 2;
 			break;
 
+		// 4 channel normalized with 2 bits of alpha
+		case Format::ColorHQ:
+			m_gl_format = GL_RGB10_A2;
+			m_int_format = GL_RGBA;
+			m_int_type = GL_UNSIGNED_INT_2_10_10_10_REV;
+			m_int_shift = 2;
+			break;
+
 		// 4 channel float
+		case Format::ColorHDR:
+			m_gl_format = GL_RGBA16F;
+			m_int_format = GL_RGBA;
+			m_int_type = GL_HALF_FLOAT;
+			m_int_shift = 3;
+			break;
+
+		// 4 channel normalized  
 		case Format::ColorClip:
 			m_gl_format = GL_RGBA16;
 			m_int_format = GL_RGBA;
