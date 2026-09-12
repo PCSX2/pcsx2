@@ -256,7 +256,7 @@ public:
 	MRCOwned<id<MTLRenderPipelineState>> m_datm_pipeline[4];
 	MRCOwned<id<MTLRenderPipelineState>> m_clut_pipeline[2];
 	MRCOwned<id<MTLRenderPipelineState>> m_stencil_clear_pipeline;
-	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][4];
+	MRCOwned<id<MTLRenderPipelineState>> m_primid_init_pipeline[2][5];
 	MRCOwned<id<MTLRenderPipelineState>> m_colclip_init_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_colclip_clear_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_colclip_resolve_pipeline;
@@ -274,7 +274,7 @@ public:
 		return m_convert_pipeline[ShaderConvertSelector(shader).Index()];
 	}
 
-	MRCOwned<id<MTLFunction>> m_hw_vs[6 << 3];
+	MRCOwned<id<MTLFunction>> m_hw_vs[static_cast<u32>(GSShader::VSExpand::Count) << 3];
 	std::unordered_map<PSSelector, MRCOwned<id<MTLFunction>>> m_hw_ps;
 	std::unordered_map<PipelineSelectorMTL, MRCOwned<id<MTLRenderPipelineState>>> m_hw_pipeline;
 
@@ -467,8 +467,7 @@ public:
 	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
 	void PrepareROVTexture(GSTexture** ptex);
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off,
-		bool one_barrier, bool full_barrier);
+	void SendHWDraw(GSHWDrawConfig& config, GSHWDrawConfig::DrawPass pass, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off);
 
 	// MARK: Debug
 
