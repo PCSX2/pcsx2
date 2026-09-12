@@ -394,6 +394,8 @@ vec4 sample_c(vec2 uv)
 {
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #elif PS_REGION_RECT
 	return texelFetch(TextureSampler, ivec2(uv), 0);
 #else
@@ -567,8 +569,9 @@ mat4 sample_4p(uvec4 u)
 uint fetch_raw_depth()
 {
 	float multiplier = exp2(32.0f);
-
-#if PS_TEX_IS_FB == 1
+#if PS_TEX_INTEGER
+	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r;
+#elif PS_TEX_IS_FB == 1
 	return uint(sample_from_rt().r * multiplier);
 #else
 	return uint(texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0).r * multiplier);
@@ -579,6 +582,8 @@ vec4 fetch_raw_color()
 {
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #else
 	return texelFetch(TextureSampler, ivec2(gl_FragCoord.xy + ChannelShuffleOffset), 0);
 #endif
@@ -588,6 +593,8 @@ vec4 fetch_c(ivec2 uv)
 {
 #if PS_TEX_IS_FB == 1
 	return sample_from_rt();
+#elif PS_TEX_INTEGER
+	return vec4(0.0, 0.0, 0.0, 0.0);
 #else
 	return texelFetch(TextureSampler, ivec2(uv), 0);
 #endif
@@ -668,17 +675,24 @@ vec4 sample_depth(vec2 st)
 
 	t.g += green;
 
-
 #elif PS_DEPTH_FMT == 1
-	// Based on ps_convert_depth32_rgba8 of convert
-	// Convert a GL_FLOAT32 depth texture into a RGBA color texture
-	uint d = uint(fetch_c(uv).r * exp2(32.0f));
+	#if PS_TEX_INTEGER
+		uint d = texelFetch(TextureSampler, uv, 0).r;
+	#else
+		// Based on ps_convert_depth32_rgba8 of convert
+		// Convert a GL_FLOAT32 depth texture into a RGBA color texture
+		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+	#endif
 	t = vec4(uvec4((d & 0xFFu), ((d >> 8) & 0xFFu), ((d >> 16) & 0xFFu), (d >> 24)));
 
 #elif PS_DEPTH_FMT == 2
-	// Based on ps_convert_depth16_rgb5a1 of convert
-	// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
-	uint d = uint(fetch_c(uv).r * exp2(32.0f));
+	#if PS_TEX_INTEGER
+		uint d = texelFetch(TextureSampler, uv, 0).r;
+	#else
+		// Based on ps_convert_depth16_rgb5a1 of convert
+		// Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
+		uint d = uint(fetch_c(uv).r * exp2(32.0f));
+	#endif
 	t = vec4(uvec4((d & 0x1Fu), ((d >> 5) & 0x1Fu), ((d >> 10) & 0x1Fu), (d >> 15) & 0x01u)) * vec4(8.0f, 8.0f, 8.0f, 128.0f);
 
 #elif PS_DEPTH_FMT == 3

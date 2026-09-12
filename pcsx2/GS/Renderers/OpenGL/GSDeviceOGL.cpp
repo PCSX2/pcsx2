@@ -928,8 +928,9 @@ bool GSDeviceOGL::CheckFeatures()
 	
 	m_features.depth_integer = GSConfig.HWZIntegerMode != GSHardwareZIntegerMode::Disabled &&
 	                           m_features.vs_expand && m_features.feedback_loops();
-	if (GSConfig.HWZIntegerShaderWriteGL && !GLAD_GL_VERSION_4_2)
-		m_features.depth_integer = false; // Need at least 4.2 for glMemorybarrier().
+	// Need at least 4.3 for GL_ARB_framebuffer_no_attachments for depth-only draws (also includes glMemoryBarrier() in 4.2). 
+	if (GSConfig.HWZIntegerShaderWriteGL && (!GLAD_GL_VERSION_4_3 || !GLAD_GL_ARB_framebuffer_no_attachments))
+		m_features.depth_integer = false; 
 
 	return true;
 }
@@ -2432,10 +2433,10 @@ void GSDeviceOGL::PSSetShaderImage(int i, GSTexture* tex)
 	pxAssert(!tex || tex->IsRenderTarget());
 
 	const GLuint id = tex ? static_cast<GSTextureOGL*>(tex)->GetID() : 0;
-	if (GLState::image_unit[0] != id)
+	if (GLState::image_unit[i] != id)
 	{
-		GLState::image_unit[0] = id;
-		glBindImageTexture(0, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
+		GLState::image_unit[i] = id;
+		glBindImageTexture(i, id, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
 	}
 }
 
@@ -2771,7 +2772,7 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 	}
 }
 
-void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor)
+void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor, const GSVector2i* rtsize)
 {
 	const bool rt_changed = (rt != GLState::rt);
 	const bool ds_as_rt_changed = (ds_as_rt != GLState::ds_as_rt);
@@ -2814,12 +2815,12 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextu
 	else
 		OMAttachDs();
 
-	if (rt || ds_as_rt || ds)
-	{
-		const GSVector2i size = rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : ds->GetSize());
-		SetViewport(size);
-		SetScissor(scissor ? *scissor : GSVector4i::loadh(size));
-	}
+	pxAssert(rt || ds_as_rt || ds || rtsize);
+	const GSVector2i size = rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : (ds ? ds->GetSize() : *rtsize));
+	SetViewport(size);
+	SetScissor(scissor ? *scissor : GSVector4i::loadh(size));
+	if (!(rt || ds_as_rt || ds))
+		SetFramebufferDefaultSize(*rtsize);
 
 	if (draw_buffers != GLState::UpdateDrawBuffers())
 	{
@@ -2827,6 +2828,13 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextu
 		static constexpr GLenum target[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(GLState::draw_buffers, target);
 	}
+}
+
+void GSDeviceOGL::SetFramebufferDefaultSize(const GSVector2i& size)
+{
+	pxAssert(GLAD_GL_VERSION_4_3);
+	glFramebufferParameteri(GL_DRAW_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, size.x);
+	glFramebufferParameteri(GL_DRAW_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, size.y);
 }
 
 void GSDeviceOGL::SetViewport(const GSVector2i& viewport)
@@ -3112,7 +3120,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	}
 
 	if (ds_shader_write)
-		PSSetShaderImage(IMAGE_DEPTH, draw_ds_as_rt);
+		PSSetShaderImage(IMAGE_DEPTH_INTEGER, draw_ds_as_rt);
 
 	if (draw_ds_as_rt)
 	{
@@ -3197,7 +3205,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 			Console.Warning("GL: Failed to allocate temp texture for DS as RT copy.");
 	}
 
-	OMSetRenderTargets(draw_rt, ds_shader_write ? nullptr : draw_ds_as_rt, draw_ds, &config.scissor);
+	OMSetRenderTargets(draw_rt, ds_shader_write ? nullptr : draw_ds_as_rt, draw_ds, &config.scissor, &rtsize);
 	OMSetColorMaskState(config.colormask, ds_as_rt_mask);
 	SetupOM(config.depth);
 

@@ -122,7 +122,11 @@ public:
 		TEXTURE_RT,
 		TEXTURE_PRIMID,
 		TEXTURE_DEPTH,
-		IMAGE_DEPTH,
+	};
+	
+	enum ImageUnit : u32
+	{
+		IMAGE_DEPTH_INTEGER,
 	};
 
 	struct alignas(16) ProgramSelector
@@ -427,10 +431,12 @@ public:
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(bool enable = false, GLenum src_factor = GL_ONE, GLenum dst_factor = GL_ZERO, GLenum op = GL_FUNC_ADD,
 		GLenum src_factor_alpha = GL_ONE, GLenum dst_factor_alpha = GL_ZERO, bool is_constant = false, u8 constant = 0);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr);
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr,
+		const GSVector2i* rtsize = nullptr);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector(), bool ds_as_rt_write = false);
 	void OMUnbindTexture(GSTextureOGL* tex);
 
+	void SetFramebufferDefaultSize(const GSVector2i& size);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
 
