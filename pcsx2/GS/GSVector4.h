@@ -229,6 +229,11 @@ public:
 		return rgba32(rgba) * GSVector4::cxpr(1.0f / 255.0f);
 	}
 
+	__forceinline static GSVector4 unorm16(u32 rgba)
+	{
+		return rgba32(rgba) * GSVector4::cxpr(1.0f / 65535.0f);
+	}
+
 	__forceinline GSVector4 abs() const
 	{
 		return *this & cast(GSVector4i::x7fffffff());
