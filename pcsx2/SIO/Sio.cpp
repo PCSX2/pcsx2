@@ -73,7 +73,7 @@ void AutoEject::CountDownTicks()
 			if (mcds[port][slot].autoEjectTicks > 0)
 			{
 				if (--mcds[port][slot].autoEjectTicks == 0)
-					reinserted |= EmuConfig.Mcd[sioConvertPortAndSlotToPad(port, slot)].Enabled;
+					reinserted |= EmuConfig.MemoryCard.Slots[sioConvertPortAndSlotToPad(port, slot)].Enabled;
 			}
 		}
 	}
