@@ -358,6 +358,7 @@ set(pcsx2DEV9Headers
 	DEV9/Sessions/UDP_Session/UDP_Common.h
 	DEV9/Sessions/UDP_Session/UDP_FixedPort.h
 	DEV9/Sessions/UDP_Session/UDP_BaseSession.h
+	DEV9/Sessions/UDP_Session/UDP_ServerSession.h
 	DEV9/Sessions/UDP_Session/UDP_Session.h
 	DEV9/SimpleQueue.h
 	DEV9/smap.h
