@@ -408,6 +408,48 @@
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </None>
+    <None Include="..\bin\resources\shaders\common\tfx_defs.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_atst.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_blend.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_color.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fetch.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fog.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_header.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_main.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_post.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample_af.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_tfx.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_util.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_vs.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Patch.cpp">

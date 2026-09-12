@@ -2278,12 +2278,12 @@ static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, vertex_offset)    == of
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, texture_scale)    == offsetof(GSMTLMainVSUniform, texture_scale));
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, texture_offset)   == offsetof(GSMTLMainVSUniform, texture_offset));
 static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, point_size)       == offsetof(GSMTLMainVSUniform, point_size));
-static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, max_depth)        == offsetof(GSMTLMainVSUniform, max_depth));
+static_assert(offsetof(GSHWDrawConfig::VSConstantBuffer, max_depth)        == offsetof(GSMTLMainVSUniform, max_depth_vs));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FogColor_AREF.x)  == offsetof(GSMTLMainPSUniform, fog_color));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FogColor_AREF.a)  == offsetof(GSMTLMainPSUniform, aref));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, WH)               == offsetof(GSMTLMainPSUniform, wh));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.x) == offsetof(GSMTLMainPSUniform, ta));
-static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.z) == offsetof(GSMTLMainPSUniform, max_depth));
+static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.z) == offsetof(GSMTLMainPSUniform, max_depth_ps));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, TA_MaxDepth_Af.w) == offsetof(GSMTLMainPSUniform, alpha_fix));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, FbMask)           == offsetof(GSMTLMainPSUniform, fbmask));
 static_assert(offsetof(GSHWDrawConfig::PSConstantBuffer, HalfTexel)        == offsetof(GSMTLMainPSUniform, half_texel));

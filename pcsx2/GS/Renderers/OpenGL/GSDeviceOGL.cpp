@@ -694,16 +694,20 @@ bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
 
-	std::optional<std::string> vertex_shader = ReadShaderSource("shaders/opengl/tfx_vgs.glsl");
-	std::optional<std::string> fragment_shader = ReadShaderSource("shaders/opengl/tfx_fs.glsl");
-	if (!vertex_shader.has_value() || !fragment_shader.has_value())
+	std::optional<std::string> shader = ReadShaderSource("shaders/vulkan_opengl/tfx.glsl");
+	if (!shader.has_value())
 	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/tfx_{vgs,fs}.glsl.");
+		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan_opengl/tfx.glsl.");
 		return false;
 	}
 
-	m_shader_tfx_vgs = std::move(*vertex_shader);
-	m_shader_tfx_fs = std::move(*fragment_shader);
+	if (!GetTFXShaderSource(&*shader))
+	{
+		Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
+		return false;
+	}
+
+	m_shader_tfx = std::move(*shader);
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(PSSamplerSelector(0));
@@ -1609,6 +1613,11 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	else
 		header += "#define HAS_CLIP_CONTROL 0\n";
 
+	if (m_features.aa1)
+		header += "#define HAS_INDEX_BUFFER 1\n";
+	else
+		header += "#define HAS_INDEX_BUFFER 0\n";
+
 	// Allow to puts several shader in 1 files
 	switch (type)
 	{
@@ -1634,6 +1643,8 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 		header += " main\n";
 	}
 
+	header += "#define PCSX2_OPENGL 1\n";
+
 	header += macro;
 
 	return header;
@@ -1643,13 +1654,14 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 {
 	DevCon.WriteLn("GL: Compiling new vertex shader with selector 0x%" PRIX64, sel.key);
 
-	std::string macro = fmt::format("#define VS_FST {}\n", static_cast<u32>(sel.fst))
+	std::string macro = fmt::format("#define VS_TME {}\n", static_cast<u32>(sel.tme))
+		+ fmt::format("#define VS_FST {}\n", static_cast<u32>(sel.fst))
 		+ fmt::format("#define VS_IIP {}\n", static_cast<u32>(sel.iip))
 		+ fmt::format("#define VS_POINT_SIZE {}\n", static_cast<u32>(sel.point_size))
-		+ fmt::format("#define VS_EXPAND {}\n", static_cast<int>(sel.expand));
+		+ fmt::format("#define VS_EXPAND_TYPE {}\n", static_cast<int>(sel.expand));
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
-	src += m_shader_tfx_vgs;
+	src += m_shader_tfx;
 	return src;
 }
 
@@ -1666,7 +1678,7 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_PAL_FMT {}\n", sel.pal_fmt)
 		+ fmt::format("#define PS_DST_FMT {}\n", sel.dst_fmt)
 		+ fmt::format("#define PS_DEPTH_FMT {}\n", sel.depth_fmt)
-		+ fmt::format("#define PS_CHANNEL_FETCH {}\n", sel.channel)
+		+ fmt::format("#define PS_CHANNEL {}\n", sel.channel)
 		+ fmt::format("#define PS_URBAN_CHAOS_HLE {}\n", sel.urban_chaos_hle)
 		+ fmt::format("#define PS_TALES_OF_ABYSS_HLE {}\n", sel.tales_of_abyss_hle)
 		+ fmt::format("#define PS_TEX_IS_FB {}\n", sel.tex_is_fb)
@@ -1716,13 +1728,13 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 		+ fmt::format("#define PS_ZTST {}\n", sel.ztst)
 		+ fmt::format("#define PS_AA1 {}\n", static_cast<u32>(sel.aa1))
 		+ fmt::format("#define PS_ABE {}\n", sel.abe)
-		+ fmt::format("#define PS_ANISOTROPIC_FILTERING {}\n", sel.sw_aniso)
+		+ fmt::format("#define PS_SW_ANISO {}\n", sel.sw_aniso)
 		+ fmt::format("#define PS_ROV_COLOR {}\n", 0)
 		+ fmt::format("#define PS_ROV_DEPTH {}\n", 0)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
-	src += m_shader_tfx_fs;
+	src += m_shader_tfx;
 	return src;
 }
 
