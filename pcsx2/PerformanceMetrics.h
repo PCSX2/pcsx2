@@ -15,6 +15,55 @@ namespace PerformanceMetrics
 		DISPFBBlit
 	};
 
+	class AverageFPS
+	{
+	private:
+		static constexpr size_t FPS_BUFFER_SIZE = 16;
+		std::array<float, FPS_BUFFER_SIZE> fps_buff{};
+		size_t count = 0;
+		size_t pos = 0;
+		float avg_fps = 0.0f;
+
+	public:
+		void ClearStats()
+		{
+			count = 0;
+			pos = 0;
+			fps_buff.fill(0.0f);
+			avg_fps = 0.0f;
+		}
+
+		void UpdateAvgFPS(float new_fps_val)
+		{
+			// If the change is quite dramatic, the user has either turned off the frame limiter or the game is dying.
+			// Clear it to catch it up quickly.
+			if (count > 0)
+			{
+				const float last_fps_val = fps_buff[(pos - 1) & (FPS_BUFFER_SIZE - 1)];
+				if (std::abs(last_fps_val - new_fps_val) > last_fps_val * 0.20f)
+					ClearStats();
+			}
+
+			fps_buff[pos] = new_fps_val;
+			pos = (pos + 1) & (FPS_BUFFER_SIZE - 1); // if you use values which don't become all 1's, make it %.
+			count = std::min(count + 1, FPS_BUFFER_SIZE);
+
+			float avg_sum = 0.0f;
+
+			for (size_t i = 0; i < count; i++)
+			{
+				avg_sum += fps_buff[i];
+			}
+
+			avg_fps = avg_sum / static_cast<float>(count);
+		}
+
+		float GetAvgFPS()
+		{
+			return avg_fps;
+		}
+	};
+
 	static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
 	using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
 
@@ -36,6 +85,7 @@ namespace PerformanceMetrics
 	bool IsInternalFPSValid();
 
 	float GetFPS();
+	float GetAvgVPS();
 	float GetInternalFPS();
 	float GetSpeed();
 	float GetAverageFrameTime();
