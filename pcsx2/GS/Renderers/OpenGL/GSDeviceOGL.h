@@ -123,12 +123,17 @@ public:
 		TEXTURE_PRIMID,
 		TEXTURE_DEPTH,
 	};
+	
+	enum ImageUnit : u32
+	{
+		IMAGE_DEPTH_INTEGER,
+	};
 
 	struct alignas(16) ProgramSelector
 	{
 		PSSelector ps;
 		VSSelector vs;
-		u8 pad[15];
+		u8 pad[14];
 
 		__fi bool operator==(const ProgramSelector& p) const { return BitEqual(*this, p); }
 		__fi bool operator!=(const ProgramSelector& p) const { return !BitEqual(*this, p); }
@@ -313,6 +318,7 @@ private:
 
 	void SetIndexBuffer(std::unique_ptr<GLStreamBuffer>& buffer, const void* index, size_t count);
 
+	void FeedbackBarriers(bool shader_write);
 protected:
 	using GSDevice::DoStretchRect; // Suppress overloaded virtual function warning
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
@@ -330,6 +336,7 @@ public:
 	__fi bool IsDownloadPBODisabled() const { return m_disable_download_pbo; }
 	__fi u32 GetFBORead() const { return m_fbo_read; }
 	__fi u32 GetFBOWrite() const { return m_fbo_write; }
+	__fi bool UseVSExpandIndexBuffer() const { return m_features.aa1 || m_features.depth_integer; }
 	__fi GLStreamBuffer* GetTextureUploadBuffer() const { return m_texture_upload_buffer.get(); }
 	void CommitClear(GSTexture* t, bool use_write_fbo);
 
@@ -391,13 +398,19 @@ public:
 
 	void RenderHW(GSHWDrawConfig& config) override;
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea);
+		GSTexture* rt, GSTexture* rt_clone,
+		GSTexture* ds_as_rt, GSTexture* ds_as_rt_clone,
+		GSTexture* ds, GSTexture* ds_clone, const GSVector4i& copyarea);
 	void FeedbackCopyAndBind(const GSHWDrawConfig& config,
-		GSTexture* rt, GSTexture* rt_clone, GSTexture* ds, GSTexture* ds_clone,
+		GSTexture* rt, GSTexture* rt_clone,
+		GSTexture* ds_as_rt, GSTexture* ds_as_rt_clone,
+		GSTexture* ds, GSTexture* ds_clone,
 		const GSVector4i& copyarea, const GSVector4i& samplearea);
 	void SendHWDraw(const GSHWDrawConfig& config,
-		GSTexture* draw_rt_clone, GSTexture* draw_rt, GSTexture* draw_ds_clone, GSTexture* draw_ds,
-		const bool one_barrier, const bool full_barrier);
+		GSTexture* draw_rt_clone, GSTexture* draw_rt,
+		GSTexture* draw_ds_as_rt_clone, GSTexture* draw_ds_as_rt,
+		GSTexture* draw_ds_clone, GSTexture* draw_ds,
+		const bool one_barrier, const bool full_barrier, const bool shader_write);
 	void SetupDATE(GSTexture* rt, GSTexture* ds, SetDATM datm, const GSVector4i& bbox);
 
 	void VSSetUniformBuffer(GSHWDrawConfig::VSConstantBuffer& cb);
@@ -411,16 +424,19 @@ public:
 	void VSSetIndexBuffer(const void* index, size_t count);
 
 	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderImage(int i, GSTexture* tex);
 	void PSSetSamplerState(GLuint ss);
 	void ClearSamplerCache() override;
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(bool enable = false, GLenum src_factor = GL_ONE, GLenum dst_factor = GL_ZERO, GLenum op = GL_FUNC_ADD,
 		GLenum src_factor_alpha = GL_ONE, GLenum dst_factor_alpha = GL_ZERO, bool is_constant = false, u8 constant = 0);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr);
-	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor = nullptr,
+		const GSVector2i* rtsize = nullptr);
+	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector(), bool ds_as_rt_write = false);
 	void OMUnbindTexture(GSTextureOGL* tex);
 
+	void SetFramebufferDefaultSize(const GSVector2i& size);
 	void SetViewport(const GSVector2i& viewport);
 	void SetScissor(const GSVector4i& scissor);
 
