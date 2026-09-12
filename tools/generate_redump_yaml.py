@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import re
 import yaml
 
-# Database downloadable from http://redump.org/datfile/ps2/serial,version,description
+# Database downloadable from https://redump.info/datfile/PS2/serial,version
 
 def parse_serials(serials_text):
     serials = []
