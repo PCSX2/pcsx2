@@ -192,6 +192,7 @@ public:
 	void align(int x = 16) { return actual.align(x); }
 	void db(int code) { actual.db(code); }
 	void L(const std::string& label) { actual.L(label); }
+	void L(Label& label) { actual.L(label); }
 
 	void cdqe() { actual.cdqe(); }
 	void ret(int imm = 0) { actual.ret(imm); }
@@ -270,6 +271,7 @@ public:
 	AFORWARD(2, packssdw,  ARGS_XO)
 	AFORWARD(2, packusdw,  ARGS_XO)
 	AFORWARD(2, packuswb,  ARGS_XO)
+	SFORWARD(2, pabsd,     ARGS_XO)
 	AFORWARD(2, paddd,     ARGS_XO)
 	AFORWARD(2, paddusb,   ARGS_XO)
 	AFORWARD(2, paddw,     ARGS_XO)

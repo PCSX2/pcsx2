@@ -165,6 +165,53 @@ public:
 		return v4s;
 	}
 
+	// rect
+
+	__forceinline int width() const
+	{
+		return right - left;
+	}
+
+	__forceinline int height() const
+	{
+		return bottom - top;
+	}
+
+	__forceinline GSVector4 rsize() const
+	{
+		return *this - xyxy(); // same as GSVector4(0, 0, width(), height());
+	}
+
+	__forceinline float rarea() const
+	{
+		return width() * height();
+	}
+
+	__forceinline bool rempty() const
+	{
+		return (*this < zwzw()).mask() != 0xC;
+	}
+
+	__forceinline GSVector4 runion(const GSVector4& a) const
+	{
+		return min(a).xyzw(max(a));
+	}
+
+	__forceinline GSVector4 rintersect(const GSVector4& a) const
+	{
+		return max(a).xyzw(min(a));
+	}
+
+	__forceinline bool rintersects(const GSVector4& v) const
+	{
+		return !rintersect(v).rempty();
+	}
+
+	__forceinline bool rcontains(const GSVector4& v) const
+	{
+		return (rintersect(v) == v).mask() == 0xF;
+	}
+
 	/// Makes Clang think that the whole vector is needed, preventing it from changing shuffles around because it thinks we don't need the whole vector
 	/// Useful for e.g. preventing clang from optimizing shuffles that remove possibly-denormal garbage data from vectors before computing with them
 	__forceinline GSVector4 noopt()
