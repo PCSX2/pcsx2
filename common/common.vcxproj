@@ -18,6 +18,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\marmasm.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\common.props" />
@@ -51,7 +52,7 @@
     <ClCompile Include="DynamicLibrary.cpp" />
     <ClCompile Include="Error.cpp" />
     <ClCompile Include="FastJmp.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -115,6 +116,12 @@
     <MASM Include="FastJmp.asm">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <MARMASM Include="FastJmp_arm64.asm">
+      <ExcludedFromBuild Condition="'$(Platform)'!='ARM64'">true</ExcludedFromBuild>
+      <PreprocessWithCl>false</PreprocessWithCl>
+    </MARMASM>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitUtils.h" />
@@ -194,5 +201,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\marmasm.targets" />
   </ImportGroup>
 </Project>

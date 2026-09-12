@@ -1,0 +1,605 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d3f849d0a..dda046372 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -170,9 +170,8 @@ svfloat32_t func(svfloat32_t a) {
+     endforeach()
+ 
+     add_definitions(-DARCH_AARCH64=1)
+-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-lax-vector-conversions")
+     # Prevents missmatch between arm and x86 bitstreams
+-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffp-contract=off")
++    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:precise")
+ endif()
+ 
+ include(GNUInstallDirs)
+diff --git a/Source/Lib/ASM_NEON/cdef_filter_block_neon.c b/Source/Lib/ASM_NEON/cdef_filter_block_neon.c
+index 92eb8a50c..eaf169a51 100644
+--- a/Source/Lib/ASM_NEON/cdef_filter_block_neon.c
++++ b/Source/Lib/ASM_NEON/cdef_filter_block_neon.c
+@@ -465,33 +465,33 @@ void svt_av1_cdef_filter_block_4xn_8_native_neon(uint8_t* dst, int32_t dstride,
+         int16x8_t        suma = vdupq_n_s16(0), sumb = vdupq_n_s16(0);
+         int8x16_t        c0, c1, c2, c3, csum;
+ 
+-#define NAT4_TAP(OFF)                                                         \
+-    ({                                                                        \
++#define NAT4_TAP(VAR,OFF)                                                     \
++    {                                                                         \
+         uint32x4_t _t = vdupq_n_u32(0);                                       \
+         _t            = vld1q_lane_u32((const uint32_t*)(r0 + (OFF)), _t, 0); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r1 + (OFF)), _t, 1); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r2 + (OFF)), _t, 2); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r3 + (OFF)), _t, 3); \
+-        vreinterpretq_u8_u32(_t);                                             \
+-    })
++        VAR = vreinterpretq_u8_u32(_t);                                       \
++    }
+ 
+         if (pri_strength) {
+-            tap8 = NAT4_TAP(po1);
++            NAT4_TAP(tap8, po1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, prithr8, pridamp8);
+-            tap8 = NAT4_TAP(-po1);
++            NAT4_TAP(tap8, -po1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, prithr8, pridamp8);
+             csum = vaddq_s8(c0, c1);
+             suma = vmlal_s8(suma, pri_t0, vget_low_s8(csum));
+             sumb = vmlal_s8(sumb, pri_t0, vget_high_s8(csum));
+-            tap8 = NAT4_TAP(po2);
++            NAT4_TAP(tap8, po2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, prithr8, pridamp8);
+-            tap8 = NAT4_TAP(-po2);
++            NAT4_TAP(tap8, -po2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, prithr8, pridamp8);
+@@ -500,38 +500,38 @@ void svt_av1_cdef_filter_block_4xn_8_native_neon(uint8_t* dst, int32_t dstride,
+             sumb = vmlal_s8(sumb, pri_t1, vget_high_s8(csum));
+         }
+         if (sec_strength) {
+-            tap8 = NAT4_TAP(s1o1);
++            NAT4_TAP(tap8, s1o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(-s1o1);
++            NAT4_TAP(tap8, -s1o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(s2o1);
++            NAT4_TAP(tap8, s2o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c2   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(-s2o1);
++            NAT4_TAP(tap8, -s2o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c3   = constrain8x16(tap8, row8, secthr8, secdamp8);
+             csum = vaddq_s8(vaddq_s8(c0, c1), vaddq_s8(c2, c3));
+             suma = vmlal_s8(suma, sec_t0, vget_low_s8(csum));
+             sumb = vmlal_s8(sumb, sec_t0, vget_high_s8(csum));
+-            tap8 = NAT4_TAP(s1o2);
++            NAT4_TAP(tap8, s1o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(-s1o2);
++            NAT4_TAP(tap8, -s1o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(s2o2);
++            NAT4_TAP(tap8, s2o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c2   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT4_TAP(-s2o2);
++            NAT4_TAP(tap8, -s2o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c3   = constrain8x16(tap8, row8, secthr8, secdamp8);
+@@ -561,30 +561,30 @@ void svt_av1_cdef_filter_block_4xn_8_native_neon(uint8_t* dst, int32_t dstride,
+         uint8x16_t       min8 = row8, max8 = row8, tap8;
+         int16x8_t        suma = vdupq_n_s16(0);
+         int8x16_t        c0, c1, c2, c3, csum;
+-#define NAT2_TAP(OFF)                                                             \
+-    ({                                                                            \
++#define NAT2_TAP(VAR, OFF)                                                        \
++    {                                                                             \
+         uint32x2_t _t      = vdup_n_u32(0);                                       \
+         _t                 = vld1_lane_u32((const uint32_t*)(ra + (OFF)), _t, 0); \
+         _t                 = vld1_lane_u32((const uint32_t*)(rb + (OFF)), _t, 1); \
+         const uint8x8_t _l = vreinterpret_u8_u32(_t);                             \
+-        vcombine_u8(_l, _l);                                                      \
+-    })
++        VAR = vcombine_u8(_l, _l);                                                \
++    }
+         if (pri_strength) {
+-            tap8 = NAT2_TAP(po1);
++            NAT2_TAP(tap8, po1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, prithr8, pridamp8);
+-            tap8 = NAT2_TAP(-po1);
++            NAT2_TAP(tap8, -po1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, prithr8, pridamp8);
+             csum = vaddq_s8(c0, c1);
+             suma = vmlal_s8(suma, pri_t0, vget_low_s8(csum));
+-            tap8 = NAT2_TAP(po2);
++            NAT2_TAP(tap8, po2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, prithr8, pridamp8);
+-            tap8 = NAT2_TAP(-po2);
++            NAT2_TAP(tap8, -po2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, prithr8, pridamp8);
+@@ -592,37 +592,37 @@ void svt_av1_cdef_filter_block_4xn_8_native_neon(uint8_t* dst, int32_t dstride,
+             suma = vmlal_s8(suma, pri_t1, vget_low_s8(csum));
+         }
+         if (sec_strength) {
+-            tap8 = NAT2_TAP(s1o1);
++            NAT2_TAP(tap8, s1o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(-s1o1);
++            NAT2_TAP(tap8, -s1o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(s2o1);
++            NAT2_TAP(tap8, s2o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c2   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(-s2o1);
++            NAT2_TAP(tap8, -s2o1);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c3   = constrain8x16(tap8, row8, secthr8, secdamp8);
+             csum = vaddq_s8(vaddq_s8(c0, c1), vaddq_s8(c2, c3));
+             suma = vmlal_s8(suma, sec_t0, vget_low_s8(csum));
+-            tap8 = NAT2_TAP(s1o2);
++            NAT2_TAP(tap8, s1o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c0   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(-s1o2);
++            NAT2_TAP(tap8, -s1o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c1   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(s2o2);
++            NAT2_TAP(tap8, s2o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c2   = constrain8x16(tap8, row8, secthr8, secdamp8);
+-            tap8 = NAT2_TAP(-s2o2);
++            NAT2_TAP(tap8, -s2o2);
+             min8 = vminq_u8(min8, tap8);
+             max8 = vmaxq_u8(max8, tap8);
+             c3   = constrain8x16(tap8, row8, secthr8, secdamp8);
+@@ -1285,20 +1285,20 @@ static void cdef_filter_block_4xn_8_bounded_neon(uint8_t* dst, int32_t dstride,
+         uint8x16_t       min8 = row8, max8 = row8, tap8, av;
+         int16x8_t        suma = vdupq_n_s16(0), sumb = vdupq_n_s16(0);
+         int8x16_t        c0, c1, c2, c3, csum;
+-#define NAT4_TAP(OFF)                                                         \
+-    ({                                                                        \
++#define NAT4_TAP(VAR, OFF)                                                    \
++    {                                                                         \
+         uint32x4_t _t = vdupq_n_u32(0);                                       \
+         _t            = vld1q_lane_u32((const uint32_t*)(r0 + (OFF)), _t, 0); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r1 + (OFF)), _t, 1); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r2 + (OFF)), _t, 2); \
+         _t            = vld1q_lane_u32((const uint32_t*)(r3 + (OFF)), _t, 3); \
+-        vreinterpretq_u8_u32(_t);                                             \
+-    })
++        VAR = vreinterpretq_u8_u32(_t);                                       \
++    }
+ #define B4(B, SGN, THR, DAMP, CACC)                                                                    \
+     do {                                                                                               \
+         const int _need = (SGN) > 0 ? needp[B] : needn[B];                                             \
+         const int _rs   = (SGN) > 0 ? rsensp[B] : rsensn[B];                                           \
+-        tap8            = NAT4_TAP((SGN) * off_b[B]);                                                  \
++        NAT4_TAP(tap8, (SGN) * off_b[B]);                                                              \
+         if (!_need) {                                                                                  \
+             max8   = vmaxq_u8(max8, tap8);                                                             \
+             min8   = vminq_u8(min8, tap8);                                                             \
+@@ -1361,19 +1361,19 @@ static void cdef_filter_block_4xn_8_bounded_neon(uint8_t* dst, int32_t dstride,
+         uint8x16_t       min8 = row8, max8 = row8, tap8, av;
+         int16x8_t        suma = vdupq_n_s16(0);
+         int8x16_t        c0, c1, c2, c3, csum;
+-#define NAT2_TAP(OFF)                                                             \
+-    ({                                                                            \
++#define NAT2_TAP(VAR, OFF)                                                        \
++    {                                                                             \
+         uint32x2_t _t      = vdup_n_u32(0);                                       \
+         _t                 = vld1_lane_u32((const uint32_t*)(ra + (OFF)), _t, 0); \
+         _t                 = vld1_lane_u32((const uint32_t*)(rb + (OFF)), _t, 1); \
+         const uint8x8_t _l = vreinterpret_u8_u32(_t);                             \
+-        vcombine_u8(_l, _l);                                                      \
+-    })
++        VAR = vcombine_u8(_l, _l);                                                \
++    }
+ #define B2(B, SGN, THR, DAMP, CACC)                                                                    \
+     do {                                                                                               \
+         const int _need = (SGN) > 0 ? needp[B] : needn[B];                                             \
+         const int _rs   = (SGN) > 0 ? rsensp[B] : rsensn[B];                                           \
+-        tap8            = NAT2_TAP((SGN) * off_b[B]);                                                  \
++        NAT2_TAP(tap8, (SGN) * off_b[B]);                                                              \
+         if (!_need) {                                                                                  \
+             max8   = vmaxq_u8(max8, tap8);                                                             \
+             min8   = vminq_u8(min8, tap8);                                                             \
+diff --git a/Source/Lib/ASM_NEON/cdef_neon.c b/Source/Lib/ASM_NEON/cdef_neon.c
+index 1d0a8a506..f0b96a2c7 100644
+--- a/Source/Lib/ASM_NEON/cdef_neon.c
++++ b/Source/Lib/ASM_NEON/cdef_neon.c
+@@ -15,6 +15,7 @@
+ #include "cdef.h"
+ #include "definitions.h"
+ #include "mem_neon.h"
++#include <malloc.h>
+ 
+ /* 8-bit MSE (no FEAT_DotProd): abs-diff fits u8 and d*d fits u16 (255^2=65025), so use
+  * vabdq_u8 (16-lane abs in one op) + vmull_u8/vmull2 (square 8 lanes each into u16) +
+@@ -234,7 +235,7 @@ uint64_t svt_search_one_dual_neon(int* lev0, int* lev1, int nb_strengths, uint64
+     }
+ 
+     size_t   stride = ((end_gi + 3) & ~3);
+-    uint64_t tot_mse[end_gi * stride];
++    uint64_t* tot_mse = (uint64_t*)_malloca(sizeof(uint64_t) * (end_gi * stride));
+     size_t   start_idx = start_gi;
+     size_t   end_idx   = end_gi;
+ 
+@@ -362,5 +363,6 @@ uint64_t svt_search_one_dual_neon(int* lev0, int* lev1, int nb_strengths, uint64
+ 
+     lev0[nb_strengths] = best_id0; // Add the identified luma strength to the list of selected luma strengths
+     lev1[nb_strengths] = best_id1; // Add the identified chroma strength to the list of selected chroma strengths
++    _freea(tot_mse);
+     return best_tot_mse;
+ }
+diff --git a/Source/Lib/ASM_NEON/compound_convolve_neon.c b/Source/Lib/ASM_NEON/compound_convolve_neon.c
+index 3814b697b..7bfed2305 100644
+--- a/Source/Lib/ASM_NEON/compound_convolve_neon.c
++++ b/Source/Lib/ASM_NEON/compound_convolve_neon.c
+@@ -250,7 +250,7 @@ void svt_av1_jnt_convolve_2d_neon(const uint8_t* src, int32_t src_stride, uint8_
+ 
+     if (clamped_y_taps == 6) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_6tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -262,7 +262,7 @@ void svt_av1_jnt_convolve_2d_neon(const uint8_t* src, int32_t src_stride, uint8_
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_8tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -557,7 +557,7 @@ void svt_av1_jnt_convolve_2d_copy_neon(const uint8_t* src, int src_stride, uint8
+     }
+ 
+     if (conv_params->do_average) {
+-        if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++        if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+             dist_wtd_convolve_2d_copy_dist_wtd_avg_neon(src, src_stride, dst8, dst8_stride, w, h, conv_params);
+         } else {
+             dist_wtd_convolve_2d_copy_avg_neon(src, src_stride, dst8, dst8_stride, w, h, conv_params);
+@@ -1202,7 +1202,7 @@ void svt_av1_jnt_convolve_x_neon(const uint8_t* src, int32_t src_stride, uint8_t
+     }
+ 
+     if (conv_params->do_average) {
+-        if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++        if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+             dist_wtd_convolve_x_dist_wtd_avg_neon(
+                 src, src_stride, dst8, dst8_stride, w, h, filter_params_x, subpel_x_qn, conv_params);
+         } else {
+@@ -2360,7 +2360,7 @@ void svt_av1_jnt_convolve_y_neon(const uint8_t* src, int32_t src_stride, uint8_t
+ 
+     if (get_filter_tap(filter_params_y, subpel_y_qn) <= 6) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_6tap_dist_wtd_avg_neon(
+                     src_ptr + src_stride, src_stride, dst8, dst8_stride, w, h, y_filter, conv_params);
+             } else {
+@@ -2372,7 +2372,7 @@ void svt_av1_jnt_convolve_y_neon(const uint8_t* src, int32_t src_stride, uint8_t
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_8tap_dist_wtd_avg_neon(
+                     src_ptr, src_stride, dst8, dst8_stride, w, h, y_filter, conv_params);
+             } else {
+diff --git a/Source/Lib/ASM_NEON/compound_convolve_neon.h b/Source/Lib/ASM_NEON/compound_convolve_neon.h
+index a2d26dc9d..b89a5c480 100644
+--- a/Source/Lib/ASM_NEON/compound_convolve_neon.h
++++ b/Source/Lib/ASM_NEON/compound_convolve_neon.h
+@@ -12,13 +12,12 @@
+ #ifndef AOM_AV1_COMMON_ARM_COMPOUND_CONVOLVE_NEON_H_
+ #define AOM_AV1_COMMON_ARM_COMPOUND_CONVOLVE_NEON_H_
+ 
++#include "definitions.h"
+ #include "mem_neon.h"
+ #include "convolve.h"
+ #include "filter.h"
+ 
+ #define __builtin_prefetch(x)
+-#define LIKELY(v) __builtin_expect(v, 1)
+-#define UNLIKELY(v) __builtin_expect(v, 0)
+ 
+ static inline void compute_dist_wtd_avg_4x4(uint16x4_t dd0, uint16x4_t dd1, uint16x4_t dd2, uint16x4_t dd3,
+                                             uint16x4_t d0, uint16x4_t d1, uint16x4_t d2, uint16x4_t d3,
+diff --git a/Source/Lib/ASM_NEON/convolve_neon.c b/Source/Lib/ASM_NEON/convolve_neon.c
+index b8b47e808..8efe03ee8 100644
+--- a/Source/Lib/ASM_NEON/convolve_neon.c
++++ b/Source/Lib/ASM_NEON/convolve_neon.c
+@@ -20,6 +20,10 @@
+ #include "transpose_neon.h"
+ #include "utility.h"
+ 
++#if _MSC_VER
++#define __builtin_prefetch(x) __prefetch(x)
++#endif
++
+ // Sign mask for is_fast_path: +1 = tap must be >= 0, -1 = tap must be <= 0,
+ // 0 = tap must be zero/unused. This is the EIGHTTAP_REGULAR 6-tap pattern.
+ static const int8_t kRegularSignMask6Tap[8] = {0, 1, -1, 1, 1, -1, 1, 0};
+diff --git a/Source/Lib/ASM_NEON/convolve_scale_neon.c b/Source/Lib/ASM_NEON/convolve_scale_neon.c
+index 5c56294fe..53672a4c0 100644
+--- a/Source/Lib/ASM_NEON/convolve_scale_neon.c
++++ b/Source/Lib/ASM_NEON/convolve_scale_neon.c
+@@ -16,6 +16,7 @@
+ #include "common_dsp_rtcd.h"
+ #include "compound_convolve_neon.h"
+ #include "convolve_scale_neon.h"
++#include "definitions.h"
+ #include "filter.h"
+ #include "mem_neon.h"
+ #include "transpose_neon.h"
+@@ -668,7 +669,7 @@ void svt_av1_convolve_2d_scale_neon(const uint8_t* src, int src_stride, uint8_t*
+ 
+     // Vertical filter
+     if (filter_params_y->interp_filter == MULTITAP_SHARP) {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_8tap_neon(
+                 im_block, im_stride, dst, dst_stride, w, h, filter_params_y->filter_ptr, subpel_y_qn, y_step_qn);
+         } else if (!conv_params->do_average) {
+@@ -701,7 +702,7 @@ void svt_av1_convolve_2d_scale_neon(const uint8_t* src, int src_stride, uint8_t*
+                                                             y_step_qn);
+         }
+     } else {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_6tap_neon(im_block + im_stride,
+                                           im_stride,
+                                           dst,
+diff --git a/Source/Lib/ASM_NEON/sad_neon.c b/Source/Lib/ASM_NEON/sad_neon.c
+index 5abf5e9ab..150ac5946 100644
+--- a/Source/Lib/ASM_NEON/sad_neon.c
++++ b/Source/Lib/ASM_NEON/sad_neon.c
+@@ -15,6 +15,19 @@
+ #include "mem_neon.h"
+ #include "sum_neon.h"
+ 
++#if _MSC_VER
++#include <intrin.h>
++// rw -> read 0, write 1, shared read 2
++// PLD 0, PLI 1, PST 2
++// L1 0, l2 1, L3 2
++// locality -> no temporal 0, max temporal 3
++// KEEP 0, STRM 1
++#define __builtin_prefetch(addr,rw,locality) __prefetch2(addr, \
++    (((rw & 1) * 2) << 3) |                                    \
++    ((rw & 2) << 1) |                                          \
++    (locality > 0 ? 0 : 1))
++#endif
++
+ int svt_aom_satd_neon(const TranLow* coeff, int length) {
+     const int32x4_t zero  = vdupq_n_s32(0);
+     int32x4_t       accum = zero;
+diff --git a/Source/Lib/ASM_NEON/sad_x4d_neon.c b/Source/Lib/ASM_NEON/sad_x4d_neon.c
+index 36bc4ada3..38a10bd9c 100644
+--- a/Source/Lib/ASM_NEON/sad_x4d_neon.c
++++ b/Source/Lib/ASM_NEON/sad_x4d_neon.c
+@@ -14,6 +14,7 @@
+ #include <arm_neon.h>
+ 
+ #include "aom_dsp_rtcd.h"
++#include "definitions.h"
+ #include "mem_neon.h"
+ 
+ // svt_aom_sad<W>x<H>x4d() computes the SAD of one source block against four
+@@ -99,7 +100,7 @@ static inline void sadwxhx4d_neon(const uint8_t* src, int src_stride, const uint
+ // cost is a single tail-branch, which microbenchmarks at parity with the fully
+ // specialized form.
+ #define SAD_WXHX4D_NEON(w)                                                                     \
+-    static void __attribute__((noinline)) sad##w##xhx4d_neon(const uint8_t*       src,         \
++    static void NOINLINE sad##w##xhx4d_neon(const uint8_t*                        src,         \
+                                                              int                  src_stride,  \
+                                                              const uint8_t* const ref_array[], \
+                                                              int                  ref_stride,  \
+diff --git a/Source/Lib/ASM_NEON_DOTPROD/convolve_scale_neon_dotprod.c b/Source/Lib/ASM_NEON_DOTPROD/convolve_scale_neon_dotprod.c
+index 0f83a116d..f64828a39 100644
+--- a/Source/Lib/ASM_NEON_DOTPROD/convolve_scale_neon_dotprod.c
++++ b/Source/Lib/ASM_NEON_DOTPROD/convolve_scale_neon_dotprod.c
+@@ -16,6 +16,7 @@
+ #include "common_dsp_rtcd.h"
+ #include "compound_convolve_neon.h"
+ #include "convolve_scale_neon.h"
++#include "definitions.h"
+ #include "filter.h"
+ #include "mem_neon.h"
+ #include "transpose_neon.h"
+@@ -349,7 +350,7 @@ void svt_av1_convolve_2d_scale_neon_dotprod(const uint8_t* src, int src_stride,
+ 
+     // Vertical filter
+     if (filter_params_y->interp_filter == MULTITAP_SHARP) {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_8tap_neon(
+                 im_block, im_stride, dst, dst_stride, w, h, filter_params_y->filter_ptr, subpel_y_qn, y_step_qn);
+         } else if (!conv_params->do_average) {
+@@ -382,7 +383,7 @@ void svt_av1_convolve_2d_scale_neon_dotprod(const uint8_t* src, int src_stride,
+                                                             y_step_qn);
+         }
+     } else {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_6tap_neon(im_block + im_stride,
+                                           im_stride,
+                                           dst,
+diff --git a/Source/Lib/ASM_NEON_DOTPROD/jnt_convolve_neon_dotprod.c b/Source/Lib/ASM_NEON_DOTPROD/jnt_convolve_neon_dotprod.c
+index 4154280e5..ca84f1f5d 100644
+--- a/Source/Lib/ASM_NEON_DOTPROD/jnt_convolve_neon_dotprod.c
++++ b/Source/Lib/ASM_NEON_DOTPROD/jnt_convolve_neon_dotprod.c
+@@ -601,7 +601,7 @@ void svt_av1_jnt_convolve_2d_neon_dotprod(const uint8_t* src, int src_stride, ui
+ 
+     if (clamped_y_taps == 6) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_6tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -613,7 +613,7 @@ void svt_av1_jnt_convolve_2d_neon_dotprod(const uint8_t* src, int src_stride, ui
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_8tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -1737,7 +1737,7 @@ void svt_av1_jnt_convolve_y_neon_dotprod(const uint8_t* src, int32_t src_stride,
+ 
+     if (get_filter_tap(filter_params_y, subpel_y_qn) <= 4) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_4tap_dist_wtd_avg_neon_dotprod(
+                     src - src_stride, src_stride, dst8, dst8_stride, w, h, y_filter_ptr, conv_params);
+             } else {
+@@ -1749,7 +1749,7 @@ void svt_av1_jnt_convolve_y_neon_dotprod(const uint8_t* src, int32_t src_stride,
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_8tap_dist_wtd_avg_neon_dotprod(
+                     src - 3 * src_stride, src_stride, dst8, dst8_stride, w, h, y_filter_ptr, conv_params);
+             } else {
+diff --git a/Source/Lib/ASM_NEON_DOTPROD/ssim_neon_dotprod.c b/Source/Lib/ASM_NEON_DOTPROD/ssim_neon_dotprod.c
+index 6b6ad948c..89af35cea 100644
+--- a/Source/Lib/ASM_NEON_DOTPROD/ssim_neon_dotprod.c
++++ b/Source/Lib/ASM_NEON_DOTPROD/ssim_neon_dotprod.c
+@@ -46,8 +46,10 @@ double svt_ssim_4x4_neon_dotprod(const uint8_t* s, uint32_t sp, const uint8_t* r
+     memcpy(&r1, r + rp, 4);
+     memcpy(&r2, r + 2 * rp, 4);
+     memcpy(&r3, r + 3 * rp, 4);
+-    const uint8x16_t vs   = vreinterpretq_u8_u32((uint32x4_t){s0, s1, s2, s3});
+-    const uint8x16_t vr   = vreinterpretq_u8_u32((uint32x4_t){r0, r1, r2, r3});
++    const uint32x4_t ts   = (uint32x4_t){.n128_u32 = {s0, s1, s2, s3}};
++    const uint8x16_t vs   = vreinterpretq_u8_u32(ts);
++    const uint32x4_t tr   = (uint32x4_t){.n128_u32 = {r0, r1, r2, r3}};
++    const uint8x16_t vr   = vreinterpretq_u8_u32(tr);
+     const uint8x16_t ones = vdupq_n_u8(1);
+     return svt_aom_similarity(vaddvq_u32(vdotq_u32(vdupq_n_u32(0), vs, ones)),
+                               vaddvq_u32(vdotq_u32(vdupq_n_u32(0), vr, ones)),
+diff --git a/Source/Lib/ASM_NEON_I8MM/convolve_scale_neon_i8mm.c b/Source/Lib/ASM_NEON_I8MM/convolve_scale_neon_i8mm.c
+index bf298b5fd..09b244d0d 100644
+--- a/Source/Lib/ASM_NEON_I8MM/convolve_scale_neon_i8mm.c
++++ b/Source/Lib/ASM_NEON_I8MM/convolve_scale_neon_i8mm.c
+@@ -17,6 +17,7 @@
+ #include "compound_convolve_neon.h"
+ #include "convolve_scale_neon.h"
+ #include "convolve_scale_neon_dotprod.h"
++#include "definitions.h"
+ #include "filter.h"
+ #include "mem_neon.h"
+ #include "transpose_neon.h"
+@@ -316,7 +317,7 @@ void svt_av1_convolve_2d_scale_neon_i8mm(const uint8_t* src, int src_stride, uin
+ 
+     // Vertical filter
+     if (filter_params_y->interp_filter == MULTITAP_SHARP) {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_8tap_neon(
+                 im_block, im_stride, dst, dst_stride, w, h, filter_params_y->filter_ptr, subpel_y_qn, y_step_qn);
+         } else if (!conv_params->do_average) {
+@@ -349,7 +350,7 @@ void svt_av1_convolve_2d_scale_neon_i8mm(const uint8_t* src, int src_stride, uin
+                                                             y_step_qn);
+         }
+     } else {
+-        if (LIKELY(!conv_params->is_compound)) {
++        if (EB_LIKELY(!conv_params->is_compound)) {
+             convolve_vert_scale_6tap_neon(im_block + im_stride,
+                                           im_stride,
+                                           dst,
+diff --git a/Source/Lib/ASM_NEON_I8MM/jnt_convolve_neon_i8mm.c b/Source/Lib/ASM_NEON_I8MM/jnt_convolve_neon_i8mm.c
+index d1a0f1781..d78b95063 100644
+--- a/Source/Lib/ASM_NEON_I8MM/jnt_convolve_neon_i8mm.c
++++ b/Source/Lib/ASM_NEON_I8MM/jnt_convolve_neon_i8mm.c
+@@ -575,7 +575,7 @@ void svt_av1_jnt_convolve_x_neon_i8mm(const uint8_t* src, int src_stride, uint8_
+     src -= (SUBPEL_TAPS / 2 - 1);
+ 
+     if (conv_params->do_average) {
+-        if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++        if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+             if (filter_taps < 8) {
+                 dist_wtd_convolve_x_dist_wtd_avg_6tap_neon_i8mm(src + 1,
+                                                                 src_stride,
+@@ -898,7 +898,7 @@ void svt_av1_jnt_convolve_2d_neon_i8mm(const uint8_t* src, int src_stride, uint8
+ 
+     if (clamped_y_taps == 6) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_6tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -910,7 +910,7 @@ void svt_av1_jnt_convolve_2d_neon_i8mm(const uint8_t* src, int src_stride, uint8
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_2d_vert_8tap_dist_wtd_avg_neon(
+                     im_block, im_stride, dst8, dst8_stride, conv_params, y_filter, h, w);
+             } else {
+@@ -1874,7 +1874,7 @@ void svt_av1_jnt_convolve_y_neon_i8mm(const uint8_t* src, int32_t src_stride, ui
+ 
+     if (get_filter_tap(filter_params_y, subpel_y_qn) <= 4) {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_4tap_dist_wtd_avg_neon_i8mm(
+                     src - src_stride, src_stride, dst8, dst8_stride, w, h, y_filter_ptr, conv_params);
+             } else {
+@@ -1886,7 +1886,7 @@ void svt_av1_jnt_convolve_y_neon_i8mm(const uint8_t* src, int32_t src_stride, ui
+         }
+     } else {
+         if (conv_params->do_average) {
+-            if (UNLIKELY(conv_params->use_jnt_comp_avg)) {
++            if (EB_UNLIKELY(conv_params->use_jnt_comp_avg)) {
+                 dist_wtd_convolve_y_8tap_dist_wtd_avg_neon_i8mm(
+                     src - 3 * src_stride, src_stride, dst8, dst8_stride, w, h, y_filter_ptr, conv_params);
+             } else {

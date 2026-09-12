@@ -126,9 +126,7 @@ if(ARCH_X86)
 endif()
 
 if(WIN32)
-	enable_language(ASM_MASM)
 	target_sources(common PRIVATE
-		FastJmp.asm
 		HTTPDownloaderWinHTTP.cpp
 		HTTPDownloaderWinHTTP.h
 		StackWalker.cpp
@@ -137,6 +135,16 @@ if(WIN32)
 		Windows/WinHostSys.cpp
 		Windows/WinMisc.cpp
 	)
+
+	if (ARCH_X86)
+		enable_language(ASM_MASM)
+		target_sources(common PRIVATE FastJmp.asm)
+	elseif (ARCH_ARM64)
+		enable_language(ASM_MARMASM)
+		target_sources(common PRIVATE FastJmp_arm64.asm)
+		set_property(SOURCE FastJmp_arm64.asm PROPERTY VS_SETTINGS "PreprocessWithCl=false")
+	endif()
+
 	target_link_libraries(common PUBLIC
 		WIL::WIL
 		winmm
