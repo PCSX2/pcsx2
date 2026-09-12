@@ -363,7 +363,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 			}
 
 			if (GSConfig.OsdShowVPS)
-				s_speed_line.append_format("{}VPS: {:.2f}", s_speed_line.empty() ? "" : " | ", PerformanceMetrics::GetFPS());
+				s_speed_line.append_format("{}VPS: {:.2f} (Avg. {:.2f})", s_speed_line.empty() ? "" : " | ", PerformanceMetrics::GetFPS(), PerformanceMetrics::GetAvgVPS());
 
 			if (GSConfig.OsdShowSpeed)
 			{
