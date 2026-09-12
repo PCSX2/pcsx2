@@ -61,17 +61,23 @@ std::string HostSys::GetFileMappingName(const char* prefix)
 #endif
 }
 
+static std::string s_data_shm_name;
+static bool s_data_shm_name_valid = false;
+
 void* HostSys::CreateSharedMemory(const char* name, size_t size)
 {
-	const int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+	int fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+	if (fd < 0 && errno == EEXIST)
+	{
+		// Stale object left by a crashed instance that reused our pid
+		shm_unlink(name);
+		fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+	}
 	if (fd < 0)
 	{
 		std::fprintf(stderr, "shm_open failed: %d\n", errno);
 		return nullptr;
 	}
-
-	// we're not going to be opening this mapping in other processes, so remove the file
-	shm_unlink(name);
 
 	// ensure it's the correct size
 	if (ftruncate(fd, static_cast<off_t>(size)) < 0)
@@ -80,12 +86,24 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 		return nullptr;
 	}
 
+	// We don't close the mapping immediately, so a user with the same UID can use it for modding and patches
+	// Removed on clean shutdown and cleared above if prev. session didn't shut down cleanly
+	s_data_shm_name = name;
+	s_data_shm_name_valid = true;
+
 	return reinterpret_cast<void*>(static_cast<intptr_t>(fd));
 }
 
 void HostSys::DestroySharedMemory(void* ptr)
 {
 	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
+
+	if (s_data_shm_name_valid)
+	{
+		// remove unused object from /dev/shm
+		shm_unlink(s_data_shm_name.c_str());
+		s_data_shm_name_valid = false;
+	}
 }
 
 #ifndef __APPLE__
