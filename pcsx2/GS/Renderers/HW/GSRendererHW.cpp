@@ -4657,6 +4657,10 @@ void GSRendererHW::Draw()
 			if (FRAME_TEX0.TBW != 1 || (m_r.width() > frame_psm.pgs.x || m_r.height() > frame_psm.pgs.y) || (scale_draw == 1 && !scaled_copy))
 			{
 				FRAME_TEX0.TBP0 = rt->m_TEX0.TBP0;
+				// Alpha-only draws at a narrower stride must preserve the cached RGB layout.
+				// Warrior Within reduces FBW in these draws; other games need proper testing.
+				if (!valid_width_change && FRAME_TEX0.TBW < rt->m_TEX0.TBW && rt->m_TEX0.PSM == FRAME_TEX0.PSM)
+					FRAME_TEX0.TBW = rt->m_TEX0.TBW;
 				rt->m_TEX0 = FRAME_TEX0;
 			}
 

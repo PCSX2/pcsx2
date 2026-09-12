@@ -17,6 +17,7 @@
 
 #include "fmt/format.h"
 
+#include <algorithm>
 #include <cinttypes>
 #include <math.h>
 
@@ -3979,8 +3980,9 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				{
 					const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
 					// It's dirty with the data we want at the right width, so just change it to that.
-					// Prince of Persia - Sands of Time
-					if (t->m_dirty.size() == 1 && t->m_dirty[0].bw == TEX0.TBW)
+					// (AI-assisted) Multiple channel masks can describe writes at the same stride.
+					// Prince of Persia - Sands of Time / Warrior Within
+					if (std::all_of(t->m_dirty.begin(), t->m_dirty.end(), [&TEX0](const GSDirtyRect& dirty) { return dirty.bw == TEX0.TBW; }))
 					{
 						t->m_TEX0.TBW = TEX0.TBW;
 						t->m_valid = dirty_rect;
