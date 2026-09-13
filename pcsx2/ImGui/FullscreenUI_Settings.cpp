@@ -3,6 +3,7 @@
 
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "GS/GSCapture.h"
 #include "GS/GSUtil.h"
 #include "Achievements.h"
 #include "GameList.h"
@@ -238,6 +239,19 @@ s32 FullscreenUI::GetEffectiveIntSetting(SettingsInterface* bsi, const char* sec
 	}
 
 	return Host::Internal::GetBaseSettingsLayer()->GetIntValue(section, key, default_value);
+}
+
+std::string FullscreenUI::GetEffectiveStringSetting(
+	SettingsInterface* bsi, const char* section, const char* key, const char* default_value)
+{
+	if (IsEditingGameSettings(bsi))
+	{
+		std::optional<std::string> value = bsi->GetOptionalStringValue(section, key, std::nullopt);
+		if (value.has_value())
+			return value.value();
+	}
+
+	return Host::Internal::GetBaseSettingsLayer()->GetStringValue(section, key, default_value);
 }
 
 void FullscreenUI::DrawInputBindingButton(
@@ -1269,6 +1283,84 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 					else
 					{
 						bsi->SetStringValue(section, key, raw_options[index].first.c_str());
+					}
+
+					SetSettingsChanged(bsi);
+				}
+
+				CloseChoiceDialog();
+			});
+	}
+}
+
+void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+	const char* key, const char* default_value, const std::vector<std::pair<std::string, std::string>>& items, bool enabled,
+	std::vector<std::string> dependent_keys, float height, std::pair<ImFont*, float> font, std::pair<ImFont*, float> summary_font)
+{
+	const bool game_settings = IsEditingGameSettings(bsi);
+	const std::optional<SmallString> value(
+		bsi->GetOptionalSmallStringValue(section, key, (game_settings || !default_value) ? std::nullopt : std::optional<const char*>(default_value)));
+
+	const char* display_value = value.has_value() ? FSUI_CSTR("Unknown") : FSUI_CSTR("Use Global Setting");
+	size_t current_index = items.size();
+
+	if (value.has_value())
+	{
+		for (size_t i = 0; i < items.size(); i++)
+		{
+			if (value.value() == items[i].first)
+			{
+				current_index = i;
+				display_value = items[i].second.c_str();
+				break;
+			}
+		}
+	}
+
+	if (MenuButtonWithValue(title, summary, display_value, enabled, height, font, summary_font))
+	{
+		std::vector<std::string> option_values;
+		option_values.reserve(items.size());
+		ImGuiFullscreen::ChoiceDialogOptions cd_options;
+		cd_options.reserve(items.size() + 1);
+
+		if (game_settings)
+			cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
+
+		for (size_t i = 0; i < items.size(); i++)
+		{
+			option_values.push_back(items[i].first);
+			cd_options.emplace_back(items[i].second, (value.has_value() && i == current_index));
+		}
+
+		OpenChoiceDialog(title, false, std::move(cd_options),
+			[game_settings, section = std::string(section), key = std::string(key),
+				dependent_keys = std::move(dependent_keys),
+				default_value = default_value ? std::string(default_value) : std::string(),
+				option_values = std::move(option_values)](s32 index, const std::string& title, bool checked) {
+				if (index >= 0)
+				{
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+					const std::string old_value = GetEffectiveStringSetting(bsi, section.c_str(), key.c_str(), default_value.c_str());
+					const std::optional<std::string> new_value = (game_settings && index == 0) ?
+				                                                     std::nullopt :
+				                                                     std::optional<std::string>(option_values[index - (game_settings ? 1 : 0)]);
+
+					if (new_value.has_value())
+						bsi->SetStringValue(section.c_str(), key.c_str(), new_value->c_str());
+					else
+						bsi->DeleteValue(section.c_str(), key.c_str());
+
+					if (!dependent_keys.empty() && old_value != GetEffectiveStringSetting(bsi, section.c_str(), key.c_str(), default_value.c_str()))
+					{
+						for (const std::string& dep_key : dependent_keys)
+						{
+							if (!dep_key.empty())
+							{
+								bsi->SetStringValue(section.c_str(), dep_key.c_str(), "");
+							}
+						}
 					}
 
 					SetSettingsChanged(bsi);
@@ -3034,14 +3126,6 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Disable Interlace Offset"),
 		FSUI_CSTR("Disables interlacing offset which may reduce blurring in some situations."), "EmuCore/GS",
 		"disable_interlace_offset", false);
-	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Screenshot Resolution"), FSUI_CSTR("Determines the resolution at which screenshots will be saved."),
-		"EmuCore/GS", "ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution), s_screenshot_sizes,
-		std::size(s_screenshot_sizes), true);
-	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_PHOTO_FILM, "Screenshot Format"), FSUI_CSTR("Selects the format which will be used to save screenshots."),
-		"EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG), s_screenshot_formats, std::size(s_screenshot_formats),
-		true);
-	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE, "Screenshot Quality"), FSUI_CSTR("Selects the quality at which screenshots will be compressed."),
-		"EmuCore/GS", "ScreenshotQuality", 90, 1, 100, FSUI_CSTR("%d%%"));
 	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_RIGHT_ARROW_LEFT, "Vertical Stretch"), FSUI_CSTR("Increases or decreases the virtual picture size vertically."),
 		"EmuCore/GS", "StretchY", 100, 10, 300, FSUI_CSTR("%d%%"));
 	DrawIntRectSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP, "Crop"), FSUI_CSTR("Crops the image, while respecting aspect ratio."), "EmuCore/GS", "CropLeft", 0,
@@ -3361,6 +3445,117 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "TV Shader"), FSUI_CSTR("Applies a shader which replicates the visual effects of different styles of television sets."), "EmuCore/GS", "TVShader", 0,
 			s_tv_shaders, std::size(s_tv_shaders), true);
 	}
+
+	MenuHeading(FSUI_CSTR("Media Capture"));
+
+	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Screenshot Resolution"), FSUI_CSTR("Determines the resolution at which screenshots will be saved."),
+		"EmuCore/GS", "ScreenshotSize", static_cast<int>(GSScreenshotSize::WindowResolution), s_screenshot_sizes,
+		std::size(s_screenshot_sizes), true);
+	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_PHOTO_FILM, "Screenshot Format"), FSUI_CSTR("Selects the format which will be used to save screenshots."),
+		"EmuCore/GS", "ScreenshotFormat", static_cast<int>(GSScreenshotFormat::PNG), s_screenshot_formats, std::size(s_screenshot_formats),
+		true);
+	DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE, "Screenshot Quality"), FSUI_CSTR("Selects the quality at which screenshots will be compressed."),
+		"EmuCore/GS", "ScreenshotQuality", 90, 1, 100, FSUI_CSTR("%d%%"));
+
+	static const std::vector<std::pair<std::string, std::string>> s_capture_container_options = []() {
+		std::vector<std::pair<std::string, std::string>> options;
+		for (const char** container = Pcsx2Config::GSOptions::CaptureContainers; *container; container++)
+			options.emplace_back(*container, StringUtil::toUpper(*container));
+		return options;
+	}();
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_BOX_ARCHIVE, "Container Format"),
+		FSUI_CSTR("Selects the media container file format for recordings."), "EmuCore/GS", "CaptureContainer",
+		Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER, s_capture_container_options, true,
+		{"VideoCaptureCodec", "AudioCaptureCodec", "VideoCaptureFormat"});
+
+	const bool enable_video_capture = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "EnableVideoCapture", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Capture Video"),
+		FSUI_CSTR("Includes video in recordings."), "EmuCore/GS", "EnableVideoCapture", true);
+
+	const std::string container = GetEffectiveStringSetting(
+		bsi, "EmuCore/GS", "CaptureContainer", Pcsx2Config::GSOptions::DEFAULT_CAPTURE_CONTAINER);
+
+	static std::string s_last_capture_container;
+	static std::vector<std::pair<std::string, std::string>> s_video_codec_list_cache;
+	static std::vector<std::pair<std::string, std::string>> s_audio_codec_list_cache;
+	static bool s_capture_lists_initialized = false;
+
+	if (!s_capture_lists_initialized || s_last_capture_container != container)
+	{
+		s_last_capture_container = container;
+		s_capture_lists_initialized = true;
+
+		s_video_codec_list_cache.clear();
+		s_video_codec_list_cache.emplace_back("", FSUI_STR("Default"));
+		for (const auto& codec : GSCapture::GetVideoCodecList(container.c_str()))
+			s_video_codec_list_cache.emplace_back(codec.first, codec.first);
+
+		s_audio_codec_list_cache.clear();
+		s_audio_codec_list_cache.emplace_back("", FSUI_STR("Default"));
+		for (const auto& codec : GSCapture::GetAudioCodecList(container.c_str()))
+			s_audio_codec_list_cache.emplace_back(codec.first, codec.first);
+	}
+
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_FILM, "Video Codec"),
+		FSUI_CSTR("Selects the video codec used for recordings. If unsure, leave this set to Default."),
+		"EmuCore/GS", "VideoCaptureCodec", "", s_video_codec_list_cache, enable_video_capture, {"VideoCaptureFormat"});
+
+	const std::string codec = GetEffectiveStringSetting(bsi, "EmuCore/GS", "VideoCaptureCodec", "");
+
+	static std::string s_last_capture_codec;
+	static std::vector<std::pair<std::string, std::string>> s_video_format_list_cache;
+	static bool s_format_list_initialized = false;
+
+	if (!s_format_list_initialized || s_last_capture_codec != codec)
+	{
+		s_last_capture_codec = codec;
+		s_format_list_initialized = true;
+
+		s_video_format_list_cache.clear();
+		s_video_format_list_cache.emplace_back("", FSUI_STR("Default"));
+		if (!codec.empty())
+		{
+			for (const auto& [id, name] : GSCapture::GetVideoFormatList(codec.c_str()))
+				s_video_format_list_cache.emplace_back(fmt::to_string(id), name);
+		}
+	}
+
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGE, "Video Format"),
+		FSUI_CSTR("Selects the pixel format used for recordings. Unsupported formats fall back to a format supported by the codec."),
+		"EmuCore/GS", "VideoCaptureFormat", "", s_video_format_list_cache, enable_video_capture);
+
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE, "Video Bitrate"),
+		FSUI_CSTR("Sets the video bitrate. Higher bitrates generally improve quality but increase file size."),
+		"EmuCore/GS", "VideoCaptureBitrate", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_BITRATE, 100, 200000, 500,
+		FSUI_CSTR("%d kbps"), enable_video_capture);
+
+	const bool video_auto_resolution = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "VideoCaptureAutoResolution", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Automatic Resolution"),
+		FSUI_CSTR("When checked, the video capture resolution will follow the internal resolution of the running game."),
+		"EmuCore/GS", "VideoCaptureAutoResolution", true, enable_video_capture);
+
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_LEFT_RIGHT, "Video Capture Width"),
+		FSUI_CSTR("Sets the recording width when Automatic Resolution is disabled."),
+		"EmuCore/GS", "VideoCaptureWidth", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_WIDTH, 320, 32768, 16,
+		FSUI_CSTR("%dpx"), enable_video_capture && !video_auto_resolution);
+
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN, "Video Capture Height"),
+		FSUI_CSTR("Sets the recording height when Automatic Resolution is disabled."),
+		"EmuCore/GS", "VideoCaptureHeight", Pcsx2Config::GSOptions::DEFAULT_VIDEO_CAPTURE_HEIGHT, 240, 32768, 16,
+		FSUI_CSTR("%dpx"), enable_video_capture && !video_auto_resolution);
+
+	const bool enable_audio_capture = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "EnableAudioCapture", true);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_HIGH, "Capture Audio"),
+		FSUI_CSTR("Includes audio in recordings."), "EmuCore/GS", "EnableAudioCapture", true);
+
+	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_HEADPHONES, "Audio Codec"),
+		FSUI_CSTR("Selects the audio codec used for recordings. If unsure, leave this set to Default."),
+		"EmuCore/GS", "AudioCaptureCodec", "", s_audio_codec_list_cache, enable_audio_capture);
+
+	DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_GAUGE, "Audio Bitrate"),
+		FSUI_CSTR("Sets the audio bitrate."),
+		"EmuCore/GS", "AudioCaptureBitrate", Pcsx2Config::GSOptions::DEFAULT_AUDIO_CAPTURE_BITRATE, 16, 2048, 16,
+		FSUI_CSTR("%d kbps"), enable_audio_capture);
 
 	static constexpr const char* s_gsdump_compression[] = {
 		FSUI_NSTR("Uncompressed"),

@@ -426,6 +426,7 @@ namespace FullscreenUI
 	void SetSettingsChanged(SettingsInterface* bsi);
 	bool GetEffectiveBoolSetting(SettingsInterface* bsi, const char* section, const char* key, bool default_value);
 	s32 GetEffectiveIntSetting(SettingsInterface* bsi, const char* section, const char* key, s32 default_value);
+	std::string GetEffectiveStringSetting(SettingsInterface* bsi, const char* section, const char* key, const char* default_value);
 	void DoCopyGameSettings();
 	void DoClearGameSettings();
 	void ResetControllerSettings();
@@ -465,6 +466,10 @@ namespace FullscreenUI
 		std::pair<ImFont*, float> summary_font = g_medium_font, const char* translation_ctx = "FullscreenUI");
 	void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, SettingInfo::GetOptionsCallback options_callback, bool enabled = true,
+		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
+	void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
+		const char* default_value, const std::vector<std::pair<std::string, std::string>>& items, bool enabled = true,
+		std::vector<std::string> dependent_keys = {},
 		float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, std::pair<ImFont*, float> font = g_large_font, std::pair<ImFont*, float> summary_font = g_medium_font);
 	void DrawIPAddressSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		const char* default_value, bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
