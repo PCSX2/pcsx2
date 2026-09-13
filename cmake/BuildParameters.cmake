@@ -119,7 +119,7 @@ elseif("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_HOST_SYSTEM
 		add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")
 	else()
 		# Require atomic rmw instructions
-		add_compile_options("-march=armv8.1-a")
+		add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:-march=armv8.1-a>")
 	endif()
 
 	# If we're running on Linux, we need to detect the page/cache line size.
@@ -200,7 +200,10 @@ endif()
 if(MSVC)
 	# Enable PDB generation in release builds
 	add_compile_options(
-		$<${CONFIG_REL_NO_DEB}:/Zi>
+		$<$<AND:${CONFIG_REL_NO_DEB},$<COMPILE_LANGUAGE:C,CXX,ASM_MASM>>:/Zi>
+	)
+	add_compile_options(
+		$<$<AND:${CONFIG_REL_NO_DEB},$<COMPILE_LANGUAGE:ASM_MARMASM>>:-g>
 	)
 	add_link_options(
 		$<${CONFIG_REL_NO_DEB}:/DEBUG>
