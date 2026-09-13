@@ -557,6 +557,10 @@ public:
 		bool same_dir_YV;
 		bool reverse_dir_XU;
 		bool reverse_dir_YV;
+		bool anchor_XU0;
+		bool anchor_XU1;
+		bool anchor_YV0;
+		bool anchor_YV1;
 
 		VertexUVRoundingInfo()
 			: one_to_one_XU_YV(true)
@@ -566,6 +570,10 @@ public:
 			, same_dir_YV(true)
 			, reverse_dir_XU(true)
 			, reverse_dir_YV(true)
+			, anchor_XU0(true)
+			, anchor_XU1(true)
+			, anchor_YV0(true)
+			, anchor_YV1(true)
 		{
 		}
 	};

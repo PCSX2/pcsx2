@@ -5234,26 +5234,34 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, VertexUVRounding
 			}
 
 			// Third condition: game appears to be intentionally biasing coordinates up or down.
-			// Only applies to nearest sampling.
 			bool bias_U_up = false;
 			bool bias_U_down = false;
 			bool bias_V_up = false;
 			bool bias_V_down = false;
+			const bool anchor_XU0 = ((X0 | U0) & 0xF) == 0;
+			const bool anchor_YV0 = ((Y0 | V0) & 0xF) == 0;
+			const bool anchor_XU1 = ((X1 | U1) & 0xF) == 0;
+			const bool anchor_YV1 = ((Y1 | V1) & 0xF) == 0;
 			{
 				constexpr int bias_threshold = 0x10;
 
-				const bool anchor_XU0 = ((X0 | U0) & 0xF) == 0;
-				const bool anchor_YV0 = ((Y0 | V0) & 0xF) == 0;
-				const bool anchor_XU1 = ((X1 | U1) & 0xF) == 0;
-				const bool anchor_YV1 = ((Y1 | V1) & 0xF) == 0;
-				const bool bias_dU_up = (abs_dU > abs_dX) && (abs_dU <= abs_dX + bias_threshold);
-				const bool bias_dU_down = (abs_dU < abs_dX) && (abs_dU >= abs_dX - bias_threshold);
-				const bool bias_dV_up = (abs_dV > abs_dY) && (abs_dV <= abs_dY + bias_threshold);
-				const bool bias_dV_down = (abs_dV < abs_dY) && (abs_dV >= abs_dY - bias_threshold);
+				const int scale_X = std::max(static_cast<int>(std::round(static_cast<float>(abs_dU) / abs_dX)), 1);
+				const int scale_Y = std::max(static_cast<int>(std::round(static_cast<float>(abs_dV) / abs_dY)), 1);
+				const int scale_U = std::max(static_cast<int>(std::round(static_cast<float>(abs_dX) / abs_dU)), 1);
+				const int scale_V = std::max(static_cast<int>(std::round(static_cast<float>(abs_dY) / abs_dV)), 1);
+
+				const int scaled_abs_dX = scale_X * abs_dX;
+				const int scaled_abs_dY = scale_Y * abs_dY;
+				const int scaled_abs_dU = scale_U * abs_dU;
+				const int scaled_abs_dV = scale_V * abs_dV;
+
+				const bool bias_dU_up   = (scaled_abs_dU > scaled_abs_dX) && (scaled_abs_dU <= scaled_abs_dX + bias_threshold);
+				const bool bias_dU_down = (scaled_abs_dU < scaled_abs_dX) && (scaled_abs_dU >= scaled_abs_dX - bias_threshold);
+				const bool bias_dV_up   = (scaled_abs_dV > scaled_abs_dY) && (scaled_abs_dV <= scaled_abs_dY + bias_threshold);
+				const bool bias_dV_down = (scaled_abs_dV < scaled_abs_dY) && (scaled_abs_dV >= scaled_abs_dY - bias_threshold);
 
 				// The sign of dU and dV, and the anchor point of where the coordinates are aligned
-				// flips whether the nudge becomes an upward or downward bias. The logic could
-				// probably be simplified with 'xor' but this seems clearer.
+				// flips whether the nudge becomes an upward or downward bias.
 				bias_U_up =
 					(anchor_XU0 && dU > 0 && bias_dU_up) || (anchor_XU0 && dU < 0 && bias_dU_down) ||
 					(anchor_XU1 && dU > 0 && bias_dU_down) || (anchor_XU1 && dU < 0 && bias_dU_up);
@@ -5329,6 +5337,10 @@ bool GSState::GetVertexUVRoundingInfoImpl(const bool upscaling, VertexUVRounding
 					info->one_to_one_XU_YV &= (round_V == ROUND_UV_UP) && scaled_aligned_V_centered;
 					info->half_offset_XU &= (bias_U_up || bias_U_down || scaled_aligned_U_boundaries);
 					info->half_offset_YV &= (bias_V_up || bias_V_down || scaled_aligned_V_boundaries);
+					info->anchor_XU0 &= anchor_XU0;
+					info->anchor_YV0 &= anchor_YV0;
+					info->anchor_XU1 &= anchor_XU1;
+					info->anchor_YV1 &= anchor_YV1;
 				}
 
 				if (swap_uv)

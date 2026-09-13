@@ -11092,15 +11092,13 @@ bool GSRendererHW::IsCoverageAlphaSupported()
 
 void GSRendererHW::SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& info, float tex_scale)
 {
-	// Shift to remove the native half texel offset used to blur image.
-	constexpr float shift = 8.0f;
-
 	const GSVector4 pos_rect = m_vt.m_min.p.xyxy(m_vt.m_max.p);
 	const GSVector4 tex_rect = m_vt.m_min.t.xyxy(m_vt.m_max.t);
 
 	for (int i = 0; i < 2; i++)
 	{
 		const bool half_offset = (i == 0) ? info.half_offset_XU : info.half_offset_YV;
+		const bool anchor_left = (i == 0) ? info.anchor_XU0 : info.anchor_YV0;
 		const bool same_dir = (i == 0) ? info.same_dir_XU : info.same_dir_YV;
 		const float pos_range = (i == 0) ? pos_rect.width() : pos_rect.height();
 		const float tex_range = (i == 0) ? tex_rect.width() : tex_rect.height();
@@ -11108,13 +11106,12 @@ void GSRendererHW::SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& inf
 		const float tex_start = tex_rect.v[i];
 
 		// Only allow corrects when the X and U (or Y and V) ranges are similar and the
-		// coordinates are in the same direction.
-		if (half_offset && same_dir && (std::abs(pos_range - tex_range) <= 1.0f))
+		if (half_offset && anchor_left && same_dir)
 		{
 			float shift_dir = 0.0f;
 			if (std::abs(pos_start - tex_start) <= 1.0f)
 			{
-				// Rectangles have similar coordinates (Shadow of Rome, Dragon Quest VIII).
+				// Rectangles have similar coordinates (Shadow of Rome, Dragon Quest VIII, MVP 07 NCAA Baseball).
 				shift_dir = (tex_start >= pos_start + 0.5f) ? -1.0f : 1.0f;
 			}
 			else if (pos_start == 0.0f || tex_start == 0.0f)
@@ -11125,10 +11122,11 @@ void GSRendererHW::SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& inf
 
 			if (shift_dir != 0.0f)
 			{
-				const float shift_with_dir = shift_dir * shift;
+				// Shift required to center coordinates. 8.0f = 1/2 texel in 4 bit fixed point.
+				const float shift = 8.0f * shift_dir * (tex_range / pos_range);
 
 				// Texture offset is subtracted from UV so subtract here.
-				m_conf.cb_vs.texture_offset.v[i] -= shift_with_dir;
+				m_conf.cb_vs.texture_offset.v[i] -= shift;
 
 				GL_INS("HW: Removing %s bilinear blur, by adding %.4f texels to %s.",
 					(i == 0) ? "XU" : "YV", shift / 16.0f, (i == 0) ? "U" : "V");
