@@ -5,6 +5,7 @@
 #include "CDVD/CDVDcommon.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include "GS/GSCapture.h"
 #include "Achievements.h"
 #include "CDVD/CDVDdiscReader.h"
 #include "GameList.h"
@@ -1668,7 +1669,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			ImVec2(10.0f, 10.0f), ImGuiWindowFlags_NoBackground))
 	{
 		static constexpr u32 submenu_item_count[] = {
-			11, // None
+			12, // None
 			4, // Exit
 			3, // Achievements
 		};
@@ -1766,6 +1767,16 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
 				{
 					GSQueueSnapshot(std::string());
+					ClosePauseMenu();
+				}
+
+				const bool is_capturing = GSCapture::IsCapturing();
+				const bool can_start_capture = GSConfig.EnableVideoCapture || GSConfig.EnableAudioCapture;
+				if (ActiveButton(is_capturing ? FSUI_ICONSTR(ICON_FA_VIDEO_SLASH, "Stop Recording") :
+												FSUI_ICONSTR(ICON_FA_VIDEO, "Start Recording"),
+						false, is_capturing || can_start_capture))
+				{
+					GSToggleVideoCapture();
 					ClosePauseMenu();
 				}
 

@@ -523,6 +523,21 @@ void GSEndCapture()
 		g_gs_renderer->EndCapture();
 }
 
+void GSToggleVideoCapture()
+{
+	if (!g_gs_renderer)
+		return;
+
+	if (GSCapture::IsCapturing())
+	{
+		g_gs_renderer->EndCapture();
+		return;
+	}
+
+	std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
+	g_gs_renderer->BeginCapture(std::move(filename));
+}
+
 void GSPresentCurrentFrame()
 {
 	g_gs_renderer->PresentCurrentFrame();
@@ -1217,17 +1232,7 @@ BEGIN_HOTKEY_LIST(g_gs_hotkeys){"Screenshot", TRANSLATE_NOOP("Hotkeys", "Graphic
 		[](s32 pressed) {
 			if (!pressed)
 			{
-				if (GSCapture::IsCapturing())
-				{
-					MTGS::RunOnGSThread([]() { g_gs_renderer->EndCapture(); });
-					MTGS::WaitGS(false, false, false);
-					return;
-				}
-
-				MTGS::RunOnGSThread([]() {
-					std::string filename(fmt::format("{}.{}", GSGetBaseVideoFilename(), GSConfig.CaptureContainer));
-					g_gs_renderer->BeginCapture(std::move(filename));
-				});
+				MTGS::RunOnGSThread(&GSToggleVideoCapture);
 
 				// Sync GS thread. We want to start adding audio at the same time as video.
 				MTGS::WaitGS(false, false, false);

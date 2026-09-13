@@ -81,6 +81,7 @@ void GSDumpSavedMetrics();
 bool GSIsSavingMetrics();
 bool GSBeginCapture(std::string filename);
 void GSEndCapture();
+void GSToggleVideoCapture();
 void GSPresentCurrentFrame();
 void GSThrottlePresentation();
 void GSGameChanged();
