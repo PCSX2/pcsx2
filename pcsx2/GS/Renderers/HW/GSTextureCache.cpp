@@ -3980,7 +3980,8 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 					const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, t->m_unscaled_size);
 					// It's dirty with the data we want at the right width, so just change it to that.
 					// Prince of Persia - Sands of Time
-					if (t->m_dirty.size() == 1 && t->m_dirty[0].bw == TEX0.TBW)
+					if (!t->m_dirty.empty() &&
+						std::ranges::all_of(t->m_dirty, [&TEX0](const GSDirtyRect& rect) { return rect.bw == TEX0.TBW; }))
 					{
 						t->m_TEX0.TBW = TEX0.TBW;
 						t->m_valid = dirty_rect;
