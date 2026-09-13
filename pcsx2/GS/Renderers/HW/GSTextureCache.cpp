@@ -17,6 +17,7 @@
 
 #include "fmt/format.h"
 
+#include <ranges>
 #include <cinttypes>
 #include <math.h>
 
@@ -4881,6 +4882,18 @@ void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& r
 			}
 
 			++i;
+
+			// Prince of Persia - Warrior Within draws shadows to the alpha channel of an RT.
+			// If we don't remember the correct BW, the RT won't get properly invalidated.
+			if (type == RenderTarget && (GSUtil::GetChannelMask(psm) & 7) && t->m_last_rgb_draw_TEX0.has_value() &&
+				t->m_TEX0.U64 != t->m_last_rgb_draw_TEX0->U64)
+			{
+				GL_CACHE("Upload: Switching TEX0 of RT @ %04x: PSM %d=>%d, TBW %d=>%d", t->m_TEX0.TBP0,
+					GSUtil::GetPSMName(t->m_TEX0.PSM), GSUtil::GetPSMName(t->m_last_rgb_draw_TEX0->PSM),
+					t->m_TEX0.TBW, t->m_last_rgb_draw_TEX0->TBW);
+				t->m_TEX0 = *t->m_last_rgb_draw_TEX0;
+				t->m_last_rgb_draw_TEX0 = std::nullopt;
+			}
 
 			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
 			{
