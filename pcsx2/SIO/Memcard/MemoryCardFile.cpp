@@ -78,7 +78,7 @@ static u32 CalculateECC(u8* buf)
 		}
 	}
 
-	return column_parity | (line_parity_0 << 8) | (line_parity_1 << 16);
+	return column_parity | ((line_parity_0 & 0x7F) << 8) | (line_parity_1 << 16);
 }
 
 static bool ConvertNoECCtoRAW(const char* file_in, const char* file_out)
@@ -109,8 +109,9 @@ static bool ConvertNoECCtoRAW(const char* file_in, const char* file_out)
 				return false;
 		}
 
-		u32 nullbytes = 0;
-		if (std::fwrite(&nullbytes, sizeof(nullbytes), 1, fout.get()) != 1)
+		// unwritten spare reads back erased
+		const u32 unused = 0xffffffff;
+		if (std::fwrite(&unused, sizeof(unused), 1, fout.get()) != 1)
 			return false;
 	}
 
