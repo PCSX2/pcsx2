@@ -40,7 +40,7 @@ bool FileMcd_Open = false;
 // https://sourceforge.net/p/mymc-opl/code/ci/master/tree/ps2mc_ecc.py
 // Public domain license
 
-static u32 CalculateECC(u8* buf)
+static u32 CalculateECC(const u8* buf)
 {
 	const u8 parity_table[256] = {0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1,
 		0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
@@ -887,6 +887,36 @@ bool FileMcd_IsMemoryCardFormatted(std::FILE* fp)
 
 	return (std::memcmp(data, formatted_string, sizeof(formatted_string) - 1) == 0 ||
 			std::memcmp(data, formatted_psx, sizeof(formatted_psx) - 1) == 0);
+}
+
+static bool IsNoECCSize(s64 size)
+{
+	return (size == _8mb || size == _16mb || size == _32mb || size == _64mb);
+}
+
+bool FileMcd_InsertECC(std::vector<u8>& buffer)
+{
+	if (!IsNoECCSize(static_cast<s64>(buffer.size())))
+		return false;
+
+	const size_t pages = buffer.size() / FolderMemoryCard::PageSize;
+	std::vector<u8> raw(pages * FolderMemoryCard::PageSizeRaw, 0xff);
+
+	for (size_t page = 0; page < pages; page++)
+	{
+		const u8* src = &buffer[page * FolderMemoryCard::PageSize];
+		u8* dst = &raw[page * FolderMemoryCard::PageSizeRaw];
+		std::memcpy(dst, src, FolderMemoryCard::PageSize);
+
+		for (int j = 0; j < 4; j++)
+		{
+			const u32 checksum = CalculateECC(&src[j * 128]);
+			std::memcpy(&dst[FolderMemoryCard::PageSize + (j * 3)], &checksum, 3);
+		}
+	}
+
+	buffer = std::move(raw);
+	return true;
 }
 
 std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards)
