@@ -314,9 +314,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		VkPhysicalDeviceProperties props = {};
 		vkGetPhysicalDeviceProperties(device, &props);
 
-		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
-		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 1)
+		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
+		if (props.apiVersion < VK_API_VERSION_1_3)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
