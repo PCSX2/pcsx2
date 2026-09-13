@@ -327,7 +327,10 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
-		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
+
+		QAction* convertAction = menu.addAction(tr("Convert"));
+		convertAction->setEnabled(m_ui.convertCard->isEnabled());
+		connect(convertAction, &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
 		menu.addSeparator();
 	}
