@@ -3,6 +3,7 @@
 
 #include "MemoryCardConvertDialog.h"
 
+#include <QtCore/QFileInfo>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QProgressDialog>
@@ -239,12 +240,9 @@ void MemoryCardConvertDialog::ConvertCard()
 	}
 	else
 	{
-		QString baseName = m_selectedCard;
+		// Get our destination file name without extension
+		QString baseName = QFileInfo(m_selectedCard).completeBaseName();
 
-		// Get our destination file name
-		size_t extensionPos = baseName.lastIndexOf(".ps2", -1);
-		// Strip the extension off of it
-		baseName.replace(extensionPos, 4, "");
 		// Add _converted to the end of it
 		baseName.append("_converted");
 
