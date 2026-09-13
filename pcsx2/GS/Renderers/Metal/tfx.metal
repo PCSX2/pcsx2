@@ -812,20 +812,21 @@ vertex MainVSOut vs_main_expand(
 				}
 			}
 
-			uint vid_mod = vid - vid_0;
-
 			MainVSOut out;
-			if (vid_mod == 0)
+			if (vid == vid_0)
 			{
-				out = v0;
+				out.p = v0.p;
+				out.ti = v0.ti;
 			}
-			else if (vid_mod == 1)
+			else if (vid == vid_1)
 			{
-				out = v1;
+				out.p = v1.p;
+				out.ti = v1.ti;
 			}
-			else
+			else // vid == vid_2
 			{
-				out = v2;
+				out.p = v2.p;
+				out.ti = v2.ti;
 			}
 
 			if (VS_ROUND_UV)

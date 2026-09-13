@@ -2309,20 +2309,21 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 		#endif
 	#endif
 
-	uint vid_mod = vid - vid_0;
-
-	VS_OUTPUT vtx;
-	if (vid_mod == 0)
+	VS_OUTPUT vtx = get_output(vs_main(load_vertex(vid)));
+	if (vid == vid_0)
 	{
-		vtx = get_output(v0);
+		vtx.p = v0.p;
+		vtx.ti = v0.ti;
 	}
-	else if (vid_mod == 1)
+	else if (vid == vid_1)
 	{
-		vtx = get_output(v1);
+		vtx.p = v1.p;
+		vtx.ti = v1.ti;
 	}
-	else
+	else // vid == vid_2
 	{
-		vtx = get_output(v2);
+		vtx.p = v2.p;
+		vtx.ti = v2.ti;
 	}
 
 	#if VS_ROUND_UV

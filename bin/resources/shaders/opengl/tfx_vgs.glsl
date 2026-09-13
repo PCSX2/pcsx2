@@ -708,19 +708,21 @@ void main()
 		#endif
 	#endif
 
-	uint vid_mod = vid - vid_0;
-
-	if (vid_mod == 0)
+	vtx = load_vertex(vid);
+	if (vid == vid_0)
 	{
-		vtx = v0;
+		vtx.p = v0.p;
+		vtx.t_int = v0.t_int;
 	}
-	else if (vid_mod == 1)
+	else if (vid == vid_1)
 	{
-		vtx = v1;
+		vtx.p = v1.p;
+		vtx.t_int = v1.t_int;
 	}
-	else
+	else // vid == vid_2
 	{
-		vtx = v2;
+		vtx.p = v2.p;
+		vtx.t_int = v2.t_int;
 	}
 
 #endif
