@@ -118,6 +118,16 @@ bool MemoryCardConvertWorker::ConvertToFolder(const std::string& srcFileName, co
 	}
 
 	std::vector<u8> sourceBuffer = sourceBufferOpt.value();
+
+	// MemCard PRO, SD2PSX and other MMCE cards have no ECC bytes
+	FileMcd_InsertECC(sourceBuffer);
+
+	if ((sourceBuffer.size() % FolderMemoryCard::PageSizeRaw) != 0)
+	{
+		Console.Error("%s(%s, %s, %d) File Memory Card is not a whole number of pages!", __FUNCTION__, srcFileName.c_str(), destFolderName.c_str(), type);
+		return false;
+	}
+
 	// Set progress bar to the literal number of bytes in the memcard.
 	// Plus two because there is a lag period after the Save calls complete
 	// where the progress bar stalls out; this lets us stop the progress bar

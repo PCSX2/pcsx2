@@ -57,6 +57,7 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name);
 bool FileMcd_IsMemoryCardFormatted(const std::string& path);
 bool FileMcd_IsMemoryCardFormatted(std::FILE* fp);
+bool FileMcd_InsertECC(std::vector<u8>& buffer);
 bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, MemoryCardFileType file_type);
 bool FileMcd_RenameCard(const std::string_view name, const std::string_view new_name);
 bool FileMcd_DeleteCard(const std::string_view name);
