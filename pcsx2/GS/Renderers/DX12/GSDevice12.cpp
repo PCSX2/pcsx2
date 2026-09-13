@@ -1506,6 +1506,7 @@ void GSDevice12::InsertDebugMessage(DebugMessageCategory category, const char* f
 bool GSDevice12::CheckFeatures(const u32& vendor_id)
 {
 	//const bool isAMD = (vendor_id == 0x1002 || vendor_id == 0x1022);
+	const bool isAdreno = (vendor_id == 0x4D4F4351);
 
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.multidraw_fb_copy = false;
@@ -1554,6 +1555,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	{
 		Console.WriteLnFmt("D3D12: Enhanced Barriers: {}", device_options12.EnhancedBarriersSupported ? "Supported" : "Not Supported");
 		m_enhanced_barriers = device_options12.EnhancedBarriersSupported;
+		m_rp_reorders_barriers = isAdreno;
 	}
 	else
 	{
@@ -4369,6 +4371,9 @@ void GSDevice12::FeedbackBarrier(const GSTexture12* texture)
 {
 	if (m_enhanced_barriers)
 	{
+		if (m_rp_reorders_barriers)
+			EndRenderPass();
+
 		// Enhanced barriers allows for single resource feedback.
 		const D3D12_BARRIER_SYNC sync = D3D12_BARRIER_SYNC_RENDER_TARGET | D3D12_BARRIER_SYNC_PIXEL_SHADING;
 		const D3D12_BARRIER_ACCESS access = D3D12_BARRIER_ACCESS_RENDER_TARGET | D3D12_BARRIER_ACCESS_SHADER_RESOURCE;
