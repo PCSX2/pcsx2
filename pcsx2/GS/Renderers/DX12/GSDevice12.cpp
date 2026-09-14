@@ -2337,10 +2337,11 @@ bool GSDevice12::CompileCASPipelines()
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
-	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {{"CAS_SHARPEN_ONLY", "1"}, {nullptr, nullptr}};
+	static constexpr D3D_SHADER_MACRO upscale_macros[] = {{"PS_CAS", "0"}, {nullptr, nullptr}};
+	static constexpr D3D_SHADER_MACRO sharpen_macros[] = {{"CAS_SHARPEN_ONLY", "1"}, {"PS_CAS", "0"}, {nullptr, nullptr}};
 
-	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), nullptr, "main"));
-	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), sharpen_only_macros, "main"));
+	const ComPtr<ID3DBlob> cs_upscale(m_shader_cache.GetComputeShader(cas_source.value(), nullptr, "cs_main"));
+	const ComPtr<ID3DBlob> cs_sharpen(m_shader_cache.GetComputeShader(cas_source.value(), sharpen_macros, "cs_main"));
 	if (!cs_upscale || !cs_sharpen)
 		return false;
 

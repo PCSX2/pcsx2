@@ -120,7 +120,7 @@ private:
 
 	bool CreateCASShaders();
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
-	bool PSTypeCAS() override { return false; }
+	bool PSTypeCAS() override { return true; }
 
 	bool CreateImGuiResources();
 	void RenderImGui();
@@ -272,8 +272,8 @@ private:
 	struct
 	{
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
-		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_upscale;
-		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_sharpen;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps_upscale;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps_sharpen;
 	} m_cas;
 
 	struct
