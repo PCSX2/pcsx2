@@ -110,6 +110,7 @@
     <ClCompile Include="Settings\MemoryCardConvertWorker.cpp" />
     <ClCompile Include="SetupWizardDialog.cpp" />
     <ClCompile Include="Themes.cpp" />
+    <ClCompile Include="ToolbarCustomizationDialog.cpp" />
     <ClCompile Include="Tools\InputRecording\InputRecordingViewer.cpp" />
     <ClCompile Include="Tools\InputRecording\NewInputRecordingDlg.cpp" />
     <ClCompile Include="Debugger\AnalysisOptionsDialog.cpp" />
@@ -189,6 +190,7 @@
   <ItemGroup>
     <ClInclude Include="AsyncDialogs.h" />
     <QtMoc Include="SetupWizardDialog.h" />
+    <QtMoc Include="ToolbarCustomizationDialog.h" />
     <QtMoc Include="Settings\InterfaceSettingsWidget.h" />
     <QtMoc Include="Settings\GameListSettingsWidget.h" />
     <QtMoc Include="Settings\BIOSSettingsWidget.h" />
@@ -295,6 +297,7 @@
     <QtUi Include="AutoUpdaterDialog.ui" />
     <QtUi Include="CoverDownloadDialog.ui" />
     <QtUi Include="ShortcutCreationDialog.ui" />
+    <QtUi Include="ToolbarCustomizationDialog.ui" />
     <QtUi Include="Debugger\AnalysisOptionsDialog.ui" />
     <QtUi Include="Debugger\Breakpoints\BreakpointDialog.ui" />
     <QtUi Include="Debugger\Breakpoints\BreakpointView.ui" />

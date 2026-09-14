@@ -164,6 +164,7 @@
     </widget>
     <addaction name="actionViewToolbar"/>
     <addaction name="actionViewLockToolbar"/>
+    <addaction name="actionCustomizeToolbar"/>
     <addaction name="actionViewStatusBar"/>
     <addaction name="actionViewStatusBarVerbose"/>
     <addaction name="separator"/>
@@ -733,6 +734,11 @@
    </property>
    <property name="text">
     <string>Loc&amp;k Toolbar</string>
+   </property>
+  </action>
+  <action name="actionCustomizeToolbar">
+   <property name="text">
+    <string>&amp;Customize Toolbar...</string>
    </property>
   </action>
   <action name="actionViewStatusBar">
