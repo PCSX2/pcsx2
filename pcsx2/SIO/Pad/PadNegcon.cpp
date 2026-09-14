@@ -375,6 +375,10 @@ void PadNegcon::SetAxisScale(float deadzone, float scale)
 	this->twistScale = scale;
 }
 
+void PadNegcon::SetDiagonalScaleCorrection(bool enabled)
+{
+}
+
 float PadNegcon::GetVibrationScale(u32 motor) const
 {
 	return this->vibrationScale[motor];

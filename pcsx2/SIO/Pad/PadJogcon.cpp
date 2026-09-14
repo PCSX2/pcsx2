@@ -376,6 +376,10 @@ void PadJogcon::SetAxisScale(float deadzone, float scale)
 	this->dialScale = scale;
 }
 
+void PadJogcon::SetDiagonalScaleCorrection(bool enabled)
+{
+}
+
 float PadJogcon::GetVibrationScale(u32 motor) const
 {
 	return this->vibrationScale[motor];
