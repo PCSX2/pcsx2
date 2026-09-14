@@ -4106,7 +4106,10 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				break;
 
 			if (iter->was_hardware_only)
+			{
+				++iter;
 				continue;
+			}
 
 			const u32 transfer_end = GSLocalMemory::GetUnwrappedEndBlockAddress(iter->blit.DBP, iter->blit.DBW, iter->blit.DPSM, iter->rect);
 
