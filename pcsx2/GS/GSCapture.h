@@ -32,7 +32,7 @@ namespace GSCapture
 	GSVector2i GetSize();
 	std::string GetNextCaptureFileName();
 	void Flush();
-
+	void FlushAudioOnly();
 	using CodecName = std::pair<std::string, std::string>; // shortname,longname
 	using CodecList = std::vector<CodecName>;
 	CodecList GetVideoCodecList(const char* container);
