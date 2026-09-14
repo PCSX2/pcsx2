@@ -2,6 +2,8 @@
 	<qresource>
 		<file>icons/AppIcon64.png</file>
 		<file>icons/black/index.theme</file>
+		<file>icons/black/svg/arrow-up-line.svg</file>
+		<file>icons/black/svg/arrow-down-line.svg</file>
 		<file>icons/black/svg/arrow-left-line.svg</file>
 		<file>icons/black/svg/arrow-left-right-line.svg</file>
 		<file>icons/black/svg/arrow-right-line.svg</file>
@@ -115,6 +117,8 @@
 		<file>icons/QT.png</file>
 		<file>icons/update.png</file>
 		<file>icons/white/index.theme</file>
+		<file>icons/white/svg/arrow-up-line.svg</file>
+		<file>icons/white/svg/arrow-down-line.svg</file>
 		<file>icons/white/svg/arrow-left-line.svg</file>
 		<file>icons/white/svg/arrow-left-right-line.svg</file>
 		<file>icons/white/svg/arrow-right-line.svg</file>

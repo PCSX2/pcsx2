@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ToolbarCustomizationDialog</class>
+ <widget class="QDialog" name="ToolbarCustomizationDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Customize Toolbar</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QLabel" name="instructionsLabel">
+     <property name="text">
+      <string>Select actions to display on the toolbar and arrange their order.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="listsLayout">
+     <item>
+      <layout class="QVBoxLayout" name="availableLayout">
+       <item>
+        <widget class="QLabel" name="availableLabel">
+         <property name="text">
+          <string>Available Actions:</string>
+         </property>
+         <property name="buddy">
+          <cstring>availableList</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="availableList">
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="transferButtonsLayout">
+       <item>
+        <spacer name="transferSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addButton">
+         <property name="text">
+          <string>Add</string>
+         </property>
+         <property name="icon">
+          <iconset theme="arrow-right-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeButton">
+         <property name="text">
+          <string>Remove</string>
+         </property>
+         <property name="icon">
+          <iconset theme="arrow-left-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="transferSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="currentLayout">
+       <item>
+        <widget class="QLabel" name="currentLabel">
+         <property name="text">
+          <string>Current Toolbar:</string>
+         </property>
+         <property name="buddy">
+          <cstring>currentList</cstring>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QListWidget" name="currentList">
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="reorderButtonsLayout">
+       <item>
+        <spacer name="reorderSpacerTop">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="moveUpButton">
+         <property name="text">
+          <string>Move Up</string>
+         </property>
+         <property name="icon">
+          <iconset theme="arrow-up-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="moveDownButton">
+         <property name="text">
+          <string>Move Down</string>
+         </property>
+         <property name="icon">
+          <iconset theme="arrow-down-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addSeparatorButton">
+         <property name="text">
+          <string>Add Separator</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="reorderSpacerBottom">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok|QDialogButtonBox::StandardButton::RestoreDefaults</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
