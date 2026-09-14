@@ -20,6 +20,7 @@
 #include "Settings/MemoryCardCreateDialog.h"
 #include "Tools/InputRecording/InputRecordingViewer.h"
 #include "Tools/InputRecording/NewInputRecordingDlg.h"
+#include "ToolbarCustomizationDialog.h"
 
 #if !defined(__APPLE__)
 #include "ShortcutCreationDialog.h"
@@ -91,6 +92,14 @@ const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All
 																			"ZSO Images (*.zso);;"
 																			"GZ Images (*.gz);;"
 																			"Block Dumps (*.dump)");
+
+const char* MainWindow::DEFAULT_TOOLBAR_LAYOUT =
+	"start_file,start_disc,start_bios,fullscreen_ui,,"
+	"power_off,reset,pause,change_disc,,"
+	"screenshot,video_capture,,"
+	"load_state,save_state,,"
+	"fullscreen,,"
+	"settings,controller_settings,hotkey_settings";
 
 MainWindow* g_main_window = nullptr;
 
@@ -208,7 +217,8 @@ void MainWindow::setupAdditionalUi()
 	const bool toolbars_locked = Host::GetBaseBoolSettingValue("UI", "LockToolbar", false);
 	m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
 	m_ui.toolBar->setMovable(!toolbars_locked);
-	m_ui.toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+	m_ui.toolBar->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(m_ui.toolBar, &QToolBar::customContextMenuRequested, this, &MainWindow::onToolbarContextMenuRequested);
 
 	m_settings_toolbar_menu = new QMenu(m_ui.toolBar);
 	m_settings_toolbar_menu->addAction(m_ui.actionSettings);
@@ -229,6 +239,8 @@ void MainWindow::setupAdditionalUi()
 	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 	m_ui.actionGridViewShowFullTitles->setChecked(m_game_list_widget->getShowGridFullCoverTitles());
 	m_ui.mainContainer->addWidget(m_game_list_widget);
+
+	rebuildToolbar();
 
 	updateEmulationActions(false, false, false);
 	updateDisplayRelatedActions(false, false, false);
@@ -529,6 +541,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionRescanAllGames, &QAction::triggered, [this]() { refreshGameList(true, true); });
 	connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
 	connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
+	connect(m_ui.actionCustomizeToolbar, &QAction::triggered, this, &MainWindow::onCustomizeToolbarTriggered);
 	connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
 	connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
 	connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
@@ -2036,6 +2049,83 @@ void MainWindow::onViewLockToolbarActionToggled(bool checked)
 	Host::SetBaseBoolSettingValue("UI", "LockToolbar", checked);
 	Host::CommitBaseSettingChanges();
 	m_ui.toolBar->setMovable(!checked);
+}
+
+static std::vector<ToolbarActionInfo> getToolbarActionRegistry(const Ui::MainWindow& ui)
+{
+	return {
+		{"start_file", ui.actionToolbarStartFile},
+		{"start_disc", ui.actionToolbarStartDisc},
+		{"start_bios", ui.actionToolbarStartBios},
+		{"fullscreen_ui", ui.actionToolbarStartFullscreenUI},
+		{"power_off", ui.actionToolbarPowerOff},
+		{"reset", ui.actionToolbarReset},
+		{"pause", ui.actionToolbarPause},
+		{"change_disc", ui.actionToolbarChangeDisc},
+		{"screenshot", ui.actionToolbarScreenshot},
+		{"video_capture", ui.actionVideoCapture},
+		{"load_state", ui.actionToolbarLoadState},
+		{"save_state", ui.actionToolbarSaveState},
+		{"fullscreen", ui.actionToolbarFullscreen},
+		{"settings", ui.actionToolbarSettings},
+		{"game_settings", ui.actionViewGameProperties},
+		{"controller_settings", ui.actionToolbarControllerSettings},
+		{"hotkey_settings", ui.actionToolbarHotkeySettings},
+		{"debugger", ui.actionDebugger},
+	};
+}
+
+void MainWindow::rebuildToolbar()
+{
+	std::string layout_str = Host::GetBaseStringSettingValue("UI", "ToolbarItems", DEFAULT_TOOLBAR_LAYOUT);
+	if (layout_str.empty())
+		layout_str = DEFAULT_TOOLBAR_LAYOUT;
+
+	const auto registry = getToolbarActionRegistry(m_ui);
+	QHash<QString, QAction*> action_map;
+	for (const auto& item : registry)
+	{
+		if (item.action)
+			action_map.insert(QString::fromUtf8(item.id), item.action);
+	}
+
+	m_ui.toolBar->clear();
+
+	const QStringList items = QString::fromStdString(layout_str).split(QLatin1Char(','), Qt::KeepEmptyParts);
+	for (const QString& item_id : items)
+	{
+		const QString trimmed_id = item_id.trimmed();
+		if (trimmed_id.isEmpty())
+		{
+			m_ui.toolBar->addSeparator();
+		}
+		else
+		{
+			if (QAction* act = action_map.value(trimmed_id, nullptr); act != nullptr)
+			{
+				m_ui.toolBar->addAction(act);
+			}
+		}
+	}
+
+	updateEmulationActions(s_vm_valid, s_vm_valid, false);
+}
+
+void MainWindow::onCustomizeToolbarTriggered()
+{
+	ToolbarCustomizationDialog dlg(this, getToolbarActionRegistry(m_ui));
+	if (dlg.exec() == QDialog::Accepted)
+		rebuildToolbar();
+}
+
+void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
+{
+	QMenu menu(m_ui.toolBar);
+
+	menu.addAction(m_ui.actionViewLockToolbar);
+	menu.addAction(m_ui.actionCustomizeToolbar);
+
+	menu.exec(m_ui.toolBar->mapToGlobal(pos));
 }
 
 void MainWindow::onViewStatusBarActionToggled(bool checked)
