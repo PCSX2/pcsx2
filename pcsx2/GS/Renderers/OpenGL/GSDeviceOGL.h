@@ -300,6 +300,7 @@ private:
 
 	bool CreateCASPrograms();
 	bool DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants) override;
+	bool PSTypeCAS() override { return false; }
 
 	bool CreateImGuiProgram();
 	void RenderImGui();
