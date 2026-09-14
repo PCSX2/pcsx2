@@ -13377,13 +13377,6 @@ which produces much nicer sound during fast-forward/slowdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/DX11/D3D.cpp" line="389"/>
-        <source>The Vulkan graphics API was automatically selected, but no compatible devices were found.
-       You should update all graphics drivers in your system, including any integrated GPUs
-       to use the Vulkan renderer.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../pcsx2/MTGS.cpp" line="1002"/>
         <source>Switching to Software Renderer...</source>
         <translation type="unfinished"></translation>
