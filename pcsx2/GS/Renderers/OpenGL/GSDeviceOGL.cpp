@@ -653,8 +653,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	if (!CompileShadeBoostProgram() || !CompileFXAAProgram())
 		return false;
 
-	// Image load store and GLSL 420pack is core in GL4.2, no need to check.
-	m_features.cas_sharpening = ((GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_compute_shader) || GLAD_GL_ES_VERSION_3_2) && CreateCASPrograms();
+	m_features.cas_sharpening = CreateCASPrograms();
 
 	// ****************************************************************
 	// rasterization configuration
@@ -2507,24 +2506,33 @@ void GSDeviceOGL::ClearSamplerCache()
 
 bool GSDeviceOGL::CreateCASPrograms()
 {
-	std::optional<std::string> cas_source = ReadShaderSource("shaders/opengl/cas.glsl");
-	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
+	std::optional<std::string> shader = ReadShaderSource("shaders/opengl/cas.glsl");
+	if (!shader.has_value() || !GetCASShaderSource(&shader.value()))
 	{
+		Console.Error("GL: Failed to read cas.glsl");
 		m_features.cas_sharpening = false;
 		return false;
 	}
 
-	const char* header =
-		"#version 420\n"
-		"#extension GL_ARB_compute_shader : require\n";
-	const char* sharpen_params[2] = {
-		"#define CAS_SHARPEN_ONLY false\n",
-		"#define CAS_SHARPEN_ONLY true\n"};
+	std::string vs = GetShaderSource("main", GL_VERTEX_SHADER, shader->c_str(), "");
 
-	if (!m_shader_cache.GetComputeProgram(&m_cas.upscale_ps, fmt::format("{}{}{}", header, sharpen_params[0], cas_source.value())) ||
-		!m_shader_cache.GetComputeProgram(&m_cas.sharpen_ps, fmt::format("{}{}{}", header, sharpen_params[1], cas_source.value())))
+	const auto load_cas_program = [&](GLProgram& prog, const char* sharpen_macro) {
+		std::string ps = GetShaderSource("main", GL_FRAGMENT_SHADER, shader->c_str(), sharpen_macro);
+		std::optional<GLProgram> compiled_prog = m_shader_cache.GetProgram(vs, ps);
+
+		if (!compiled_prog.has_value())
+			return false;
+
+		prog = std::move(compiled_prog.value());
+
+		return true;
+	};
+
+	if (!load_cas_program(m_cas.upscale_ps, "#define CAS_SHARPEN_ONLY 0\n") || !load_cas_program(m_cas.sharpen_ps, "#define CAS_SHARPEN_ONLY 1\n"))
 	{
+		Console.Error("GL: Failed to compile CAS programs.");
 		m_features.cas_sharpening = false;
+
 		return false;
 	}
 
@@ -2533,6 +2541,7 @@ bool GSDeviceOGL::CreateCASPrograms()
 		prog.RegisterUniform("const1");
 		prog.RegisterUniform("srcOffset");
 	};
+
 	link_uniforms(m_cas.upscale_ps);
 	link_uniforms(m_cas.sharpen_ps);
 
@@ -2541,21 +2550,22 @@ bool GSDeviceOGL::CreateCASPrograms()
 
 bool GSDeviceOGL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+	GL_PUSH("DoCAS");
+
+	OMSetColorMaskState();
+
+	const GSVector2i s = dTex->GetSize();
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0, 0, s.x, s.y);
 
 	const GLProgram& prog = sharpen_only ? m_cas.sharpen_ps : m_cas.upscale_ps;
 	prog.Bind();
-	prog.Uniform4uiv(0, &constants[0]);
-	prog.Uniform4uiv(1, &constants[4]);
-	prog.Uniform2iv(2, reinterpret_cast<const s32*>(&constants[8]));
 
-	PSSetShaderResource(TEXTURE_TEXTURE, sTex);
-	glBindImageTexture(0, static_cast<GSTextureOGL*>(dTex)->GetID(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	prog.Uniform4uiv(0, &constants[0]); // const0
+	prog.Uniform4uiv(1, &constants[4]); // const1
+	prog.Uniform2iv(2, reinterpret_cast<const s32*>(&constants[8])); // srcOffset
 
-	static const int threadGroupWorkRegionDim = 16;
-	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
-	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
-	glDispatchCompute(dispatchX, dispatchY, 1);
+	DoStretchRect(sTex, sRect, dTex, dRect, prog, Biln);
 
 	return true;
 }
