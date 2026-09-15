@@ -56,7 +56,6 @@ bool D3D12ShaderCache::CacheIndexKey::operator!=(const CacheIndexKey& key) const
 
 bool D3D12ShaderCache::Open(D3D::ShaderModel shader_model, bool debug)
 {
-	// Only support SM5.1 for now, which is the minimum for D3D12.
 	pxAssert(shader_model >= D3D::ShaderModel::SM51);
 	m_shader_model = shader_model;
 	m_debug = debug;

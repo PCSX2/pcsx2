@@ -158,6 +158,8 @@ public:
 	// Partial depth copies require ProgrammableSamplePositions tier 1.
 	bool SupportsProgrammableSamplePositions();
 
+	D3D_SHADER_MODEL DetectShaderModelSupport();
+
 	enum class WaitType
 	{
 		None, ///< Don't wait (async)
@@ -380,6 +382,7 @@ private:
 	bool m_allow_tearing_supported = false;
 	bool m_using_allow_tearing = false;
 	bool m_is_exclusive_fullscreen = false;
+	D3D_SHADER_MODEL m_shader_model = D3D_SHADER_MODEL_5_1;
 	bool m_uma = false;
 	bool m_typed_casting_supported = false;
 	bool m_enhanced_barriers = false;
