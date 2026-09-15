@@ -1062,9 +1062,9 @@
  AU3 AAbsSU3(AU3 a){return AU3(abs(ASU3(a)));}
  AU4 AAbsSU4(AU4 a){return AU4(abs(ASU4(a)));}
 //------------------------------------------------------------------------------------------------------------------------------
- AU1 ABfe(AU1 src,AU1 off,AU1 bits){AU1 mask=(1<<bits)-1;return (src>>off)&mask;}
+ AU1 ABfe(AU1 src,AU1 off,AU1 bits){AU1 mask=(1U<<bits)-1;return (src>>off)&mask;}
  AU1 ABfi(AU1 src,AU1 ins,AU1 mask){return (ins&mask)|(src&(~mask));}
- AU1 ABfiM(AU1 src,AU1 ins,AU1 bits){AU1 mask=(1<<bits)-1;return (ins&mask)|(src&(~mask));}
+ AU1 ABfiM(AU1 src,AU1 ins,AU1 bits){AU1 mask=(1U<<bits)-1;return (ins&mask)|(src&(~mask));}
 //------------------------------------------------------------------------------------------------------------------------------
  AF1 AFractF1(AF1 x){return x-floor(x);}
  AF2 AFractF2(AF2 x){return x-floor(x);}
