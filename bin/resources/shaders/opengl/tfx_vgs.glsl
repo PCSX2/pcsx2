@@ -39,9 +39,23 @@ out SHADER
 	#endif
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge.
+	#if VS_ROUND_UV != 0
+		flat uvec4 rounduv;
+	#endif
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
+
+uvec4 extract_round_uv_bits(float q)
+{
+	uint qi = floatBitsToUint(q);
+	return uvec4(
+		(qi >> 0) & 0xFFF,  // Prim left
+		(qi >> 12) & 0xFFF, // Prim top
+		(qi >> 24) & 0xF,   // Round U flags
+		(qi >> 28) & 0xF    // Round V flags
+	);
+}
 
 #if VS_EXPAND == VS_EXPAND_NONE
 
@@ -55,7 +69,11 @@ layout(location = 7) in vec4  i_f;
 
 void texture_coord()
 {
-	vec2 uv = vec2(i_uv) - TextureOffset;
+	#if VS_ROUND_UV == 0
+		vec2 uv = vec2(i_uv) - TextureOffset;
+	#else
+		vec2 uv = i_st - TextureOffset;
+	#endif
 	vec2 st = i_st - TextureOffset;
 
 	// Float coordinate
@@ -70,6 +88,12 @@ void texture_coord()
 #else
 	// Some games uses float coordinate for post-processing effect
 	VSout.t_int.zw = st / TextureScale;
+#endif
+
+// Get UV rounding info saved in Q.
+#if VS_ROUND_UV
+	VSout.rounduv = extract_round_uv_bits(i_q);
+	VSout.t_float.w = 1.0f;
 #endif
 }
 
@@ -96,7 +120,7 @@ void vs_main()
 	texture_coord();
 
 	VSout.c = i_c;
-	VSout.t_float.z = i_f.x; // pack for with texture
+	VSout.t_float.z = i_f.x; // pack fog with texture
 
 	#if VS_POINT_SIZE
 		gl_PointSize = PointSize.x;
@@ -139,6 +163,9 @@ struct ProcessedVertex
 	vec4 t_float;
 	vec4 t_int;
 	vec4 c;
+#if VS_ROUND_UV
+	uvec4 rounduv;
+#endif
 };
 
 uint load_index(uint _i)
@@ -176,7 +203,11 @@ ProcessedVertex load_vertex(uint index)
 
 	vtx.p.w = 1.0f;
 
-	vec2 uv = vec2(i_uv) - TextureOffset;
+	#if VS_ROUND_UV == 0
+		vec2 uv = vec2(i_uv) - TextureOffset;
+	#else
+		vec2 uv = i_st - TextureOffset;
+	#endif
 	vec2 st = i_st - TextureOffset;
 
 	vtx.t_float.xy = st;
@@ -187,6 +218,12 @@ ProcessedVertex load_vertex(uint index)
 	vtx.t_int.zw = uv;
 #else
 	vtx.t_int.zw = st / TextureScale;
+#endif
+
+// Get UV rounding info saved in Q.
+#if VS_ROUND_UV
+	vtx.rounduv = extract_round_uv_bits(i_q);
+	vtx.t_float.w = 1.0f;
 #endif
 
 	vtx.c = i_c;
@@ -463,6 +500,9 @@ void main()
 	VSout.t_float = vtx.t_float;
 	VSout.t_int = vtx.t_int;
 	VSout.c = vtx.c;
+#if VS_ROUND_UV
+	VSout.rounduv = vtx.rounduv;
+#endif
 }
 
 #endif // VS_EXPAND
