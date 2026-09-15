@@ -2919,8 +2919,6 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 				return;
 			}
 
-			OMSetRenderTargets(colclip_rt, nullptr, config.ds, nullptr);
-
 			g_gs_device->SetColorClipTexture(colclip_rt);
 
 			const GSVector4 dRect = GSVector4((config.colclip_mode == GSHWDrawConfig::ColClipMode::ConvertOnly) ? GSVector4i::loadh(rtsize) : config.drawarea);
