@@ -14,6 +14,7 @@
 #include "GS.h"
 #include "GS/Renderers/HW/GSTextureReplacements.h"
 #include "GSDumpReplayer.h"
+#include "GS/GSCapture.h"
 #include "GameDatabase.h"
 #include "GameList.h"
 #include "Host.h"
@@ -1910,7 +1911,8 @@ bool VMManager::DoLoadState(const char* filename, Error* error)
 		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while replaying a GS dump."));
 		return false;
 	}
-
+    GSCapture::FlushAudioOnly();
+    
 	Host::OnSaveStateLoading(filename);
 
 	if (!SaveState_UnzipFromDisk(filename, error))
