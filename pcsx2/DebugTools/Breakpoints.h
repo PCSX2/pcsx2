@@ -37,6 +37,14 @@ struct BreakPoint
 	BreakPointCond cond;
 	BreakPointCpu cpu;
 
+	u32 maxHits = 0;
+	u32 hitsSinceEnabled = 0;
+	u32 totalHits = 0;
+
+	bool instrumentationEnabled = false;
+	std::string logFormat;
+	bool continueOnHit = false;
+
 	std::string description;
 
 	bool operator==(const BreakPoint& other) const
@@ -62,7 +70,6 @@ enum MemCheckCondition
 enum MemCheckResult
 {
 	MEMCHECK_IGNORE = 0x00,
-	MEMCHECK_LOG = 0x01,
 	MEMCHECK_BREAK = 0x02,
 
 	MEMCHECK_BOTH = 0x03,
@@ -82,7 +89,13 @@ struct MemCheck
 
 	std::string description;
 
-	u32 numHits;
+	u32 maxHits;
+	u32 hitsSinceEnabled;
+	u32 totalHits;
+
+	bool instrumentationEnabled;
+	std::string logFormat;
+	bool continueOnHit;
 
 	u32 lastPC;
 	u32 lastAddr;
@@ -124,6 +137,11 @@ public:
 	static void ChangeBreakPointRemoveCond(BreakPointCpu cpu, u32 addr);
 	static BreakPointCond* GetBreakPointCondition(BreakPointCpu cpu, u32 addr);
 	static void ChangeBreakPointDescription(BreakPointCpu cpu, u32 addr, const std::string& description);
+	static void ChangeBreakPointMaxHits(BreakPointCpu cpu, u32 addr, u32 maxHits);
+	static void ChangeBreakPointTotalHits(BreakPointCpu cpu, u32 addr, u32 totalHits);
+	static void ChangeBreakPointInstrumentation(BreakPointCpu cpu, u32 addr, bool enabled, const std::string& logFormat, bool continueOnHit);
+
+	static bool HandleBreakpointHit(BreakPointCpu cpu, u32 addr);
 
 	static void AddMemCheck(BreakPointCpu cpu, u32 start, u32 end, MemCheckCondition cond, MemCheckResult result);
 	static void RemoveMemCheck(BreakPointCpu cpu, u32 start, u32 end);
@@ -131,7 +149,13 @@ public:
 	static void ChangeMemCheckRemoveCond(BreakPointCpu cpu, u32 start, u32 end);
 	static void ChangeMemCheckAddCond(BreakPointCpu cpu, u32 start, u32 end, const BreakPointCond& cond);
 	static void ChangeMemCheckDescription(BreakPointCpu cpu, u32 start, u32 end, const std::string& description);
+	static void ChangeMemCheckMaxHits(BreakPointCpu cpu, u32 start, u32 end, u32 maxHits);
+	static void ChangeMemCheckTotalHits(BreakPointCpu cpu, u32 start, u32 end, u32 totalHits);
+	static void ChangeMemCheckInstrumentation(BreakPointCpu cpu, u32 start, u32 end, bool enabled, const std::string& logFormat, bool continueOnHit);
 	static void ClearAllMemChecks();
+
+	static bool HandleMemCheckHit(BreakPointCpu cpu, u32 start, u32 end);
+
 
 	static void SetSkipFirst(BreakPointCpu cpu, u32 pc);
 	static u32 CheckSkipFirst(BreakPointCpu cpu, u32 pc);
@@ -185,3 +209,6 @@ private:
 
 // called from the dynarec
 u32 standardizeBreakpointAddress(u32 addr);
+
+std::string EvaluateInstrumentationLogFormat(DebugInterface& debug, const std::string& format);
+bool ValidateInstrumentationLogFormat(DebugInterface& debug, const std::string& format, std::string& error);
