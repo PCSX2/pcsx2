@@ -266,10 +266,12 @@ void MemoryCardSettingsWidget::renameCard()
 	if (newName.isEmpty() || newName == selectedCard)
 		return;
 
-	if (!newName.endsWith(QStringLiteral(".ps2")) || newName.length() <= 4)
+	const qsizetype extensionPos = selectedCard.lastIndexOf('.');
+	const QString extension(extensionPos >= 0 ? selectedCard.mid(extensionPos) : QString());
+	if (!newName.endsWith(extension, Qt::CaseInsensitive) || newName.length() <= extension.length())
 	{
-		QMessageBox::critical(
-			QtUtils::GetRootWidget(this), tr("Rename Memory Card"), tr("New name is invalid, it must end with .ps2"));
+		QMessageBox::critical(QtUtils::GetRootWidget(this), tr("Rename Memory Card"),
+			tr("New name is invalid, it must end with %1").arg(extension));
 		return;
 	}
 
@@ -325,7 +327,10 @@ void MemoryCardSettingsWidget::listContextMenuRequested(const QPoint& pos)
 		menu.addSeparator();
 
 		connect(menu.addAction(tr("Rename")), &QAction::triggered, this, &MemoryCardSettingsWidget::renameCard);
-		connect(menu.addAction(tr("Convert")), &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
+
+		QAction* convertAction = menu.addAction(tr("Convert"));
+		convertAction->setEnabled(m_ui.convertCard->isEnabled());
+		connect(convertAction, &QAction::triggered, this, &MemoryCardSettingsWidget::convertCard);
 		connect(menu.addAction(tr("Delete")), &QAction::triggered, this, &MemoryCardSettingsWidget::deleteCard);
 		menu.addSeparator();
 	}
