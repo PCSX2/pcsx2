@@ -113,6 +113,12 @@
     <ClCompile Include="Settings\MemoryCardConvertDialog.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
+    <ClCompile Include="Settings\MemoryCardBackupModel.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\MemoryCardBackupWidget.cpp">
+      <Filter>Settings</Filter>
+    </ClCompile>
     <ClCompile Include="Settings\MemoryCardSettingsWidget.cpp">
       <Filter>Settings</Filter>
     </ClCompile>
@@ -371,6 +377,12 @@
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\MemoryCardConvertDialog.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\MemoryCardBackupModel.h">
+      <Filter>Settings</Filter>
+    </QtMoc>
+    <QtMoc Include="Settings\MemoryCardBackupWidget.h">
       <Filter>Settings</Filter>
     </QtMoc>
     <QtMoc Include="Settings\MemoryCardSettingsWidget.h">
@@ -723,6 +735,9 @@
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\MemoryCardCreateDialog.ui">
+      <Filter>Settings</Filter>
+    </QtUi>
+    <QtUi Include="Settings\MemoryCardBackupWidget.ui">
       <Filter>Settings</Filter>
     </QtUi>
     <QtUi Include="Settings\MemoryCardSettingsWidget.ui">

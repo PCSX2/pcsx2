@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MemoryCardBackupWidget</class>
+ <widget class="QWidget" name="MemoryCardBackupWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>700</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,1">
+   <item>
+    <widget class="QLabel" name="descriptionLabel">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PCSX2 features an automated rolling local backup system for memory cards. Older backups will be deleted to make space for new backups, according to the configured minimum and maximum numbers of backups to keep, and the drive space usage limit.&lt;/p&gt;&lt;p&gt;This system protects your save games in the case that a game crashes or is forcibly shutdown while saving, but NOT in the case that the drive used to store the memory card files is damaged, so this does NOT replace a traditional backup system.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="optionsGroup">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="enableRollingBackups">
+        <property name="text">
+         <string>Enable Automatic Backups</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="checkBox_2">
+        <property name="text">
+         <string>Enable Advanced Compression (Zstandard)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="driveSpaceGroup">
+     <property name="title">
+      <string>Storage</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="3" column="0">
+       <widget class="QLabel" name="driveSpaceLimitLabel">
+        <property name="text">
+         <string>Drive Space Usage Limit:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <layout class="QHBoxLayout" name="driveSpaceLayout">
+        <item>
+         <widget class="QSlider" name="driveSpaceSlider">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="driveSpaceSpinBox">
+          <property name="suffix">
+           <string>MiB</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="backupsToKeepLabel">
+        <property name="text">
+         <string>Number Of Backups To Keep:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLineEdit" name="folderLineEdit"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="folderBrowseButton">
+          <property name="text">
+           <string>Browse...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="folderOpenButton">
+          <property name="text">
+           <string>Open...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="folderResetButton">
+          <property name="text">
+           <string>Reset</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="folderLabel">
+        <property name="text">
+         <string>Backup Folder:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <layout class="QHBoxLayout" name="backupsToKeepLayout" stretch="0,1,0,1">
+        <item>
+         <widget class="QLabel" name="minimumToKeepLabel">
+          <property name="text">
+           <string>Minimum:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="minimumToKeepSpinBox"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="maximumToKeepLabel">
+          <property name="text">
+           <string>Maximum:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="maximumToKeepSpinBox"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="backupsGroup">
+     <property name="title">
+      <string>Backups</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="filterLayout" stretch="0,1">
+        <item>
+         <widget class="QLabel" name="filterLabel">
+          <property name="text">
+           <string>Filter:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="filterComboBox"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableView" name="backupsTable"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="backupsButtonLayout">
+        <item>
+         <widget class="QPushButton" name="refreshButton">
+          <property name="text">
+           <string>Refresh</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="restoreButton">
+          <property name="text">
+           <string>Restore</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

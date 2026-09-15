@@ -10,7 +10,7 @@
     <height>600</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>

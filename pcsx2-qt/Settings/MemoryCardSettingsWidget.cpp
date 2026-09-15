@@ -10,6 +10,7 @@
 
 #include "common/StringUtil.h"
 
+#include "MemoryCardBackupWidget.h"
 #include "MemoryCardConvertDialog.h"
 #include "MemoryCardCreateDialog.h"
 #include "MemoryCardSettingsWidget.h"
@@ -61,7 +62,13 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 {
 	SettingsInterface* sif = dialog()->getSettingsInterface();
 
-	setupTab(m_ui);
+	setupTab(m_ui, tr("General"));
+
+	if (!settings_dialog->isPerGameSettings())
+	{
+		m_backup_widget = new MemoryCardBackupWidget(this);
+		addTab(tr("Backups"), m_backup_widget, false);
+	}
 
 	// this is a bit lame, but resizeEvent() isn't good enough to autosize our columns,
 	// since the group box hasn't been resized at that point.
