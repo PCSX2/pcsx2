@@ -405,6 +405,13 @@ enum class GSHardwareDownloadMode : u8
 	Disabled
 };
 
+enum class GSHardwareZIntegerMode : u8
+{
+	Disabled,
+	Enabled,
+	Always
+};
+
 enum class GSCASMode : u8
 {
 	Disabled,
@@ -799,6 +806,7 @@ struct Pcsx2Config
 					HWROV : 1,
 					HWROVLogging : 1,
 					HWROVBarriersVK : 1,
+					HWZIntegerShaderWriteGL : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -873,6 +881,7 @@ struct Pcsx2Config
 		GSDumpCompressionMethod GSDumpCompression = GSDumpCompressionMethod::Zstandard;
 		GSHardwareDownloadMode HWDownloadMode = GSHardwareDownloadMode::Enabled;
 		GSCASMode CASMode = DEFAULT_CAS_MODE;
+		GSHardwareZIntegerMode HWZIntegerMode = GSHardwareZIntegerMode::Disabled;
 		u8 Dithering = 2;
 		u8 MaxAnisotropy = 0;
 		u8 TVShader = 0;
