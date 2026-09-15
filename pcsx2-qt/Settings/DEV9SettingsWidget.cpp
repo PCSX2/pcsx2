@@ -420,7 +420,7 @@ void DEV9SettingsWidget::onEthDNSModeChanged(QComboBox* sender, int index, QLine
 void DEV9SettingsWidget::onEthHostAdd()
 {
 	HostEntryUi host;
-	host.Desc = "New Host";
+	host.Desc = TRANSLATE_STR("DEV9SettingsWidget", "New Host");
 	host.Enabled = false;
 	AddNewHostConfig(host);
 
