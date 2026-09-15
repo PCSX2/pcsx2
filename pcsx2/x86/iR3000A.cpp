@@ -189,17 +189,11 @@ static ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* forma
 
 static void iopRecRecompile(u32 startpc);
 
-static const void* iopDispatcherEvent = nullptr;
 static const void* iopDispatcherReg = nullptr;
 static const void* iopJITCompile = nullptr;
 static const void* iopEnterRecompiledCode = nullptr;
 static const void* iopExitRecompiledCode = nullptr;
 static const void* iopUnmappedRecLUTPage = nullptr;
-
-static void recEventTest()
-{
-	_cpuEventTest_Shared();
-}
 
 // The address for all cleared blocks.  It recompiles the current pc and then
 // dispatches to the recompiled block address.
@@ -251,11 +245,14 @@ static const void* _DynGen_EnterRecompiledCode()
 #else
 		xScopedStackFrame frame(false, true);
 #endif
+		xMOV(ptr64[&psxRegs.iopDeadline], arg1reg);
+		xMOV(ptr8[&psxRegs.inIop], 1);
 
 		xJMP((void*)iopDispatcherReg);
 
 		// Save an exit point
 		iopExitRecompiledCode = xGetPtr();
+		xMOV(ptr8[&psxRegs.inIop], 0);
 	}
 
 	xRET();
@@ -282,13 +279,11 @@ static void _DynGen_Dispatchers()
 
 	// Place the EventTest and DispatcherReg stuff at the top, because they get called the
 	// most and stand to benefit from strong alignment and direct referencing.
-	iopDispatcherEvent = xGetPtr();
-	xFastCall((void*)recEventTest);
 	iopDispatcherReg = _DynGen_DispatcherReg();
-
 	iopJITCompile = _DynGen_JITCompile();
 	iopEnterRecompiledCode = _DynGen_EnterRecompiledCode();
-	iopUnmappedRecLUTPage =  _DynGen_UnmappedRecLUTPage();
+	psxCpu->ExecuteBlock = (int (*)(u64))iopEnterRecompiledCode;
+	iopUnmappedRecLUTPage = _DynGen_UnmappedRecLUTPage();
 
 	recBlocks.SetJITCompile(iopJITCompile);
 
@@ -1048,37 +1043,6 @@ static void iopClearRecLUT(BASEBLOCK* base, int count)
 		base[i].SetFnptr((uptr)iopJITCompile);
 }
 
-static __noinline s32 recExecuteBlock(s32 eeCycles)
-{
-	psxRegs.iopBreak = 0;
-	psxRegs.iopCycleEE = eeCycles;
-
-#ifdef PCSX2_DEVBUILD
-	//if (SysTrace.SIF.IsActive())
-	//	SysTrace.IOP.R3000A.Write("Switching to IOP CPU for %d cycles", eeCycles);
-#endif
-
-	// [TODO] recExecuteBlock could be replaced by a direct call to the iopEnterRecompiledCode()
-	//   (by assigning its address to the psxRec structure).  But for that to happen, we need
-	//   to move iopBreak/iopCycleEE update code to emitted assembly code. >_<  --air
-
-	// Likely Disasm, as borrowed from MSVC:
-
-	// Entry:
-	// 	mov         eax,dword ptr [esp+4]
-	// 	mov         dword ptr [iopBreak (0E88DCCh)],0
-	// 	mov         dword ptr [iopCycleEE (832A84h)],eax
-
-	// Exit:
-	// 	mov         ecx,dword ptr [iopBreak (0E88DCCh)]
-	// 	mov         edx,dword ptr [iopCycleEE (832A84h)]
-	// 	lea         eax,[edx+ecx]
-
-	((void (*)())iopEnterRecompiledCode)();
-
-	return psxRegs.iopBreak + psxRegs.iopCycleEE;
-}
-
 // Returns the offset to the next instruction after any cleared memory
 static __fi u32 psxRecClearMem(u32 pc)
 {
@@ -1184,51 +1148,26 @@ static __fi u32 psxScaleBlockCycles()
 	return s_psxBlockCycles;
 }
 
-static void iPsxAddEECycles(u32 blockCycles)
-{
-	if (!(psxHu32(HW_ICFG) & (1 << 3))) [[likely]]
-	{
-		if (blockCycles != 0xFFFFFFFF)
-			xSUB(ptr32[&psxRegs.iopCycleEE], blockCycles * 8);
-		else
-			xSUB(ptr32[&psxRegs.iopCycleEE], eax);
-		return;
-	}
-
-	// F = gcd(PS2CLK, PSXCLK) = 230400
-	const u32 cnum = 1280; // PS2CLK / F
-	const u32 cdenom = 147; // PSXCLK / F
-
-	if (blockCycles != 0xFFFFFFFF)
-		xMOV(eax, blockCycles * cnum);
-	xADD(eax, ptr32[&psxRegs.iopCycleEECarry]);
-	xMOV(ecx, cdenom);
-	xXOR(edx, edx);
-	xUDIV(ecx);
-	xMOV(ptr32[&psxRegs.iopCycleEECarry], edx);
-	xSUB(ptr32[&psxRegs.iopCycleEE], eax);
-}
-
 static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 {
 	u32 blockCycles = psxScaleBlockCycles();
 
 	if (EmuConfig.Speedhacks.WaitLoop && s_nBlockFF && newpc == s_branchTo)
 	{
-		xMOV(rax, ptr64[&psxRegs.cycle]);
-		xMOV(rcx, rax);
-		xMOV(rdx, ptr32[&psxRegs.iopCycleEE]);
-		xADD(rdx, 7);
-		xSHR(rdx, 3);
-		xADD(rax, rdx);
-		xCMP(rax, ptr64[&psxRegs.iopNextEventCycle]);
-		xCMOVNS(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		// pick the closest cycle target
+		// cycle = min(psxRegs.iopNextEventCycle, psxRegs.iopDeadline)
+		xMOV(rax, ptr64[&psxRegs.iopNextEventCycle]);
+		xCMP(rax, ptr64[&psxRegs.iopDeadline]);
+		xCMOVNS(rax, ptr64[&psxRegs.iopDeadline]);
+
+		// Go directly to target
 		xMOV(ptr64[&psxRegs.cycle], rax);
-		xSUB(rax, rcx);
-		xSHL(rax, 3);
-		iPsxAddEECycles(0xFFFFFFFF);
+
+		// If we've hit the deadline, exit
+		xCMP(ptr64[&psxRegs.iopDeadline], rax);
 		xJLE(iopExitRecompiledCode);
 
+		// Otherwise, check events and continue
 		xFastCall((void*)iopEventTest);
 
 		if (newpc != 0xffffffff)
@@ -1239,12 +1178,15 @@ static void iPsxBranchTest(u32 newpc, u32 cpuBranch)
 	}
 	else
 	{
+		// Add block cycles to our cycle counter
 		xMOV(r12, ptr64[&psxRegs.cycle]);
 		xADD(r12, blockCycles);
-		xMOV(ptr64[&psxRegs.cycle], r12); // update cycles
+		xMOV(ptr64[&psxRegs.cycle], r12);
 
-		// jump if iopCycleEE <= 0  (iop's timeslice timed out, so time to return control to the EE)
-		iPsxAddEECycles(blockCycles);
+		// If we've reached or deadline we should exit
+		// TODO: should we really exit instantly? what if we have events on the same cycle
+		// We don't check events when entering the IOP JIT so it's a bit weird to skip on exit too
+		xCMP(ptr64[&psxRegs.iopDeadline], r12);
 		xJLE(iopExitRecompiledCode);
 
 		// check if an event is pending
@@ -1295,7 +1237,6 @@ void rpsxSYSCALL()
 	j8Ptr[0] = JE8(0);
 
 	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 
 	// jump target for skipping blockCycle updates
@@ -1317,7 +1258,6 @@ void rpsxBREAK()
 	xCMP(ptr32[&psxRegs.pc], psxpc - 4);
 	j8Ptr[0] = JE8(0);
 	xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-	iPsxAddEECycles(psxScaleBlockCycles());
 	JMP32((uptr)iopDispatcherReg - ((uptr)x86Ptr + 5));
 	x86SetJ8(j8Ptr[0]);
 
@@ -1676,7 +1616,7 @@ static void iopRecRecompile(const u32 startpc)
 
 	_initX86regs();
 
-	if ((psxHu32(HW_ICFG) & 8) && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0))
+	if (psxPs1Mode() && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0))
 	{
 		xFastCall((void*)psxBiosCall);
 		xTEST(al, al);
@@ -1822,7 +1762,6 @@ StartRecomp:
 		else
 		{
 			xADD(ptr64[&psxRegs.cycle], psxScaleBlockCycles());
-			iPsxAddEECycles(psxScaleBlockCycles());
 		}
 
 		if (link_next_block || !psxbranch)
@@ -1853,7 +1792,7 @@ StartRecomp:
 R3000Acpu psxRec = {
 	recReserve,
 	recResetIOP,
-	recExecuteBlock,
+	NULL,
 	recClearIOP,
 	recShutdown,
 };
