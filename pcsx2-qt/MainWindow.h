@@ -176,6 +176,7 @@ private Q_SLOTS:
 	void onViewToolbarActionToggled(bool checked);
 	void onViewLockToolbarActionToggled(bool checked);
 	void onViewStatusBarActionToggled(bool checked);
+	void onViewFullscreenGUIActionTriggered(bool checked);
 	void onViewGameListActionTriggered();
 	void onViewGameGridActionTriggered();
 	void onViewSystemDisplayTriggered();
