@@ -376,50 +376,74 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "vulkan_merge.cpp"
 #include "vulkan_present.cpp"
 #include "vulkan_shadeboost.cpp"
-#include "vulkan_tfx.cpp"
+#include "vulkan_opengl_tfx.cpp"
 #include "opengl_convert.cpp"
 #include "opengl_imgui.cpp"
 #include "opengl_interlace.cpp"
 #include "opengl_merge.cpp"
 #include "opengl_present.cpp"
 #include "opengl_shadeboost.cpp"
-#include "opengl_tfx_fs.cpp"
-#include "opengl_tfx_vgs.cpp"
+#include "common_tfx_defs.cpp"
+#include "common_tfx_ps_atst.cpp"
+#include "common_tfx_ps_blend.cpp"
+#include "common_tfx_ps_color.cpp"
+#include "common_tfx_ps_fetch.cpp"
+#include "common_tfx_ps_fog.cpp"
+#include "common_tfx_ps_header.cpp"
+#include "common_tfx_ps_main.cpp"
+#include "common_tfx_ps_post.cpp"
+#include "common_tfx_ps_sample_af.cpp"
+#include "common_tfx_ps_sample.cpp"
+#include "common_tfx_ps_tfx.cpp"
+#include "common_tfx_ps_util.cpp"
+#include "common_tfx_vs.cpp"
 #ifdef _WIN32
-#include "dx11_convert.cpp"
-#include "dx11_imgui.cpp"
-#include "dx11_interlace.cpp"
-#include "dx11_merge.cpp"
-#include "dx11_present.cpp"
-#include "dx11_shadeboost.cpp"
-#include "dx11_tfx.cpp"
+#include "dx_convert.cpp"
+#include "dx_imgui.cpp"
+#include "dx_interlace.cpp"
+#include "dx_merge.cpp"
+#include "dx_present.cpp"
+#include "dx_shadeboost.cpp"
+#include "dx_tfx.cpp"
 #endif
 
 static const std::map<std::string, const unsigned char*> baked_shaders = {
-	{ "shaders/common/fxaa.fx"         , common_fxaa},
-	{ "shaders/vulkan/convert.glsl"    , vulkan_convert},
-	{ "shaders/vulkan/imgui.glsl"      , vulkan_imgui},
-	{ "shaders/vulkan/interlace.glsl"  , vulkan_interlace},
-	{ "shaders/vulkan/merge.glsl"      , vulkan_merge },
-	{ "shaders/vulkan/present.glsl"    , vulkan_present },
-	{ "shaders/vulkan/shadeboost.glsl" , vulkan_shadeboost },
-	{ "shaders/vulkan/tfx.glsl"        , vulkan_tfx },
-	{ "shaders/opengl/convert.glsl"    , opengl_convert },
-	{ "shaders/opengl/imgui.glsl"      , opengl_imgui },
-	{ "shaders/opengl/interlace.glsl"  , opengl_interlace },
-	{ "shaders/opengl/merge.glsl"      , opengl_merge },
-	{ "shaders/opengl/present.glsl"    , opengl_present },
-	{ "shaders/opengl/shadeboost.glsl" , opengl_shadeboost },
-	{ "shaders/opengl/tfx_fs.glsl"     , opengl_tfx_fs },
-	{ "shaders/opengl/tfx_vgs.glsl"    , opengl_tfx_vgs },
+	{ "shaders/common/fxaa.fx"              , common_fxaa},
+	{ "shaders/vulkan/convert.glsl"         , vulkan_convert},
+	{ "shaders/vulkan/imgui.glsl"           , vulkan_imgui},
+	{ "shaders/vulkan/interlace.glsl"       , vulkan_interlace},
+	{ "shaders/vulkan/merge.glsl"           , vulkan_merge },
+	{ "shaders/vulkan/present.glsl"         , vulkan_present },
+	{ "shaders/vulkan/shadeboost.glsl"      , vulkan_shadeboost },
+	{ "shaders/vulkan_opengl/tfx.glsl"      , vulkan_opengl_tfx },
+	{ "shaders/opengl/convert.glsl"         , opengl_convert },
+	{ "shaders/opengl/imgui.glsl"           , opengl_imgui },
+	{ "shaders/opengl/interlace.glsl"       , opengl_interlace },
+	{ "shaders/opengl/merge.glsl"           , opengl_merge },
+	{ "shaders/opengl/present.glsl"         , opengl_present },
+	{ "shaders/opengl/shadeboost.glsl"      , opengl_shadeboost },
+	{ "shaders/common/tfx_defs.inc"         , common_tfx_defs},
+	{ "shaders/common/tfx_ps_atst.inc"      , common_tfx_ps_atst},
+	{ "shaders/common/tfx_ps_blend.inc"     , common_tfx_ps_blend},
+	{ "shaders/common/tfx_ps_color.inc"     , common_tfx_ps_color},
+	{ "shaders/common/tfx_ps_fetch.inc"     , common_tfx_ps_fetch},
+	{ "shaders/common/tfx_ps_fog.inc"       , common_tfx_ps_fog},
+	{ "shaders/common/tfx_ps_header.inc"    , common_tfx_ps_header},
+	{ "shaders/common/tfx_ps_main.inc"      , common_tfx_ps_main},
+	{ "shaders/common/tfx_ps_post.inc"      , common_tfx_ps_post},
+	{ "shaders/common/tfx_ps_sample_af.inc" , common_tfx_ps_sample_af},
+	{ "shaders/common/tfx_ps_sample.inc"    , common_tfx_ps_sample},
+	{ "shaders/common/tfx_ps_tfx.inc"       , common_tfx_ps_tfx},
+	{ "shaders/common/tfx_ps_util.inc"      , common_tfx_ps_util},
+	{ "shaders/common/tfx_vs.inc"           , common_tfx_vs},
 #ifdef _WIN32
-	{ "shaders/direct3d/convert.fx"    , dx11_convert },
-	{ "shaders/direct3d/imgui.fx"      , dx11_imgui },
-	{ "shaders/direct3d/interlace.fx"  , dx11_interlace },
-	{ "shaders/direct3d/merge.fx"      , dx11_merge },
-	{ "shaders/direct3d/present.fx"    , dx11_present },
-	{ "shaders/direct3d/shadeboost.fx" , dx11_shadeboost },
-	{ "shaders/direct3d/tfx.fx"        , dx11_tfx },
+	{ "shaders/dx/convert.fx"               , dx_convert },
+	{ "shaders/dx/imgui.fx"                 , dx_imgui },
+	{ "shaders/dx/interlace.fx"             , dx_interlace },
+	{ "shaders/dx/merge.fx"                 , dx_merge },
+	{ "shaders/dx/present.fx"               , dx_present },
+	{ "shaders/dx/shadeboost.fx"            , dx_shadeboost },
+	{ "shaders/dx/tfx.fx"                   , dx_tfx },
 #endif
 };
 #endif
