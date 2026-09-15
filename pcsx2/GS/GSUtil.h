@@ -78,6 +78,12 @@ public:
 	{
 		return GetClassVertexCount(GetPrimClass(prim));
 	}
+
+	// Functions to CPU rasterize geometry into a coarse grid to cut down on GPU copies.
+	static void CoarseRasterizeRects(const GSVector4i& area, const GSVector4i* rects, const u32 num_rects,
+		const u32 grid_size, const int expand, std::vector<GSVector4i>& tiles_out);
+	static void CoarseRasterizeTriangles(GSVector4i area, const GSVector4* RESTRICT pos, const u32 num_pos,
+		const u32 grid_size, const int expand, std::vector<GSVector4i>& tiles_out);
 };
 
 // Class that represents an octogonal bounding area with sides at 45 degree increments.
