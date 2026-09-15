@@ -4170,6 +4170,8 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Frame Limit");
 TRANSLATE_NOOP("FullscreenUI", "Game Properties");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
+TRANSLATE_NOOP("FullscreenUI", "Stop Recording");
+TRANSLATE_NOOP("FullscreenUI", "Start Recording");
 TRANSLATE_NOOP("FullscreenUI", "Switch To Software Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Switch To Hardware Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Change Disc");
