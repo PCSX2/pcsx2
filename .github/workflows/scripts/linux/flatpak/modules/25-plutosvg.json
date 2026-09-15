@@ -14,8 +14,8 @@
     {
       "type": "git",
       "url": "https://github.com/sammycage/plutosvg.git",
-      "tag": "v0.0.7",
-      "commit": "31f7d2675416cd777c8e86220b035364873b2a8b"
+      "tag": "v0.0.8",
+      "commit": "fd8a080b3d0bccc41f1ae708d3785e7f08398a58"
     }
   ],
   "cleanup": [
