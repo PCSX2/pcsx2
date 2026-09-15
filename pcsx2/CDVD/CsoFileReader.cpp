@@ -28,6 +28,8 @@ struct CsoHeader
 };
 
 static const u32 CSO_READ_BUFFER_SIZE = 256 * 1024;
+static constexpr u32 MAX_CSO_FRAME_SIZE = 256 * 1024;
+static constexpr u8 MAX_CSO_INDEX_SHIFT = 11;
 
 CsoFileReader::CsoFileReader() = default;
 
@@ -57,6 +59,16 @@ bool CsoFileReader::ValidateHeader(const CsoHeader& hdr, Error* error)
 	if (hdr.frame_size < 2048)
 	{
 		Error::SetString(error, "CSO frame size must be at least one sector.");
+		return false;
+	}
+	if (hdr.frame_size > MAX_CSO_FRAME_SIZE)
+	{
+		Error::SetString(error, "CSO frame size is too large.");
+		return false;
+	}
+	if (hdr.align > MAX_CSO_INDEX_SHIFT)
+	{
+		Error::SetString(error, "CSO index alignment is too large.");
 		return false;
 	}
 
@@ -146,13 +158,14 @@ bool CsoFileReader::InitializeBuffers(Error* error)
 	u32 numFrames = (u32)((m_totalSize + m_frameSize - 1) / m_frameSize);
 
 	// We might read a bit of alignment too, so be prepared.
-	if (m_frameSize + (1 << m_indexShift) < CSO_READ_BUFFER_SIZE)
+	m_readBufferSize = std::max(CSO_READ_BUFFER_SIZE, m_frameSize + (1u << m_indexShift));
+	if (m_readBufferSize == CSO_READ_BUFFER_SIZE)
 	{
 		m_readBuffer = std::make_unique<u8[]>(CSO_READ_BUFFER_SIZE);
 	}
 	else
 	{
-		m_readBuffer = std::make_unique<u8[]>(m_frameSize + (1 << m_indexShift));
+		m_readBuffer = std::make_unique<u8[]>(m_readBufferSize);
 	}
 
 	const u32 indexSize = numFrames + 1;
@@ -191,6 +204,7 @@ void CsoFileReader::Close2()
 		inflateEnd(&m_z_stream);
 
 	m_readBuffer.reset();
+	m_readBufferSize = 0;
 	m_index.reset();
 }
 
@@ -253,6 +267,12 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 	}
 	else
 	{
+		if (frameRawSize > m_readBufferSize)
+		{
+			Console.Error("Compressed CSO frame is larger than the read buffer.");
+			return 0;
+		}
+
 		// This might be less bytes than frameRawSize in case of padding on the last frame.
 		// This is because the index positions must be aligned.
 		u32 readRawBytes;
