@@ -1,3 +1,10 @@
+# v12.5.0
+* fallback to file hashing for buffered m3u/cue files
+* fix crash caused by {recall} of constant appearing in multiple alts
+* fix validation warning message when redundancy appears after AndNext/OrNext chain
+* fix handling of SubSource chain starting with a float constant
+* fix several potential issues with malformed data
+
 # v12.4.0
 * add avatar_last_updated field to rc_client_user_t and rc_api_login_response_t
 * add more fields to fetch_games_list API

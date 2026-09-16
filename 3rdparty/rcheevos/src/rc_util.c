@@ -56,6 +56,11 @@ uint8_t* rc_buffer_reserve(rc_buffer_t* buffer, size_t amount)
 {
   rc_buffer_chunk_t* chunk = &buffer->chunk;
   size_t remaining;
+
+  /* we should never need 1GB of space for anything, and avoids any underflow below */
+  if (amount >= 0x40000000)
+    return NULL;
+
   while (chunk)
   {
     remaining = chunk->end - chunk->write;
@@ -112,6 +117,9 @@ void rc_buffer_consume(rc_buffer_t* buffer, const uint8_t* start, uint8_t* end)
 void* rc_buffer_alloc(rc_buffer_t* buffer, size_t amount)
 {
   uint8_t* ptr = rc_buffer_reserve(buffer, amount);
+  if (!ptr)
+    return NULL;
+
   rc_buffer_consume(buffer, ptr, ptr + amount);
   return (void*)ptr;
 }
@@ -119,6 +127,9 @@ void* rc_buffer_alloc(rc_buffer_t* buffer, size_t amount)
 char* rc_buffer_strncpy(rc_buffer_t* buffer, const char* src, size_t len)
 {
   uint8_t* dst = rc_buffer_reserve(buffer, len + 1);
+  if (!dst)
+    return NULL;
+
   memcpy(dst, src, len);
   dst[len] = '\0';
   rc_buffer_consume(buffer, dst, dst + len + 1);

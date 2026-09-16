@@ -127,7 +127,7 @@ RC_ALLOW_ALIGN(char)
 /* force alignment to 4 bytes on 32-bit systems, or 8 bytes on 64-bit systems */
 #define RC_ALIGN(n) (((n) + (sizeof(void*)-1)) & ~(sizeof(void*)-1))
 
-typedef struct {
+typedef struct rc_scratch_t {
   rc_buffer_t buffer;
   rc_scratch_string_t* strings;
 
@@ -188,7 +188,7 @@ enum {
   RC_VALUE_TYPE_FLOAT
 };
 
-typedef struct {
+typedef struct rc_typed_value_t {
   union {
     uint32_t u32;
     int32_t i32;
@@ -208,7 +208,7 @@ enum {
 #define RC_MEASURED_UNKNOWN 0xFFFFFFFF
 #define RC_OPERAND_NONE 0xFF
 
-typedef struct {
+typedef struct rc_eval_state_t {
   /* memory accessors */
   rc_peek_t peek;
   void* peek_userdata;
@@ -236,7 +236,7 @@ typedef struct {
 }
 rc_eval_state_t;
 
-typedef struct {
+typedef struct rc_parse_state_t {
   int32_t offset;
 
   void* buffer;

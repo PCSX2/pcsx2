@@ -1210,8 +1210,10 @@ static int rc_validate_conflicting_conditions(const rc_condset_t* conditions, co
 
       /* combining field didn't match, or there's more unmatched combining fields. ignore this condition */
       if (!chain_matches || rc_validate_is_combining_condition(compare_condition)) {
-        while (compare_condition->next && rc_validate_is_combining_condition(compare_condition))
+        while (compare_condition->next && rc_validate_is_combining_condition(compare_condition)) {
+          ++state->cond_index;
           compare_condition = compare_condition->next;
+        }
         continue;
       }
 

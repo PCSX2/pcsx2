@@ -25,8 +25,9 @@ typedef struct rc_disallowed_setting_t
 } rc_disallowed_setting_t;
 
 RC_EXPORT const rc_disallowed_setting_t* RC_CCONV rc_libretro_get_disallowed_settings(const char* library_name);
+RC_EXPORT const rc_disallowed_setting_t* RC_CCONV rc_libretro_get_disallowed_settings_for_system(const char* library_name, uint32_t system_id);
 RC_EXPORT int RC_CCONV rc_libretro_is_setting_allowed(const rc_disallowed_setting_t* disallowed_settings, const char* setting, const char* value);
-RC_EXPORT int RC_CCONV rc_libretro_is_system_allowed(const char* library_name, uint32_t console_id);
+RC_EXPORT int RC_CCONV rc_libretro_is_system_allowed(const char* library_name, uint32_t system_id);
 
 /*****************************************************************************\
 | Memory Mapping                                                              |

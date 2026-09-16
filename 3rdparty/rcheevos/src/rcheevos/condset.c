@@ -363,7 +363,8 @@ rc_condset_t* rc_parse_condset(const char** memaddr, rc_parse_state_t* parse) {
 
         classification = combining_classification;
       }
-      else {
+      else if (classification != RC_CONDITION_CLASSIFICATION_INDIRECT) {
+        /* if it's not COMBINING or INDIRECT, reset so it will get recalculated for the next clause */
         combining_classification = RC_CONDITION_CLASSIFICATION_COMBINING;
       }
 

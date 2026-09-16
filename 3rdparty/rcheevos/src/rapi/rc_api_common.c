@@ -710,10 +710,15 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
     }
 
     *out = dst = (char*)rc_buffer_reserve(buffer, len - 1); /* -2 for quotes, +1 for null terminator */
+    if (!dst)
+      return 0;
 
-    do {
+    while (src < field->value_end && *src != '\"') {
       if (*src == '\\') {
         ++src;
+        if (src >= field->value_end)
+          return 0;
+
         if (*src == 'n') {
           /* newline */
           ++src;
@@ -731,7 +736,7 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
         if (*src == 'u') {
           /* unicode character */
           uint32_t ucs32_char;
-          if (src + 5 >= field->value_end) /* incomplete unicode character */
+          if ((size_t)(field->value_end - src) < 6) /* incomplete unicode character */
             return 0;
 
           ucs32_char = rc_json_decode_hex4(src + 1);
@@ -739,7 +744,7 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
 
           if (ucs32_char >= 0xD800 && ucs32_char < 0xE000) {
             /* surrogate lead - look for surrogate tail */
-            if (ucs32_char < 0xDC00 && src[0] == '\\' && src[1] == 'u') {
+            if (ucs32_char < 0xDC00 && (size_t)(field->value_end - src) >= 6 && src[0] == '\\' && src[1] == 'u') {
               const uint32_t surrogate = rc_json_decode_hex4(src + 2);
               src += 6;
 
@@ -770,10 +775,16 @@ int rc_json_get_string(const char** out, rc_buffer_t* buffer, const rc_json_fiel
       }
 
       *dst++ = *src++;
-    } while (*src != '\"');
+    }
+
+    if (src >= field->value_end)
+      return 0;
 
   } else {
     *out = dst = (char*)rc_buffer_reserve(buffer, len + 1); /* +1 for null terminator */
+    if (!dst)
+      return 0;
+
     memcpy(dst, src, len);
     dst += len;
   }
@@ -990,6 +1001,116 @@ int rc_json_get_required_float(float* out, rc_api_response_t* response, const rc
   return rc_json_missing_field(response, field);
 }
 
+/* Parses exactly count decimal digits without reading beyond end. */
+static int rc_json_parse_datetime_digits(const char** input, const char* end, int count, int* value) {
+  int result = 0;
+
+  while (count > 0) {
+    if (*input >= end || **input < '0' || **input > '9')
+      return 0;
+
+    result *= 10;
+    result += (**input - '0');
+    (*input)++;
+    count--;
+  }
+
+  *value = result;
+  return 1;
+}
+
+/* Consumes an expected separator without reading beyond end. */
+static int rc_json_match_datetime_char(const char** input, const char* end, char expected) {
+  if (*input >= end || **input != expected)
+    return 0;
+
+  (*input)++;
+  return 1;
+}
+
+/* Valid suffixes are Z, fractional seconds, and numeric timezone offsets. */
+static int rc_json_validate_datetime_suffix(const char* input, const char* end) {
+  int offset_hour;
+  int offset_minute;
+
+  if (input == end)
+    return 1;
+
+  if (*input == '.') {
+    input++;
+    if (input == end || *input < '0' || *input > '9')
+      return 0;
+
+    do {
+      input++;
+    } while (input < end && *input >= '0' && *input <= '9');
+
+    if (input == end)
+      return 1;
+  }
+
+  if (*input == 'Z')
+    return (++input == end);
+
+  if (*input != '+' && *input != '-')
+    return 0;
+
+  ++input;
+  if (!rc_json_parse_datetime_digits(&input, end, 2, &offset_hour) ||
+      !rc_json_match_datetime_char(&input, end, ':') ||
+      !rc_json_parse_datetime_digits(&input, end, 2, &offset_minute) ||
+      input != end) {
+    return 0;
+  }
+
+  return (offset_hour <= 23 && offset_minute <= 59);
+}
+
+/* Parses YYYY-MM-DD[ T]HH:MM:SS and only updates tm after the complete
+ * bounded value, including any suffix, has been validated. */
+static int rc_json_parse_datetime(const char* input, const char* end, struct tm* tm) {
+  static const unsigned char days_per_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+  int year, month, day, hour, minute, second;
+  int days_in_month;
+
+  if (!rc_json_parse_datetime_digits(&input, end, 4, &year) ||
+      !rc_json_match_datetime_char(&input, end, '-') ||
+      !rc_json_parse_datetime_digits(&input, end, 2, &month) ||
+      !rc_json_match_datetime_char(&input, end, '-') ||
+      !rc_json_parse_datetime_digits(&input, end, 2, &day) ||
+      input >= end || (*input != ' ' && *input != 'T')) {
+    return 0;
+  }
+
+  input++;
+  if (!rc_json_parse_datetime_digits(&input, end, 2, &hour) ||
+      !rc_json_match_datetime_char(&input, end, ':') ||
+      !rc_json_parse_datetime_digits(&input, end, 2, &minute) ||
+      !rc_json_match_datetime_char(&input, end, ':') ||
+      !rc_json_parse_datetime_digits(&input, end, 2, &second) ||
+      !rc_json_validate_datetime_suffix(input, end)) {
+    return 0;
+  }
+
+  if (month < 1 || month > 12 || hour > 23 || minute > 59 || second > 59)
+    return 0;
+
+  days_in_month = days_per_month[month - 1];
+  if (month == 2 && (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0))
+    days_in_month++;
+  if (day < 1 || day > days_in_month)
+    return 0;
+
+  memset(tm, 0, sizeof(*tm));
+  tm->tm_year = year - 1900;
+  tm->tm_mon = month - 1;
+  tm->tm_mday = day;
+  tm->tm_hour = hour;
+  tm->tm_min = minute;
+  tm->tm_sec = second;
+  return 1;
+}
+
 int rc_json_get_datetime(time_t* out, const rc_json_field_t* field, const char* field_name) {
   struct tm tm;
 
@@ -1000,32 +1121,25 @@ int rc_json_get_datetime(time_t* out, const rc_json_field_t* field, const char* 
   (void)field_name;
 #endif
 
-  if (field->value_start && *field->value_start == '\"') {
-    memset(&tm, 0, sizeof(tm));
-    if (sscanf_s(field->value_start + 1, "%d-%d-%d %d:%d:%d", /* DB format "2013-10-20 22:12:21" */
-                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6 ||
-        /* NOTE: relies on sscanf stopping when it sees a non-digit after the seconds. could be 'Z', '.', '+', or '-' */
-        sscanf_s(field->value_start + 1, "%d-%d-%dT%d:%d:%d", /* ISO format "2013-10-20T22:12:21.000000Z */
-                 &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) == 6) {
-      tm.tm_mon--; /* 0-based */
-      tm.tm_year -= 1900; /* 1900 based */
+  if (field->value_start && field->value_end > field->value_start &&
+      *field->value_start == '\"' && field->value_end[-1] == '\"' &&
+      rc_json_parse_datetime(field->value_start + 1, field->value_end - 1, &tm)) {
 
-      /* mktime converts a struct tm to a time_t using the local timezone.
-       * the input string is UTC. since timegm is not universally cross-platform,
-       * figure out the offset between UTC and local time by applying the
-       * timezone conversion twice and manually removing the difference */
-      {
-         time_t local_timet = mktime(&tm);
-         time_t skewed_timet, tz_offset;
-         struct tm gmt_tm;
-         gmtime_s(&gmt_tm, &local_timet);
-         skewed_timet = mktime(&gmt_tm); /* applies local time adjustment second time */
-         tz_offset = skewed_timet - local_timet;
-         *out = local_timet - tz_offset;
-      }
-
-      return 1;
+    /* mktime converts a struct tm to a time_t using the local timezone.
+     * the input string is UTC. since timegm is not universally cross-platform,
+     * figure out the offset between UTC and local time by applying the
+     * timezone conversion twice and manually removing the difference */
+    {
+       time_t local_timet = mktime(&tm);
+       time_t skewed_timet, tz_offset;
+       struct tm gmt_tm;
+       gmtime_s(&gmt_tm, &local_timet);
+       skewed_timet = mktime(&gmt_tm); /* applies local time adjustment second time */
+       tz_offset = skewed_timet - local_timet;
+       *out = local_timet - tz_offset;
     }
+
+    return 1;
   }
 
   *out = 0;

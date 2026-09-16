@@ -503,6 +503,19 @@ static int rc_hash_from_buffer(char hash[33], uint32_t console_id, const rc_hash
 {
   switch (console_id) {
     default:
+      if (iterator->path) {
+        const char* ext = rc_path_get_extension(iterator->path);
+        if (strcasecmp(ext, "cue") == 0 ||
+          strcasecmp(ext, "m3u") == 0 ||
+          strcasecmp(ext, "iso") == 0 ||
+          strcasecmp(ext, "chd") == 0) {
+          /* These extensions are associated to CD media. If buffered data
+           * was provided, ignore it and try to open the media directly. */
+          if (rc_hash_from_file(hash, console_id, iterator))
+            return 1;
+        }
+      }
+
       return rc_hash_iterator_error_formatted(iterator, "Unsupported console for buffer hash: %d", console_id);
 
     case RC_CONSOLE_AMSTRAD_PC:
@@ -949,6 +962,12 @@ static int rc_hash_from_file(char hash[33], uint32_t console_id, const rc_hash_i
     case RC_CONSOLE_PSP:
       return rc_hash_psp(hash, iterator);
 
+    case RC_CONSOLE_PLAYSTATION_3:
+      if (rc_path_compare_extension(path, "m3u"))
+        return rc_hash_generate_from_playlist(hash, console_id, iterator);
+
+      return rc_hash_ps3(hash, iterator);
+
     case RC_CONSOLE_SEGA_CD:
     case RC_CONSOLE_SATURN:
       if (rc_path_compare_extension(path, "m3u"))
@@ -1064,10 +1083,11 @@ static void rc_hash_initialize_iterator_chd(rc_hash_iterator_t* iterator, int da
   iterator->consoles[2] = RC_CONSOLE_DREAMCAST;
   iterator->consoles[3] = RC_CONSOLE_SEGA_CD; /* ASSERT: handles both Sega CD and Saturn */
   iterator->consoles[4] = RC_CONSOLE_PSP;
-  iterator->consoles[5] = RC_CONSOLE_PC_ENGINE_CD;
-  iterator->consoles[6] = RC_CONSOLE_3DO;
-  iterator->consoles[7] = RC_CONSOLE_NEO_GEO_CD;
-  iterator->consoles[8] = RC_CONSOLE_PCFX;
+  iterator->consoles[5] = RC_CONSOLE_PLAYSTATION_3;
+  iterator->consoles[6] = RC_CONSOLE_PC_ENGINE_CD;
+  iterator->consoles[7] = RC_CONSOLE_3DO;
+  iterator->consoles[8] = RC_CONSOLE_NEO_GEO_CD;
+  iterator->consoles[9] = RC_CONSOLE_PCFX;
 }
 
 static void rc_hash_initialize_iterator_cue(rc_hash_iterator_t* iterator, int data) {
@@ -1137,10 +1157,11 @@ static void rc_hash_initialize_iterator_iso(rc_hash_iterator_t* iterator, int da
 
   iterator->consoles[0] = RC_CONSOLE_PLAYSTATION_2;
   iterator->consoles[1] = RC_CONSOLE_PSP;
-  iterator->consoles[2] = RC_CONSOLE_3DO;
-  iterator->consoles[3] = RC_CONSOLE_SEGA_CD; /* ASSERT: handles both Sega CD and Saturn */
-  iterator->consoles[4] = RC_CONSOLE_GAMECUBE;
-  iterator->consoles[5] = RC_CONSOLE_WII;
+  iterator->consoles[2] = RC_CONSOLE_PLAYSTATION_3;
+  iterator->consoles[3] = RC_CONSOLE_3DO;
+  iterator->consoles[4] = RC_CONSOLE_SEGA_CD; /* ASSERT: handles both Sega CD and Saturn */
+  iterator->consoles[5] = RC_CONSOLE_GAMECUBE;
+  iterator->consoles[6] = RC_CONSOLE_WII;
 }
 
 static void rc_hash_initialize_iterator_m3u(rc_hash_iterator_t* iterator, int data) {
