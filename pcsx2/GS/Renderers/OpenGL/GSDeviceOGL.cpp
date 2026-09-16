@@ -59,6 +59,80 @@ namespace ReplaceGL
 
 } // namespace ReplaceGL
 
+namespace Emulate_DSA_EXT
+{
+	// Texture entry point
+	static void GLAPIENTRY BindTextureUnit(GLuint unit, GLuint texture)
+	{
+		glBindMultiTextureEXT(GL_TEXTURE0 + unit, GL_TEXTURE_2D, texture);
+	}
+
+	static void GLAPIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
+	{
+		glGenTextures(n, textures);
+	}
+
+	static void GLAPIENTRY TextureStorage(
+		GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+	{
+		glTextureStorage2DEXT(texture, GL_TEXTURE_2D, levels, internalformat, width, height);
+	}
+
+	static void GLAPIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+		GLsizei height, GLenum format, GLenum type, const void* pixels)
+	{
+		glTextureSubImage2DEXT(texture, GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
+	}
+
+	static void GLAPIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+	{
+		glCopyTextureSubImage2DEXT(texture, GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
+	}
+
+	static void GLAPIENTRY CompressedTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset,
+		GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data)
+	{
+		glCompressedTextureSubImage2DEXT(texture, GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, imageSize, data);
+	}
+
+	static void GLAPIENTRY GetTexureImage(
+		GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
+	{
+		glGetTextureImageEXT(texture, GL_TEXTURE_2D, level, format, type, pixels);
+	}
+
+	static void GLAPIENTRY TextureParameteri(GLuint texture, GLenum pname, GLint param)
+	{
+		glTextureParameteriEXT(texture, GL_TEXTURE_2D, pname, param);
+	}
+
+	static void GLAPIENTRY GenerateTextureMipmap(GLuint texture)
+	{
+		glGenerateTextureMipmapEXT(texture, GL_TEXTURE_2D);
+	}
+
+	// Misc entry point
+	static void GLAPIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
+	{
+		glGenSamplers(n, samplers);
+	}
+
+	// Replace function pointer to emulate DSA EXT behavior
+	static void Init()
+	{
+		glBindTextureUnit = BindTextureUnit;
+		glCreateTextures = CreateTexture;
+		glTextureStorage2D = TextureStorage;
+		glTextureSubImage2D = TextureSubImage;
+		glCopyTextureSubImage2D = CopyTextureSubImage;
+		glCompressedTextureSubImage2D = CompressedTextureSubImage;
+		glGetTextureImage = GetTexureImage;
+		glTextureParameteri = TextureParameteri;
+		glGenerateTextureMipmap = GenerateTextureMipmap;
+		glCreateSamplers = CreateSamplers;
+	}
+} // namespace Emulate_DSA_EXT
+
 namespace Emulate_DSA
 {
 	// Texture entry point
@@ -70,7 +144,7 @@ namespace Emulate_DSA
 
 	static void GLAPIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
 	{
-		glGenTextures(1, textures);
+		glGenTextures(n, textures);
 	}
 
 	static void GLAPIENTRY TextureStorage(
@@ -821,10 +895,15 @@ bool GSDeviceOGL::CheckFeatures()
 		}
 	}
 
-	if (!GLAD_GL_ARB_direct_state_access)
+	if (!GLAD_GL_VERSION_4_5 && !GLAD_GL_ARB_direct_state_access)
 	{
-		Console.Warning("GL_ARB_direct_state_access is not supported, this will reduce performance.");
-		Emulate_DSA::Init();
+		if (GLAD_GL_EXT_direct_state_access)
+			Emulate_DSA_EXT::Init();
+		else
+		{
+			Console.Warning("GL: Direct State Access is not supported, this will reduce performance.");
+			Emulate_DSA::Init();
+		}
 	}
 
 	// Don't use PBOs when we don't have ARB_buffer_storage, orphaning buffers probably ends up worse than just
