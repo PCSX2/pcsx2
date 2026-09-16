@@ -174,6 +174,9 @@ const char* rc_console_name(uint32_t console_id)
     case RC_CONSOLE_PLAYSTATION_2:
       return "PlayStation 2";
 
+    case RC_CONSOLE_PLAYSTATION_3:
+      return "PlayStation 3";
+
     case RC_CONSOLE_PSP:
       return "PlayStation Portable";
 
@@ -827,6 +830,19 @@ static const rc_memory_region_t _rc_memory_regions_psp[] = {
 };
 static const rc_memory_regions_t rc_memory_regions_psp = { _rc_memory_regions_psp, 3 };
 
+/* ===== PlayStation 3 ===== */
+/* Address layout from RPCS3 vm.cpp _find_map allocation order:                */
+/*   sys_rsx_context_allocate allocates rsx_context first at 0x10000000 (256 MB). */
+/*   sys_memory_allocate (64K) allocates user64k at 0x20000000 (512 MB).      */
+/*   sys_memory_allocate (1M)  allocates user1m  at 0x40000000 (256 MB).      */
+static const rc_memory_region_t _rc_memory_regions_playstation3[] = {
+    { 0x00000000U, 0x0FFFFFFFU, 0x00000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "Main RAM" },
+    { 0x10000000U, 0x2FFFFFFFU, 0x10000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "RSX Context + User RAM (64K pages)" },
+    { 0x30000000U, 0x3FFFFFFFU, 0x30000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "User RAM (64K pages)" },
+    { 0x40000000U, 0x4FFFFFFFU, 0x40000000U, RC_MEMORY_TYPE_SYSTEM_RAM, "User RAM (1M pages)" },
+};
+static const rc_memory_regions_t rc_memory_regions_playstation3 = { _rc_memory_regions_playstation3, 4 };
+
 /* ===== Pokemon Mini ===== */
 /* https://www.pokemon-mini.net/documentation/memory-map/ */
 static const rc_memory_region_t _rc_memory_regions_pokemini[] = {
@@ -1166,6 +1182,9 @@ const rc_memory_regions_t* rc_console_memory_regions(uint32_t console_id)
 
     case RC_CONSOLE_PSP:
       return &rc_memory_regions_psp;
+
+    case RC_CONSOLE_PLAYSTATION_3:
+      return &rc_memory_regions_playstation3;
 
     case RC_CONSOLE_POKEMON_MINI:
       return &rc_memory_regions_pokemini;

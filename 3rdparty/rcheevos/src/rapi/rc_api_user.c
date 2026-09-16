@@ -455,7 +455,7 @@ int rc_api_process_fetch_all_user_progress_server_response(rc_api_fetch_all_user
     entry = response->entries;
     while (rc_json_get_next_object_field(&iterator, &field))
     {
-      entry->game_id = strtol(field.name, &end, 10);
+      entry->game_id = (uint32_t)strtol(field.name, &end, 10);
 
       field.name = "";
       if (!rc_json_get_required_object(entry_fields, sizeof(entry_fields) / sizeof(entry_fields[0]),

@@ -140,7 +140,7 @@ static int rc_api_process_fetch_game_data_achievements(rc_api_response_t* respon
   while (rc_json_get_array_entry_object(achievement_fields, sizeof(achievement_fields) / sizeof(achievement_fields[0]), &iterator)) {
     if (!rc_json_get_required_unum(&achievement->id, response, &achievement_fields[0], "ID"))
       return RC_MISSING_VALUE;
-    if (!rc_json_get_required_string(&achievement->title, response, &achievement_fields[1], "Title"))
+    if (!rc_json_get_required_string(&achievement->title, response, &achievement_fields[1], "Title") || !achievement->title)
       return RC_MISSING_VALUE;
     if (!rc_json_get_required_string(&achievement->description, response, &achievement_fields[2], "Description"))
       return RC_MISSING_VALUE;
@@ -197,16 +197,18 @@ static int rc_api_process_fetch_game_data_achievements(rc_api_response_t* respon
       achievement->type = RC_ACHIEVEMENT_TYPE_STANDARD;
 
     /* legacy support : if title contains[m], change type to missable and remove[m] from title */
-    if (memcmp(achievement->title, "[m]", 3) == 0) {
+    /* since we're comparing a suffix, calculate the length in case it contains null bytes */
+    len = strlen(achievement->title);
+    if (len >= 3 && memcmp(achievement->title, "[m]", 3) == 0) {
       len = 3;
       while (achievement->title[len] == ' ')
         ++len;
       achievement->title += len;
       achievement->type = RC_ACHIEVEMENT_TYPE_MISSABLE;
     }
-    else if (achievement_fields[1].value_end && memcmp(achievement_fields[1].value_end - 4, "[m]", 3) == 0) {
-      len = strlen(achievement->title) - 3;
-      while (achievement->title[len - 1] == ' ')
+    else if (len >= 3 && memcmp(achievement->title + len - 3, "[m]", 3) == 0) {
+      len -= 3;
+      while (len > 0 && achievement->title[len - 1] == ' ')
         --len;
       ((char*)achievement->title)[len] = '\0';
       achievement->type = RC_ACHIEVEMENT_TYPE_MISSABLE;

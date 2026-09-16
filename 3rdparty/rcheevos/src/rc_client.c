@@ -318,8 +318,6 @@ void rc_client_enable_logging(rc_client_t* client, int level, rc_client_message_
 
 /* ===== Common ===== */
 
-static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
-{
 #if defined(__APPLE__) && defined(__MACH__)
  #ifdef CLOCK_MONOTONIC
   /* clock_gettime() was added to Darwin in iOS 10.0 and macOS 10.12.
@@ -336,6 +334,8 @@ static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
  #endif
 #endif
 
+static rc_clock_t rc_client_clock_get_now_millisecs(const rc_client_t* client)
+{
 #if defined(CLOCK_MONOTONIC)
   struct timespec now;
   (void)client;

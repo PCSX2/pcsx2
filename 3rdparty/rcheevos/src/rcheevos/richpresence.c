@@ -802,7 +802,7 @@ static int rc_evaluate_richpresence_display(rc_richpresence_display_part_t* part
             value.value.u32 = '?';
 
           tmp[chars++] = (char)value.value.u32;
-          if (chars == sizeof(tmp) || !part->next || part->next->display_type != RC_FORMAT_ASCIICHAR)
+          if (chars == sizeof(tmp) - 1 || !part->next || part->next->display_type != RC_FORMAT_ASCIICHAR)
             break;
 
           part = part->next;
