@@ -1729,7 +1729,11 @@ uint load_index(uint _i)
 {
 	uint i = _i + BaseIndex;
 	// i is even => load lower 16 bits; i odd => load upper 16 bits.
-	uint shift = (i & 1u) << 4u;
+	// Intel Haswell seems to be having issues on dx11/12 with running the bfi instruction below in this specific case,
+	// so let's use an alternative that gives the same result, note this is only broken on Haswell, Ivy Bridge and Skylake are fine,
+	// the issue appears when running the D3D compiler with optimizations, running with D3DCOMPILE_SKIP_OPTIMIZATION is fine with bfi.
+	// uint shift = (i & 1u) << 4u;
+	uint shift = (i & 1u) != 0u ? 16u : 0u;
 	return (IndexBuffer.Load(i >> 1u) >> shift) & 0xFFFFu;
 }
 
