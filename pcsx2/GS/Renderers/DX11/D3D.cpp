@@ -432,10 +432,11 @@ GSRendererType D3D::GetPreferredRenderer()
 
 		case VendorID::Intel:
 		{
-			// Vulkan has broken barriers, prior to Xe.
-
+			// Note1: Vulkan has broken barriers, prior to Xe.
 			// Sampler feedback Tier 0.9 is only present in Tiger Lake/Xe/Arc, so we can use that to
 			// differentiate between them. Unfortunately, that requires a D3D12 device.
+
+			// Note2: Keep DX11 default on Haswell/Broadwell as OpenGL is much much slower.
 			const std::optional<D3D_FEATURE_LEVEL> feature_level = get_d3d11_feature_level();
 			if (!feature_level.has_value())
 				return GSRendererType::DX11;
@@ -463,8 +464,6 @@ GSRendererType D3D::GetPreferredRenderer()
 					return GSRendererType::OGL;
 				*/
 			}
-			else if (feature_level == D3D_FEATURE_LEVEL_11_1)
-				return GSRendererType::OGL;
 			else
 				return GSRendererType::DX11;
 		}
