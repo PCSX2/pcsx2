@@ -361,4 +361,9 @@
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>
+  <ItemGroup>
+    <MARMASM Include="FastJmp_arm64.asm">
+      <Filter>Source Files</Filter>
+    </MARMASM>
+  </ItemGroup>
 </Project>
