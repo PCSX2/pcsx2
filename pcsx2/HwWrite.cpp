@@ -10,11 +10,11 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
-#include "ps2/pgif.h"
+#include "PS1/Pgif.h"
 #include "SPU2/spu2.h"
 #include "R3000A.h"
 
-#include "CDVD/Ps1CD.h"
+#include "PS1/CdRom.h"
 #include "CDVD/CDVD.h"
 
 #include "IopDma.h" // for iopIntcIrq

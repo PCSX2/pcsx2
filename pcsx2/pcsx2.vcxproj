@@ -352,7 +352,7 @@
     <ClCompile Include="Input\InputSource.cpp" />
     <ClCompile Include="Input\SDLInputSource.cpp" />
     <ClCompile Include="Input\XInputSource.cpp" />
-    <ClCompile Include="IopGte.cpp" />
+    <ClCompile Include="PS1\Gte.cpp" />
     <ClCompile Include="LayeredSettingsInterface.cpp" />
     <ClCompile Include="PINE.cpp" />
     <ClCompile Include="FW.cpp" />
@@ -375,7 +375,7 @@
     <ClCompile Include="SIO\Pad\PadNotConnected.cpp" />
     <ClCompile Include="SIO\Pad\PadPopn.cpp" />
     <ClCompile Include="SIO\Sio.cpp" />
-    <ClCompile Include="SIO\Sio0.cpp" />
+    <ClCompile Include="PS1\Sio0.cpp" />
     <ClCompile Include="SIO\Sio2.cpp" />
     <ClCompile Include="SPU2\Debug.cpp" />
     <ClCompile Include="SPU2\Dma.cpp" />
@@ -391,16 +391,16 @@
     <ClCompile Include="SPU2\spu2.cpp" />
     <ClCompile Include="IPU\IPUdma.cpp" />
     <ClCompile Include="IPU\IPUdither.cpp" />
-    <ClCompile Include="Mdec.cpp" />
+    <ClCompile Include="PS1\Mdec.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ps2\Iop\PsxBios.cpp" />
-    <ClCompile Include="ps2\pgif.cpp" />
+    <ClCompile Include="PS1\Bios.cpp" />
+    <ClCompile Include="PS1\Pgif.cpp" />
     <ClCompile Include="Dmac.cpp" />
     <ClCompile Include="ShiftJisToUnicode.cpp" />
-    <ClCompile Include="sif2.cpp" />
+    <ClCompile Include="Sif2.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -611,7 +611,7 @@
     <ClCompile Include="IopHw.cpp" />
     <ClCompile Include="ps2\Iop\IopHwRead.cpp" />
     <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
-    <ClCompile Include="CDVD\Ps1CD.cpp" />
+    <ClCompile Include="PS1\CdRom.cpp" />
     <ClCompile Include="CDVD\CDVD.cpp" />
     <ClCompile Include="CDVD\CDVDcommon.cpp" />
     <ClCompile Include="CDVD\CDVDisoReader.cpp" />
@@ -798,7 +798,7 @@
     <ClInclude Include="Input\InputSource.h" />
     <ClInclude Include="Input\SDLInputSource.h" />
     <ClInclude Include="Input\XInputSource.h" />
-    <ClInclude Include="IopGte.h" />
+    <ClInclude Include="PS1\Gte.h" />
     <ClInclude Include="IPU\mpeg2_vlc.h" />
     <ClInclude Include="LayeredSettingsInterface.h" />
     <ClInclude Include="PINE.h" />
@@ -824,7 +824,7 @@
     <ClInclude Include="SIO\Pad\PadPopn.h" />
     <ClInclude Include="SIO\Pad\PadTypes.h" />
     <ClInclude Include="SIO\Sio.h" />
-    <ClInclude Include="SIO\Sio0.h" />
+    <ClInclude Include="PS1\Sio0.h" />
     <ClInclude Include="SIO\Sio2.h" />
     <ClInclude Include="SIO\SioTypes.h" />
     <ClInclude Include="SPU2\Debug.h" />
@@ -901,10 +901,10 @@
     <ClInclude Include="GS\GSXXH.h" />
     <ClInclude Include="GS\MultiISA.h" />
     <ClInclude Include="IPU\IPUdma.h" />
-    <ClInclude Include="Mdec.h" />
+    <ClInclude Include="PS1\Mdec.h" />
     <ClInclude Include="Patch.h" />
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="ps2\pgif.h" />
+    <ClInclude Include="PS1\Pgif.h" />
     <ClInclude Include="StateWrapper.h" />
     <ClInclude Include="SupportURLs.h" />
     <ClInclude Include="USB\deviceproxy.h" />
@@ -992,7 +992,7 @@
     <ClInclude Include="x86\iR3000A.h" />
     <ClInclude Include="IopHw.h" />
     <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
-    <ClInclude Include="CDVD\Ps1CD.h" />
+    <ClInclude Include="PS1\CdRom.h" />
     <ClInclude Include="CDVD\CDVD.h" />
     <ClInclude Include="CDVD\CDVD_internal.h" />
     <ClInclude Include="CDVD\CDVDcommon.h" />

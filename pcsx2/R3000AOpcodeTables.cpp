@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "R3000A.h"
-#include "IopGte.h"
+#include "PS1/Gte.h"
 #include "IopMem.h"
 
 #include "common/Console.h"

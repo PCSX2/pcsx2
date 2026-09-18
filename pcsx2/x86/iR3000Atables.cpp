@@ -6,7 +6,7 @@
 #include "iR3000A.h"
 #include "IopMem.h"
 #include "IopDma.h"
-#include "IopGte.h"
+#include "PS1/Gte.h"
 
 #include "common/Console.h"
 

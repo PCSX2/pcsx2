@@ -5,7 +5,7 @@
 
 #include "SIO/Sio.h"
 #include "SIO/Sio2.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 
 #include "common/Assertions.h"
 #include "common/Console.h"

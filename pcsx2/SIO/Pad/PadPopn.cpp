@@ -4,7 +4,7 @@
 #include "SIO/Pad/PadPopn.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 
 #include "Common.h"
 #include "Input/InputManager.h"

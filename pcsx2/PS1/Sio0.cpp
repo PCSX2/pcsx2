@@ -9,7 +9,7 @@
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadBase.h"
 #include "SIO/Sio.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 #include "StateWrapper.h"
 
 #define SIO0LOG_ENABLE 0

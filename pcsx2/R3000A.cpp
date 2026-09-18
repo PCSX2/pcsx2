@@ -4,7 +4,7 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 #include "Sif.h"
 #include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
@@ -12,7 +12,7 @@
 #include "IopBios.h"
 #include "IopHw.h"
 #include "IopDma.h"
-#include "CDVD/Ps1CD.h"
+#include "PS1/CdRom.h"
 #include "CDVD/CDVD.h"
 
 using namespace R3000A;

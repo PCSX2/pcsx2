@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "CDVD/CDVD.h"
-#include "CDVD/Ps1CD.h"
+#include "PS1/CdRom.h"
 #include "CDVD/CDVD_internal.h"
 #include "CDVD/IsoReader.h"
 #include "CDVD/IsoFileFormats.h"

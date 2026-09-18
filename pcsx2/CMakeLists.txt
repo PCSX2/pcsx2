@@ -92,12 +92,10 @@ set(pcsx2Sources
 	IopBios.cpp
 	IopCounters.cpp
 	IopDma.cpp
-	IopGte.cpp
 	IopHw.cpp
 	IopIrq.cpp
 	IopMem.cpp
 	PINE.cpp
-	Mdec.cpp
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
@@ -117,10 +115,9 @@ set(pcsx2Sources
 	Sif.cpp
 	Sif0.cpp
 	Sif1.cpp
-	sif2.cpp
+	Sif2.cpp
 	SIO/Sio.cpp
 	SIO/Sio2.cpp
-	SIO/Sio0.cpp
 	SIO/Multitap/MultitapProtocol.cpp
 	SIO/Memcard/MemoryCardFile.cpp
 	SIO/Memcard/MemoryCardFolder.cpp
@@ -173,12 +170,10 @@ set(pcsx2Headers
 	IopBios.h
 	IopCounters.h
 	IopDma.h
-	IopGte.h
 	IopHw.h
 	IopMem.h
 	LayeredSettingsInterface.h
 	PINE.h
-	Mdec.h
 	MTGS.h
 	MTVU.h
 	Memory.h
@@ -195,7 +190,6 @@ set(pcsx2Headers
 	Sif.h
 	SIO/Sio.h
 	SIO/Sio2.h
-	SIO/Sio0.h
 	SIO/SioTypes.h
 	SIO/Multitap/MultitapProtocol.h
 	SIO/Memcard/MemoryCardFile.h
@@ -216,7 +210,6 @@ set(pcsx2Headers
 # CDVD sources
 set(pcsx2CDVDSources
 	CDVD/BlockdumpFileReader.cpp
-	CDVD/Ps1CD.cpp
 	CDVD/CDVDcommon.cpp
 	CDVD/CDVD.cpp
 	CDVD/CDVDdiscReader.cpp
@@ -236,7 +229,6 @@ set(pcsx2CDVDSources
 # CDVD headers
 set(pcsx2CDVDHeaders
 	CDVD/BlockdumpFileReader.h
-	CDVD/Ps1CD.h
 	CDVD/CDVDcommon.h
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
@@ -929,18 +921,32 @@ set(pcsx2LinuxHeaders
 # ps2 sources
 set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
-	ps2/pgif.cpp
 	ps2/Iop/IopHwRead.cpp
-	ps2/Iop/IopHwWrite.cpp
-	ps2/Iop/PsxBios.cpp)
+	ps2/Iop/IopHwWrite.cpp)
 
 # ps2 headers
 set(pcsx2ps2Headers
 	ps2/BiosTools.h
 	ps2/eeHwTraceLog.inl
-	ps2/pgif.h
 	ps2/HwInternal.h
 	ps2/Iop/IopHw_Internal.h)
+
+# PS1 mode sources
+set(pcsx2PS1Sources
+	PS1/Bios.cpp
+	PS1/CdRom.cpp
+	PS1/Gte.cpp
+	PS1/Mdec.cpp
+	PS1/Pgif.cpp
+	PS1/Sio0.cpp)
+
+# PS1 mode headers
+set(pcsx2PS1Headers
+	PS1/CdRom.h
+	PS1/Gte.h
+	PS1/Mdec.h
+	PS1/Pgif.h
+	PS1/Sio0.h)
 
 # RDebug sources
 set(pcsx2RDebugSources
@@ -1111,6 +1117,8 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2InputHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
+	${pcsx2PS1Sources}
+	${pcsx2PS1Headers}
 )
 
 # platform sources

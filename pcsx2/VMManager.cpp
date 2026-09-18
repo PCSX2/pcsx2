@@ -34,7 +34,7 @@
 #include "SIO/Memcard/MemoryCardFile.h"
 #include "SIO/Pad/Pad.h"
 #include "SIO/Sio.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 #include "SIO/Sio2.h"
 #include "SPU2/spu2.h"
 #include "SupportURLs.h"

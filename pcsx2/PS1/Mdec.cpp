@@ -7,7 +7,7 @@
 #include <string.h>
 #include "Common.h"
 
-#include "Mdec.h"
+#include "PS1/Mdec.h"
 #include "IopHw.h"
 
 struct

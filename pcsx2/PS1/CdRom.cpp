@@ -4,8 +4,8 @@
 #include "R3000A.h"
 #include "Common.h"
 
-#include "Ps1CD.h"
-#include "CDVD.h"
+#include "PS1/CdRom.h"
+#include "CDVD/CDVD.h"
 #include "IopHw.h"
 #include "IopDma.h"
 

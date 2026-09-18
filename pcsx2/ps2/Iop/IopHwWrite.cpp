@@ -4,9 +4,9 @@
 #include "IopHw_Internal.h"
 #include "Sif.h"
 #include "SIO/Sio2.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 #include "FW.h"
-#include "CDVD/Ps1CD.h"
+#include "PS1/CdRom.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
@@ -14,8 +14,8 @@
 #include "IopDma.h"
 #include "R3000A.h"
 
-#include "ps2/pgif.h"
-#include "Mdec.h"
+#include "PS1/Pgif.h"
+#include "PS1/Mdec.h"
 
 #define SIO0LOG_ENABLE 0
 #define SIO2LOG_ENABLE 0

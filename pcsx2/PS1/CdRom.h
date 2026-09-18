@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "CDVDcommon.h"
+#include "CDVD/CDVDcommon.h"
 
 // Not used.
 typedef struct

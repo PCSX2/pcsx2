@@ -3,13 +3,13 @@
 
 #include "Common.h"
 #include "SIO/Sio2.h"
-#include "SIO/Sio0.h"
+#include "PS1/Sio0.h"
 #include "CDVD/CDVD.h"
-#include "CDVD/Ps1CD.h"
+#include "PS1/CdRom.h"
 #include "IopCounters.h"
 #include "IopDma.h"
 #include "IopHw.h"
-#include "Mdec.h"
+#include "PS1/Mdec.h"
 #include "R3000A.h"
 
 // NOTE: Any modifications to read/write fns should also go into their const counterparts

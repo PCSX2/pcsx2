@@ -22,6 +22,9 @@
     <Filter Include="System\Ps2">
       <UniqueIdentifier>{1c7a3f63-9285-4202-84c5-278a854db932}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps1">
+      <UniqueIdentifier>{7ac9e0c8-8c06-4d4c-932d-95dd353dd307}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\EmotionEngine">
       <UniqueIdentifier>{33efddb9-1e44-44dc-b857-45b49b22c750}</UniqueIdentifier>
     </Filter>
@@ -650,8 +653,8 @@
     <ClCompile Include="ps2\Iop\IopHwWrite.cpp">
       <Filter>System\Ps2\Iop\Hardware</Filter>
     </ClCompile>
-    <ClCompile Include="CDVD\Ps1CD.cpp">
-      <Filter>System\Ps2\Iop\CDVD</Filter>
+    <ClCompile Include="PS1\CdRom.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
     <ClCompile Include="CDVD\CDVD.cpp">
       <Filter>System\Ps2\Iop\CDVD</Filter>
@@ -752,7 +755,7 @@
     <ClCompile Include="DebugTools\ExpressionParser.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="sif2.cpp">
+    <ClCompile Include="Sif2.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Sif</Filter>
     </ClCompile>
     <ClCompile Include="DebugTools\MipsAssemblerTables.cpp">
@@ -776,14 +779,14 @@
     <ClCompile Include="CDVD\GzippedFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="IopGte.cpp">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClCompile Include="PS1\Gte.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
-    <ClCompile Include="Mdec.cpp">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClCompile Include="PS1\Mdec.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
-    <ClCompile Include="ps2\Iop\PsxBios.cpp">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClCompile Include="PS1\Bios.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
     <ClCompile Include="IPU\IPUdither.cpp">
       <Filter>System\Ps2\IPU</Filter>
@@ -1298,8 +1301,8 @@
     <ClCompile Include="Dmac.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC</Filter>
     </ClCompile>
-    <ClCompile Include="ps2\pgif.cpp">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClCompile Include="PS1\Pgif.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
     <ClCompile Include="Pcsx2Config.cpp">
       <Filter>Misc</Filter>
@@ -1400,8 +1403,8 @@
     <ClCompile Include="SIO\Sio.cpp">
       <Filter>System\Ps2\Iop\SIO</Filter>
     </ClCompile>
-    <ClCompile Include="SIO\Sio0.cpp">
-      <Filter>System\Ps2\Iop\SIO</Filter>
+    <ClCompile Include="PS1\Sio0.cpp">
+      <Filter>System\Ps1</Filter>
     </ClCompile>
     <ClCompile Include="SIO\Sio2.cpp">
       <Filter>System\Ps2\Iop\SIO</Filter>
@@ -1595,8 +1598,8 @@
     <ClInclude Include="ps2\Iop\IopHw_Internal.h">
       <Filter>System\Ps2\Iop\Hardware</Filter>
     </ClInclude>
-    <ClInclude Include="CDVD\Ps1CD.h">
-      <Filter>System\Ps2\Iop\CDVD</Filter>
+    <ClInclude Include="PS1\CdRom.h">
+      <Filter>System\Ps1</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\CDVD.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
@@ -1700,11 +1703,11 @@
     <ClInclude Include="x86\R5900_Profiler.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="IopGte.h">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClInclude Include="PS1\Gte.h">
+      <Filter>System\Ps1</Filter>
     </ClInclude>
-    <ClInclude Include="Mdec.h">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClInclude Include="PS1\Mdec.h">
+      <Filter>System\Ps1</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\CDVDdiscReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
@@ -2235,8 +2238,8 @@
     <ClInclude Include="GS\Renderers\Vulkan\VKSwapChain.h">
       <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="ps2\pgif.h">
-      <Filter>System\Ps2\Iop</Filter>
+    <ClInclude Include="PS1\Pgif.h">
+      <Filter>System\Ps1</Filter>
     </ClInclude>
     <ClInclude Include="BuildVersion.h">
       <Filter>Misc</Filter>
@@ -2328,8 +2331,8 @@
     <ClInclude Include="SIO\Sio.h">
       <Filter>System\Ps2\Iop\SIO</Filter>
     </ClInclude>
-    <ClInclude Include="SIO\Sio0.h">
-      <Filter>System\Ps2\Iop\SIO</Filter>
+    <ClInclude Include="PS1\Sio0.h">
+      <Filter>System\Ps1</Filter>
     </ClInclude>
     <ClInclude Include="SIO\Sio2.h">
       <Filter>System\Ps2\Iop\SIO</Filter>

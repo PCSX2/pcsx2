@@ -7,7 +7,7 @@
 #include "ps2/HwInternal.h"
 #include "ps2/eeHwTraceLog.inl"
 
-#include "ps2/pgif.h"
+#include "PS1/Pgif.h"
 
 using namespace R5900;
 
