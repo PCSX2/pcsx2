@@ -14,10 +14,11 @@
 VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 {
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
-		VK_FORMAT_UNDEFINED,
-		VK_FORMAT_UNDEFINED,
-		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, false, false);
+		VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		false, false);
 
 	if (!rp)
 		return VK_NULL_HANDLE;
@@ -29,29 +30,31 @@ VkFramebuffer GSTextureVK::CreateNullFramebuffer(u32 w, u32 h)
 	return fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
 }
 
-static constexpr const VkComponentMapping s_identity_swizzle{VK_COMPONENT_SWIZZLE_IDENTITY,
-	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
+static constexpr const VkComponentMapping s_identity_swizzle {
+	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+};
 
 static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
 {
 	static constexpr VkImageLayout s_vk_layout_mapping[] = {
-		VK_IMAGE_LAYOUT_UNDEFINED, // Undefined
-		VK_IMAGE_LAYOUT_PREINITIALIZED, // Preinitialized
+		VK_IMAGE_LAYOUT_UNDEFINED,            // Undefined
+		VK_IMAGE_LAYOUT_PREINITIALIZED,       // Preinitialized
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, // ColorAttachment
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, // DepthStencilAttachment
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // ShaderReadOnly
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // ClearDst
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // CopySrc
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // CopyDst
-		VK_IMAGE_LAYOUT_GENERAL, // CopySelf
+		VK_IMAGE_LAYOUT_GENERAL,              // CopySelf
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, // BlitSrc
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, // BlitDst
-		VK_IMAGE_LAYOUT_GENERAL, // BlitSelf
-		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, // PresentSrc
-		VK_IMAGE_LAYOUT_GENERAL, // FeedbackLoop
-		VK_IMAGE_LAYOUT_GENERAL, // ReadWriteImage
-		VK_IMAGE_LAYOUT_GENERAL, // ComputeReadWriteImage
-		VK_IMAGE_LAYOUT_GENERAL, // General
+		VK_IMAGE_LAYOUT_GENERAL,              // BlitSelf
+		VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,      // PresentSrc
+		VK_IMAGE_LAYOUT_GENERAL,              // FeedbackLoop
+		VK_IMAGE_LAYOUT_GENERAL,              // ReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL,              // ComputeReadWriteImage
+		VK_IMAGE_LAYOUT_GENERAL,              // General
 	};
 	static_assert(std::size(s_vk_layout_mapping) == static_cast<u32>(GSTextureVK::Layout::Count));
 	if (layout == GSTextureVK::Layout::FeedbackLoop)
@@ -62,11 +65,13 @@ static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
 
 static VkPipelineStageFlags2 GetPipelineStageFlags(GSTextureVK::Layout layout, bool color)
 {
+	static constexpr VkPipelineStageFlags2 VK_PIPELINE_STAGE_2_FRAGMENT_TESTS_BITS =
+		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
 	static constexpr VkPipelineStageFlags2 s_vk_stage_mapping[] = {
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,             // Undefined
 		VK_PIPELINE_STAGE_2_HOST_BIT,                    // Preinitialized
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, // ColorAttachment
-		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT, // DepthStencilAttachment
+		VK_PIPELINE_STAGE_2_FRAGMENT_TESTS_BITS,         // DepthStencilAttachment
 		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,         // ShaderReadOnly
 		VK_PIPELINE_STAGE_2_CLEAR_BIT,                   // ClearDst
 		VK_PIPELINE_STAGE_2_COPY_BIT,                    // CopySrc
@@ -88,7 +93,7 @@ static VkPipelineStageFlags2 GetPipelineStageFlags(GSTextureVK::Layout layout, b
 		if (color)
 			flags |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 		else
-			flags |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+			flags |= VK_PIPELINE_STAGE_2_FRAGMENT_TESTS_BITS;
 		return flags;
 	}
 	else
@@ -99,25 +104,27 @@ static VkPipelineStageFlags2 GetPipelineStageFlags(GSTextureVK::Layout layout, b
 
 static VkAccessFlags2 GetAccessFlags(GSTextureVK::Layout layout, bool color)
 {
+#define VK_ACCESS_2_READ_WRITE_BITS(x) VK_ACCESS_2_##x##_READ_BIT | VK_ACCESS_2_##x##_WRITE_BIT
 	static constexpr VkPipelineStageFlags2 s_vk_access_mapping[] = {
 		VK_ACCESS_2_NONE,               // Undefined
 		VK_ACCESS_2_HOST_WRITE_BIT,     // Preinitialized
-		VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT         | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,         // ColorAttachment
-		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // DepthStencilAttachment
+		VK_ACCESS_2_READ_WRITE_BITS(COLOR_ATTACHMENT),         // ColorAttachment
+		VK_ACCESS_2_READ_WRITE_BITS(DEPTH_STENCIL_ATTACHMENT), // DepthStencilAttachment
 		VK_ACCESS_2_SHADER_READ_BIT,    // ShaderReadOnly
 		VK_ACCESS_2_TRANSFER_WRITE_BIT, // ClearDst
 		VK_ACCESS_2_TRANSFER_READ_BIT,  // CopySrc
 		VK_ACCESS_2_TRANSFER_WRITE_BIT, // CopyDst
-		VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT, // CopySelf
+		VK_ACCESS_2_READ_WRITE_BITS(TRANSFER), // CopySelf
 		VK_ACCESS_2_TRANSFER_READ_BIT,  // BlitSrc
 		VK_ACCESS_2_TRANSFER_WRITE_BIT, // BlitDst
-		VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT, // BlitSelf
+		VK_ACCESS_2_READ_WRITE_BITS(TRANSFER), // BlitSelf
 		VK_ACCESS_2_NONE,               // PresentSrc
 		VK_ACCESS_2_NONE,               // FeedbackLoop (overridden)
-		VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT, // ReadWriteImage
-		VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT, // ComputeReadWriteImage
+		VK_ACCESS_2_READ_WRITE_BITS(SHADER_STORAGE), // ReadWriteImage
+		VK_ACCESS_2_READ_WRITE_BITS(SHADER_STORAGE), // ComputeReadWriteImage
 		VK_ACCESS_2_NONE,               // General
 	};
+#undef VK_ACCESS_2_READ_WRITE_BITS
 	static_assert(std::size(s_vk_access_mapping) == static_cast<u32>(GSTextureVK::Layout::Count));
 
 	if (layout == GSTextureVK::Layout::FeedbackLoop)
@@ -161,18 +168,25 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Usage usage, Format format, int
 
 	const VkFormat vk_format = GSDeviceVK::GetInstance()->LookupNativeFormat(format);
 
-	VkImageCreateInfo ici = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, nullptr, 0, VK_IMAGE_TYPE_2D, vk_format,
-		{static_cast<u32>(width), static_cast<u32>(height), 1}, static_cast<u32>(levels), 1, VK_SAMPLE_COUNT_1_BIT,
-		VK_IMAGE_TILING_OPTIMAL};
+	VkImageCreateInfo ici = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+	ici.imageType   = VK_IMAGE_TYPE_2D;
+	ici.format      = vk_format;
+	ici.extent      = {static_cast<u32>(width), static_cast<u32>(height), 1};
+	ici.mipLevels   = levels;
+	ici.arrayLayers = 1;
+	ici.samples     = VK_SAMPLE_COUNT_1_BIT;
+	ici.tiling      = VK_IMAGE_TILING_OPTIMAL;
 
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 	aci.flags = VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT;
 	aci.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-	VkImageViewCreateInfo vci = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, VK_NULL_HANDLE,
-		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
-		{VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
+	VkImageViewCreateInfo vci = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+	vci.viewType   = VK_IMAGE_VIEW_TYPE_2D;
+	vci.format     = vk_format;
+	vci.components = s_identity_swizzle;
+	vci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1};
 
 	ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
@@ -250,12 +264,14 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
 	VkImage image, Usage usage, Format format, int width, int height, int levels, VkFormat vk_format)
 {
 	// Only need to create the image view, this is mainly for swap chains.
-	const VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, image,
-		VK_IMAGE_VIEW_TYPE_2D, vk_format, s_identity_swizzle,
-		{IsDepthStencil(usage) ?
-				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_DEPTH_BIT) :
-				static_cast<VkImageAspectFlags>(VK_IMAGE_ASPECT_COLOR_BIT),
-			0u, static_cast<u32>(levels), 0u, 1u}};
+	VkImageViewCreateInfo view_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+	view_info.image      = image;
+	view_info.viewType   = VK_IMAGE_VIEW_TYPE_2D;
+	view_info.format     = vk_format;
+	view_info.components = s_identity_swizzle;
+	view_info.subresourceRange.aspectMask = IsDepthStencil(usage) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	view_info.subresourceRange.levelCount = levels;
+	view_info.subresourceRange.layerCount = 1;
 
 	// Memory is managed by the owner of the image.
 	VkImageView view = VK_NULL_HANDLE;
@@ -355,8 +371,10 @@ void GSTextureVK::CopyTextureDataForUpload(void* dst, const void* src, u32 pitch
 VkBuffer GSTextureVK::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const
 {
 	const u32 size = upload_pitch * height;
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, static_cast<VkDeviceSize>(size),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr};
+	VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+	bci.size  = size;
+	bci.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	// Don't worry about setting the coherent bit for this upload, the main reason we had
 	// that set in StreamBuffer was for MoltenVK, which would upload the whole buffer on
@@ -393,9 +411,15 @@ void GSTextureVK::UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32
 	else if (old_layout != Layout::CopyDst)
 		TransitionSubresourcesToLayout(cmdbuf, level, 1, old_layout, Layout::CopyDst);
 
-	const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset), row_length, buffer_height,
-		{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(level), 0u, 1u}, {static_cast<s32>(x), static_cast<s32>(y), 0},
-		{width, height, 1u}};
+	VkBufferImageCopy bic = {};
+	bic.bufferOffset      = buffer_offset;
+	bic.bufferRowLength   = row_length;
+	bic.bufferImageHeight = buffer_height;
+	bic.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	bic.imageSubresource.mipLevel   = level;
+	bic.imageSubresource.layerCount = 1;
+	bic.imageOffset = {static_cast<s32>(x), static_cast<s32>(y), 0};
+	bic.imageExtent = {width, height, 1};
 
 	vkCmdCopyBufferToImage(cmdbuf, buffer, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bic);
 
@@ -581,12 +605,13 @@ void GSTextureVK::GenerateMipmap()
 		TransitionSubresourcesToLayout(cmdbuf, src_level, 1, m_layout, Layout::BlitSrc);
 		TransitionSubresourcesToLayout(cmdbuf, dst_level, 1, m_layout, Layout::BlitDst);
 
-		const VkImageBlit blit = {
-			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(src_level), 0u, 1u}, // srcSubresource
-			{{0, 0, 0}, {src_width, src_height, 1}}, // srcOffsets
-			{VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(dst_level), 0u, 1u}, // dstSubresource
-			{{0, 0, 0}, {dst_width, dst_height, 1}} // dstOffsets
-		};
+		VkImageBlit blit;
+		blit.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(src_level), 0u, 1u};
+		blit.dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, static_cast<u32>(dst_level), 0u, 1u};
+		blit.srcOffsets[0] = {0, 0, 0};
+		blit.dstOffsets[0] = {0, 0, 0};
+		blit.srcOffsets[1] = {src_width, src_height, 1};
+		blit.dstOffsets[1] = {dst_width, dst_height, 1};
 
 		vkCmdBlitImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
@@ -700,12 +725,12 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 	pxAssert(new_layout != Layout::Preinitialized);
 
 	VkImageMemoryBarrier2 barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-	barrier.srcStageMask = GetPipelineStageFlags(old_layout, !IsDepthStencil());
-	barrier.dstStageMask = GetPipelineStageFlags(new_layout, !IsDepthStencil());
+	barrier.srcStageMask  = GetPipelineStageFlags(old_layout, !IsDepthStencil());
+	barrier.dstStageMask  = GetPipelineStageFlags(new_layout, !IsDepthStencil());
 	barrier.srcAccessMask = GetAccessFlags(old_layout, !IsDepthStencil());
 	barrier.dstAccessMask = GetAccessFlags(new_layout, !IsDepthStencil());
-	barrier.oldLayout = GetVkImageLayout(old_layout);
-	barrier.newLayout = GetVkImageLayout(new_layout);
+	barrier.oldLayout     = GetVkImageLayout(old_layout);
+	barrier.newLayout     = GetVkImageLayout(new_layout);
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.image = m_image;
@@ -745,8 +770,10 @@ VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
 		!IsDepthStencil() ? m_vk_format : VK_FORMAT_UNDEFINED,
 		!IsDepthStencil() ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) : m_vk_format,
-		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
+		VK_ATTACHMENT_LOAD_OP_LOAD,      VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD,      VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		feedback_loop_color, feedback_loop_depth);
 	if (!rp)
 		return VK_NULL_HANDLE;
 
@@ -784,8 +811,10 @@ std::unique_ptr<GSDownloadTextureVK> GSDownloadTextureVK::Create(u32 width, u32 
 	const u32 buffer_size =
 		GetBufferSize(width, height, format, GSDeviceVK::GetInstance()->GetBufferCopyRowPitchAlignment());
 
-	const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0u, buffer_size,
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0u, nullptr};
+	VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+	bci.size = buffer_size;
+	bci.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VmaAllocationCreateInfo aci = {};
 	aci.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
