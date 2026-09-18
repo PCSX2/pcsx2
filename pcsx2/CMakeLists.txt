@@ -613,7 +613,7 @@ if(USE_OPENGL)
 	if(WIN32)
 		list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextWGL.cpp)
 		list(APPEND pcsx2GSHeaders GS/Renderers/OpenGL/GLContextWGL.h)
-		target_link_libraries(PCSX2_FLAGS INTERFACE opengl32.lib WinPixEventRuntime::WinPixEventRuntime)
+		target_link_libraries(PCSX2_FLAGS INTERFACE opengl32.lib)
 	else()
 		if(X11_API OR WAYLAND_API)
 			list(APPEND pcsx2GSSources GS/Renderers/OpenGL/GLContextEGL.cpp)
@@ -1175,6 +1175,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 if(WIN32)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		WIL::WIL
+		WinPixEventRuntime::WinPixEventRuntime
 		D3D12MemAlloc
 		setupapi.lib
 		ws2_32.lib
