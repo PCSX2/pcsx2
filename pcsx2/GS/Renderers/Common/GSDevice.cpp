@@ -370,6 +370,9 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 
 #ifdef BAKE_SHADERS_IN_CPP
 #include "common_fxaa.cpp"
+#include "common_ffx_a.cpp"
+#include "common_ffx_cas.cpp"
+#include "vulkan_cas.cpp"
 #include "vulkan_convert.cpp"
 #include "vulkan_imgui.cpp"
 #include "vulkan_interlace.cpp"
@@ -377,6 +380,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "vulkan_present.cpp"
 #include "vulkan_shadeboost.cpp"
 #include "vulkan_tfx.cpp"
+#include "opengl_cas.cpp"
 #include "opengl_convert.cpp"
 #include "opengl_imgui.cpp"
 #include "opengl_interlace.cpp"
@@ -386,6 +390,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "opengl_tfx_fs.cpp"
 #include "opengl_tfx_vgs.cpp"
 #ifdef _WIN32
+#include "dx11_cas.cpp"
 #include "dx11_convert.cpp"
 #include "dx11_imgui.cpp"
 #include "dx11_interlace.cpp"
@@ -395,8 +400,12 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "dx11_tfx.cpp"
 #endif
 
-static const std::map<std::string, const unsigned char*> baked_shaders = {
+static const std::map<std::string, const unsigned char*> s_baked_shaders = {
 	{ "shaders/common/fxaa.fx"         , common_fxaa},
+	{ "shaders/common/fxaa.fx"         , common_fxaa },
+	{ "shaders/common/ffx_a.h"         , common_ffx_a },
+	{ "shaders/common/ffx_cas.h"       , common_ffx_cas },
+	{ "shaders/vulkan/cas.glsl"        , vulkan_cas },
 	{ "shaders/vulkan/convert.glsl"    , vulkan_convert},
 	{ "shaders/vulkan/imgui.glsl"      , vulkan_imgui},
 	{ "shaders/vulkan/interlace.glsl"  , vulkan_interlace},
@@ -404,6 +413,7 @@ static const std::map<std::string, const unsigned char*> baked_shaders = {
 	{ "shaders/vulkan/present.glsl"    , vulkan_present },
 	{ "shaders/vulkan/shadeboost.glsl" , vulkan_shadeboost },
 	{ "shaders/vulkan/tfx.glsl"        , vulkan_tfx },
+	{ "shaders/opengl/cas.glsl"        , opengl_cas },
 	{ "shaders/opengl/convert.glsl"    , opengl_convert },
 	{ "shaders/opengl/imgui.glsl"      , opengl_imgui },
 	{ "shaders/opengl/interlace.glsl"  , opengl_interlace },
@@ -413,6 +423,7 @@ static const std::map<std::string, const unsigned char*> baked_shaders = {
 	{ "shaders/opengl/tfx_fs.glsl"     , opengl_tfx_fs },
 	{ "shaders/opengl/tfx_vgs.glsl"    , opengl_tfx_vgs },
 #ifdef _WIN32
+	{ "shaders/dx11/cas.hlsl"          , dx11_cas },
 	{ "shaders/direct3d/convert.fx"    , dx11_convert },
 	{ "shaders/direct3d/imgui.fx"      , dx11_imgui },
 	{ "shaders/direct3d/interlace.fx"  , dx11_interlace },
@@ -427,8 +438,8 @@ static const std::map<std::string, const unsigned char*> baked_shaders = {
 std::optional<std::string> GSDevice::ReadShaderSource(const char* filename)
 {
 #ifdef BAKE_SHADERS_IN_CPP
-	const auto it = baked_shaders.find(filename);
-	if (it != baked_shaders.end())
+	const auto it = s_baked_shaders.find(filename);
+	if (it != s_baked_shaders.end())
 		return reinterpret_cast<const char*>(it->second);
 #endif
 	return FileSystem::ReadFileToString(Path::Combine(EmuFolders::Resources, filename).c_str());

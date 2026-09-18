@@ -70,6 +70,9 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\cas.glsl">
+      <VarName>vulkan_cas</VarName>
+    </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\vulkan\convert.glsl">
       <VarName>vulkan_convert</VarName>
     </ShaderToCpp>
@@ -90,6 +93,9 @@
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\vulkan\tfx.glsl">
       <VarName>vulkan_tfx</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\opengl\cas.glsl">
+      <VarName>opengl_cas</VarName>
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\convert.glsl">
       <VarName>opengl_convert</VarName>
@@ -115,6 +121,9 @@
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\present.glsl">
       <VarName>opengl_present</VarName>
     </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\dx11\cas.hlsl">
+      <VarName>dx11_cas</VarName>
+    </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\dx11\convert.fx">
       <VarName>dx11_convert</VarName>
     </ShaderToCpp>
@@ -138,6 +147,12 @@
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\common\fxaa.fx">
       <VarName>common_fxaa</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\ffx_a.h">
+      <VarName>common_ffx_a</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\common\ffx_cas.h">
+      <VarName>common_ffx_cas</VarName>
     </ShaderToCpp>
     <None Include="..\bin\resources\shaders\common\fxaa.fx" />
     <None Include="..\bin\resources\shaders\opengl\cas.glsl" />
