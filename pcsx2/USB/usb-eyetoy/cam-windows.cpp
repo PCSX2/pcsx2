@@ -178,7 +178,7 @@ namespace usb_eyetoy
 				Console.Warning("Camera: '%ls'", var.bstrVal);
 				if (!selectedDevice.empty() && selectedDevice != var.bstrVal)
 				{
-					break;
+					continue;
 				}
 
 				//add a filter for the device
