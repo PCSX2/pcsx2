@@ -731,7 +731,7 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 
 	D3D11_FEATURE_DATA_D3D11_OPTIONS2 options2{};
 	m_dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &options2, sizeof(options2));
-	m_features.rov = m_uav_texture && options2.ROVsSupported;
+	m_features.rov = m_uav_texture && options2.TypedUAVLoadAdditionalFormats && options2.ROVsSupported;
 	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt <= static_cast<u32>(GSTexture::Format::PrimID); fmt++)
 	{
 		if (GSTexture::IsShaderWriteFormat(static_cast<GSTexture::Format>(fmt)))
