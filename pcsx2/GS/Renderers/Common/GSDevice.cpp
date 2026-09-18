@@ -370,6 +370,9 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 
 #ifdef BAKE_SHADERS_IN_CPP
 #include "common_fxaa.cpp"
+#include "common_ffx_a.cpp"
+#include "common_ffx_cas.cpp"
+#include "vulkan_cas.cpp"
 #include "vulkan_convert.cpp"
 #include "vulkan_imgui.cpp"
 #include "vulkan_interlace.cpp"
@@ -377,6 +380,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "vulkan_present.cpp"
 #include "vulkan_shadeboost.cpp"
 #include "vulkan_opengl_tfx.cpp"
+#include "opengl_cas.cpp"
 #include "opengl_convert.cpp"
 #include "opengl_imgui.cpp"
 #include "opengl_interlace.cpp"
@@ -398,6 +402,7 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "common_tfx_ps_util.cpp"
 #include "common_tfx_vs.cpp"
 #ifdef _WIN32
+#include "dx_cas.cpp"
 #include "dx_convert.cpp"
 #include "dx_imgui.cpp"
 #include "dx_interlace.cpp"
@@ -408,7 +413,10 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #endif
 
 static const std::map<std::string, const unsigned char*> baked_shaders = {
-	{ "shaders/common/fxaa.fx"              , common_fxaa},
+	{ "shaders/common/fxaa.fx"              , common_fxaa },
+	{ "shaders/common/ffx_a.h"              , common_ffx_a },
+	{ "shaders/common/ffx_cas.h"            , common_ffx_cas },
+	{ "shaders/vulkan/cas.glsl"             , vulkan_cas },
 	{ "shaders/vulkan/convert.glsl"         , vulkan_convert},
 	{ "shaders/vulkan/imgui.glsl"           , vulkan_imgui},
 	{ "shaders/vulkan/interlace.glsl"       , vulkan_interlace},
@@ -416,6 +424,7 @@ static const std::map<std::string, const unsigned char*> baked_shaders = {
 	{ "shaders/vulkan/present.glsl"         , vulkan_present },
 	{ "shaders/vulkan/shadeboost.glsl"      , vulkan_shadeboost },
 	{ "shaders/vulkan_opengl/tfx.glsl"      , vulkan_opengl_tfx },
+	{ "shaders/opengl/cas.glsl"             , opengl_cas },
 	{ "shaders/opengl/convert.glsl"         , opengl_convert },
 	{ "shaders/opengl/imgui.glsl"           , opengl_imgui },
 	{ "shaders/opengl/interlace.glsl"       , opengl_interlace },
@@ -437,6 +446,7 @@ static const std::map<std::string, const unsigned char*> baked_shaders = {
 	{ "shaders/common/tfx_ps_util.inc"      , common_tfx_ps_util},
 	{ "shaders/common/tfx_vs.inc"           , common_tfx_vs},
 #ifdef _WIN32
+	{ "shaders/dx/cas.hlsl"                 , dx_cas },
 	{ "shaders/dx/convert.fx"               , dx_convert },
 	{ "shaders/dx/imgui.fx"                 , dx_imgui },
 	{ "shaders/dx/interlace.fx"             , dx_interlace },
