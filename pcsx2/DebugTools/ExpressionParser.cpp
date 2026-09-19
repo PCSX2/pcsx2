@@ -411,7 +411,7 @@ bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, Postf
 	return true;
 }
 
-bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error)
+bool parsePostfixExpression(const PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error)
 {
 	size_t num = 0;
 	u64 opcode;

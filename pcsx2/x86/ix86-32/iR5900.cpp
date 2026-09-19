@@ -1564,15 +1564,13 @@ void dynarecCheckBreakpoint()
 
 void dynarecMemcheck(size_t i)
 {
-	const u32 op = memRead32(cpuRegs.pc);
-	const OPCODE& opcode = GetInstruction(op);
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_EE, pc) != 0)
 	{
 		CBreakPoints::ClearSkipFirst(BREAKPOINT_EE);
 		return;
 	}
 
-	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_EE)[i];
+	const auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_EE)[i];
 
 	if (mc.hasCond)
 	{
@@ -1608,7 +1606,7 @@ void recMemcheck(u32 op, u32 bits, bool store)
 	// ecx = access address
 	// edx = access address+size
 
-	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_EE);
+	const auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_EE);
 	for (size_t i = 0; i < checks.size(); i++)
 	{
 		if (checks[i].result == 0)

@@ -1368,9 +1368,7 @@ static bool psxDynarecCheckBreakpoint()
 static bool psxDynarecMemcheck(size_t i)
 {
 	const u32 pc = psxRegs.pc;
-	const u32 op = iopMemRead32(pc);
-	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
-	auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_IOP)[i];
+	const auto mc = CBreakPoints::GetMemChecks(BREAKPOINT_IOP)[i];
 
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
 	{
@@ -1409,7 +1407,7 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 	// ecx = access address
 	// edx = access address+size
 
-	auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_IOP);
+	const auto checks = CBreakPoints::GetMemChecks(BREAKPOINT_IOP);
 	for (size_t i = 0; i < checks.size(); i++)
 	{
 		if (checks[i].result == 0)
