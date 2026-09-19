@@ -259,7 +259,7 @@ public:
 		Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unscaled_size, float scale, GSTexture* texture);
 		~Target();
 
-		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear);
+		static Target* Create(GIFRegTEX0 TEX0, int w, int h, float scale, int type, bool clear, bool z_integer = false);
 
 		bool OverlapsValid(u32 bp, u32 bw, u32 psm, const GSVector4i& rect) const;
 
@@ -542,7 +542,7 @@ private:
 public:
 	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true,
 		u32 fbmask = 0, bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
-		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr);
+		const GSVector4i draw_rc = GSVector4i::zero(), GSTextureCache::Source* src = nullptr, bool z_integer = false);
 
 	Target* LookupDisplayTarget(GIFRegTEX0 TEX0, const GSVector2i& size, float scale, bool is_feedback);
 
@@ -573,12 +573,12 @@ public:
 	/// Removes any sources which point to the same address as a new target.
 	void ReplaceSourceTexture(Source* s, GSTexture* new_texture, float new_scale, const GSVector2i& new_unscaled_size,
 		HashCacheEntry* hc_entry, bool new_texture_is_shared);
-
+	
 	/// Converts single color value to depth using the specified shader expression.
-	static float ConvertColorToDepth(u32 c, u32 src_bpp, u32 dst_bpp);
+	static u32 ConvertColorToDepth(u32 c, u32 src_bpp, u32 dst_bpp);
 
 	/// Converts single depth value to colour using the specified shader expression.
-	static u32 ConvertDepthToColor(float d, u32 dst_bpp);
+	static u32 ConvertDepthToColor(u32 d, u32 dst_bpp);
 
 	/// Copies RGB channels from depth target to a color target.
 	bool CopyRGBFromDepthToColor(Target* dst, Target* depth_src);
