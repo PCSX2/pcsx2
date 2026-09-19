@@ -283,7 +283,7 @@ class ShaderConvertSelector
 public:
 	constexpr ShaderConvertSelector(ShaderConvert shader = ShaderConvert::COPY, u8 mask = 0xf,
  		bool depth_out = false, Filter filter = Filter::Nearest)
-		: fields { static_cast<u32>(shader) }
+		: fields {{ static_cast<u32>(shader) }}
 	{
 		*this = SetMask(mask).SetDepthOutput(depth_out).SetFilter(filter);
 	}
