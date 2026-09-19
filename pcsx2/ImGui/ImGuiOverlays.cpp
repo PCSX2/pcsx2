@@ -799,7 +799,7 @@ __ri void ImGuiManager::DrawShaderCompileIndicator(float scale, float margin, fl
 	static bool s_indicator_was_visible = false;
 	static double s_indicator_fade_in_start = 0.0;
 
-	if (!GSConfig.OsdShowGPU || !GSShaderCompileIndicator::IsVisible())
+	if (!GSConfig.OsdShowGPUShadersStats || !GSShaderCompileIndicator::IsVisible())
 	{
 		s_indicator_was_visible = false;
 		return;

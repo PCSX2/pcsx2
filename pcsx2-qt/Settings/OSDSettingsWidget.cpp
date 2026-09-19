@@ -62,6 +62,7 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageCPU, "EmuCore/GS", "OsdShowCPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showUsageGPU, "EmuCore/GS", "OsdShowGPU", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugGPU, "EmuCore/GS", "OsdShowGPUDebug", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showGPUShadersStats, "EmuCore/GS", "OsdShowGPUShadersStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatsGPU, "EmuCore/GS", "OsdShowGPUStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "EmuCore/GS", "OsdShowIndicators", true);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "EmuCore/GS", "OsdShowFrameTimes", false);
@@ -135,6 +136,9 @@ OSDSettingsWidget::OSDSettingsWidget(SettingsWindow* settings_dialog, QWidget* p
 
 	dialog()->registerWidgetHelp(m_ui.showHardwareInfo, tr("Show Hardware Info"), tr("Unchecked"),
 		tr("Shows the current system CPU and GPU information."));
+
+	dialog()->registerWidgetHelp(m_ui.showGPUShadersStats, tr("Show Shader Compilation"), tr("Unchecked"),
+		tr("Displays shader compilation statistics in the on-screen display"));
 
 	dialog()->registerWidgetHelp(m_ui.showVersion, tr("Show PCSX2 Version"), tr("Unchecked"),
 		tr("Shows the current PCSX2 version."));
