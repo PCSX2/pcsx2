@@ -16,7 +16,7 @@ struct BreakPointCond
 	PostfixExpression expression;
 	std::string expressionString;
 
-	u32 Evaluate()
+	u32 Evaluate() const
 	{
 		u64 result;
 		std::string error;
@@ -170,7 +170,7 @@ public:
 	// Returns count of all non-temporary breakpoints
 	static size_t GetNumBreakpoints()
 	{
-		return std::count_if(breakPoints_.begin(), breakPoints_.end(), [](BreakPoint& bp) { return !bp.temporary; });
+		return std::count_if(breakPoints_.begin(), breakPoints_.end(), [](const BreakPoint& bp) { return !bp.temporary; });
 	}
 	static size_t GetNumMemchecks() { return memChecks_.size(); }
 

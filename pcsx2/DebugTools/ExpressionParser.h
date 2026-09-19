@@ -27,5 +27,5 @@ public:
 };
 
 bool initPostfixExpression(const char* infix, IExpressionFunctions* funcs, PostfixExpression& dest, std::string& error);
-bool parsePostfixExpression(PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error);
+bool parsePostfixExpression(const PostfixExpression& exp, IExpressionFunctions* funcs, u64& dest, std::string& error);
 bool parseExpression(const char* exp, IExpressionFunctions* funcs, u64& dest, std::string& error);

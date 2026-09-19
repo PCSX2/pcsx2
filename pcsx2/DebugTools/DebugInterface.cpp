@@ -122,7 +122,7 @@ bool DebugInterface::initExpression(const char* exp, PostfixExpression& dest, st
 	return initPostfixExpression(exp, &funcs, dest, error);
 }
 
-bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest, std::string& error)
+bool DebugInterface::parseExpression(const PostfixExpression& exp, u64& dest, std::string& error)
 {
 	MipsExpressionFunctions funcs(this, nullptr, false);
 	return parsePostfixExpression(exp, &funcs, dest, error);
