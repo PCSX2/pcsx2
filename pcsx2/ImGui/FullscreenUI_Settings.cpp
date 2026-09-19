@@ -3733,6 +3733,8 @@ void FullscreenUI::DrawOSDSettingsPage()
 	// TODO: Change this to a GPU icon when FA gets one or PromptFont fixes their codepoints.
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGE, "Show GPU Usage"),
 		FSUI_CSTR("Shows the host's GPU utilization."), "EmuCore/GS", "OsdShowGPU", false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_IMAGE, "Show Shader Compilation"),
+		FSUI_CSTR("Displays shader compilation statistics in the on-screen display."), "EmuCore/GS", "OsdShowGPUShadersStats", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY, "Show Status Indicators"),
 		FSUI_CSTR("Shows icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion."), "EmuCore/GS",
 		"OsdShowIndicators", true);
