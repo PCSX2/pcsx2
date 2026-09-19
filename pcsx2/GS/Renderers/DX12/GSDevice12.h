@@ -75,7 +75,7 @@ public:
 				return tex->GetUAVDescriptor();
 			default:
 				pxFailRel("Impossible.");
-				return D3D12DescriptorHandle{ 0, 0 };
+				return {};
 		}
 	}
 
