@@ -32,7 +32,7 @@ namespace
 
 		void SetPaused(bool paused) override;
 
-		bool Initialize(const char* driver_name, const char* device_name, bool stretch_enabled, Error* error);
+		bool Initialize(const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error);
 
 	private:
 		static void LogCallback(const char* fmt, ...);
@@ -117,7 +117,8 @@ void CubebAudioStream::DestroyContextAndStream()
 #endif
 }
 
-bool CubebAudioStream::Initialize(const char* driver_name, const char* device_name, bool stretch_enabled, Error* error)
+bool CubebAudioStream::Initialize(
+	const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error)
 {
 	cubeb_set_log_callback(CUBEB_LOG_NORMAL, LogCallback);
 
@@ -171,14 +172,12 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 	params.layout = channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].first;
 	params.prefs = CUBEB_STREAM_PREF_NONE;
 
-	u32 latency_frames = GetBufferSizeForMS(
-		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
-	u32 min_latency_frames = 0;
-	rv = cubeb_get_min_latency(m_context, &params, &min_latency_frames);
+	u32 minimum_latency_frames = 0;
+	rv = cubeb_get_min_latency(m_context, &params, &minimum_latency_frames);
 	if (rv == CUBEB_ERROR_NOT_SUPPORTED)
 	{
-		DEV_LOG("Cubeb backend does not support latency queries, using latency of {} ms ({} frames).",
-			m_parameters.buffer_ms, latency_frames);
+		minimum_latency_frames = 0;
+		DEV_LOG("Cubeb backend does not support minimum latency queries.");
 	}
 	else
 	{
@@ -189,19 +188,20 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 			return false;
 		}
 
-		const u32 minimum_latency_ms = GetMSForBufferSize(m_sample_rate, min_latency_frames);
-		DEV_LOG("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, min_latency_frames);
-		if (m_parameters.minimal_output_latency)
-		{
-			// use minimum
-			latency_frames = min_latency_frames;
-		}
-		else if (minimum_latency_ms > m_parameters.output_latency_ms)
-		{
-			WARNING_LOG("Minimum latency is above requested latency: {} vs {}, adjusting to compensate.",
-				min_latency_frames, latency_frames);
-			latency_frames = min_latency_frames;
-		}
+		const u32 minimum_latency_ms = GetMSForFramesCeil(m_sample_rate, minimum_latency_frames);
+		DEV_LOG("Minimum latency: {} ms ({} audio frames)", minimum_latency_ms, minimum_latency_frames);
+	}
+
+	u32 latency_frames = GetFrameCountForMS(m_sample_rate, m_parameters.output_latency_ms);
+	const bool below_minimum = minimum_latency_frames > 0 && latency_frames < minimum_latency_frames;
+	if (below_minimum)
+	{
+		WARNING_LOG("Configured output latency requests {} frames below Cubeb's guaranteed minimum of {} frames.",
+			latency_frames, minimum_latency_frames);
+	}
+	else
+	{
+		DEV_LOG("Requesting Cubeb latency of {} frames.", latency_frames);
 	}
 
 	cubeb_devid selected_device = nullptr;
@@ -238,13 +238,22 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
 		}
 	}
 
-	BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second, stretch_enabled);
+	BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second, sync_mode);
 
 	char stream_name[32];
 	std::snprintf(stream_name, sizeof(stream_name), "%p", this);
 
-	rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params, latency_frames,
-		&CubebAudioStream::DataCallback, StateCallback, this);
+	rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params,
+		latency_frames, &CubebAudioStream::DataCallback, StateCallback, this);
+	// Verified subminimum requests have an effect on cubeb backends
+	if (rv != CUBEB_OK && below_minimum && !stream)
+	{
+		WARNING_LOG("Subminimum Cubeb latency request failed with {}; retrying the guaranteed minimum of {} frames.",
+			GetCubebErrorString(rv), minimum_latency_frames);
+		latency_frames = minimum_latency_frames;
+		rv = cubeb_stream_init(m_context, &stream, stream_name, nullptr, nullptr, selected_device, &params,
+			latency_frames, &CubebAudioStream::DataCallback, StateCallback, this);
+	}
 
 	if (devices_valid)
 		cubeb_device_collection_destroy(m_context, &devices);
@@ -287,21 +296,33 @@ void CubebAudioStream::SetPaused(bool paused)
 	if (paused == m_paused || !stream)
 		return;
 
-	const int rv = paused ? cubeb_stream_stop(stream) : cubeb_stream_start(stream);
-	if (rv != CUBEB_OK)
+	if (paused)
 	{
-		ERROR_LOG("Could not {} stream: {}", paused ? "pause" : "resume", GetCubebErrorString(rv));
+		const int rv = cubeb_stream_stop(stream);
+		if (rv != CUBEB_OK)
+		{
+			ERROR_LOG("Could not pause stream: {}", GetCubebErrorString(rv));
+			return;
+		}
+
+		AudioStream::SetPaused(true);
 		return;
 	}
 
-	m_paused = paused;
+	AudioStream::SetPaused(false);
+	const int rv = cubeb_stream_start(stream);
+	if (rv != CUBEB_OK)
+	{
+		AudioStream::SetPaused(true);
+		ERROR_LOG("Could not resume stream: {}", GetCubebErrorString(rv));
+	}
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateCubebAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-	const char* driver_name, const char* device_name, bool stretch_enabled, Error* error)
+	const char* driver_name, const char* device_name, AudioSynchronizationMode sync_mode, Error* error)
 {
 	std::unique_ptr<CubebAudioStream> stream = std::make_unique<CubebAudioStream>(sample_rate, parameters);
-	if (!stream->Initialize(driver_name, device_name, stretch_enabled, error))
+	if (!stream->Initialize(driver_name, device_name, sync_mode, error))
 		stream.reset();
 	return stream;
 }
