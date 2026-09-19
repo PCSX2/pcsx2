@@ -417,6 +417,7 @@ enum class GSHWAutoFlushLevel : u8
 	Disabled,
 	SpritesOnly,
 	Enabled,
+	BatchEnabled,
 };
 
 enum class GSGPUTargetCLUTMode : u8
