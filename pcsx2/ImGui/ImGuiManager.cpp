@@ -528,16 +528,6 @@ void ImGuiManager::UnloadFontData()
 	std::vector<u8>().swap(s_icon_pf_font_data);
 }
 
-static u16 Load16BE(const u8* data)
-{
-	return (data[0] << 8) | data[1];
-}
-
-static u32 Load32BE(const u8* data)
-{
-	return (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
-}
-
 // Attempt to find the font index for the given font in its font file
 static u32 GetFontIndex(const ImGuiManager::FontInfo& font)
 {

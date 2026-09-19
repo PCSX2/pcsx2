@@ -154,32 +154,6 @@ namespace ImGuiManager
 	static void DrawIndicatorsOverlay(float& position_y, float scale, float margin, float spacing);
 } // namespace ImGuiManager
 
-static std::tuple<float, float> GetMinMax(std::span<const float> values)
-{
-	GSVector4 vmin(GSVector4::load<false>(values.data()));
-	GSVector4 vmax(vmin);
-
-	const u32 count = static_cast<u32>(values.size());
-	const u32 aligned_count = Common::AlignDownPow2(count, 4);
-	u32 i = 4;
-	for (; i < aligned_count; i += 4)
-	{
-		const GSVector4 v(GSVector4::load<false>(&values[i]));
-		vmin = vmin.min(v);
-		vmax = vmax.max(v);
-	}
-
-	float min = std::min(vmin.x, std::min(vmin.y, std::min(vmin.z, vmin.w)));
-	float max = std::max(vmax.x, std::max(vmax.y, std::max(vmax.z, vmax.w)));
-	for (; i < count; i++)
-	{
-		min = std::min(min, values[i]);
-		max = std::max(max, values[i]);
-	}
-
-	return std::tie(min, max);
-}
-
 __ri void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, double time)
 {
 	// Some values, such as GPU (and even CPU to some extent) can be out of phase with the wall clock,
