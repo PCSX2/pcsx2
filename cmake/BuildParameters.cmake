@@ -18,7 +18,7 @@ option(POSITION_INDEPENDENT_CODE "Generate position-independent code. It is reco
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-if(NOT WIN32 AND ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64"))
+if(NOT (WIN32 AND ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "ARM64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")))
 	if(NOT APPLE)
 		option(USE_OPENGL "Enable OpenGL GS renderer" ON)
 	endif()
