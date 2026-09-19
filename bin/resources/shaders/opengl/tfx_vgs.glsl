@@ -15,6 +15,10 @@ layout(std140, binding = 1) uniform cb20
 
 	uint  MaxDepth;
 	float LineAA1Width;
+
+	uvec2 XYOffset;
+	float ScaleRT;
+	float ScaleTex;
 };
 
 #ifdef VERTEX_SHADER
@@ -26,6 +30,19 @@ layout(std140, binding = 1) uniform cb20
 #define VS_EXPAND_SPRITE 3
 #define VS_EXPAND_LINE_AA1 4
 #define VS_EXPAND_TRIANGLE_AA1 5
+#define VS_EXPAND_TRIANGLE 6
+#endif
+
+#ifndef VS_CLAMP_UV_NONE
+#define VS_CLAMP_UV_NONE 0
+#define VS_CLAMP_UV_NEAREST 1
+#define VS_CLAMP_UV_LINEAR 2
+#endif
+
+#ifndef VS_ALIGN_UV_NONE
+#define VS_ALIGN_UV_NONE 0
+#define VS_ALIGN_UV_ALIGN 1
+#define VS_ALIGN_UV_PASSTHROUGH 2
 #endif
 
 out SHADER
@@ -39,9 +56,52 @@ out SHADER
 	#endif
 	float inv_cov; // We use the inverse to make it simpler to interpolate.
 	flat uint interior; // 1 for triangle interior; 0 for edge.
+
+	#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+		flat uvec4 rounduv;
+	#endif
+
+	#if VS_ROUND_UV
+		flat vec4 scaleuv;
+	#endif
+
+	#if VS_CLAMP_UV
+		flat vec4 clampuv;
+	#endif
 } VSout;
 
 const float exp_min32 = exp2(-32.0f);
+
+uvec4 extract_round_uv_bits(float q)
+{
+	uint qi = floatBitsToUint(q);
+	return uvec4(
+		(qi >> 0) & 0xFFF,  // Prim left
+		(qi >> 12) & 0xFFF, // Prim top
+		(qi >> 24) & 0xF,   // Round U flags
+		(qi >> 28) & 0xF    // Round V flags
+	);
+}
+
+vec2 raw_coords_to_ndc(uvec2 raw_pos)
+{
+	// pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
+	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
+	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
+	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
+	return (vec2(raw_pos) - vec2(0.05f)) * VertexScale - VertexOffset;
+}
+
+vec2 window_coords_to_ndc(vec2 window_pos)
+{
+	// This function is only used by shader sprite align and always uses a native HPO.
+	return (window_pos + vec2(8.0f - 0.05f)) * vec2(VertexScale.xy) - vec2(1.0f);
+}
+
+float raw_z_to_ndc(uint z)
+{
+	return float(z) * exp2(-32.0f); // integer->float depth
+}
 
 #if VS_EXPAND == VS_EXPAND_NONE
 
@@ -55,7 +115,11 @@ layout(location = 7) in vec4  i_f;
 
 void texture_coord()
 {
+#if !(VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV)
 	vec2 uv = vec2(i_uv) - TextureOffset;
+#else
+	vec2 uv = i_st - TextureOffset;
+#endif
 	vec2 st = i_st - TextureOffset;
 
 	// Float coordinate
@@ -71,6 +135,12 @@ void texture_coord()
 	// Some games uses float coordinate for post-processing effect
 	VSout.t_int.zw = st / TextureScale;
 #endif
+
+// Get UV rounding info saved in Q.
+#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+	VSout.rounduv = extract_round_uv_bits(i_q);
+	VSout.t_float.w = 1.0f;
+#endif
 }
 
 void vs_main()
@@ -78,12 +148,7 @@ void vs_main()
 	// Clamp to max depth, gs doesn't wrap
 	highp uint z = min(i_z, MaxDepth);
 
-	// pos -= 0.05 (1/320 pixel) helps avoiding rounding problems (integral part of pos is usually 5 digits, 0.05 is about as low as we can go)
-	// example: ceil(afterseveralvertextransformations(y = 133)) => 134 => line 133 stays empty
-	// input granularity is 1/16 pixel, anything smaller than that won't step drawing up/left by one pixel
-	// example: 133.0625 (133 + 1/16) should start from line 134, ceil(133.0625 - 0.05) still above 133
-	gl_Position.xy = vec2(i_p) - vec2(0.05f, 0.05f);
-	gl_Position.xy = gl_Position.xy * VertexScale - VertexOffset;
+	gl_Position = vec4(raw_coords_to_ndc(i_p), raw_z_to_ndc(z), 1.0f);
 
 	#if HAS_CLIP_CONTROL
 		gl_Position.z = float(z) * exp_min32;
@@ -96,10 +161,14 @@ void vs_main()
 	texture_coord();
 
 	VSout.c = i_c;
-	VSout.t_float.z = i_f.x; // pack for with texture
+	VSout.t_float.z = i_f.x; // pack fog with texture
 
 	#if VS_POINT_SIZE
 		gl_PointSize = PointSize.x;
+	#endif
+
+	#if VS_CLAMP_UV
+		VSout.clampuv = vec4(0.0f);
 	#endif
 }
 
@@ -139,7 +208,103 @@ struct ProcessedVertex
 	vec4 t_float;
 	vec4 t_int;
 	vec4 c;
+	#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+		vec2 window_pos;
+		uvec4 rounduv;
+	#endif
 };
+
+vec4 sprite_clamp_uv_range(vec4 pos, vec4 tex, uvec4 round_info)
+{
+	bool rev_x = pos.x > pos.z;
+	bool rev_y = pos.y > pos.w;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
+
+	vec4 pos_round = vec4(ceil(pos.xy / 16.0f) * 16.0f, floor((pos.zw - vec2(1.0f)) / 16.0f) * 16.0f);
+
+	vec4 d_tex = tex.zwzw - tex.xyxy;
+	vec4 d_pos = pos.zwzw - pos.xyxy;
+
+	vec4 grad = d_tex / d_pos;
+
+	tex += grad * (pos_round - pos);
+
+	// Do rounding of the endpoints.
+	uvec4 topleft = uvec4(equal(pos / 16.0f, vec4(round_info.xyxy)));
+	uvec4 round_flags = round_info.zwzw & uvec4(ROUND_UV_DOWN | ROUND_UV_UP);
+	uvec4 round_down = uvec4(equal(round_flags, uvec4(ROUND_UV_DOWN))) &  ~topleft;
+	uvec4 round_up = uvec4(equal(round_flags, uvec4(ROUND_UV_UP))) |
+	                 (uvec4(equal(round_flags, uvec4(ROUND_UV_DOWN))) & topleft);
+	tex = mix(tex, tex - 1 / 32.0f, bvec4(round_down));
+	tex = mix(tex, tex + 1 / 32.0f, bvec4(round_up));
+
+	tex = vec4(min(tex.xy, tex.zw), max(tex.xy, tex.zw));
+
+	#if VS_CLAMP_UV == VS_CLAMP_UV_LINEAR
+		// Bilinear: truncate to 1/16 texel;
+		tex = floor(tex) + vec4(ROUND_UV_THRESHOLD);
+	#elif VS_CLAMP_UV == VS_CLAMP_UV_NEAREST
+		// Nearest: place in texel center, accounting for upscaling.
+		tex = vec4(floor(tex / 16.0f) * 16.0f) + vec2(8.0f / ScaleTex, 16.0f - 8.0f / ScaleTex).xxyy;
+	#endif
+
+	return tex;
+}
+
+void sprite_align_and_round(inout vec4 pos, inout vec4 tex)
+{
+	bool rev_x = pos.x > pos.z;
+	bool rev_y = pos.y > pos.w;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
+
+	vec4 d_tex = tex.zwzw - tex.xyxy;
+	vec4 d_pos = pos.zwzw - pos.xyxy;
+
+	vec4 grad = d_tex / d_pos;
+
+	vec4 pos_round = vec4(ceil(pos.xy / 16.0f) * 16.0f, floor((pos.zw - vec2(1.0f)) / 16.0f) * 16.0f);
+
+	pos_round.xy += -8.0f;
+	pos_round.zw += 8.0f;
+
+	tex += grad * (pos_round - pos);
+
+	pos = pos_round;
+
+	if (rev_x)
+	{
+		pos.xz = pos.zx;
+		tex.xz = tex.zx;
+	}
+
+	if (rev_y)
+	{
+		pos.yw = pos.wy;
+		tex.yw = tex.wy;
+	}
+}
 
 uint load_index(uint _i)
 {
@@ -166,8 +331,12 @@ ProcessedVertex load_vertex(uint index)
 	ProcessedVertex vtx;
 
 	uint z = min(i_z, MaxDepth);
-	vtx.p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
-	vtx.p.xy = vtx.p.xy * VertexScale - VertexOffset;
+
+	vtx.p = vec4(raw_coords_to_ndc(i_p), raw_z_to_ndc(z), 1.0f);
+
+	#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+		vtx.window_pos = vec2(i_p) - vec2(XYOffset);
+	#endif
 
 	#if HAS_CLIP_CONTROL
 		vtx.p.z = float(z) * exp_min32;
@@ -177,7 +346,11 @@ ProcessedVertex load_vertex(uint index)
 
 	vtx.p.w = 1.0f;
 
-	vec2 uv = vec2(i_uv) - TextureOffset;
+	#if !(VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV)
+		vec2 uv = vec2(i_uv) - TextureOffset;
+	#else
+		vec2 uv = i_st - TextureOffset;
+	#endif
 	vec2 st = i_st - TextureOffset;
 
 	vtx.t_float.xy = st;
@@ -188,6 +361,12 @@ ProcessedVertex load_vertex(uint index)
 	vtx.t_int.zw = uv;
 #else
 	vtx.t_int.zw = st / TextureScale;
+#endif
+
+// Get UV rounding info saved in Q.
+#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+	vtx.rounduv = extract_round_uv_bits(i_q);
+	vtx.t_float.w = 1.0f;
 #endif
 
 	vtx.c = i_c;
@@ -306,6 +485,9 @@ void main()
 
 	uint vid = uint(gl_VertexID);
 
+	vec4 clampuv = vec4(0.0f);
+	vec4 scaleuv = vec4(0.0f);
+
 #if VS_EXPAND == VS_EXPAND_POINT
 
 	vtx = load_vertex(vid >> 2);
@@ -350,6 +532,33 @@ void main()
 
 	ProcessedVertex lt = load_vertex(vid_lt);
 	ProcessedVertex rb = load_vertex(vid_rb);
+
+	#if VS_CLAMP_UV || VS_ALIGN_UV || VS_ROUND_UV
+		vec4 pos = vec4(lt.window_pos, rb.window_pos);
+		vec4 tex = vec4(lt.t_int.zw, rb.t_int.zw);
+
+		#if VS_ROUND_UV
+			vec4 d_tex = tex.zwzw - tex.xyxy;
+			vec4 d_pos = pos.zwzw - pos.xyxy;
+			scaleuv = d_tex / d_pos;
+		#endif
+	
+		#if VS_CLAMP_UV
+			clampuv = sprite_clamp_uv_range(pos, tex, lt.rounduv);
+		#endif
+
+		#if VS_ALIGN_UV == VS_ALIGN_UV_ALIGN
+			sprite_align_and_round(pos, tex);
+			lt.p.xy = window_coords_to_ndc(pos.xy);
+			rb.p.xy = window_coords_to_ndc(pos.zw);
+
+			lt.t_int.zw = tex.xy;
+			lt.t_int.xy = lt.t_int.zw * TextureScale;
+			rb.t_int.zw = tex.zw;
+			rb.t_int.xy = rb.t_int.zw * TextureScale;
+		#endif
+	#endif
+
 	vtx = rb;
 
 	bool is_right = ((vid & 1u) != 0u);
@@ -458,12 +667,80 @@ void main()
 		VSout.interior = 0;
 	}
 
+#elif VS_EXPAND == VS_EXPAND_TRIANGLE // Triangle
+	
+	uint vid_0 = 3 * (vid / 3);
+	uint vid_1 = vid_0 + 1;
+	uint vid_2 = vid_0 + 2;
+
+	ProcessedVertex v0 = load_vertex(vid_0);
+	ProcessedVertex v1 = load_vertex(vid_1);
+	ProcessedVertex v2 = load_vertex(vid_2);
+
+	#if VS_CLAMP_UV || VS_ALIGN_UV || VS_ROUND_UV
+		vec4 pos = vec4(v0.window_pos, v1.window_pos.x, v2.window_pos.y);
+		vec4 tex = vec4(v0.t_int.zw, v1.t_int.z, v2.t_int.w);
+
+		#if VS_ROUND_UV
+			vec4 d_tex = tex.zwzw - tex.xyxy;
+			vec4 d_pos = pos.zwzw - pos.xyxy;
+			scaleuv = d_tex / d_pos;
+		#endif
+
+		#if VS_CLAMP_UV
+			clampuv = sprite_clamp_uv_range(pos, tex, v0.rounduv);
+		#endif
+
+		#if VS_ALIGN_UV == VS_ALIGN_UV_ALIGN
+			sprite_align_and_round(pos, tex);
+			v0.p.xy = window_coords_to_ndc(pos.xy);
+			v1.p.xy = window_coords_to_ndc(pos.zy);
+			v2.p.xy = window_coords_to_ndc(pos.xw);
+
+			v0.t_int.zw = tex.xy;
+			v1.t_int.zw = tex.zy;
+			v2.t_int.zw = tex.xw;
+
+			// Swapping for rotated textures.
+			vec2 texscale = mix(TextureScale, TextureScale.yx, bvec2(v0.rounduv.zw & ROUND_UV_SWAP));
+			v0.t_int.xy = v0.t_int.zw * texscale;
+			v1.t_int.xy = v1.t_int.zw * texscale;
+			v2.t_int.xy = v2.t_int.zw * texscale;
+		#endif
+	#endif
+
+	vtx = load_vertex(vid);
+	if (vid == vid_0)
+	{
+		vtx.p = v0.p;
+		vtx.t_int = v0.t_int;
+	}
+	else if (vid == vid_1)
+	{
+		vtx.p = v1.p;
+		vtx.t_int = v1.t_int;
+	}
+	else // vid == vid_2
+	{
+		vtx.p = v2.p;
+		vtx.t_int = v2.t_int;
+	}
+
 #endif
 
 	gl_Position = vtx.p;
 	VSout.t_float = vtx.t_float;
 	VSout.t_int = vtx.t_int;
 	VSout.c = vtx.c;
+#if VS_ROUND_UV || VS_CLAMP_UV || VS_ALIGN_UV
+	VSout.rounduv = vtx.rounduv;
+#endif
+#if VS_ROUND_UV
+	VSout.scaleuv = scaleuv;
+#endif
+#if VS_CLAMP_UV
+	VSout.clampuv = clampuv;
+#endif
 }
 
 #endif // VS_EXPAND
