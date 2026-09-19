@@ -45,6 +45,7 @@ public:
 		bool vk_swapchain_maintenance1_is_khr : 1;
 		bool vk_khr_driver_properties : 1;
 		bool vk_khr_shader_non_semantic_info : 1;
+		bool vk_khr_synchronization2 : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
 	};
@@ -643,9 +644,10 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
-	VkImageMemoryBarrier GetColorBufferFeedbackBarrier(GSTextureVK* rt) const;
-	VkImageMemoryBarrier GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const;
+	VkImageLayout GetFeedbackLoopLayout() const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	VkAccessFlags2 GetFeedbackLoopInputAccessFlags() const;
+	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier);
 

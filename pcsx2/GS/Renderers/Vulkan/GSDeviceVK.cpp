@@ -52,6 +52,67 @@ enum : u32
 static u32 s_debug_scope_depth = 0;
 #endif
 
+namespace ReplaceVK
+{
+	static VkPipelineStageFlags TranslateStageFlags(VkPipelineStageFlags2 flags2)
+	{
+		VkPipelineStageFlags flags = static_cast<VkPipelineStageFlags>(flags2);
+		static constexpr VkPipelineStageFlags2 transfer = VK_PIPELINE_STAGE_2_COPY_BIT | VK_PIPELINE_STAGE_2_RESOLVE_BIT | VK_PIPELINE_STAGE_2_BLIT_BIT | VK_PIPELINE_STAGE_2_CLEAR_BIT;
+		if (flags2 & transfer)
+			flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+		assert(!(flags2 & ~transfer & ~static_cast<VkPipelineStageFlags2>(VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM)));
+		return flags;
+	}
+
+	static VkAccessFlags TranslateAccessFlags(VkAccessFlags2 flags2)
+	{
+		VkAccessFlags flags = static_cast<VkAccessFlags>(flags2);
+		assert(!(flags2 & ~static_cast<VkAccessFlags2>(VK_ACCESS_FLAG_BITS_MAX_ENUM)));
+		return flags;
+	}
+
+	static void VKAPI_CALL CmdPipelineBarrier2(VkCommandBuffer commandBuffer, const VkDependencyInfo* RESTRICT pDependencyInfo)
+	{
+		assert(!pDependencyInfo->pNext);
+		VkDependencyFlags dependencyFlags = pDependencyInfo->dependencyFlags;
+		for (const VkMemoryBarrier2& barrier2 : std::span(pDependencyInfo->pMemoryBarriers, pDependencyInfo->memoryBarrierCount))
+		{
+			VkMemoryBarrier barrier = {VK_STRUCTURE_TYPE_MEMORY_BARRIER};
+			barrier.srcAccessMask = TranslateAccessFlags(barrier2.srcAccessMask);
+			barrier.dstAccessMask = TranslateAccessFlags(barrier2.dstAccessMask);
+			vkCmdPipelineBarrier(commandBuffer, TranslateStageFlags(barrier2.srcStageMask), TranslateStageFlags(barrier2.dstStageMask),
+			                     dependencyFlags, 1, &barrier, 0, nullptr, 0, nullptr);
+		}
+		for (const VkBufferMemoryBarrier2& barrier2 : std::span(pDependencyInfo->pBufferMemoryBarriers, pDependencyInfo->bufferMemoryBarrierCount))
+		{
+			VkBufferMemoryBarrier barrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+			barrier.srcAccessMask = TranslateAccessFlags(barrier2.srcAccessMask);
+			barrier.dstAccessMask = TranslateAccessFlags(barrier2.dstAccessMask);
+			barrier.srcQueueFamilyIndex = barrier2.srcQueueFamilyIndex;
+			barrier.dstQueueFamilyIndex = barrier2.dstQueueFamilyIndex;
+			barrier.buffer              = barrier2.buffer;
+			barrier.offset              = barrier2.offset;
+			barrier.size                = barrier2.size;
+			vkCmdPipelineBarrier(commandBuffer, TranslateStageFlags(barrier2.srcStageMask), TranslateStageFlags(barrier2.dstStageMask),
+			                     dependencyFlags, 0, nullptr, 1, &barrier, 0, nullptr);
+		}
+		for (const VkImageMemoryBarrier2& barrier2 : std::span(pDependencyInfo->pImageMemoryBarriers, pDependencyInfo->imageMemoryBarrierCount))
+		{
+			VkImageMemoryBarrier barrier = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+			barrier.srcAccessMask = TranslateAccessFlags(barrier2.srcAccessMask);
+			barrier.dstAccessMask = TranslateAccessFlags(barrier2.dstAccessMask);
+			barrier.oldLayout           = barrier2.oldLayout;
+			barrier.newLayout           = barrier2.newLayout;
+			barrier.srcQueueFamilyIndex = barrier2.srcQueueFamilyIndex;
+			barrier.dstQueueFamilyIndex = barrier2.dstQueueFamilyIndex;
+			barrier.image               = barrier2.image;
+			barrier.subresourceRange    = barrier2.subresourceRange;
+			vkCmdPipelineBarrier(commandBuffer, TranslateStageFlags(barrier2.srcStageMask), TranslateStageFlags(barrier2.dstStageMask),
+			                     dependencyFlags, 0, nullptr, 0, nullptr, 1, &barrier);
+		}
+	}
+} // namespace ReplaceVK
+
 static bool IsDATEModePrimIDInit(u32 flag)
 {
 	return flag == 1 || flag == 2;
@@ -417,6 +478,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_khr_synchronization2 = SupportsExtension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -620,6 +682,8 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		device_info.ppEnabledLayerNames = layer_names;
 	}
 
+	VkPhysicalDeviceSynchronization2Features sync2_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
 	// provoking vertex
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
@@ -635,6 +699,11 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
 
+	if (m_optional_extensions.vk_khr_synchronization2)
+	{
+		sync2_features.synchronization2 = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &sync2_features);
+	}
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
 		provoking_vertex_feature.provokingVertexLast = VK_TRUE;
@@ -704,6 +773,12 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 	if (!ProcessDeviceExtensions())
 		return false;
 
+	// Add replacements for unsupported functions
+	if (!m_optional_extensions.vk_khr_synchronization2)
+	{
+		vkCmdPipelineBarrier2KHR = ReplaceVK::CmdPipelineBarrier2;
+	}
+
 	if (m_spinning_supported)
 	{
 		vkGetDeviceQueue(m_device, m_spin_queue_family_index, spin_queue_index, &m_spin_queue);
@@ -727,6 +802,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 {
 	// advanced feature checks
 	VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+	VkPhysicalDeviceSynchronization2Features sync2_features = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_features = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
 	VkPhysicalDeviceLineRasterizationFeaturesEXT line_rasterization_feature = {
@@ -742,6 +819,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
 
 	// add in optional feature structs
+	if (m_optional_extensions.vk_khr_synchronization2)
+		Vulkan::AddPointerToChain(&features2, &sync2_features);
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
 	if (m_optional_extensions.vk_ext_line_rasterization)
@@ -759,6 +838,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
 
 	// confirm we actually support it
+	m_optional_extensions.vk_khr_synchronization2 &= (sync2_features.synchronization2 == VK_TRUE);
 	m_optional_extensions.vk_ext_provoking_vertex &= (provoking_vertex_features.provokingVertexLast == VK_TRUE);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &=
 		(rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess == VK_TRUE);
@@ -849,6 +929,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
 	Console.WriteLn("VK_KHR_driver_properties is %s",
 		m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_synchronization2 is %s",
+		m_optional_extensions.vk_khr_synchronization2 ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_attachment_feedback_loop_layout is %s",
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
@@ -1666,11 +1748,8 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 				subpass_dependency[num_subpass_dependencies].srcAccessMask =
 					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				subpass_dependency[num_subpass_dependencies].dstAccessMask =
-					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency[num_subpass_dependencies].dependencyFlags =
-					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-											  VK_DEPENDENCY_BY_REGION_BIT;
+				subpass_dependency[num_subpass_dependencies].dstAccessMask = static_cast<VkAccessFlags>(GetFeedbackLoopInputAccessFlags());
+				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags();
 				num_subpass_dependencies++;
 			}
 		}
@@ -1712,11 +1791,8 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 				subpass_dependency[num_subpass_dependencies].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 				subpass_dependency[num_subpass_dependencies].srcAccessMask =
 					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				subpass_dependency[num_subpass_dependencies].dstAccessMask =
-					UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-				subpass_dependency[num_subpass_dependencies].dependencyFlags =
-					UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-											  VK_DEPENDENCY_BY_REGION_BIT;
+				subpass_dependency[num_subpass_dependencies].dstAccessMask = static_cast<VkAccessFlags>(GetFeedbackLoopInputAccessFlags());
+				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags();
 				num_subpass_dependencies++;
 			}
 		}
@@ -1998,7 +2074,9 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 	{
 		m_spin_buffer_initialized = true;
 		vkCmdFillBuffer(resources.command_buffer, m_spin_buffer, 0, VK_WHOLE_SIZE, 0);
-		VkBufferMemoryBarrier barrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+		VkBufferMemoryBarrier2 barrier = {VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.srcQueueFamilyIndex = m_spin_queue_family_index;
@@ -2006,13 +2084,22 @@ void GSDeviceVK::SubmitSpinCommand(u32 index, u32 cycles)
 		barrier.buffer = m_spin_buffer;
 		barrier.offset = 0;
 		barrier.size = VK_WHOLE_SIZE;
-		vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+		VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+		dependency.bufferMemoryBarrierCount = 1;
+		dependency.pBufferMemoryBarriers = &barrier;
+		vkCmdPipelineBarrier2KHR(resources.command_buffer, &dependency);
 	}
 
 	if (m_spin_queue_is_graphics_queue)
-		vkCmdPipelineBarrier(resources.command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	{
+		VkMemoryBarrier2 barrier = {VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+		barrier.dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+		VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+		dependency.memoryBarrierCount = 1;
+		dependency.pMemoryBarriers = &barrier;
+		vkCmdPipelineBarrier2KHR(resources.command_buffer, &dependency);
+	}
 
 	const u32 timestamp_base = (index + NUM_COMMAND_BUFFERS) * 2;
 	vkCmdResetQueryPool(resources.command_buffer, m_timestamp_query_pool, timestamp_base, 2);
@@ -3051,9 +3138,9 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 	sTexVK->SetUseFenceCounter(GetCurrentFenceCounter());
 	dTexVK->SetUseFenceCounter(GetCurrentFenceCounter());
 	sTexVK->TransitionToLayout(
-		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferSrc);
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::CopySelf : GSTextureVK::Layout::CopySrc);
 	dTexVK->TransitionToLayout(
-		(dTexVK == sTexVK) ? GSTextureVK::Layout::TransferSelf : GSTextureVK::Layout::TransferDst);
+		(dTexVK == sTexVK) ? GSTextureVK::Layout::CopySelf : GSTextureVK::Layout::CopyDst);
 
 	vkCmdCopyImage(GetCurrentCommandBuffer(), sTexVK->GetImage(), sTexVK->GetVkLayout(), dTexVK->GetImage(),
 		dTexVK->GetVkLayout(), 1, &ic);
@@ -3321,8 +3408,8 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 
 	EndRenderPass();
 
-	sTexVK->TransitionToLayout(GSTextureVK::Layout::TransferSrc);
-	dTexVK->TransitionToLayout(GSTextureVK::Layout::TransferDst);
+	sTexVK->TransitionToLayout(GSTextureVK::Layout::BlitSrc);
+	dTexVK->TransitionToLayout(GSTextureVK::Layout::BlitDst);
 
 	// ensure we don't leave this bound later on
 	if (m_tfx_textures[0] == sTexVK)
@@ -4757,7 +4844,7 @@ void GSDeviceVK::RenderBlankFrame()
 
 	VkCommandBuffer cmdbuffer = GetCurrentCommandBuffer();
 	GSTextureVK* sctex = m_swap_chain->GetCurrentTexture();
-	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::TransferDst);
+	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ClearDst);
 
 	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 	vkCmdClearColorImage(
@@ -6546,33 +6633,59 @@ void GSDeviceVK::UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config)
 	}
 }
 
-VkImageMemoryBarrier GSDeviceVK::GetColorBufferFeedbackBarrier(GSTextureVK* rt) const
+VkImageLayout GSDeviceVK::GetFeedbackLoopLayout() const
 {
-	const VkImageLayout layout =
-		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
-	const VkAccessFlags dst_access =
-		UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
-		VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, rt->GetImage(), {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u}};
-}
-
-VkImageMemoryBarrier GSDeviceVK::GetDepthStencilBufferFeedbackBarrier(GSTextureVK* ds) const
-{
-	const VkImageLayout layout =
-		UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
-	const VkAccessFlags dst_access =
-		UseFeedbackLoopLayout() ? VK_ACCESS_SHADER_READ_BIT : VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-	return {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr,
-		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, dst_access, layout, layout,
-		VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, ds->GetImage(),
-		{VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u}};
+	return UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
 }
 
 VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags() const
 {
 	return UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
 	                                 VK_DEPENDENCY_BY_REGION_BIT;
+}
+
+VkAccessFlags2 GSDeviceVK::GetFeedbackLoopInputAccessFlags() const
+{
+	return UseFeedbackLoopLayout() ? VK_ACCESS_2_SHADER_READ_BIT : VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
+}
+
+void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
+{
+	VkImageMemoryBarrier2 barrier_template = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
+	barrier_template.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+	barrier_template.dstAccessMask = GetFeedbackLoopInputAccessFlags();
+	barrier_template.oldLayout = GetFeedbackLoopLayout();
+	barrier_template.newLayout = GetFeedbackLoopLayout();
+	barrier_template.subresourceRange.levelCount = 1;
+	barrier_template.subresourceRange.layerCount = 1;
+
+	std::array<VkImageMemoryBarrier2, 2> barriers;
+	u32 num_barriers = 0;
+
+	if (rt)
+	{
+		VkImageMemoryBarrier2& barrier = barriers[num_barriers++] = barrier_template;
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.image = rt->GetImage();
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	if (ds)
+	{
+		VkImageMemoryBarrier2& barrier = barriers[num_barriers++] = barrier_template;
+		barrier.srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+		barrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		barrier.image = ds->GetImage();
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+
+	VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+	dependency.dependencyFlags = GetFeedbackBarrierDependencyFlags();
+	dependency.imageMemoryBarrierCount = num_barriers;
+	dependency.pImageMemoryBarriers = barriers.data();
+
+	vkCmdPipelineBarrier2KHR(GetCurrentCommandBuffer(), &dependency);
 }
 
 void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
@@ -6588,38 +6701,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if ((one_barrier || full_barrier) && !(config.IsFeedbackLoopRT(m_pipeline_selector.ps) || config.IsFeedbackLoopDepth(m_pipeline_selector.ps))) [[unlikely]]
 		Console.Warning("VK: Possible unnecessary barrier detected.");
 #endif
-	VkDependencyFlags barrier_flags = GetFeedbackBarrierDependencyFlags();
-
-	std::array<VkImageMemoryBarrier, 2> barriers;
-	u32 n_barriers = 0;
-	if (full_barrier || one_barrier)
-	{
-		if (draw_rt)
-		{
-			barriers[0] = GetColorBufferFeedbackBarrier(draw_rt);
-			n_barriers++;
-		}
-		if (draw_ds)
-		{
-			barriers[1] = GetDepthStencilBufferFeedbackBarrier(draw_ds);
-			n_barriers++;
-		}
-	}
-
-	const auto IssueBarriers = [&]() {
-		if (draw_rt)
-		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
-				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[0]);
-		}
-		if (draw_ds)
-		{
-			vkCmdPipelineBarrier(GetCurrentCommandBuffer(),
-				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, barrier_flags, 0, nullptr, 0, nullptr, 1, &barriers[1]);
-		}
-	};
+	const int n_barriers = (draw_rt ? 1 : 0) + (draw_ds ? 1 : 0);
 
 	if (full_barrier)
 	{
@@ -6633,7 +6715,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			IssueBarriers();
+			FeedbackBarrier(draw_rt, draw_ds);
 
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
 			Draw(config, p, count);
@@ -6646,7 +6728,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if (one_barrier)
 	{
 		g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
-		IssueBarriers();
+		FeedbackBarrier(draw_rt, draw_ds);
 	}
 
 	Draw(config);
