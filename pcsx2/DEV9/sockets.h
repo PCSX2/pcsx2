@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "net.h"
+#include "AdapterUtils.h"
 
 #include "PacketReader/IP/IP_Packet.h"
 #include "PacketReader/EthernetFrame.h"
@@ -52,6 +53,13 @@ public:
 	static AdapterOptions GetAdapterOptions();
 
 private:
+#ifdef _WIN32
+	void GetDHCPOverrides(PIP_ADAPTER_ADDRESSES adapter, PacketReader::IP::IP_Address& ps2IP, PacketReader::IP::IP_Address& subnet, PacketReader::IP::IP_Address& gateway);
+#elif defined(__POSIX__)
+	void GetDHCPOverrides(ifaddrs* adapter, PacketReader::IP::IP_Address& ps2IP, PacketReader::IP::IP_Address& subnet, PacketReader::IP::IP_Address& gateway);
+#endif
+
+
 	bool SendIP(PacketReader::IP::IP_Packet* ipPkt);
 	bool SendICMP(Sessions::ConnectionKey Key, PacketReader::IP::IP_Packet* ipPkt);
 	bool SendIGMP(Sessions::ConnectionKey Key, PacketReader::IP::IP_Packet* ipPkt);

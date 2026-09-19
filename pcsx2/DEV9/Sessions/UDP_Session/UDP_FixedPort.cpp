@@ -162,6 +162,19 @@ namespace Sessions
 		return s;
 	}
 
+	UDP_ServerSession* UDP_FixedPort::NewListenSession(ConnectionKey parNewKey)
+	{
+		UDP_ServerSession* s = new UDP_ServerSession(parNewKey, adapterIP);
+
+		s->AddConnectionClosedHandler([&](BaseSession* session) { HandleChildConnectionClosed(session); });
+
+		{
+			std::lock_guard numberlock(connectionSentry);
+			connections.push_back(s);
+		}
+		return s;
+	}
+
 	void UDP_FixedPort::HandleChildConnectionClosed(BaseSession* sender)
 	{
 		std::lock_guard numberlock(connectionSentry);
