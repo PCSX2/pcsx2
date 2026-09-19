@@ -424,13 +424,13 @@ static const std::map<std::string, const unsigned char*> s_baked_shaders = {
 	{ "shaders/opengl/tfx_vgs.glsl"    , opengl_tfx_vgs },
 #ifdef _WIN32
 	{ "shaders/dx11/cas.hlsl"          , dx11_cas },
-	{ "shaders/direct3d/convert.fx"    , dx11_convert },
-	{ "shaders/direct3d/imgui.fx"      , dx11_imgui },
-	{ "shaders/direct3d/interlace.fx"  , dx11_interlace },
-	{ "shaders/direct3d/merge.fx"      , dx11_merge },
-	{ "shaders/direct3d/present.fx"    , dx11_present },
-	{ "shaders/direct3d/shadeboost.fx" , dx11_shadeboost },
-	{ "shaders/direct3d/tfx.fx"        , dx11_tfx },
+	{ "shaders/dx11/convert.fx"        , dx11_convert },
+	{ "shaders/dx11/imgui.fx"          , dx11_imgui },
+	{ "shaders/dx11/interlace.fx"      , dx11_interlace },
+	{ "shaders/dx11/merge.fx"          , dx11_merge },
+	{ "shaders/dx11/present.fx"        , dx11_present },
+	{ "shaders/dx11/shadeboost.fx"     , dx11_shadeboost },
+	{ "shaders/dx11/tfx.fx"            , dx11_tfx },
 #endif
 };
 #endif
