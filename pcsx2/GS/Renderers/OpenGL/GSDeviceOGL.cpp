@@ -707,7 +707,7 @@ bool GSDeviceOGL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	// This extension allow FS depth to range from -1 to 1. So
 	// gl_position.z could range from [0, 1]
 	// Change depth convention
-	if (GLAD_GL_ARB_clip_control)
+	if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_clip_control)
 		glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	// ****************************************************************
@@ -993,9 +993,9 @@ bool GSDeviceOGL::CheckFeatures()
 	else
 		m_rgba16_unorm_hw_blend = true;
 
-	if (!GLAD_GL_ARB_conservative_depth)
+	if (!GLAD_GL_VERSION_4_2 && !GLAD_GL_ARB_conservative_depth && !GLAD_GL_AMD_conservative_depth)
 	{
-		Console.Warning("GLAD_GL_ARB_conservative_depth is not supported. This will reduce performance.");
+		Console.Warning("Conservative depth is not supported. This will reduce performance.");
 	}
 
 	Console.WriteLn("GL: Using %s for point expansion, %s for line expansion and %s for sprite expansion.",
@@ -1672,9 +1672,17 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	else
 		header += "#define HAS_FRAMEBUFFER_FETCH 0\n";
 
-	if (GLAD_GL_ARB_conservative_depth)
+	if (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_conservative_depth || GLAD_GL_AMD_conservative_depth)
 	{
-		header += "#extension GL_ARB_conservative_depth : enable\n";
+		if (!GLAD_GL_VERSION_4_2 && GLAD_GL_ARB_conservative_depth)
+		{
+			header += "#extension GL_ARB_conservative_depth : enable\n";
+		}
+		else if (!GLAD_GL_VERSION_4_2 && GLAD_GL_AMD_conservative_depth)
+		{
+			header += "#extension GL_AMD_conservative_depth : enable\n";
+		}
+
 		header += "#define PS_HAS_CONSERVATIVE_DEPTH 1\n";
 	}
 	else
@@ -1695,7 +1703,7 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 		header += "#define DEPTH_FEEDBACK_SUPPORT 2\n"; // Depth as RT
 	}
 
-	if (GLAD_GL_ARB_clip_control)
+	if (GLAD_GL_VERSION_4_5 || GLAD_GL_ARB_clip_control)
 		header += "#define HAS_CLIP_CONTROL 1\n";
 	else
 		header += "#define HAS_CLIP_CONTROL 0\n";
