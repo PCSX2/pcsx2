@@ -1393,28 +1393,37 @@ struct PSMain
 				As_rgba.rgb = float3(1.f);
 			}
 
-			float Ad = PS_RTA_CORRECTION ? trunc(current_color.a * 128.1f) / 128.f : trunc(current_color.a * 255.1f) / 128.f;
-
-			if (PS_SHUFFLE && NEEDS_RT)
+			float4 RT = float4(0.f);
+			if (NEEDS_RT_FOR_BLEND)
 			{
-				uint4 denorm_rt = uint4(current_color);
+				RT = current_color;
+				float color_multi = PS_COLCLIP_HW ? 65535.f : 255.f;
+				float alpha_multi = PS_RTA_CORRECTION ? 128.f : 255.f;
+				RT.rgb = trunc(RT.rgb * color_multi + 0.1f);
+				RT.a = trunc(RT.a * alpha_multi + 0.1f);
+			}
+
+			if (PS_SHUFFLE && NEEDS_RT_FOR_BLEND)
+			{
+				uint4 denorm_rt = uint4(RT);
 				if (PS_PROCESS_BA & SHUFFLE_WRITE)
 				{
-					current_color.r = float((denorm_rt.b << 3) & 0xF8);
-					current_color.g = float(((denorm_rt.b >> 2) & 0x38) | ((denorm_rt.a << 6) & 0xC0));
-					current_color.b = float((denorm_rt.a << 1) & 0xF8);
-					current_color.a = float(denorm_rt.a & 0x80);
+					RT.r = float((denorm_rt.b << 3) & 0xF8);
+					RT.g = float(((denorm_rt.b >> 2) & 0x38) | ((denorm_rt.a << 6) & 0xC0));
+					RT.b = float((denorm_rt.a << 1) & 0xF8);
+					RT.a = float(denorm_rt.a & 0x80);
 				}
 				else
 				{
-					current_color.r = float((denorm_rt.r << 3) & 0xF8);
-					current_color.g = float(((denorm_rt.r >> 2) & 0x38) | ((denorm_rt.g << 6) & 0xC0));
-					current_color.b = float((denorm_rt.g << 1) & 0xF8);
-					current_color.a = float(denorm_rt.g & 0x80);
+					RT.r = float((denorm_rt.r << 3) & 0xF8);
+					RT.g = float(((denorm_rt.r >> 2) & 0x38) | ((denorm_rt.g << 6) & 0xC0));
+					RT.b = float((denorm_rt.g << 1) & 0xF8);
+					RT.a = float(denorm_rt.g & 0x80);
 				}
 			}
-			float multi = PS_COLCLIP_HW ? 65535.0 : 255.5;
-			float3 Cd = trunc(current_color.rgb * multi);
+
+			float Ad = RT.a / 128.f;
+			float3 Cd = RT.rgb;
 			float3 Cs = Color.rgb;
 
 			float3 A = pick(PS_BLEND_A, Cs, Cd, float3(0.f));
