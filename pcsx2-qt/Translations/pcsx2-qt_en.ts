@@ -2259,8 +2259,8 @@ Unread messages: {2}</source>
     <name>AutoUpdaterDialog</name>
     <message>
         <location filename="../AutoUpdaterDialog.ui" line="17"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="483"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="548"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="489"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="554"/>
         <source>Automatic Updater</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2300,68 +2300,68 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="166"/>
-        <location filename="../AutoUpdaterDialog.cpp" line="677"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="172"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="683"/>
         <source>Updater Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="396"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="402"/>
         <source>&lt;h2&gt;Changes:&lt;/h2&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="430"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="436"/>
         <source>&lt;h2&gt;Save State Warning&lt;/h2&gt;&lt;p&gt;Installing this update will make your save states &lt;b&gt;incompatible&lt;/b&gt;. Please ensure you have saved your games to a Memory Card before installing this update or you will lose progress.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="440"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="446"/>
         <source>&lt;h2&gt;Settings Warning&lt;/h2&gt;&lt;p&gt;Installing this update will reset your program configuration. Please note that you will have to reconfigure your settings after this update.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="466"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="472"/>
         <source>Savestate Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="467"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="473"/>
         <source>&lt;h1&gt;WARNING&lt;/h1&gt;&lt;p style=&apos;font-size:12pt;&apos;&gt;Installing this update will make your &lt;b&gt;save states incompatible&lt;/b&gt;, &lt;i&gt;be sure to save any progress to your memory cards before proceeding&lt;/i&gt;.&lt;/p&gt;&lt;p&gt;Do you wish to continue?&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="484"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="490"/>
         <source>Downloading %1...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="549"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="555"/>
         <source>No updates are currently available. Please try again later.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="567"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="573"/>
         <source>Current Version: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="568"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="574"/>
         <source>New Version: %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="569"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="575"/>
         <source>Download Size: %1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="570"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="576"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../AutoUpdaterDialog.cpp" line="677"/>
+        <location filename="../AutoUpdaterDialog.cpp" line="683"/>
         <source>Failed to remove updater exe after update.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3624,10 +3624,13 @@ Unread messages: {2}</source>
         <source>Macro will not repeat.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
+    <message numerus="yes">
         <location filename="../Settings/ControllerBindingWidget.cpp" line="481"/>
-        <source>Macro will toggle buttons every %1 frames.</source>
-        <translation type="unfinished"></translation>
+        <source>Macro will toggle buttons every %n frames.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -4431,6 +4434,11 @@ You cannot undo this action.</source>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="227"/>
         <location filename="../Settings/DEV9SettingsWidget.cpp" line="229"/>
         <source>Specifies the capacity in gigabytes when creating a new virtual PS2 hard disk image.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/DEV9SettingsWidget.cpp" line="423"/>
+        <source>New Host</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13581,12 +13589,12 @@ Do not request support, please upgrade your hardware/drivers first.</source>
 <context>
     <name>GSCapture</name>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="297"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="298"/>
         <source>Failed to load FFmpeg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="298"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="299"/>
         <source>You may be missing one or more files, or are using the incorrect version. This build of PCSX2 requires:
   libavcodec: {}
   libavformat: {}
@@ -13598,32 +13606,32 @@ Please see our official documentation for more information.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="367"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="368"/>
         <source>capturing audio and video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="367"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="368"/>
         <source>capturing video</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="367"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="368"/>
         <source>capturing audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="853"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="854"/>
         <source>Starting {} to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1270"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1271"/>
         <source>Stopped {} to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1276"/>
+        <location filename="../../pcsx2/GS/GSCapture.cpp" line="1277"/>
         <source>Aborted {} due to encoding error in &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13631,7 +13639,7 @@ Please see our official documentation for more information.</source>
 <context>
     <name>GSDeviceOGL</name>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="759"/>
+        <location filename="../../pcsx2/GS/Renderers/OpenGL/GSDeviceOGL.cpp" line="833"/>
         <source>OpenGL renderer is not supported. Only OpenGL {}.{}
  was found</source>
         <translation type="unfinished"></translation>
@@ -21525,119 +21533,14 @@ Savestates should not be used in place of in-game saves.</source>
     </message>
 </context>
 <context>
-    <name>MemoryCardListItem</name>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="121"/>
-        <source>Swap Memory Cards</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="133"/>
-        <source>Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
-        <source>Reset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="141"/>
-        <source>Eject Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
-        <source>Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="180"/>
-        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="240"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="250"/>
-        <source>Delete Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="241"/>
-        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
-
-This action cannot be reversed, and you will lose any saves on the card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="251"/>
-        <source>Failed to delete the Memory Card. The log may have more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="279"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
-        <source>Rename Memory Card</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="265"/>
-        <source>New Card Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="272"/>
-        <source>New name is invalid, it must end with .ps2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="280"/>
-        <source>New name is invalid, a card with this name already exists.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="287"/>
-        <source>Failed to rename Memory Card. The log may contain more information.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="303"/>
-        <source>Cannot convert an unformatted memory card.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="322"/>
-        <source>Use for Slot %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="327"/>
-        <source>Rename</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="328"/>
-        <source>Convert</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="329"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MemoryCardListWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="490"/>
         <source>Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="507"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="490"/>
         <source>No</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21671,6 +21574,7 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="90"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="124"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21701,67 +21605,149 @@ This action cannot be reversed, and you will lose any saves on the card.</source
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="148"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="316"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="155"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="310"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="162"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="311"/>
         <source>Convert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Settings/MemoryCardSettingsWidget.ui" line="169"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="312"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="104"/>
+        <source>Swap Memory Cards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="116"/>
+        <source>Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="124"/>
+        <source>Eject Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="163"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="351"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="368"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="163"/>
+        <source>This Memory Card cannot be recognized or is not a valid file type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="223"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="233"/>
+        <source>Delete Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="224"/>
+        <source>Are you sure you wish to delete the Memory Card &apos;%1&apos;?
+
+This action cannot be reversed, and you will lose any saves on the card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="234"/>
+        <source>Failed to delete the Memory Card. The log may have more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="248"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="255"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="262"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="269"/>
+        <source>Rename Memory Card</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="248"/>
+        <source>New Card Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="255"/>
+        <source>New name is invalid, it must end with .ps2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="263"/>
+        <source>New name is invalid, a card with this name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="270"/>
+        <source>Failed to rename Memory Card. The log may contain more information.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="286"/>
+        <source>Cannot convert an unformatted memory card.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="305"/>
+        <source>Use for Slot %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="351"/>
         <source>Both slots must have a card selected to swap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="402"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="385"/>
         <source>PS2 (8MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="405"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="388"/>
         <source>PS2 (16MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="408"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="391"/>
         <source>PS2 (32MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="411"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="394"/>
         <source>PS2 (64MB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="414"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="397"/>
         <source>PS1 (128KB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="418"/>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="427"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="401"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="410"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="423"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="406"/>
         <source>PS2 (Folder)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21769,12 +21755,12 @@ This action cannot be reversed, and you will lose any saves on the card.</source
 <context>
     <name>MemoryCardSlotWidget</name>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="568"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="551"/>
         <source>%1 [%2]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="574"/>
+        <location filename="../Settings/MemoryCardSettingsWidget.cpp" line="557"/>
         <source>%1 [Missing]</source>
         <extracomment>Ignore Crowdin&apos;s warning for [Missing], the text should be translated.</extracomment>
         <translation type="unfinished"></translation>
@@ -28043,185 +28029,185 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
 <context>
     <name>VMManager</name>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1081"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1082"/>
         <source>PS2 BIOS ({})</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1142"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1143"/>
         <source>Unknown Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1307"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1308"/>
         <source>CDVD precaching was cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1313"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1314"/>
         <source>CDVD precaching failed: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1333"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1334"/>
         <source>Resuming state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1331"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1332"/>
         <source>Boot and Debug</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1255"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="1426"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1256"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1427"/>
         <source>Requested filename &apos;{}&apos; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1356"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1357"/>
         <source>The virtual machine is already running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1401"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1402"/>
         <source>Cannot load an indexed save state without a boot filename.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1409"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1410"/>
         <source>Could not resolve path for indexed save state load.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1468"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1469"/>
         <source>Failed to open CDVD &apos;{}&apos;: {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1492"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1493"/>
         <source>Requested boot ELF &apos;{}&apos; does not exist.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1544"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1545"/>
         <source>Failed to initialize GS.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1556"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1557"/>
         <source>Failed to initialize SPU2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1565"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1566"/>
         <source>Failed to initialize PAD.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1574"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1575"/>
         <source>Failed to initialize SIO2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1584"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1585"/>
         <source>Failed to initialize SIO0.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1594"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1595"/>
         <source>Failed to initialize DEV9.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1605"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1606"/>
         <source>Failed to initialize USB.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1613"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1614"/>
         <source>Failed to initialize FW.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2160"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2161"/>
         <source>Saving state to slot {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2366"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2367"/>
         <source>Disc removed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2374"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2375"/>
         <source>Disc changed to &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2383"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2384"/>
         <source>Failed to open new disc image &apos;{}&apos;. Reverting to old image.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2392"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2393"/>
         <source>Failed to switch back to old disc image. Removing disc.
 Error was: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3240"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3241"/>
         <source>Fast CDVD is enabled, this may break games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3244"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3245"/>
         <source>Cycle rate/skip is not at default, this may crash or make games run too slow.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3254"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3255"/>
         <source>Upscale multiplier is below native, this will break rendering.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3304"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3305"/>
         <source>Mipmapping is disabled. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3324"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3325"/>
         <source>Debug device is enabled. This will massively reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3359"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3360"/>
         <source>Texture filtering is not set to Bilinear (PS2). This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3393"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3394"/>
         <source>Extended RAM is enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3829"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3830"/>
         <source>No Game Running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3259"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3260"/>
         <source>Trilinear filtering is not set to automatic. This may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="728"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="729"/>
         <source>Controller 1 has no input bindings configured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1450"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1451"/>
         <source>PCSX2 requires a PlayStation 2 BIOS in order to run.
 
 For legal reasons, you will need to obtain this BIOS from a PlayStation 2 unit which you own.
@@ -28232,260 +28218,260 @@ PCSX2 will be able to run once you&apos;ve placed your BIOS image inside the fol
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1681"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1682"/>
         <source>Failed to save resume state: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1763"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1764"/>
         <source>The memory card is busy, so the reset operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1910"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1911"/>
         <source>Cannot load state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1934"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1935"/>
         <source>Cannot save state while replaying a GS dump.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1955"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1956"/>
         <source>Cannot back up old save state &apos;{}&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="1995"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="1996"/>
         <source>Saved state to slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2065"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2098"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2066"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2099"/>
         <source>Cannot load state while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2072"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2105"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2073"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2106"/>
         <source>The memory card is busy, so the state load operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2091"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2092"/>
         <source>The save slot is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2116"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2117"/>
         <source>Loaded state from backup slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2122"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2123"/>
         <source>Loaded state from slot {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2134"/>
-        <location filename="../../pcsx2/VMManager.cpp" line="2153"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2135"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2154"/>
         <source>The memory card is busy, so the state save operation has been cancelled to prevent data loss.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2147"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2148"/>
         <source>Cannot generate filename for save state.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2362"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2363"/>
         <source>No disc to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3187"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3188"/>
         <source>Cheats have been disabled due to RetroAchievements Hardcore Mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3264"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3265"/>
         <source>Blending Accuracy is below Basic, this may break effects in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3269"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3270"/>
         <source>Hardware Download Mode is not set to Accurate, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3289"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3290"/>
         <source>Draw Buffering is enabled, this may result in graphical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3294"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3295"/>
         <source>Rewrite large ST is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3309"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3310"/>
         <source>Accurate Alpha Test is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3314"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3315"/>
         <source>AA1 is enabled, this may severely degrade performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3319"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3320"/>
         <source>Overriding default depth feedback mode, this may break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3329"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3330"/>
         <source>Dithering is set to Force 32 bit. This will break rendering in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3334"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3335"/>
         <source>Dithering is disabled. This will cause color banding in some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3339"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3340"/>
         <source>Integer scaling is enabled. This may shrink the image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3348"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3349"/>
         <source>Graphics API is not set to Automatic. This may cause performance problems and graphical issues.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3354"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3355"/>
         <source>Dumping draw data to {}.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3365"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3366"/>
         <source>EE FPU Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3371"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3372"/>
         <source>EE FPU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3376"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3377"/>
         <source>VU0 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3381"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3382"/>
         <source>VU1 Round Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3388"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3389"/>
         <source>VU Clamp Mode is not set to default, this may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3398"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3399"/>
         <source>Game Fixes are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3403"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3404"/>
         <source>Compatibility Patches are not enabled. Compatibility with some games may be affected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3407"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3408"/>
         <source>Frame rate for NTSC is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3409"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3410"/>
         <source>Frame rate for PAL is not default. This may break some games.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3428"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3429"/>
         <source>EE Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3433"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3434"/>
         <source>VU0 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3438"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3439"/>
         <source>VU1 Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3443"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3444"/>
         <source>IOP Recompiler is not enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3448"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3449"/>
         <source>EE Cache is enabled, this will significantly reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3453"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3454"/>
         <source>EE Wait Loop Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3458"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3459"/>
         <source>INTC Spin Detection is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3461"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3462"/>
         <source>Fastmem is not enabled, this will reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3465"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3466"/>
         <source>Instant VU1 is disabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3470"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3471"/>
         <source>mVU Flag Hack is not enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3274"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3275"/>
         <source>GPU Palette Conversion is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="2337"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="2338"/>
         <source>Cannot frame advance while RetroAchievements Hardcore Mode is active.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3279"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3280"/>
         <source>Texture Preloading is not Full, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3284"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3285"/>
         <source>Estimate texture region is enabled, this may reduce performance.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/VMManager.cpp" line="3299"/>
+        <location filename="../../pcsx2/VMManager.cpp" line="3300"/>
         <source>Texture dumping is enabled, this will continually dump textures to disk.</source>
         <translation type="unfinished"></translation>
     </message>
