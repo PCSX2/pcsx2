@@ -1177,7 +1177,15 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			As_rgba.rgb = (float3)1.0f;
 		}
 
-		float4 RT = SW_BLEND_NEEDS_RT ? RtLoad(int2(pos_xy)) : (float4)0.0f;
+		float4 RT = (float4)0.0f;
+		if (SW_BLEND_NEEDS_RT)
+		{
+			RT = RtLoad(int2(pos_xy));
+			float color_multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
+			float alpha_multi = PS_RTA_CORRECTION ? 128.0f : 255.0f;
+			RT.rgb = trunc(RT.rgb * color_multi + 0.1f);
+			RT.a = trunc(RT.a * alpha_multi + 0.1f);
+		}
 
 		if (PS_SHUFFLE && SW_BLEND_NEEDS_RT)
 		{
@@ -1198,9 +1206,8 @@ void ps_blend(inout float4 Color, inout float4 As_rgba, float2 pos_xy)
 			}
 		}
 		
-		float Ad = PS_RTA_CORRECTION ? trunc(RT.a * 128.0f + 0.1f) / 128.0f : trunc(RT.a * 255.0f + 0.1f) / 128.0f;
-		float color_multi = PS_COLCLIP_HW ? 65535.0f : 255.0f;
-		float3 Cd = trunc(RT.rgb * color_multi + 0.1f);
+		float Ad = RT.a / 128.0f;
+		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
