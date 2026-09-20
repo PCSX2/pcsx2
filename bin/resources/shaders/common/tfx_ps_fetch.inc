@@ -1,6 +1,6 @@
 PS_STATIC uint fetch_raw_depth()
 {
-	return uint(PS_READ_TEX_DEPTH(ushort2(ps_in.p.xy + ps_cb.channel_shuffle_offset), 0) * EXP2_POS_32);
+	return uint(read_tex(uint2(ps_in.p.xy + ps_cb.channel_shuffle_offset)).x * EXP2_POS_32);
 }
 
 PS_STATIC float4 fetch_raw_color()
@@ -8,17 +8,15 @@ PS_STATIC float4 fetch_raw_color()
 	if (PS_TEX_IS_FB != FALSE)
 		return ps_current_color;
 	else
-		return PS_READ_TEX(ushort2(ps_in.p.xy + ps_cb.channel_shuffle_offset), 0);
+		return read_tex(uint2(ps_in.p.xy + ps_cb.channel_shuffle_offset));
 }
 
-PS_STATIC float4 fetch_c(ushort2 uv)
+PS_STATIC float4 fetch_c(uint2 uv)
 {
 	if (PS_TEX_IS_FB != FALSE)
 		return ps_current_color;
-	else if (PS_TEX_IS_DEPTH)
-		return float4(PS_READ_TEX_DEPTH(uv, 0), 0.0f, 0.0f, 0.0f);
 	else
-		return PS_READ_TEX(uv, 0);
+		return read_tex(uv);
 }
 
 PS_STATIC float4 fetch_red()

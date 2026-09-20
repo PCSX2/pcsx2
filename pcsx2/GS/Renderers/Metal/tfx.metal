@@ -49,16 +49,6 @@ static constexpr constant float EXP2_POS_32 = 0x1p+32f;
 #define VS_LOAD_INDEX(INDICES, VID) INDICES[VID]
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (ps_tex.sample(ps_tex_sampler, float2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (ps_tex.sample(ps_tex_sampler, float2(POS), level(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(POS) (ps_tex_depth.sample(ps_tex_sampler, float2(POS)))
-#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (ps_tex_depth.sample(ps_tex_sampler, float2(POS), level(LOD)))
-#define PS_READ_TEX(POS, LOD) (ps_tex.read(uint2(POS), (LOD)))
-#define PS_READ_TEX_DEPTH(POS, LOD) (ps_tex_depth.read(uint2(POS), (LOD)))
-#define PS_READ_PALETTE(POS) (ps_palette.read(uint2(POS), 0))
-#define PS_READ_PRIMID(POS) (ps_prim_id_tex.read(uint2(POS), 0).r)
-#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(ps_tex.get_width(), ps_tex.get_height()))
-#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (OUT_VAR = uint2(ps_tex_depth.get_width(), ps_tex_depth.get_height()))
 #define PS_STATIC
 
 // Enum constants
@@ -381,11 +371,11 @@ struct MainPSOut
 
 struct PSMainState
 {
-	texture2d<float> ps_tex;
-	depth2d<float> ps_tex_depth;
-	texture2d<float> ps_palette;
-	texture2d<float> ps_prim_id_tex;
-	sampler ps_tex_sampler;
+	texture2d<float> tex;
+	depth2d<float> tex_depth;
+	texture2d<float> palette;
+	texture2d<float> prim_id_tex;
+	sampler tex_sampler;
 	float4 ps_current_color;
 	float ps_current_depth;
 	uint ps_prim_id;
@@ -402,6 +392,46 @@ struct PSMainState
 		ps_in.c  = IIP ? in.c : in.fc;
 		ps_in.inv_cov  = PS_COVERAGE ? in.inv_cov  : 0;
 		ps_in.interior = PS_INTERIOR ? in.interior : 0;
+	}
+
+	template <typename... Args>
+	float4 sample_tex(Args... args)
+	{
+		if (PS_TEX_IS_DEPTH)
+			return float4(tex_depth.sample(tex_sampler, args...), 0, 0, 0);
+		else
+			return tex.sample(tex_sampler, args...);
+	}
+
+	float4 sample_tex_lod(float2 uv, float lod)
+	{
+		return sample_tex(uv, level(lod));
+	}
+
+	float4 read_tex(uint2 pos)
+	{
+		if (PS_TEX_IS_DEPTH)
+			return float4(tex_depth.read(pos), 0, 0, 0);
+		else
+			return tex.read(pos);
+	}
+
+	uint2 get_tex_dims()
+	{
+		if (PS_TEX_IS_DEPTH)
+			return uint2(tex_depth.get_width(), tex_depth.get_height());
+		else
+			return uint2(tex.get_width(), tex.get_height());
+	}
+
+	uint read_primid(uint2 pos)
+	{
+		return prim_id_tex.read(pos).r;
+	}
+
+	float4 sample_p(uint idx)
+	{
+		return palette.read(uint2(idx, 0));
 	}
 
 	// Include the common PS implementation code
@@ -432,15 +462,15 @@ fragment MainPSOut ps_main(
 {
 	PSMainState state(in, cb);
 
-	state.ps_tex_sampler = s;
+	state.tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.ps_tex = tex;
+		state.tex = tex;
 	else
-		state.ps_tex_depth = depth;
+		state.tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.ps_palette = palette;
+		state.palette = palette;
 	if (PS_PRIM_CHECKING_READ)
-		state.ps_prim_id_tex = primidtex;
+		state.prim_id_tex = primidtex;
 #if PRIMID_SUPPORT
 	if (NEEDS_PRIMID)
 		state.ps_prim_id = primid;
@@ -510,13 +540,13 @@ fragment void ps_main_rov_eft(
 	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]])
 {
 	PSMainState state(in, cb);
-	state.ps_tex_sampler = s;
+	state.tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.ps_tex = tex;
+		state.tex = tex;
 	else
-		state.ps_tex_depth = depth;
+		state.tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.ps_palette = palette;
+		state.palette = palette;
 
 	uint2 coord = uint2(in.p.xy);
 	if (ROV_NEEDS_R32)

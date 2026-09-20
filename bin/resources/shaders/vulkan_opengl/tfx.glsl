@@ -86,16 +86,6 @@
 #define VS_NEEDS_EXPAND (VS_EXPAND_TYPE != VS_EXPAND_NONE)
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (texture(Texture, float2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (textureLod(Texture, float2(POS), float(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
-#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
-#define PS_READ_TEX(POS, LOD) (texelFetch(Texture, int2(POS), int(LOD)))
-#define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
-#define PS_READ_PALETTE(POS) (texelFetch(Palette, int2(POS), 0))
-#define PS_READ_PRIMID(POS) (texelFetch(PrimMinTexture, int2(POS), 0).r)
-#define PS_GET_TEX_DIMS(OUT_VAR) (OUT_VAR = uint2(textureSize(Texture, 0)))
-#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 #define PS_STATIC
 // Unused in VK/GL
 #define PS_POINT_SAMPLER 0
@@ -449,6 +439,36 @@ void DepthWrite(int2 xy, float d)
 #if PS_ROV_DEPTH
 	imageStore(DepthImageRov, xy, vec4(d, 0, 0, 1.0f));
 #endif
+}
+
+vec4 sample_tex(vec2 uv)
+{
+	return texture(Texture, uv);
+}
+
+vec4 sample_tex_lod(vec2 uv, float lod)
+{
+	return textureLod(Texture, uv, lod);
+}
+
+vec4 read_tex(uvec2 pos)
+{
+	return texelFetch(Texture, int2(pos), 0);
+}
+
+uvec2 get_tex_dims()
+{
+	return uvec2(textureSize(Texture, 0));
+}
+
+uint read_primid(uvec2 pos)
+{
+	return texelFetch(PrimMinTexture, int2(pos), 0).r;
+}
+
+vec4 sample_p(uint idx)
+{
+	return texelFetch(Palette, int2(idx, 0), 0);
 }
 
 // Get pixel shader constants for shared code.

@@ -101,7 +101,7 @@ PS_STATIC PSOutputGeneric ps_main_impl()
 
 	if (PS_DATE == 3)
 	{
-		float stencil_ceil = PS_READ_PRIMID(uint2(ps_in.p.xy));
+		float stencil_ceil = read_primid(uint2(ps_in.p.xy));
 		// Note prim_id == stencil_ceil will be the primitive that will update
 		// the bad alpha value so we must keep it.
 		if (float(ps_prim_id) > stencil_ceil)

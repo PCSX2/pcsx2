@@ -73,16 +73,6 @@
 #define BROKEN_SHADER_DEPTH 0
 
 // Pixel shader helpers
-#define PS_SAMPLE_TEX(POS) (Texture.Sample(TextureSampler, float2(POS)))
-#define PS_SAMPLE_TEX_LOD(POS, LOD) (Texture.SampleLevel(TextureSampler, float2(POS), float(LOD)))
-#define PS_SAMPLE_TEX_DEPTH(POS) (PS_SAMPLE_TEX((POS)).r)
-#define PS_SAMPLE_TEX_DEPTH_LOD(POS, LOD) (PS_SAMPLE_TEX_LOD((POS), (LOD)).r)
-#define PS_READ_TEX(POS, LOD) (Texture.Load(int3(int2(POS), int(LOD))))
-#define PS_READ_TEX_DEPTH(POS, LOD) (PS_READ_TEX((POS), (LOD)).r)
-#define PS_READ_PALETTE(POS) (Palette.Load(int3(int2(POS), 0)))
-#define PS_READ_PRIMID(POS) (PrimMinTexture.Load(int3(int2(POS), 0)).r)
-#define PS_GET_TEX_DIMS(OUT_VAR) (Texture.GetDimensions(OUT_VAR.x, OUT_VAR.y))
-#define PS_GET_TEX_DEPTH_DIMS(OUT_VAR) (PS_GET_TEX_DIMS(OUT_VAR))
 #define PS_STATIC static
 
 /// End helper macros for shared shader code.
@@ -283,6 +273,38 @@ cbuffer cb1 : register(b0)
 		PS_UNIFORMS(X)
 	#undef X
 };
+
+static float4 sample_tex(float2 uv)
+{
+	return Texture.Sample(TextureSampler, uv);
+}
+
+static float4 sample_tex_lod(float2 uv, float lod)
+{
+	return Texture.SampleLevel(TextureSampler, uv, lod);
+}
+
+static float4 read_tex(uint2 pos)
+{
+	return Texture.Load(int3(int2(pos), 0));
+}
+
+static uint2 get_tex_dims()
+{
+	uint2 dims;
+	Texture.GetDimensions(dims.x, dims.y);
+	return dims;
+}
+
+static uint read_primid(uint2 pos)
+{
+	return PrimMinTexture.Load(int3(int2(pos), 0)).r;
+}
+
+static float4 sample_p(uint idx)
+{
+	return Palette.Load(int3(idx, 0, 0));
+}
 
 // Get pixel shader input for passing to shared code.
 PSInputGeneric GetPSInput(PS_INPUT ps_in)
