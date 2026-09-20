@@ -51,11 +51,6 @@ PS_STATIC float4 sample_c(float2 uv)
 		return sample_tex_lod(uv, 0);
 }
 
-PS_STATIC float4 sample_p(uint idx)
-{
-	return PS_READ_PALETTE(uint2(idx, 0));
-}
-
 PS_STATIC float4 sample_p_norm(float u)
 {
 	return sample_p(uint(u * 255.5f));
@@ -299,15 +294,15 @@ PS_STATIC float4 sample_depth(float2 st)
 	if (PS_REGION_RECT != FALSE)
 		uv_f = clamp(uv_f + ps_cb.st_range.xy, ps_cb.st_range.xy, ps_cb.st_range.zw);
 
-	ushort2 uv = ushort2(uv_f);
+	uint2 uv = uint2(uv_f);
 	float4 t = splat4(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE != FALSE)
 	{
 		// Warning: UV can't be used in channel effect
-		ushort depth = fetch_raw_depth();
+		uint depth = fetch_raw_depth();
 		// Convert msb based on the palette
-		t = PS_READ_PALETTE(ushort2((depth >> 8) & 0xFFu, 0)) * 255.f;
+		t = sample_p((depth >> 8) & 0xFFu) * 255.f;
 	}
 	else if (PS_URBAN_CHAOS_HLE != FALSE)
 	{
@@ -318,10 +313,10 @@ PS_STATIC float4 sample_depth(float2 st)
 		// To be faster both steps (msb&lsb) are done in a single pass.
 
 		// Warning: UV can't be used in channel effect
-		ushort depth = fetch_raw_depth();
+		uint depth = fetch_raw_depth();
 
 		// Convert lsb based on the palette
-		t = PS_READ_PALETTE(ushort2(depth & 0xFFu, 0)) * 255.f;
+		t = sample_p(depth & 0xFFu) * 255.f;
 
 		// Msb is easier
 		float green = float((depth >> 8) & 0xFFu) * 36.f;
