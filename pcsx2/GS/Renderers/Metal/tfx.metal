@@ -266,6 +266,39 @@ struct MainVSOut
 	}
 };
 
+struct MainPSIn
+{
+	float4 p [[position]];
+	float4 t;
+	float4 ti;
+	float4 c [[function_constant(IIP)]];
+	float4 fc [[flat, function_constant(NOT_IIP)]];
+	float inv_cov [[function_constant(PS_COVERAGE)]];
+	uint interior [[function_constant(PS_INTERIOR)]];
+};
+
+struct MainPSOut
+{
+	float4 c0 [[color(0), index(0), function_constant(PS_OUTPUT_COLOR0)]];
+	float4 c1 [[color(0), index(1), function_constant(PS_OUTPUT_COLOR1)]];
+	float depthColor [[color(1), function_constant(PS_ZOUTPUT_COLOR)]];
+	float depthLess [[depth(less), function_constant(PS_ZOUTPUT_LESS)]];
+	float depthAny  [[depth(any),  function_constant(PS_ZOUTPUT_ANY)]];
+	MainPSOut(PSOutputGeneric res)
+	{
+		if (PS_OUTPUT_COLOR0)
+			c0 = res.c0;
+		if (PS_OUTPUT_COLOR1)
+			c1 = res.c1;
+		if (PS_ZOUTPUT_LESS)
+			depthLess = res.depth;
+		if (PS_ZOUTPUT_ANY)
+			depthAny = res.depth;
+		if (PS_ZOUTPUT_COLOR)
+			depthColor = res.depth;
+	}
+};
+
 // MARK: - Vertex functions
 
 // Convert VS constants for shared code.
@@ -316,60 +349,7 @@ vertex MainVSOut vs_main_expand(
 
 // MARK: - Fragment functions
 
-#if FBFETCH_SUPPORT
-fragment float4 fbfetch_test(float4 in [[color(0), raster_order_group(0)]])
-{
-	return in * 2;
-}
-
-constant bool NEEDS_RT_TEX = NEEDS_RT && !HAS_FBFETCH && !PS_ROV_COLOR;
-constant bool NEEDS_RT_FBF = NEEDS_RT &&  HAS_FBFETCH && !PS_ROV_COLOR;
-constant bool NEEDS_DS_FBF = SW_DEPTH &&  HAS_FBFETCH && !DEPTH_FEEDBACK && PS_ROV_DEPTH == ROV_DEPTH::NONE;
-#else
-constant bool NEEDS_RT_TEX = NEEDS_RT && !PS_ROV_COLOR;
-constant bool NEEDS_DS_FBF = false;
-constant float ds_fbf = 0;
-#endif
-constant bool NEEDS_DS_TEX   = SW_DEPTH && !DEPTH_FEEDBACK && !NEEDS_DS_FBF && PS_ROV_DEPTH == ROV_DEPTH::NONE;
-constant bool NEEDS_DS_DEPTH = (SW_DEPTH && DEPTH_FEEDBACK || NEEDS_DS_FBF) && PS_ROV_DEPTH == ROV_DEPTH::NONE;
-constant bool NEEDS_RT_ROV = PS_ROV_COLOR && !ROV_NEEDS_R32;
-constant bool NEEDS_RT_U32 = PS_ROV_COLOR &&  ROV_NEEDS_R32;
-constant bool NEEDS_DS_ROV = PS_ROV_DEPTH != ROV_DEPTH::NONE;
-
-struct MainPSIn
-{
-	float4 p [[position]];
-	float4 t;
-	float4 ti;
-	float4 c [[function_constant(IIP)]];
-	float4 fc [[flat, function_constant(NOT_IIP)]];
-	float inv_cov [[function_constant(PS_COVERAGE)]];
-	uint interior [[function_constant(PS_INTERIOR)]];
-};
-
-struct MainPSOut
-{
-	float4 c0 [[color(0), index(0), function_constant(PS_OUTPUT_COLOR0)]];
-	float4 c1 [[color(0), index(1), function_constant(PS_OUTPUT_COLOR1)]];
-	float depthColor [[color(1), function_constant(PS_ZOUTPUT_COLOR)]];
-	float depthLess [[depth(less), function_constant(PS_ZOUTPUT_LESS)]];
-	float depthAny  [[depth(any),  function_constant(PS_ZOUTPUT_ANY)]];
-	MainPSOut(PSOutputGeneric res)
-	{
-		if (PS_OUTPUT_COLOR0)
-			c0 = res.c0;
-		if (PS_OUTPUT_COLOR1)
-			c1 = res.c1;
-		if (PS_ZOUTPUT_LESS)
-			depthLess = res.depth;
-		if (PS_ZOUTPUT_ANY)
-			depthAny = res.depth;
-		if (PS_ZOUTPUT_COLOR)
-			depthColor = res.depth;
-	}
-};
-
-struct PSMainState
+struct PSMain
 {
 	texture2d<float> tex;
 	depth2d<float> tex_depth;
@@ -384,7 +364,7 @@ struct PSMainState
 	PSInputGeneric ps_in;
 	constant GSMTLMainPSUniform& ps_cb;
 
-	PSMainState(const thread MainPSIn& in, constant GSMTLMainPSUniform& ps_cb): ps_cb(ps_cb)
+	PSMain(const thread MainPSIn& in, constant GSMTLMainPSUniform& ps_cb): ps_cb(ps_cb)
 	{
 		ps_in.p  = in.p,
 		ps_in.t  = in.t;
@@ -438,6 +418,26 @@ struct PSMainState
 	#include "../../../../bin/resources/shaders/common/tfx_ps.inc"
 };
 
+#if FBFETCH_SUPPORT
+fragment float4 fbfetch_test(float4 in [[color(0), raster_order_group(0)]])
+{
+	return in * 2;
+}
+
+constant bool NEEDS_RT_TEX = NEEDS_RT && !HAS_FBFETCH && !PS_ROV_COLOR;
+constant bool NEEDS_RT_FBF = NEEDS_RT &&  HAS_FBFETCH && !PS_ROV_COLOR;
+constant bool NEEDS_DS_FBF = SW_DEPTH &&  HAS_FBFETCH && !DEPTH_FEEDBACK && PS_ROV_DEPTH == ROV_DEPTH::NONE;
+#else
+constant bool NEEDS_RT_TEX = NEEDS_RT && !PS_ROV_COLOR;
+constant bool NEEDS_DS_FBF = false;
+constant float ds_fbf = 0;
+#endif
+constant bool NEEDS_DS_TEX   = SW_DEPTH && !DEPTH_FEEDBACK && !NEEDS_DS_FBF && PS_ROV_DEPTH == ROV_DEPTH::NONE;
+constant bool NEEDS_DS_DEPTH = (SW_DEPTH && DEPTH_FEEDBACK || NEEDS_DS_FBF) && PS_ROV_DEPTH == ROV_DEPTH::NONE;
+constant bool NEEDS_RT_ROV = PS_ROV_COLOR && !ROV_NEEDS_R32;
+constant bool NEEDS_RT_U32 = PS_ROV_COLOR &&  ROV_NEEDS_R32;
+constant bool NEEDS_DS_ROV = PS_ROV_DEPTH != ROV_DEPTH::NONE;
+
 fragment MainPSOut ps_main(
 	MainPSIn in [[stage_in]],
 	constant GSMTLMainPSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]],
@@ -460,20 +460,19 @@ fragment MainPSOut ps_main(
 	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]],
 	texture2d<float, access::read_write> ds_rov [[texture(GSMTLTextureIndexDepthTarget),  raster_order_group(1), function_constant(NEEDS_DS_ROV)]])
 {
-	PSMainState state(in, cb);
-
-	state.tex_sampler = s;
+	PSMain main(in, cb);
+	main.tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.tex = tex;
+		main.tex = tex;
 	else
-		state.tex_depth = depth;
+		main.tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.palette = palette;
+		main.palette = palette;
 	if (PS_PRIM_CHECKING_READ)
-		state.prim_id_tex = primidtex;
+		main.prim_id_tex = primidtex;
 #if PRIMID_SUPPORT
 	if (NEEDS_PRIMID)
-		state.ps_prim_id = primid;
+		main.ps_prim_id = primid;
 #endif
 
 	uint2 coord = uint2(in.p.xy);
@@ -481,13 +480,13 @@ fragment MainPSOut ps_main(
 	if (SW_DEPTH)
 	{
 		if (PS_ROV_DEPTH != ROV_DEPTH::NONE)
-			state.ps_current_depth = ds_rov.read(coord).x;
+			main.ps_current_depth = ds_rov.read(coord).x;
 		else if (DEPTH_FEEDBACK)
-			state.ps_current_depth = ds_depth.read(coord);
+			main.ps_current_depth = ds_depth.read(coord);
 		else if (NEEDS_DS_FBF)
-			state.ps_current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
+			main.ps_current_depth = ds_fbf < 0 ? ds_depth.read(coord) : ds_fbf;
 		else
-			state.ps_current_depth = ds_tex.read(coord).x;
+			main.ps_current_depth = ds_tex.read(coord).x;
 	}
 
 	if (NEEDS_RT)
@@ -495,36 +494,35 @@ fragment MainPSOut ps_main(
 		if (PS_ROV_COLOR)
 		{
 			if (ROV_NEEDS_R32)
-				state.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+				main.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
 			else
-				state.ps_current_color = rt_rov.read(coord);
+				main.ps_current_color = rt_rov.read(coord);
 		}
 		else
 		{
 #if FBFETCH_SUPPORT
-			state.ps_current_color = HAS_FBFETCH ? rt_fbf : rt.read(coord);
+			main.ps_current_color = HAS_FBFETCH ? rt_fbf : rt.read(coord);
 #else
-			state.ps_current_color = rt.read(coord);
+			main.ps_current_color = rt.read(coord);
 #endif
 		}
 	}
 	else
 	{
-		state.ps_current_color = 0;
+		main.ps_current_color = 0;
 	}
 
-	PSOutputGeneric out = state.ps_main_impl();
-
-	if (PS_ROV_DEPTH == ROV_DEPTH::READ_WRITE && !state.ps_depth_discarded)
+	PSOutputGeneric out = main.ps_main_impl();
+	if (PS_ROV_DEPTH == ROV_DEPTH::READ_WRITE && !main.ps_depth_discarded)
 		ds_rov.write(out.depth, coord);
-	if (PS_ROV_COLOR && !state.ps_color_discarded)
+	if (PS_ROV_COLOR && !main.ps_color_discarded)
 	{
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else
 			rt_rov.write(out.c0, coord);
 	}
-	return MainPSOut(out);
+	return out;
 }
 
 // Metal doesn't let you toggle eft with function constants so we need a separate function for it
@@ -539,27 +537,27 @@ fragment void ps_main_rov_eft(
 	texture2d<float, access::read_write> rt_rov [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_ROV)]],
 	texture2d<uint,  access::read_write> rt_u32 [[texture(GSMTLTextureIndexRenderTarget), raster_order_group(0), function_constant(NEEDS_RT_U32)]])
 {
-	PSMainState state(in, cb);
-	state.tex_sampler = s;
+	PSMain main(in, cb);
+	main.tex_sampler = s;
 	if (PS_TEX_IS_COLOR)
-		state.tex = tex;
+		main.tex = tex;
 	else
-		state.tex_depth = depth;
+		main.tex_depth = depth;
 	if (PS_HAS_PALETTE)
-		state.palette = palette;
+		main.palette = palette;
 
 	uint2 coord = uint2(in.p.xy);
 	if (ROV_NEEDS_R32)
-		state.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
+		main.ps_current_color = unpack_unorm4x8_to_float(rt_u32.read(coord).x);
 	else
-		state.ps_current_color = rt_rov.read(coord);
-	
-	PSOutputGeneric out = state.ps_main_impl();
+		main.ps_current_color = rt_rov.read(coord);
 
-	if (!state.ps_color_discarded)
+	PSOutputGeneric out = main.ps_main_impl();
+
+	if (!main.ps_color_discarded)
 	{
 		if (!PS_FBMASK)
-			out.c0 = select(out.c0, state.ps_current_color, cb.fbmask == 0xff);
+			out.c0 = select(out.c0, main.ps_current_color, cb.fbmask == 0xff);
 		if (ROV_NEEDS_R32)
 			rt_u32.write(pack_float_to_unorm4x8(out.c0), coord);
 		else
