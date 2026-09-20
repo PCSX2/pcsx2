@@ -1,7 +1,7 @@
 PS_STATIC float4 sample_c_af(float2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
-	uv = any(IS_NAN_OR_INF_4(float4(uv, 0, 0))) ? float2_bcast(0.0f) : uv;
+	uv = any(IS_NAN_OR_INF_4(float4(uv, 0, 0))) ? splat2(0.0f) : uv;
 
 	// Large floating point values risk NaN/Inf values.
 	// Above this value floats lose decimal precision, so seems a resonable limit for UVs.
@@ -82,7 +82,7 @@ PS_STATIC float4 sample_c_af(float2 uv, float uv_w)
 		// Perform isotropic filtering instead.
 		aniso_ratio = 1.0f;
 		length_lod = length_major;
-		aniso_line = float2_bcast(0.0f);
+		aniso_line = splat2(0.0f);
 	}
 	else
 	{
@@ -109,7 +109,7 @@ PS_STATIC float4 sample_c_af(float2 uv, float uv_w)
 	}
 	else
 	{
-		float4 num = float4_bcast(0.0f);
+		float4 num = splat4(0.0f);
 		float2 segment = (2.0f * aniso_line) / aniso_ratio;
 		
 		int aniso_ratio_i = int(aniso_ratio);

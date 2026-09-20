@@ -5,6 +5,8 @@
 
 /// Start helper macros for shared shader code
 
+#define PCSX2_MSL
+
 // Builtin keywords/functions
 #define ddx dfdx
 #define ddy dfdy
@@ -16,9 +18,6 @@
 #define lessThan(X, Y) ((X) < (Y))
 #define notEqual(X, Y) ((X) != (Y))
 #define discard discard_fragment()
-#define FLOAT_BITCAST_UINT(X) as_type<uint>(X)
-#define FLOAT4_BITCAST_UINT4(X) as_type<uint4>(X)
-#define UINT_BITCAST_UCHAR4(X) as_type<uchar4>(X)
 #define MAT_MUL(X, Y) ((X) * (Y))
 #define MAT_GET(MAT, X, Y) MAT[Y][X]
 #define frac(X) fract(X)
@@ -26,18 +25,24 @@
 #define IN_PARAM(TYPE, NAME) thread const TYPE & NAME
 #define IN_OUT_PARAM(TYPE, NAME) thread TYPE & NAME
 #define IS_NAN_OR_INF_4(X) (isinf(X) | isnan(X))
-#define UNROLL
+#define UNROLL _Pragma("unroll")
+
+template <uint N> static inline vec<uint, N> asuint(vec<float, N> v) { return as_type<vec<uint, N>>(v); }
+static inline uint asuint(float v) { return as_type<uint>(v); }
+template <typename T> static inline vec<T, 2> splat2(T val) { return val; }
+template <typename T> static inline vec<T, 3> splat3(T val) { return val; }
+template <typename T> static inline vec<T, 4> splat4(T val) { return val; }
 
 // Constants
-#define PRIMID_MAX FLT_MAX
-#define VS_Y_FLIP -1.0f
-#define EXP2_NEG_32 0x1p-32f
-#define EXP2_POS_32 0x1p+32f
+static constexpr constant int   PRIMID_MAX = GSShader::PRIMID_MAX;
+static constexpr constant float VS_Y_FLIP = -1;
+static constexpr constant float EXP2_NEG_32 = 0x1p-32f;
+static constexpr constant float EXP2_POS_32 = 0x1p+32f;
 
 // Vertex shader helpers
 #define VS_SCALE_RAW_Z(Z) (float(Z) * EXP2_NEG_32)
-#define VS_VERTICES_PARAM(NAME) device const GSMTLMainVertex* NAME [[buffer(GSMTLBufferIndexHWVertices)]]
-#define VS_INDICES_PARAM(NAME) device const ushort* NAME [[buffer(GSMTLBufferIndexHWIndices), function_constant(VS_NEEDS_INDEX_BUFFER)]]
+#define VS_VERTICES_PARAM(NAME) device const GSMTLMainVertex* NAME
+#define VS_INDICES_PARAM(NAME) device const ushort* NAME
 #define VS_BASE_VERTEX 0
 #define VS_BASE_INDEX 0
 #define VS_LOAD_VERTEX(VERTICES, VID) VERTICES[VID]
@@ -57,49 +62,39 @@
 #define PS_STATIC
 
 // Enum constants
-#ifndef VS_EXPAND_NONE
-#define VS_EXPAND_NONE VSExpand::None
-#define VS_EXPAND_POINT VSExpand::Point
-#define VS_EXPAND_LINE VSExpand::Line
-#define VS_EXPAND_SPRITE VSExpand::Sprite
-#define VS_EXPAND_LINE_AA1 VSExpand::LineAA1
-#define VS_EXPAND_TRIANGLE_AA1 VSExpand::TriangleAA1
-#endif
+using GSShader::VSExpand;
+using AFAIL = GSShader::PS_AFAIL;
+using ATST = GSShader::PS_ATST;
+using GSShader::ZTST;
+using AA1 = GSShader::PS_AA1;
+using ROV_DEPTH = GSShader::PS_ROV_DEPTH;
 
-#ifndef ZTST_GEQUAL
-#define ZTST_GEQUAL ZTST::GEQUAL
-#define ZTST_GREATER ZTST::GREATER
-#endif
-
-#ifndef AFAIL_KEEP
-#define AFAIL_KEEP AFAIL::KEEP
-#define AFAIL_FB_ONLY AFAIL::FB_ONLY
-#define AFAIL_ZB_ONLY AFAIL::ZB_ONLY
-#define AFAIL_RGB_ONLY AFAIL::RGB_ONLY
-#define AFAIL_RGB_ONLY_DSB AFAIL::RGB_ONLY_DSB
-#define AFAIL_RGB_ONLY_SW_Z AFAIL::RGB_ONLY_SW_Z
-#endif
-
-#ifndef PS_ATST_NONE
-#define PS_ATST_NONE ATST::NONE
-#define PS_ATST_LEQUAL ATST::LEQUAL
-#define PS_ATST_GEQUAL ATST::GEQUAL
-#define PS_ATST_EQUAL ATST::EQUAL
-#define PS_ATST_NOTEQUAL ATST::NOTEQUAL
-#endif
-
-#ifndef PS_AA1_NONE
-#define PS_AA1_NONE AA1::NONE
-#define PS_AA1_LINE AA1::LINE
-#define PS_AA1_TRIANGLE AA1::TRIANGLE
-#define PS_AA1_TRIANGLE_SW_Z AA1::TRIANGLE_SW_Z
-#endif
-
-#ifndef PS_ROV_DEPTH_NONE
-#define PS_ROV_DEPTH_NONE ROV_DEPTH::NONE
-#define PS_ROV_DEPTH_READ_WRITE ROV_DEPTH::READ_WRITE
-#define PS_ROV_DEPTH_READ_ONLY ROV_DEPTH::READ_ONLY
-#endif
+static constexpr constant VSExpand VS_EXPAND_NONE         = VSExpand::None;
+static constexpr constant VSExpand VS_EXPAND_POINT        = VSExpand::Point;
+static constexpr constant VSExpand VS_EXPAND_LINE         = VSExpand::Line;
+static constexpr constant VSExpand VS_EXPAND_SPRITE       = VSExpand::Sprite;
+static constexpr constant VSExpand VS_EXPAND_LINE_AA1     = VSExpand::LineAA1;
+static constexpr constant VSExpand VS_EXPAND_TRIANGLE_AA1 = VSExpand::TriangleAA1;
+static constexpr constant ZTST ZTST_GEQUAL  = ZTST::GEQUAL;
+static constexpr constant ZTST ZTST_GREATER = ZTST::GREATER;
+static constexpr constant AFAIL AFAIL_KEEP          = AFAIL::KEEP;
+static constexpr constant AFAIL AFAIL_FB_ONLY       = AFAIL::FB_ONLY;
+static constexpr constant AFAIL AFAIL_ZB_ONLY       = AFAIL::ZB_ONLY;
+static constexpr constant AFAIL AFAIL_RGB_ONLY      = AFAIL::RGB_ONLY;
+static constexpr constant AFAIL AFAIL_RGB_ONLY_DSB  = AFAIL::RGB_ONLY_DSB;
+static constexpr constant AFAIL AFAIL_RGB_ONLY_SW_Z = AFAIL::RGB_ONLY_SW_Z;
+static constexpr constant ATST PS_ATST_NONE     = ATST::NONE;
+static constexpr constant ATST PS_ATST_LEQUAL   = ATST::LEQUAL;
+static constexpr constant ATST PS_ATST_GEQUAL   = ATST::GEQUAL;
+static constexpr constant ATST PS_ATST_EQUAL    = ATST::EQUAL;
+static constexpr constant ATST PS_ATST_NOTEQUAL = ATST::NOTEQUAL;
+static constexpr constant AA1 PS_AA1_NONE          = AA1::NONE;
+static constexpr constant AA1 PS_AA1_LINE          = AA1::LINE;
+static constexpr constant AA1 PS_AA1_TRIANGLE      = AA1::TRIANGLE;
+static constexpr constant AA1 PS_AA1_TRIANGLE_SW_Z = AA1::TRIANGLE_SW_Z;
+static constexpr constant ROV_DEPTH PS_ROV_DEPTH_NONE       = ROV_DEPTH::NONE;
+static constexpr constant ROV_DEPTH PS_ROV_DEPTH_READ_WRITE = ROV_DEPTH::READ_WRITE;
+static constexpr constant ROV_DEPTH PS_ROV_DEPTH_READ_ONLY  = ROV_DEPTH::READ_ONLY;
 
 /// End helper macros for shared shader code
 
@@ -180,12 +175,6 @@ constant uint PS_SW_ANISO           [[function_constant(GSMTLConstantIndex_PS_SW
 constant bool PS_ROV_COLOR          [[function_constant(GSMTLConstantIndex_PS_ROV_COLOR)]];
 constant uint PS_ROV_DEPTH_RAW      [[function_constant(GSMTLConstantIndex_PS_ROV_DEPTH)]];
 
-using GSShader::VSExpand;
-using AFAIL = GSShader::PS_AFAIL;
-using ATST = GSShader::PS_ATST;
-using GSShader::ZTST;
-using AA1 = GSShader::PS_AA1;
-using ROV_DEPTH = GSShader::PS_ROV_DEPTH;
 constant VSExpand VS_EXPAND_TYPE = static_cast<VSExpand>(VS_EXPAND_TYPE_RAW);
 constant AFAIL PS_AFAIL = static_cast<AFAIL>(PS_AFAIL_RAW);
 constant ATST  PS_ATST  = static_cast<ATST>(PS_ATST_RAW);
@@ -247,29 +236,15 @@ constant bool FALSE = false;
 
 #include "../../../../bin/resources/shaders/common/tfx_defs.inc"
 
-struct MainVSIn
+struct VSInput
 {
 	float2 st [[attribute(GSMTLAttributeIndexST)]];
-	float4 c  [[attribute(GSMTLAttributeIndexC)]];
+	uint4  c  [[attribute(GSMTLAttributeIndexC)]];
 	float  q  [[attribute(GSMTLAttributeIndexQ)]];
 	uint2  p  [[attribute(GSMTLAttributeIndexXY)]];
 	uint   z  [[attribute(GSMTLAttributeIndexZ)]];
 	uint2  uv [[attribute(GSMTLAttributeIndexUV)]];
 	float4 f  [[attribute(GSMTLAttributeIndexF)]];
-
-	// Convert VS inputs for shared code.
-	VSInputGeneric GetGeneric()
-	{
-		VSInputGeneric vin_gen;
-		vin_gen.st = st;
-		vin_gen.c = c;
-		vin_gen.q = q;
-		vin_gen.p = p;
-		vin_gen.z = z;
-		vin_gen.uv = uv;
-		vin_gen.f = f;
-		return vin_gen;
-	}
 };
 
 struct MainVSOut
@@ -313,12 +288,12 @@ VSUniformsGeneric GetVSUniforms(constant GSMTLMainVSUniform& cb [[buffer(GSMTLBu
 	return cb_gen;
 }
 
-static VSInputGeneric load_vertex(device const GSMTLMainVertex* vertices, uint idx)
+static VSInput load_vertex(device const GSMTLMainVertex* vertices, uint idx)
 {
 	GSMTLMainVertex base = vertices[idx];
-	VSInputGeneric out;
+	VSInput out;
 	out.st = base.st;
-	out.c = float4(base.rgba);
+	out.c = uint4(base.rgba);
 	out.q = base.q;
 	out.p = uint2(base.xy);
 	out.z = base.z;
@@ -335,9 +310,9 @@ static uint load_index(device const ushort* indices [[buffer(GSMTLBufferIndexHWI
 // Note: load_vertex() and load_index() must be declared before including common code.
 #include "../../../../bin/resources/shaders/common/tfx_vs.inc"
 
-vertex MainVSOut vs_main(MainVSIn v [[stage_in]], constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
+vertex MainVSOut vs_main(VSInput v [[stage_in]], constant GSMTLMainVSUniform& cb [[buffer(GSMTLBufferIndexHWUniforms)]])
 {
-	return MainVSOut(vs_main_impl(v.GetGeneric(), GetVSUniforms(cb)));
+	return MainVSOut(vs_main_impl(v, GetVSUniforms(cb)));
 }
 
 vertex MainVSOut vs_main_expand(
@@ -416,10 +391,18 @@ struct PSMainState
 	uint ps_prim_id;
 	bool ps_color_discarded = false;
 	bool ps_depth_discarded = false;
-	const thread MainPSIn& ps_in;
+	PSInputGeneric ps_in;
 	constant GSMTLMainPSUniform& ps_cb;
 
-	PSMainState(const thread MainPSIn& ps_in, constant GSMTLMainPSUniform& ps_cb): ps_in(ps_in), ps_cb(ps_cb) {}
+	PSMainState(const thread MainPSIn& in, constant GSMTLMainPSUniform& ps_cb): ps_cb(ps_cb)
+	{
+		ps_in.p  = in.p,
+		ps_in.t  = in.t;
+		ps_in.ti = in.ti;
+		ps_in.c  = IIP ? in.c : in.fc;
+		ps_in.inv_cov  = PS_COVERAGE ? in.inv_cov  : 0;
+		ps_in.interior = PS_INTERIOR ? in.interior : 0;
+	}
 
 	// Include the common PS implementation code
 	#include "../../../../bin/resources/shaders/common/tfx_ps.inc"

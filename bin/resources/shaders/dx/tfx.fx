@@ -15,6 +15,8 @@
 
 /// Start helper macros for shared shader code.
 
+#define PCSX2_HLSL
+
 // Types
 #define ushort uint
 #define ushort2 uint2
@@ -33,9 +35,9 @@
 #define lessThan(X, Y) ((X) < (Y))
 #define notEqual(X, Y) ((X) != (Y))
 #define rsqrt(X) rsqrt(X)
-#define FLOAT_BITCAST_UINT(X) asuint(X)
-#define FLOAT4_BITCAST_UINT4(X) asuint(X)
-#define UINT_BITCAST_UCHAR4(X) uint4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
+#define splat2(X) (X).xx
+#define splat3(X) (X).xxx
+#define splat4(X) (X).xxxx
 // Warning: X, Y opposite order of GLSL and MSL!
 #define MAT_MUL(X, Y) mul((Y), (X))
 // Warning: X, Y opposite order of GLSL and MSL!
@@ -112,7 +114,7 @@ StructuredBuffer<uint> IndexBuffer : register(t5);
 // Note: vertex/index buffers must be defined before common code is included.
 #include "tfx_vs.inc"
 
-struct VS_INPUT
+struct VSInput
 {
 	float2 st : TEXCOORD0;
 	uint4 c : COLOR0;
@@ -290,7 +292,6 @@ PSInputGeneric GetPSInput(PS_INPUT ps_in)
 	psin_gen.t = ps_in.t;
 	psin_gen.ti = ps_in.ti;
 	psin_gen.c = ps_in.c;
-	psin_gen.fc = ps_in.c;
 	psin_gen.inv_cov = ps_in.inv_cov;
 	psin_gen.interior = ps_in.interior;
 	return psin_gen;

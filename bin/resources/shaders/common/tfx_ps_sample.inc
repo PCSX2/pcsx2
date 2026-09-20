@@ -86,7 +86,7 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			if (PS_FST == FALSE)
 				uv = frac(uv);
 
-			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uint4 uv_msk_fix = asuint(ps_cb.uv_min_max);
 			uv = float4((ushort4(uv * tex_size) & ushort4(uv_msk_fix.xyxy)) | ushort4(uv_msk_fix.zwzw)) / tex_size;
 		}
 	}
@@ -109,7 +109,7 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			if (PS_FST == FALSE)
 				uv.xz = frac(uv.xz);
 
-			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uint4 uv_msk_fix = asuint(ps_cb.uv_min_max);
 			uv.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(uv_msk_fix.xx)) | ushort2(uv_msk_fix.zz)) / tex_size.xx;
 		}
 
@@ -130,7 +130,7 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			if (PS_FST == FALSE)
 				uv.yw = frac(uv.yw);
 
-			uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+			uint4 uv_msk_fix = asuint(ps_cb.uv_min_max);
 			uv.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(uv_msk_fix.yy)) | ushort2(uv_msk_fix.ww)) / tex_size.yy;
 		}
 	}
@@ -221,7 +221,7 @@ PS_STATIC float4 sample_color(float2 st)
 			{
 				// Background in Shin Megami Tensei Lucifers
 				// I suspect that uv isn't a standard number, so fract is outside of the [0;1] range
-				dd = clamp(dd, float2_bcast(0.0f), float2_bcast(0.9999999f));
+				dd = clamp(dd, splat2(0.0f), splat2(0.9999999f));
 			}
 		}
 		else
@@ -266,7 +266,7 @@ PS_STATIC ushort2 clamp_wrap_uv_depth(ushort2 uv)
 	ushort2 uv_out = uv;
 	// Keep the full precision
 	// It allow to multiply the ScalingFactor before the 1/16 coeff
-	uint4 uv_msk_fix = FLOAT4_BITCAST_UINT4(ps_cb.uv_min_max);
+	uint4 uv_msk_fix = asuint(ps_cb.uv_min_max);
 	ushort4 mask = ushort4(uv_msk_fix << 4);
 
 	if (PS_WMS == PS_WMT)
@@ -294,13 +294,13 @@ PS_STATIC ushort2 clamp_wrap_uv_depth(ushort2 uv)
 
 PS_STATIC float4 sample_depth(float2 st)
 {
-	float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * float2_bcast(ps_cb.scale_factor.x);
+	float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * splat2(ps_cb.scale_factor.x);
 
 	if (PS_REGION_RECT != FALSE)
 		uv_f = clamp(uv_f + ps_cb.st_range.xy, ps_cb.st_range.xy, ps_cb.st_range.zw);
 
 	ushort2 uv = ushort2(uv_f);
-	float4 t = float4_bcast(0.0f);
+	float4 t = splat4(0.0f);
 
 	if (PS_TALES_OF_ABYSS_HLE != FALSE)
 	{
