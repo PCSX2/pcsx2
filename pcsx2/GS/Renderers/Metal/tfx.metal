@@ -1112,7 +1112,7 @@ struct PSMain
 		{
 			uint4 rt = uint4(fetch_raw_color() * 255.5f);
 			uint green = (rt.g >> cb.channel_shuffle.green_shift) & cb.channel_shuffle.green_mask;
-			uint blue  = (rt.b >> cb.channel_shuffle.blue_shift)  & cb.channel_shuffle.blue_mask;
+			uint blue  = (rt.b << cb.channel_shuffle.blue_shift)  & cb.channel_shuffle.blue_mask;
 			return float4(green | blue);
 		}
 	}
