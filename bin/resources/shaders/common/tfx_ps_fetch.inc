@@ -56,13 +56,13 @@ PS_STATIC float4 fetch_gXbY()
 	{
 		uint depth = fetch_raw_depth();
 		uint bg = (depth >> (8 + ps_cb.channel_shuffle_green_shift)) & 0xFFu;
-		return float4_bcast(bg);
+		return splat4(float(bg));
 	}
 	else
 	{
 		uint4 rt = uint4(fetch_raw_color() * 255.0f);
 		uint green = (rt.g >> ps_cb.channel_shuffle_green_shift) & ps_cb.channel_shuffle_green_mask;
 		uint blue  = (rt.b << ps_cb.channel_shuffle_blue_shift)  & ps_cb.channel_shuffle_blue_mask;
-		return float4_bcast(green | blue);
+		return splat4(float(green | blue));
 	}
 }

@@ -5,7 +5,7 @@ PS_STATIC void ps_fbmask(IN_OUT_PARAM(float4, C))
 		float multi_rgb = (PS_COLCLIP_HW != FALSE) ? 65535.f : 255.f;
 		float multi_a = (PS_RTA_CORRECTION != FALSE) ? 128.0f : 255.0f;
 		float4 RT = ps_current_color;
-		RT.rgb = trunc(RT.rgb * multi_rgb + float3_bcast(0.1f));
+		RT.rgb = trunc(RT.rgb * multi_rgb + splat3(0.1f));
 		RT.a = round(RT.a * multi_a);
 		C = float4((uint4(int4(C)) & ~ps_cb.fbmask) | (uint4(RT) & ps_cb.fbmask));
 	}
@@ -19,7 +19,7 @@ PS_STATIC void ps_dither(IN_OUT_PARAM(float4, C), float As)
 	if (PS_DITHER == 2)
 		fpos = ushort2(ps_in.p.xy);
 	else
-		fpos = ushort2(ps_in.p.xy * float2_bcast(ps_cb.scale_factor.y));
+		fpos = ushort2(ps_in.p.xy * splat2(ps_cb.scale_factor.y));
 	float value = MAT_GET(ps_cb.dither_matrix, fpos.x & 3u, fpos.y & 3u);
 
 	// The idea here is we add on the dither amount adjusted by the alpha before it goes to the hw blend

@@ -53,7 +53,7 @@ PS_STATIC float4 ps_color()
 		T.a = (T.a >= 127.5 ? ps_cb.ta.y : PS_AEM == FALSE || any_nonzero(int3(T.rgb) & int(0xF8)) ? ps_cb.ta.x : 0.f) * 255.f;
 	}
 
-	float4 C = tfx(T, PS_IIP != FALSE ? ps_in.c : ps_in.fc);
+	float4 C = tfx(T, ps_in.c);
 
 	fog(C, ps_in.t.z);
 

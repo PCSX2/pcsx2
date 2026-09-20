@@ -24,7 +24,7 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 			uint4 denorm_c = uint4(C);
 			
 			if ((PS_PROCESS_BA & SHUFFLE_READ) != 0u)
-				C = float4_bcast(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+				C = splat4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 			else
 				C.ga = C.rg;
 		}
@@ -34,8 +34,8 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(ps_cb.ta * 255.5f);
 			
-			C.rb = float2_bcast(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
-			C.ga = float2_bcast(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+			C.rb = splat2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
+			C.ga = splat2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
 		}
 		else if (PS_SHUFFLE_ACROSS != FALSE)
 		{
@@ -61,8 +61,8 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 PS_STATIC PSOutputGeneric ps_main_impl()
 {
 	PSOutputGeneric psout;
-	psout.c0 = float4_bcast(0.0f);
-	psout.c1 = float4_bcast(0.0f);
+	psout.c0 = splat4(0.0f);
+	psout.c1 = splat4(0.0f);
 	psout.depth = 0.0f;
 
 	float input_z = ps_in.p.z;
@@ -130,15 +130,15 @@ PS_STATIC PSOutputGeneric ps_main_impl()
 	if (PS_AFAIL == AFAIL_KEEP && !atst_pass)
 		discard_all();
 
-	float4 alpha_blend = float4_bcast(0.f);
+	float4 alpha_blend = splat4(0.f);
 	if (SW_AD_TO_HW)
 	{
 		float RT_a = trunc(ps_current_color.a * (PS_RTA_CORRECTION != FALSE ? 128.f : 255.f) + 0.1f);
-		alpha_blend = float4_bcast(RT_a / 128.f);
+		alpha_blend = splat4(RT_a / 128.f);
 	}
 	else
 	{
-		alpha_blend = float4_bcast(C.a / 128.f);
+		alpha_blend = splat4(C.a / 128.f);
 	}
 
 	ps_alpha_correct(C);
@@ -147,13 +147,13 @@ PS_STATIC PSOutputGeneric ps_main_impl()
 	if (PS_DATE == 1)
 	{
 		// DATM == 0, Pixel with alpha equal to 1 will failed (128-255)
-		psout.c0 = float4_bcast(C.a > 127.5f ? float(ps_prim_id) : float(PRIMID_MAX));
+		psout.c0 = splat4(C.a > 127.5f ? float(ps_prim_id) : float(PRIMID_MAX));
 		return psout;
 	}
 	else if (PS_DATE == 2)
 	{
 		// DATM == 1, Pixel with alpha equal to 0 will failed (0-127)
-		psout.c0 = float4_bcast(C.a < 127.5f ? float(ps_prim_id) : PRIMID_MAX);
+		psout.c0 = splat4(C.a < 127.5f ? float(ps_prim_id) : float(PRIMID_MAX));
 		return psout;
 	}
 

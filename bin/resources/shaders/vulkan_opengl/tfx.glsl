@@ -15,6 +15,8 @@
 
 /// Start helper macros for shared shader code
 
+#define PCSX2_GLSL
+
 // Types
 #define float2 vec2
 #define float3 vec3
@@ -46,13 +48,14 @@
 #define ddy dFdy
 #define rsqrt(X) inversesqrt(X)
 #define saturate(X) clamp((X), 0.0f, 1.0f)
-#define FLOAT_BITCAST_UINT(X) floatBitsToUint(X)
-#define FLOAT4_BITCAST_UINT4(X) floatBitsToUint(X)
-#define UINT_BITCAST_UCHAR4(X) uint4((X) & 0xFFu, ((X) >> 8) & 0xFFu, ((X) >> 16) & 0xFFu, ((X) >> 24) & 0xFFu)
+#define asuint(X) floatBitsToUint(X)
 #define MAT_MUL(X, Y) ((X) * (Y))
 #define MAT_GET(MAT, X, Y) MAT[Y][X]
 #define frac(X) fract(X)
 #define lerp mix
+#define splat2(X) (X).xx
+#define splat3(X) (X).xxx
+#define splat4(X) (X).xxxx
 #define IN_PARAM(TYPE, NAME) TYPE NAME
 #define IN_OUT_PARAM(TYPE, NAME) inout TYPE NAME
 #define IS_NAN_OR_INF_4(X) bool4(int4(isinf(X)) | int4(isnan(X)))
@@ -103,6 +106,17 @@
 #include "tfx_defs.inc"
 
 #ifdef VERTEX_SHADER
+
+struct VSInput
+{
+	float2 st;
+	float4 c;
+	float  q;
+	uint2  p;
+	uint   z;
+	uint2  uv;
+	float4 f;
+};
 
 #if VS_EXPAND_TYPE != VS_EXPAND_NONE
 
@@ -225,9 +239,9 @@ void WriteVSOutput(VSOutputGeneric v)
 #endif
 
 // Get VS inputs for shared code.
-VSInputGeneric GetVSInput()
+VSInput GetVSInput()
 {
-	VSInputGeneric vin;
+	VSInput vin;
 	vin.st = a_st;
 	vin.c = float4(a_c);
 	vin.q = a_q;
@@ -455,7 +469,6 @@ PSInputGeneric GetPSInput()
 	ps_in.t = vsIn.t;
 	ps_in.ti = vsIn.ti;
 	ps_in.c = vsIn.c;
-	ps_in.fc = vsIn.c;
 	ps_in.inv_cov = vsIn.inv_cov;
 	ps_in.interior = vsIn.interior;
 	return ps_in;

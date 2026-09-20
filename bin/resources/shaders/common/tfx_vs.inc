@@ -17,9 +17,9 @@ uint load_index(VS_INDICES_PARAM(ignored), uint _i)
 	#endif
 }
 
-VSInputGeneric load_vertex(VS_VERTICES_PARAM(vertices), uint index)
+VSInput load_vertex(VS_VERTICES_PARAM(vertices), uint index)
 {
-	VSInputGeneric vert;
+	VSInput vert;
 	#if VS_NEEDS_EXPAND
 		VSRawVertex raw = VS_LOAD_VERTEX(vertices, VS_BASE_VERTEX + index);
 		vert.st = raw.ST;
@@ -53,7 +53,7 @@ static void vs_broken_shader_depth(IN_OUT_PARAM(VSOutputGeneric, vout))
 	vout.p.z += EXP2_NEG_32;
 }
 
-static VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUniformsGeneric, cb))
+static VSOutputGeneric vs_main_impl(IN_PARAM(VSInput, v), IN_PARAM(VSUniformsGeneric, cb))
 {
 	VSOutputGeneric vout;
 	// Clamp to max depth, GS doesn't wrap
@@ -85,7 +85,7 @@ static VSOutputGeneric vs_main_impl(IN_PARAM(VSInputGeneric, v), IN_PARAM(VSUnif
 		vout.ti.zw = st / cb.texture_scale;
 	}
 
-	vout.c = v.c;
+	vout.c = float4(v.c);
 
 	vout.t.z = v.f.x; // pack fog with texture
 
@@ -186,7 +186,7 @@ static void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_
 	// Get the position -> barycentric weight matrix
 	float2x2 inv_dp_mat = get_inverse(dp_mat, dp_det);
 
-	float2 weights = min_perp_length < 2 ? float2_bcast(0.0f) : MAT_MUL(inv_dp_mat, dp);
+	float2 weights = min_perp_length < 2 ? splat2(0.0f) : MAT_MUL(inv_dp_mat, dp);
 
 	v0.p.xy += dp * cb.point_size; // Extrapolate position
 
@@ -335,7 +335,7 @@ static VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(v
 
 		float2x2 pos_deltas = get_xy_deltas_unscaled(vout, other, opposite, cb);
 
-		float2 expand_dir = is_outside ? get_aa1_triangle_expand_dir(vout, other, opposite, cb) : float2_bcast(0.0f);
+		float2 expand_dir = is_outside ? get_aa1_triangle_expand_dir(vout, other, opposite, cb) : splat2(0.0f);
 
 		// Do actual extrapolation, or no-op if expand_dir == 0.
 		extrapolate_aa1_triangle_edge(vout, other, opposite, pos_deltas, expand_dir, cb);
@@ -373,12 +373,12 @@ static VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid, VS_VERTICES_PARAM(v
 		bool corner_filled = all(equal(edge_expand_dir_0, edge_expand_dir_1));
 
 		// Nothing if corner is filled, otherwise opposite to the bisector of the corner angle.
-		float2 far_corner_dir = corner_filled ? float2_bcast(0.0f) : -normalize((pos_deltas[0] + pos_deltas[1]) / 2);
+		float2 far_corner_dir = corner_filled ? splat2(0.0f) : -normalize((pos_deltas[0] + pos_deltas[1]) / 2);
 
 		// Determine the expand direction.
-		float2 expand_dir = is_near_corner ? float2_bcast(0.0f) : // No extrapolation
-												is_far_corner ? far_corner_dir :      // Opposite to the angle bisector of corner
-												edge_expand_dir_0;                    // Standard AA1 edge expansion
+		float2 expand_dir = is_near_corner ? splat2(0.0f)       // No extrapolation
+		                  : is_far_corner  ? far_corner_dir     // Opposite to the angle bisector of corner
+		                  :                  edge_expand_dir_0; // Standard AA1 edge expansion
 
 		// Do the actual extrapolation (no-op if expand_dir == 0).
 		extrapolate_aa1_triangle_edge(vout, other, opposite, pos_deltas, expand_dir, cb);

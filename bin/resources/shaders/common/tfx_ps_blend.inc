@@ -13,14 +13,14 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 			// No blending so early exit
 			if (As < 1.f)
 			{
-				As_rgba.rgb = float3_bcast(0.f);
+				As_rgba.rgb = splat3(0.f);
 				return;
 			}
 
-			As_rgba.rgb = float3_bcast(1.f);
+			As_rgba.rgb = splat3(1.f);
 		}
 
-		float4 RT = float4_bcast(0.f);
+		float4 RT = splat4(0.f);
 		if (NEEDS_RT_FOR_BLEND)
 		{
 			RT = ps_current_color;
@@ -53,10 +53,10 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
 
-		float3 A = PICK3(PS_BLEND_A, Cs, Cd, float3_bcast(0.0f));
-		float3 B = PICK3(PS_BLEND_B, Cs, Cd, float3_bcast(0.0f));
+		float3 A = PICK3(PS_BLEND_A, Cs, Cd, splat3(0.0f));
+		float3 B = PICK3(PS_BLEND_B, Cs, Cd, splat3(0.0f));
 		float  C = PICK3(PS_BLEND_C, As, Ad, ps_cb.alpha_fix);
-		float3 D = PICK3(PS_BLEND_D, Cs, Cd, float3_bcast(0.0f));
+		float3 D = PICK3(PS_BLEND_D, Cs, Cd, splat3(0.0f));
 
 		// As/Af clamp alpha for Blend mix
 		// We shouldn't clamp blend mix with blend hw 1 as we want alpha higher
@@ -83,13 +83,13 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 		if (PS_BLEND_HW == 1)
 		{
 			// As or Af
-			As_rgba.rgb = float3_bcast(C);
+			As_rgba.rgb = splat3(C);
 			// Subtract 1 for alpha to compensate for the changed equation,
 			// if c.rgb > 255.0f then we further need to adjust alpha accordingly,
 			// we pick the lowest overflow from all colors because it's the safest,
 			// we divide by 255 the color because we don't know Cd value,
 			// changed alpha should only be done for hw blend.
-			float3 alpha_compensate = max(float3_bcast(1.f), Color.rgb / float3_bcast(255.f));
+			float3 alpha_compensate = max(splat3(1.f), Color.rgb / splat3(255.f));
 			As_rgba.rgb -= alpha_compensate;
 		}
 		else if (PS_BLEND_HW == 2)
@@ -99,16 +99,16 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 			// subtracted, this way we can get a better result in hw blend.
 			// Result is still wrong but less wrong than before.
 			float division_alpha = 1.f + C;
-			Color.rgb /= float3_bcast(division_alpha);
+			Color.rgb /= splat3(division_alpha);
 		}
 		else if (PS_BLEND_HW == 3)
 		{
 			// As, Ad or Af clamped.
-			As_rgba.rgb = float3_bcast(C_clamped);
+			As_rgba.rgb = splat3(C_clamped);
 			// Cs*(Alpha + 1) might overflow, if it does then adjust alpha value
 			// that is sent on second output to compensate.
-			float3 overflow_check = (Color.rgb - float3_bcast(255.f)) / 255.f;
-			float3 alpha_compensate = max(float3_bcast(0.f), overflow_check);
+			float3 overflow_check = (Color.rgb - splat3(255.f)) / 255.f;
+			float3 alpha_compensate = max(splat3(0.f), overflow_check);
 			As_rgba.rgb -= alpha_compensate;
 		}
 	}
@@ -119,12 +119,12 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 		if (PS_BLEND_HW == 1)
 		{
 			// Needed for Cd * (As/Ad/F + 1) blending modes
-			Color.rgb = float3_bcast(255.f);
+			Color.rgb = splat3(255.f);
 		}
 		else if (PS_BLEND_HW == 2)
 		{
 			// Cd*As,Cd*Ad or Cd*F
-			Color.rgb = float3_bcast(saturate(Alpha - 1.f) * 255.f);
+			Color.rgb = splat3(saturate(Alpha - 1.f) * 255.f);
 		}
 		else if (PS_BLEND_HW == 3 && PS_RTA_CORRECTION == 0)
 		{
@@ -135,26 +135,26 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 			// The higher the value (>128) the lower the compensation will be.
 			float max_color = max(max(Color.r, Color.g), Color.b);
 			float color_compensate = 255.f / max(128.f, max_color);
-			Color.rgb *= float3_bcast(color_compensate);
+			Color.rgb *= splat3(color_compensate);
 		}
 		else if (PS_BLEND_HW == 4)
 		{
 			// Needed for Cd * (1 - Ad) and Cd*(1 + Alpha).
-			As_rgba.rgb = float3_bcast(Alpha * (128.0f / 255.0f));
-			Color.rgb = float3_bcast(127.5f);
+			As_rgba.rgb = splat3(Alpha * (128.0f / 255.0f));
+			Color.rgb = splat3(127.5f);
 		}
 		else if (PS_BLEND_HW == 5)
 		{
 			// Needed for Cs*Alpha + Cd*(1 - Alpha).
 			Alpha *= 128.0f / 255.0f;
-			As_rgba.rgb = float3_bcast(Alpha - 0.5f);
+			As_rgba.rgb = splat3(Alpha - 0.5f);
 			Color.rgb = (Color.rgb * Alpha);
 		}
 		else if (PS_BLEND_HW == 6)
 		{
 			// Needed for Cd*Alpha + Cs*(1 - Alpha).
 			Alpha *= 128.0f / 255.0f;
-			As_rgba.rgb = float3_bcast(Alpha);
+			As_rgba.rgb = splat3(Alpha);
 			Color.rgb *= (Alpha - 0.5f);
 		}
 	}

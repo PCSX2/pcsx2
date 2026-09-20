@@ -1,4 +1,4 @@
-#ifndef __METAL_VERSION__
+#if !defined(PCSX2_MSL)
 	// GLSL is strict about casting integers to bools and all selector macros are integers,
 	// so use != FALSE with FALSE = 0 to get around this.
 	#define FALSE 0
@@ -94,18 +94,6 @@ struct VSUniformsGeneric
 	X(uint, pad_cb2_0) \
 	X(uint, pad_cb2_1)
 
-// Generic VS inputs for passing to shared shader code.
-struct VSInputGeneric
-{
-	float2 st;
-	float4 c;
-	float  q;
-	uint2  p;
-	uint   z;
-	uint2  uv;
-	float4 f;
-};
-
 // Generic VS outputs for shared shader code to pass values.
 struct VSOutputGeneric
 {
@@ -161,7 +149,6 @@ struct PSInputGeneric
 	float4 t;
 	float4 ti;
 	float4 c;
-	float4 fc;
 	float inv_cov;
 	uint interior;
 };
@@ -175,11 +162,11 @@ struct PSOutputGeneric
 };
 
 // Metal defines it's own version of these conversion functions.
-#ifndef __METAL_VERSION__
+#if !defined(PCSX2_MSL)
 static float4 convert_depth32_rgba8(float value)
 {
 	uint val = uint(value * EXP2_POS_32);
-	return float4(UINT_BITCAST_UCHAR4(val));
+	return float4(val & 0xFFu, (val >> 8) & 0xFFu, (val >> 16) & 0xFFu, (val >> 24) & 0xFFu);
 }
 
 static float4 convert_depth16_rgba8(float value)
@@ -189,47 +176,17 @@ static float4 convert_depth16_rgba8(float value)
 }
 #endif
 
-static float2 float2_bcast(float val)
-{
-	return float2(val, val);
-}
-
-static float3 float3_bcast(float val)
-{
-	return float3(val, val, val);
-}
-
-static float4 float4_bcast(float val)
-{
-	return float4(val, val, val, val);
-}
-
-static uint4 uint4_bcast(uint val)
-{
-	return uint4(val, val, val, val);
-}
-
-static uint2 uint2_bcast(uint val)
-{
-	return uint2(val, val);
-}
-
-static int3 int3_bcast(int val)
-{
-	return int3(val, val, val);
-}
-
 static bool any_nonzero(float3 val)
 {
-	return any(notEqual(val, float3_bcast(0.0f)));
+	return any(notEqual(val, splat3(0.0f)));
 }
 
 static bool any_nonzero(int3 val)
 {
-	return any(notEqual(val, int3_bcast(0)));
+	return any(notEqual(val, splat3(0)));
 }
 
-#ifndef __METAL_VERSION__
+#if !defined(PCSX2_MSL)
 	// This is to make sure the selector macros are all defined if we're compiling offline for testing.
 	#ifndef VS_TME
 		#define VS_TME 0
