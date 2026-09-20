@@ -194,6 +194,7 @@ private Q_SLOTS:
 	void onAboutActionTriggered();
 	void onToolsOpenDataDirectoryTriggered();
 	void onToolsCoverDownloaderTriggered();
+	void onToolsControllerTesterTriggered();
 #if !defined(__APPLE__)
 	void onCreateGameShortcutTriggered();
 #endif
