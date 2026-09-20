@@ -113,6 +113,9 @@ static QString s_current_disc_serial;
 static quint32 s_current_disc_crc;
 static quint32 s_current_running_crc;
 
+static constexpr const char* CONTROLLER_TESTER_URL =
+	"https://github.com/PCSX2/tools/releases/download/tests%2Fpad/padtest_ps2.elf";
+
 static bool s_record_on_start = false;
 static QString s_path_to_recording_for_record_on_start;
 
@@ -557,6 +560,7 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, [this]() { checkForUpdates(true, true); });
 	connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
 	connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
+	connect(m_ui.actionControllerTester, &QAction::triggered, this, &MainWindow::onToolsControllerTesterTriggered);
 	connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
 	connect(m_ui.actionGridViewShowFullTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowFullCoverTitles);
 	connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -1152,6 +1156,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool stoppi
 	m_ui.actionToolbarStartBios->setDisabled(starting_or_running_or_stopping);
 	m_ui.actionStartFullscreenUI->setDisabled(starting_or_running_or_stopping);
 	m_ui.actionToolbarStartFullscreenUI->setDisabled(starting_or_running_or_stopping);
+	m_ui.actionControllerTester->setDisabled(starting_or_running_or_stopping);
 
 	m_ui.actionPowerOff->setEnabled(running);
 	m_ui.actionPowerOffWithoutSaving->setEnabled(running);
@@ -2263,6 +2268,18 @@ void MainWindow::onToolsCoverDownloaderTriggered()
 	CoverDownloadDialog dlg(this);
 	connect(&dlg, &CoverDownloadDialog::coverRefreshRequested, m_game_list_widget, &GameListWidget::refreshGridCovers);
 	dlg.exec();
+}
+
+void MainWindow::onToolsControllerTesterTriggered()
+{
+	const std::string path = Path::Combine(EmuFolders::Cache, "padtest_ps2.elf");
+	if (!FileSystem::FileExists(path.c_str()) &&
+		!QtHost::DownloadFile(this, tr("Downloading Controller Tester"), CONTROLLER_TESTER_URL, path))
+	{
+		return;
+	}
+
+	startFile(QString::fromStdString(path));
 }
 
 #if !defined(__APPLE__)
