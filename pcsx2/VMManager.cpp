@@ -1266,19 +1266,42 @@ static void SetM3UPlaylist(std::vector<std::string> entries, int current_index)
 	s_current_m3u_playlist_index = current_index;
 }
 
+// Normalizes a disc path so equivalent variations of the same file (case, "." / ".." components,
+// symlinks) compare equal.
+static std::string NormalizePathForComparison(const std::string_view path)
+{
+	std::string normalized = Path::RealPath(path);
+	if (normalized.empty())
+	{
+		normalized = Path::Canonicalize(path);
+		if (normalized.empty())
+			normalized = std::string(path);
+	}
+	return normalized;
+}
+
 static int UpdateM3UPlaylistCurrentIndex(const std::string& current_disc_path)
 {
-	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
-	s_current_m3u_playlist_index = -1;
-	for (size_t i = 0; i < s_current_m3u_playlist_entries.size(); ++i)
+	// Entries are pre-normalized at parse time, so only the incoming path needs normalizing here.
+	// That's a read-only filesystem lookup which doesn't depend on playlist state, so it happens
+	// before the lock. The match and the index update are then one critical section.
+	const std::string normalized_disc_path(NormalizePathForComparison(current_disc_path));
+
+	int current_index = -1;
 	{
-		if (s_current_m3u_playlist_entries[i] == current_disc_path)
+		std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
+		s_current_m3u_playlist_index = -1;
+		for (size_t i = 0; i < s_current_m3u_playlist_entries.size(); ++i)
 		{
-			s_current_m3u_playlist_index = static_cast<int>(i);
-			return static_cast<int>(i);
+			if (StringUtil::compareNoCase(s_current_m3u_playlist_entries[i], normalized_disc_path))
+			{
+				current_index = static_cast<int>(i);
+				s_current_m3u_playlist_index = current_index;
+				break;
+			}
 		}
 	}
-	return -1;
+	return current_index;
 }
 
 struct M3UPlaylistState
@@ -1308,9 +1331,19 @@ static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
 	if (!content.has_value())
 		return disc_paths;
 
-	const std::string_view m3u_dir = Path::GetDirectory(m3u_path);
+	std::string m3u_dir(Path::GetDirectory(m3u_path));
 
-	const std::vector<std::string_view> lines = StringUtil::SplitString(*content, '\n', false);
+	// Handle bare filename passed directly to pcsx2 on the command line without any path
+	if (m3u_dir.empty() && Path::GetFileName(m3u_path) == m3u_path)
+		m3u_dir = FileSystem::GetWorkingDirectory();
+
+	// Skip a UTF-8 byte order mark if present so the first entry isn't mangled.
+	constexpr std::string_view utf8_bom("\xEF\xBB\xBF");
+	std::string_view contents_view(*content);
+	if (contents_view.starts_with(utf8_bom))
+		contents_view.remove_prefix(utf8_bom.size());
+
+	const std::vector<std::string_view> lines = StringUtil::SplitString(contents_view, '\n', false);
 	for (const std::string_view line : lines)
 	{
 		// Skip empty lines and comments
@@ -1318,16 +1351,31 @@ static std::vector<std::string> ParseM3UPlaylist(const std::string& m3u_path)
 		if (trimmed.empty() || trimmed[0] == '#')
 			continue;
 
+		// Some playlist variants surround paths with quotes.
+		std::string_view entry = trimmed;
+		if (entry.size() >= 2 && (entry.front() == '\'' || entry.front() == '"') && entry.back() == entry.front())
+			entry = entry.substr(1, entry.size() - 2);
+		if (entry.empty())
+			continue;
+
 		// Resolve relative paths
 		std::string disc_path;
-		if (Path::IsAbsolute(trimmed))
+		if (Path::IsAbsolute(entry))
 		{
-			disc_path = std::string(trimmed);
+			disc_path = std::string(entry);
 		}
 		else
 		{
-			disc_path = Path::Combine(m3u_dir, trimmed);
+			disc_path = Path::Combine(m3u_dir, entry);
 		}
+
+		// Normalize so equivalent variations of the same file (case, "." / ".." components,
+		// symlinks) compare equal when matching against the current disc path later.
+		disc_path = NormalizePathForComparison(disc_path);
+
+		// Skip entries that aren't disc images, so malformed playlists can't inject bogus menu items.
+		if (!VMManager::IsDiscFileName(disc_path))
+			continue;
 
 		disc_paths.push_back(std::move(disc_path));
 	}
@@ -2529,16 +2577,10 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 	return result;
 }
 
-std::vector<std::string> VMManager::GetM3UPlaylistEntries()
+M3UPlaylistSnapshot VMManager::GetM3UPlaylistSnapshot()
 {
 	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
-	return s_current_m3u_playlist_entries;
-}
-
-int VMManager::GetM3UPlaylistCurrentIndex()
-{
-	std::lock_guard<std::mutex> lock(s_m3u_playlist_mutex);
-	return s_current_m3u_playlist_index;
+	return {s_current_m3u_playlist_entries, s_current_m3u_playlist_index};
 }
 
 bool VMManager::SetELFOverride(std::string path)

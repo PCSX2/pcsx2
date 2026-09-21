@@ -1019,7 +1019,7 @@ void FullscreenUI::RequestChangeDisc()
 	ConfirmShutdownIfMemcardBusy([](bool result) {
 		if (result)
 		{
-			if (!VMManager::GetM3UPlaylistEntries().empty())
+			if (!VMManager::GetM3UPlaylistSnapshot().entries.empty())
 				OpenPauseSubMenu(PauseSubMenu::ChangeDisc);
 			else
 				DoChangeDiscFromFile();
@@ -1698,8 +1698,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		};
 		static_assert(std::size(submenu_item_count) == static_cast<size_t>(PauseSubMenu::ChangeDisc) + 1);
 
-		const std::vector<std::string>& change_disc_playlist = VMManager::GetM3UPlaylistEntries();
-		const u32 change_disc_item_count = static_cast<u32>(change_disc_playlist.size()) + 2; // +2 for back and from file
+		const u32 change_disc_item_count = static_cast<u32>(VMManager::GetM3UPlaylistSnapshot().entries.size()) + 2; // +2 for back and from file
 		const bool just_focused = ResetFocusHere();
 		const float y_align = (s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? 0.5f : 1.0f;
 		BeginMenuButtons((s_current_pause_submenu == PauseSubMenu::ChangeDisc) ? change_disc_item_count : submenu_item_count[static_cast<u32>(s_current_pause_submenu)],
@@ -1887,8 +1886,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
 					OpenPauseSubMenu(PauseSubMenu::None);
 
-				const std::vector<std::string>& playlist = VMManager::GetM3UPlaylistEntries();
-				const int active_index = VMManager::GetM3UPlaylistCurrentIndex();
+				const M3UPlaylistSnapshot playlist_snapshot = VMManager::GetM3UPlaylistSnapshot();
+				const std::vector<std::string>& playlist = playlist_snapshot.entries;
+				const int active_index = playlist_snapshot.current_index;
 
 				for (int i = 0; i < static_cast<int>(playlist.size()); ++i)
 				{

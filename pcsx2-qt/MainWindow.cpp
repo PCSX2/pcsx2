@@ -2006,17 +2006,18 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onChangeDiscMenuAboutToShow()
 {
-	const std::vector<std::string>& playlist = VMManager::GetM3UPlaylistEntries();
+	const M3UPlaylistSnapshot playlist_snapshot = VMManager::GetM3UPlaylistSnapshot();
+	const std::vector<std::string>& playlist = playlist_snapshot.entries;
 	if (playlist.empty())
 		return;
 
 	m_change_disc_playlist_actions.clear();
 	m_change_disc_playlist_actions.append(m_ui.menuChangeDisc->addSeparator());
 
-	const int active_index = VMManager::GetM3UPlaylistCurrentIndex();
+	const int active_index = playlist_snapshot.current_index;
 	for (int i = 0; i < static_cast<int>(playlist.size()); ++i)
 	{
-		const QString label = tr("%1: %2").arg(i + 1).arg(QFileInfo(QString::fromStdString(playlist[i])).fileName());
+		const QString label = tr("%1: %2").arg(i + 1).arg(QtUtils::StringViewToQString(Path::GetFileName(playlist[i])));
 		QAction* action = m_ui.menuChangeDisc->addAction(label);
 		action->setCheckable(true);
 		action->setChecked(i == active_index);
