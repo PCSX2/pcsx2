@@ -20,29 +20,37 @@ PS_STATIC void ps_blend(IN_OUT_PARAM(float4, Color), IN_OUT_PARAM(float4, As_rgb
 			As_rgba.rgb = float3_bcast(1.f);
 		}
 
-		float Ad = PS_RTA_CORRECTION != FALSE ?
-			trunc(ps_current_color.a * 128.0f + 0.1f) / 128.f : trunc(ps_current_color.a * 255.0f + 0.1f) / 128.f;
-
-		if (PS_SHUFFLE != FALSE && NEEDS_RT)
+		float4 RT = float4_bcast(0.f);
+		if (NEEDS_RT_FOR_BLEND)
 		{
-			uint4 denorm_rt = uint4(ps_current_color);
+			RT = ps_current_color;
+			float color_multi = PS_COLCLIP_HW != FALSE ? 65535.0f : 255.0f;
+			float alpha_multi = PS_RTA_CORRECTION != FALSE ? 128.0f : 255.0f;
+			RT.rgb = trunc(RT.rgb * color_multi + 0.1f);
+			RT.a = trunc(RT.a * alpha_multi + 0.1f);
+		}
+		
+		if (PS_SHUFFLE != FALSE && NEEDS_RT_FOR_BLEND)
+		{
+			uint4 denorm_rt = uint4(RT);
 			if ((PS_PROCESS_BA & SHUFFLE_WRITE) != 0)
 			{
-				ps_current_color.r = float((denorm_rt.b << 3) & 0xF8u);
-				ps_current_color.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
-				ps_current_color.b = float((denorm_rt.a << 1) & 0xF8u);
-				ps_current_color.a = float(denorm_rt.a & 0x80u);
+				RT.r = float((denorm_rt.b << 3) & 0xF8u);
+				RT.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
+				RT.b = float((denorm_rt.a << 1) & 0xF8u);
+				RT.a = float(denorm_rt.a & 0x80u);
 			}
 			else
 			{
-				ps_current_color.r = float((denorm_rt.r << 3) & 0xF8u);
-				ps_current_color.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
-				ps_current_color.b = float((denorm_rt.g << 1) & 0xF8u);
-				ps_current_color.a = float(denorm_rt.g & 0x80u);
+				RT.r = float((denorm_rt.r << 3) & 0xF8u);
+				RT.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
+				RT.b = float((denorm_rt.g << 1) & 0xF8u);
+				RT.a = float(denorm_rt.g & 0x80u);
 			}
 		}
-		float multi = PS_COLCLIP_HW != FALSE ? 65535.f : 255.f;
-		float3 Cd = trunc(ps_current_color.rgb * multi + float3_bcast(0.1f));
+
+		float Ad = RT.a / 128.0f;
+		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
 
 		float3 A = PICK3(PS_BLEND_A, Cs, Cd, float3_bcast(0.0f));
