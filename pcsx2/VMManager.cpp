@@ -1571,6 +1571,9 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 	// resolve source type
 	if (boot_params.source_type.has_value())
 	{
+		// An explicit source type is never an m3u playlist, so clear any stale playlist state.
+		ClearM3UPlaylist();
+
 		if (boot_params.source_type.value() == CDVD_SourceType::Iso &&
 			!FileSystem::FileExists(boot_params.filename.c_str()))
 		{
