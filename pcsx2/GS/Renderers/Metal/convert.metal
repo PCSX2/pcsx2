@@ -268,14 +268,14 @@ struct ConvertToDepthRes
 	}
 };
 
-static float4 primid_to_rgba8(float p)
+static float4 uint_to_rgba8(uint i)
 {
-	return float4(as_type<uchar4>(p)) / 255.f;
+	return float4(as_type<uchar4>(i)) / 255.f;
 }
 
 fragment float4 ps_convert_primid_rgba8(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
 {
-	return primid_to_rgba8(res.sample(data.t));
+	return uint_to_rgba8(as_type<uint>(res.sample(data.t)));
 }
 
 fragment DepthOrColorOut ps_depth_copy(ConvertShaderData data [[stage_in]], ConvertPSDepthOrColorRes res)
