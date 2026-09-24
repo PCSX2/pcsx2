@@ -138,7 +138,7 @@ bool FolderMemoryCard::IsFormatted() const
 
 void FolderMemoryCard::Open(const bool enableFiltering, std::string filter)
 {
-	Open(EmuConfig.FullpathToMcd(m_slot), EmuConfig.Mcd[m_slot], 0, enableFiltering, std::move(filter), false);
+	Open(EmuConfig.FullpathToMcd(m_slot), EmuConfig.MemoryCard.Slots[m_slot], 0, enableFiltering, std::move(filter), false);
 }
 
 void FolderMemoryCard::Open(std::string fullPath, const Pcsx2Config::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, std::string filter, bool simulateFileWrites)

@@ -122,6 +122,7 @@ set(pcsx2Sources
 	SIO/Sio2.cpp
 	SIO/Sio0.cpp
 	SIO/Multitap/MultitapProtocol.cpp
+	SIO/Memcard/MemoryCardBackup.cpp
 	SIO/Memcard/MemoryCardFile.cpp
 	SIO/Memcard/MemoryCardFolder.cpp
 	SIO/Memcard/MemoryCardProtocol.cpp
@@ -198,6 +199,7 @@ set(pcsx2Headers
 	SIO/Sio0.h
 	SIO/SioTypes.h
 	SIO/Multitap/MultitapProtocol.h
+	SIO/Memcard/MemoryCardBackup.h
 	SIO/Memcard/MemoryCardFile.h
 	SIO/Memcard/MemoryCardFolder.h
 	SIO/Memcard/MemoryCardProtocol.h
@@ -1150,7 +1152,6 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	imgui
 	fmt::fmt
 	libchdr
-	libzip::zip
 	cpuinfo
 	cubeb
 	rcheevos
