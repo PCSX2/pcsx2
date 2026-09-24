@@ -42,9 +42,7 @@ void psxReset()
 	psxRegs.CP0.n.Status = 0x00400000; // BEV = 1
 	psxRegs.CP0.n.PRid   = 0x0000001f; // PRevID = Revision ID, same as the IOP R3000A
 
-	psxRegs.iopBreak = 0;
-	psxRegs.iopCycleEE = -1;
-	psxRegs.iopCycleEECarry = 0;
+	psxRegs.iopDeadline = 0;
 	psxRegs.iopNextEventCycle = psxRegs.cycle + 4;
 
 	psxHwReset();
@@ -136,14 +134,16 @@ __fi void PSX_INT( IopEventId n, s32 ecycle )
 	psxRegs.eCycle[n] = ecycle;
 
 	psxSetNextBranchDelta(ecycle);
-	const float mutiplier = static_cast<float>(PS2CLK) / static_cast<float>(PSXCLK);
-	const s32 iopDelta = (psxRegs.iopNextEventCycle - psxRegs.cycle) * mutiplier;
+	const s32 iopDelta = IOPToEECycles(psxRegs.iopNextEventCycle - psxRegs.cycle);
 
-	if (psxRegs.iopCycleEE < iopDelta)
+	if (psxRegs.inIop == false)
 	{
 		// The EE called this int, so inform it to branch as needed:
-		
-		cpuSetNextEventDelta(iopDelta - psxRegs.iopCycleEE);
+
+		// TODO: check that this works, not sure what the intention was with
+		// subtracting iopCycleEE
+		//cpuSetNextEventDelta(iopDelta - psxRegs.iopCycleEE);
+		cpuSetNextEventDelta(iopDelta);
 	}
 }
 
