@@ -70,7 +70,7 @@
 #endif
 
 const char* MainWindow::OPEN_FILE_FILTER =
-	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump);;"
+	QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.elf *.irx *.gs *.gs.xz *.gs.zst *.dump *.m3u);;"
 									"Single-Track Raw Images (*.bin *.iso);;"
 									"Cue Sheets (*.cue);;"
 									"Media Descriptor File (*.mdf);;"
@@ -81,9 +81,10 @@ const char* MainWindow::OPEN_FILE_FILTER =
 									"ELF Executables (*.elf);;"
 									"IRX Executables (*.irx);;"
 									"GS Dumps (*.gs *.gs.xz *.gs.zst);;"
-									"Block Dumps (*.dump)");
+									"Block Dumps (*.dump);;"
+									"M3U Playlists (*.m3u)");
 
-const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump);;"
+const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All File Types (*.bin *.iso *.cue *.mdf *.chd *.cso *.zso *.gz *.dump *.m3u);;"
 																			"Single-Track Raw Images (*.bin *.iso);;"
 																			"Cue Sheets (*.cue);;"
 																			"Media Descriptor File (*.mdf);;"
@@ -91,7 +92,8 @@ const char* MainWindow::DISC_IMAGE_FILTER = QT_TRANSLATE_NOOP("MainWindow", "All
 																			"CSO Images (*.cso);;"
 																			"ZSO Images (*.zso);;"
 																			"GZ Images (*.gz);;"
-																			"Block Dumps (*.dump)");
+																			"Block Dumps (*.dump);;"
+																			"M3U Playlists (*.m3u)");
 
 const char* MainWindow::DEFAULT_TOOLBAR_LAYOUT =
 	"start_file,start_disc,start_bios,fullscreen_ui,,"
@@ -2004,11 +2006,38 @@ void MainWindow::onRemoveDiscActionTriggered()
 
 void MainWindow::onChangeDiscMenuAboutToShow()
 {
-	// TODO: This is where we would populate the playlist if there is one.
+	const M3UPlaylistSnapshot playlist_snapshot = VMManager::GetM3UPlaylistSnapshot();
+	const std::vector<std::string>& playlist = playlist_snapshot.entries;
+	if (playlist.empty())
+		return;
+
+	m_change_disc_playlist_actions.clear();
+	m_change_disc_playlist_actions.append(m_ui.menuChangeDisc->addSeparator());
+
+	const int active_index = playlist_snapshot.current_index;
+	for (int i = 0; i < static_cast<int>(playlist.size()); ++i)
+	{
+		const QString label = tr("%1: %2").arg(i + 1).arg(QtUtils::StringViewToQString(Path::GetFileName(playlist[i])));
+		QAction* action = m_ui.menuChangeDisc->addAction(label);
+		action->setCheckable(true);
+		action->setChecked(i == active_index);
+		action->setToolTip(QString::fromStdString(playlist[i]));
+		const std::string target_path = playlist[i];
+		connect(action, &QAction::triggered, this, [target_path]() {
+			g_emu_thread->changeDisc(CDVD_SourceType::Iso, QString::fromStdString(target_path));
+		});
+		m_change_disc_playlist_actions.append(action);
+	}
 }
 
 void MainWindow::onChangeDiscMenuAboutToHide()
 {
+	for (QAction* action : m_change_disc_playlist_actions)
+	{
+		m_ui.menuChangeDisc->removeAction(action);
+		action->deleteLater();
+	}
+	m_change_disc_playlist_actions.clear();
 }
 
 void MainWindow::onLoadStateMenuAboutToShow()
@@ -2742,7 +2771,7 @@ bool MainWindow::startFile(const QString& filename)
 		return true;
 	}
 
-	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
+	if (VMManager::IsDiscFileName(filename_str) || VMManager::IsM3UFileName(filename_str) || VMManager::IsBlockDumpFileName(filename_str))
 	{
 		doDiscChange(CDVD_SourceType::Iso, filename);
 	}
