@@ -60,9 +60,11 @@ struct InputBinding
 {
 	InputBindingKey keys[MAX_KEYS_PER_BINDING] = {};
 	InputEventHandler handler;
+	float last_value[MAX_KEYS_PER_BINDING] = {};
 	u8 num_keys = 0;
 	u8 full_mask = 0;
 	u8 current_mask = 0;
+	bool cancelled = false;
 };
 
 struct PadVibrationBinding
@@ -1159,67 +1161,99 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
 			// handle inverting, needed for some wheels.
 			value_to_pass = binding->keys[i].invert ? (1.0f - value_to_pass) : value_to_pass;
 
-			// axes are fired regardless of a state change, unless they're zero
-			// (but going from not-zero to zero will still fire, because of the full state)
-			// for buttons, we can use the state of the last chord key, because it'll be 1 on press,
-			// and 0 on release (when the full state changes).
-			if (IsAxisHandler(binding->handler))
-			{
-				if (value_to_pass >= 0.0f && (!skip_button_handlers || value_to_pass == 0.0f))
-					std::get<InputAxisEventHandler>(binding->handler)(key, value_to_pass);
-			}
-			else if (binding->num_keys >= min_num_keys)
-			{
-				// update state based on whether the whole chord was activated
-				const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
-				const bool prev_full_state = (binding->current_mask == binding->full_mask);
-				const bool new_full_state = (new_mask == binding->full_mask);
-				binding->current_mask = new_mask;
+			// update state based on whether the whole chord was activated
+			const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+			const bool prev_full_state = (binding->current_mask == binding->full_mask);
+			const bool new_full_state = (new_mask == binding->full_mask);
+			binding->current_mask = new_mask;
+			binding->last_value[i] = value_to_pass;
 
-				// Workaround for multi-key bindings that share the same keys.
-				if (binding->num_keys > 1 && new_full_state && prev_full_state != new_full_state && range.first != range.second)
+			if (binding->cancelled && new_mask == 0)
+				binding->cancelled = false;
+
+			if (binding->num_keys >= min_num_keys && !binding->cancelled)
+			{
+				// Workaround for multi-key bindings that share the same keys. Only one binding sharing a given
+				// key should ever be active at a time. The longest fully-active chord wins.
+				if (binding->num_keys > 1 && prev_full_state != new_full_state)
 				{
-					// Because the binding map isn't ordered, we could iterate in the order of Shift+F1 and then
-					// F1, which would mean that F1 wouldn't get cancelled and still activate. So, to handle this
-					// case, we skip activating any future bindings with a fewer number of keys.
-					min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
+					// Map iteration order isn't guaranteed, so a shorter binding could fire before we cancel it.
+					// Block anything shorter for the rest of this call.
+					const bool activating = new_full_state;
+					if (activating)
+						min_num_keys = std::max<u32>(min_num_keys, binding->num_keys);
 
-					// Basically, if we bind say, F1 and Shift+F1, and press shift and then F1, we'll fire bindings
-					// for both F1 and Shift+F1, when we really only want to fire the binding for Shift+F1. So,
-					// when we activate a multi-key chord (key press), we go through the binding map for all the
-					// other keys in the chord, and cancel them if they have a shorter chord. If they're longer,
-					// they could still activate and take precedence over us, so we leave them alone.
+					// For each key in this chord, cancel any other binding on that key shorter than the longest
+					// currently-active binding sharing it, and uncancel anything no longer shorter.
 					for (u32 i = 0; i < binding->num_keys; i++)
 					{
-						const auto range = s_binding_map.equal_range(binding->keys[i].MaskDirection());
-						for (auto it = range.first; it != range.second; ++it)
+						const InputBindingKey shared_key = binding->keys[i].MaskDirection();
+						const auto key_range = (shared_key == masked_key) ? range : s_binding_map.equal_range(shared_key);
+
+						u32 max_active_keys = 0;
+						for (auto it = key_range.first; it != key_range.second; ++it)
 						{
 							InputBinding* other_binding = it->second.get();
-							if (other_binding == binding || IsAxisHandler(other_binding->handler) ||
-								other_binding->num_keys >= binding->num_keys)
+							if (other_binding->current_mask == other_binding->full_mask)
+								max_active_keys = std::max<u32>(max_active_keys, other_binding->num_keys);
+						}
+
+						for (auto it = key_range.first; it != key_range.second; ++it)
+						{
+							InputBinding* other_binding = it->second.get();
+							if (other_binding == binding)
 							{
 								continue;
 							}
 
-							// We only need to cancel the binding if it was fully active before. Which in the above
-							// case of Shift+F1 / F1, it will be.
-							if (other_binding->current_mask == other_binding->full_mask)
-								std::get<InputButtonEventHandler>(other_binding->handler)(-1);
+							const bool should_cancel = (other_binding->num_keys < max_active_keys);
+							if (other_binding->cancelled == should_cancel)
+								continue;
 
-							// Zero out the current bits so that we don't release this binding, if the other part
-							// of the chord releases first.
-							other_binding->current_mask = 0;
+							other_binding->cancelled = should_cancel;
+
+							// Tell other_binding's handler it's now blocked/unblocked, but only if it's
+							// actually fully held right now. Otherwise there's no visible state to correct.
+							if (other_binding->current_mask == other_binding->full_mask)
+							{
+								if (IsAxisHandler(other_binding->handler))
+								{
+									// Find the shared key's index in other_binding to restore its real value.
+									float reactivate_value = 0.0f;
+									if (!should_cancel)
+									{
+										for (u32 k = 0; k < other_binding->num_keys; k++)
+										{
+											if (other_binding->keys[k].MaskDirection() == shared_key)
+											{
+												reactivate_value = other_binding->last_value[k];
+												break;
+											}
+										}
+									}
+									std::get<InputAxisEventHandler>(other_binding->handler)(key, reactivate_value);
+								}
+								else
+								{
+									std::get<InputButtonEventHandler>(other_binding->handler)(should_cancel ? -1 : 1);
+								}
+							}
 						}
 					}
 				}
 
-				if (prev_full_state != new_full_state && binding->num_keys >= min_num_keys)
+				if (IsAxisHandler(binding->handler) && (new_full_state || prev_full_state))
+				{
+					const float axis_value = new_full_state ? value_to_pass : 0.0f;
+					if (axis_value >= 0.0f && (!skip_button_handlers || axis_value == 0.0f))
+						std::get<InputAxisEventHandler>(binding->handler)(key, axis_value);
+				}
+				else if (prev_full_state != new_full_state)
 				{
 					const s32 pressed = skip_button_handlers ? -1 : static_cast<s32>(value_to_pass > 0.0f);
 					std::get<InputButtonEventHandler>(binding->handler)(pressed);
 				}
 			}
-
 			// bail out, since we shouldn't have the same key twice in the chord
 			break;
 		}
@@ -1245,6 +1279,9 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 			if (binding->keys[i].MaskDirection() != match_key)
 				continue;
 
+			// Reset chord state too, otherwise a stale mask/cancelled flag can survive a reconnect.
+			binding->current_mask &= ~(static_cast<u8>(1) << i);
+			binding->cancelled = false;
 			std::get<InputAxisEventHandler>(binding->handler)(key, 0.0f);
 			break;
 		}
@@ -1277,6 +1314,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 				// Only fire handler if we're changing from active state.
 				const u8 current_mask = binding->current_mask;
 				binding->current_mask &= ~bit;
+				binding->cancelled = false;
 
 				if (current_mask == binding->full_mask)
 				{
