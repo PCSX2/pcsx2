@@ -6510,11 +6510,6 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			if (draw_rt)
 			{
 				GSVector4 clear_color = draw_rt->GetClearForFormat();
-				if (pipe.ps.colclip_hw)
-				{
-					// Denormalize clear color for hw colclip.
-					clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
-				}
 				GSVector4::store<true>(&cvs[cv_count++].color, clear_color);
 			}
 			if (draw_ds)

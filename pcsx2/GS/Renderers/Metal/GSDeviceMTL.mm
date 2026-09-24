@@ -2422,7 +2422,7 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 				case GSTexture::State::Cleared:
 				{
 					BeginRenderPass(@"ColorClip Clear", colclip_rt, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
-					GSVector4 color = GSVector4::rgba32(config.rt->GetClearColor()) / GSVector4::cxpr(65535, 65535, 65535, 255);
+					GSVector4 color = rt->GetColorClipClearColor();
 					[m_current_render.encoder setFragmentBytes:&color length:sizeof(color) atIndex:GSMTLBufferIndexUniforms];
 					RenderCopy(nullptr, m_colclip_clear_pipeline, copy_rect);
 					break;
