@@ -411,7 +411,7 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_34">
           <item row="0" column="0">
-           <widget class="InputBindingWidget" name="MenuDown">
+           <widget class="InputBindingWidget" name="L1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -463,7 +463,7 @@
            <number>6</number>
           </property>
           <item row="0" column="0">
-           <widget class="InputBindingWidget" name="MenuUp">
+           <widget class="InputBindingWidget" name="R1">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -678,8 +678,8 @@
   <tabstop>SteeringRight</tabstop>
   <tabstop>Brake</tabstop>
   <tabstop>Throttle</tabstop>
-  <tabstop>MenuDown</tabstop>
-  <tabstop>MenuUp</tabstop>
+  <tabstop>L1</tabstop>
+  <tabstop>R1</tabstop>
   <tabstop>X</tabstop>
   <tabstop>A</tabstop>
   <tabstop>Y</tabstop>
