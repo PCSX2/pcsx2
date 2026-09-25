@@ -137,7 +137,7 @@ static D3D12_BARRIER_LAYOUT GetD3D12BarrierLayout(GSTexture12::ResourceState sta
 			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_SOURCE;
 		case GSTexture12::ResourceState::CopyDst:
 			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_COPY_DEST;
-		case GSTexture12::ResourceState::CASShaderUAV:
+		case GSTexture12::ResourceState::ComputeShaderUAV:
 		case GSTexture12::ResourceState::PixelShaderUAV:
 			return D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
 		default:
@@ -166,7 +166,7 @@ static D3D12_RESOURCE_STATES GetD3D12ResourceState(GSTexture12::ResourceState st
 			return D3D12_RESOURCE_STATE_COPY_SOURCE;
 		case GSTexture12::ResourceState::CopyDst:
 			return D3D12_RESOURCE_STATE_COPY_DEST;
-		case GSTexture12::ResourceState::CASShaderUAV:
+		case GSTexture12::ResourceState::ComputeShaderUAV:
 		case GSTexture12::ResourceState::PixelShaderUAV:
 			return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 		default:
@@ -876,7 +876,7 @@ void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, 
 				barrier.AccessBefore = D3D12_BARRIER_ACCESS_COPY_DEST;
 				barrier.SyncBefore = D3D12_BARRIER_SYNC_COPY;
 				break;
-			case ResourceState::CASShaderUAV:
+			case ResourceState::ComputeShaderUAV:
 				barrier.LayoutBefore = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
 				barrier.AccessBefore = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
 				barrier.SyncBefore = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
@@ -954,7 +954,7 @@ void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, 
 				barrier.AccessAfter = D3D12_BARRIER_ACCESS_COPY_DEST;
 				barrier.SyncAfter = D3D12_BARRIER_SYNC_COPY;
 				break;
-			case ResourceState::CASShaderUAV:
+			case ResourceState::ComputeShaderUAV:
 				barrier.LayoutAfter = m_simultaneous_tex ? D3D12_BARRIER_LAYOUT_COMMON : D3D12_BARRIER_LAYOUT_DIRECT_QUEUE_UNORDERED_ACCESS;
 				barrier.AccessAfter = D3D12_BARRIER_ACCESS_UNORDERED_ACCESS;
 				barrier.SyncAfter = D3D12_BARRIER_SYNC_COMPUTE_SHADING;
@@ -1042,10 +1042,10 @@ void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, 
 			case ResourceState::CopyDst:
 				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 				break;
-			case ResourceState::CASShaderUAV:
+			case ResourceState::ComputeShaderUAV:
 			case ResourceState::PixelShaderUAV:
 				// Handled in after_state cases.
-				if (after_state == ResourceState::CASShaderUAV || after_state == ResourceState::PixelShaderUAV)
+				if (after_state == ResourceState::ComputeShaderUAV || after_state == ResourceState::PixelShaderUAV)
 					break;
 
 				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -1093,9 +1093,9 @@ void GSTexture12::TransitionSubresourceToState(const D3D12CommandList& cmdlist, 
 			case ResourceState::CopyDst:
 				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
 				break;
-			case ResourceState::CASShaderUAV:
+			case ResourceState::ComputeShaderUAV:
 			case ResourceState::PixelShaderUAV:
-				if (before_state == ResourceState::CASShaderUAV || before_state == ResourceState::PixelShaderUAV)
+				if (before_state == ResourceState::ComputeShaderUAV || before_state == ResourceState::PixelShaderUAV)
 				{
 					// No state transition, but probably want a barrier instead.
 					barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;

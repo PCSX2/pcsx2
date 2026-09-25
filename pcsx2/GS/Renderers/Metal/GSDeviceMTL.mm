@@ -749,23 +749,12 @@ void GSDeviceMTL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float par
 
 bool GSDeviceMTL::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 { @autoreleasepool {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
-
-	static constexpr int threadGroupWorkRegionDim = 16;
-	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
-	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	static_assert(sizeof(constants) == sizeof(GSMTLCASPSUniform));
-
-	EndRenderPass();
-	id<MTLComputeCommandEncoder> enc = [GetRenderCmdBuf() computeCommandEncoder];
-	[enc setLabel:@"CAS"];
-	[enc setComputePipelineState:m_cas_pipeline[sharpen_only]];
-	[enc setTexture:static_cast<GSTextureMTL*>(sTex)->GetTexture() atIndex:0];
-	[enc setTexture:static_cast<GSTextureMTL*>(dTex)->GetTexture() atIndex:1];
-	[enc setBytes:&constants length:sizeof(constants) atIndex:GSMTLBufferIndexUniforms];
-	[enc dispatchThreadgroups:MTLSizeMake(dispatchX, dispatchY, 1)
-	    threadsPerThreadgroup:MTLSizeMake(64, 1, 1)];
-	[enc endEncoding];
+	BeginRenderPass(@"CAS", dTex, MTLLoadActionDontCare, nullptr, MTLLoadActionDontCare);
+	[m_current_render.encoder setFragmentBytes:&constants
+	                                    length:sizeof(constants)
+	                                   atIndex:GSMTLBufferIndexUniforms];
+	RenderCopy(sTex, m_cas_pipeline[sharpen_only], GSVector4i(0, 0, dTex->GetSize().x, dTex->GetSize().y));
 	return true;
 }}
 
@@ -1095,13 +1084,6 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	[clearSpinBuffer endEncoding];
 	m_spin_pipeline = MakeComputePipeline(LoadShader(@"waste_time"), @"waste_time");
 
-	for (int sharpen_only = 0; sharpen_only < 2; sharpen_only++)
-	{
-		setFnConstantB(m_fn_constants, sharpen_only, GSMTLConstantIndex_CAS_SHARPEN_ONLY);
-		NSString* shader = m_dev.features.has_fast_half ? @"CASHalf" : @"CASFloat";
-		m_cas_pipeline[sharpen_only] = MakeComputePipeline(LoadShader(shader), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
-	}
-
 	m_expand_index_buffer = CreatePrivateBufferWithContent(m_dev.dev, initCommands, MTLResourceHazardTrackingModeUntracked, EXPAND_BUFFER_SIZE, GenerateExpansionIndexBuffer);
 	[m_expand_index_buffer setLabel:@"Point/Sprite Expand Indices"];
 
@@ -1262,6 +1244,13 @@ bool GSDeviceMTL::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 	m_primid_init_pipeline[0][3] = MakePipeline(pdesc, fs_triangle, LoadShader(@"ps_primid_rta_init_datm1"), @"PrimID DATM1 RTA Clear");
 
 	pdesc.colorAttachments[0].pixelFormat = ConvertPixelFormat(GSTexture::Format::Color);
+
+	for (int sharpen_only = 0; sharpen_only < 2; sharpen_only++)
+	{
+		setFnConstantB(m_fn_constants, sharpen_only, GSMTLConstantIndex_CAS_SHARPEN_ONLY);
+		m_cas_pipeline[sharpen_only] = MakePipeline(pdesc, fs_triangle, LoadShader(@"CASPS"), sharpen_only ? @"CAS Sharpen" : @"CAS Upscale");
+	}
+
 	applyAttribute(pdesc.vertexDescriptor, 0, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, pos),    0);
 	applyAttribute(pdesc.vertexDescriptor, 1, MTLVertexFormatFloat2, offsetof(ConvertShaderVertex, texpos), 0);
 	pdesc.vertexDescriptor.layouts[0].stride = sizeof(ConvertShaderVertex);

@@ -1247,10 +1247,10 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	if (!m_cas || m_cas->GetWidth() != dst_width || m_cas->GetHeight() != dst_height)
 	{
 		delete m_cas;
-		m_cas = CreateSurface(GSTexture::ShaderWriteTexture, dst_width, dst_height, 1, GSTexture::Format::Color);
+		m_cas = CreateSurface(GSTexture::RenderTarget, dst_width, dst_height, 1, GSTexture::Format::Color);
 		if (!m_cas)
 		{
-			Console.Error("Failed to allocate CAS RW texture.");
+			Console.Error("GS: Failed to allocate CAS texture.");
 			return;
 		}
 	}
@@ -1265,7 +1265,7 @@ void GSDevice::CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, con
 	if (!DoCAS(src_tex, m_cas, sharpen_only, consts))
 	{
 		// leave textures intact if we failed
-		Console.Warning("Applying CAS failed.");
+		Console.Warning("GS: Applying CAS failed.");
 		return;
 	}
 

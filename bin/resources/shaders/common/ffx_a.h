@@ -640,11 +640,13 @@
  AU3 AAbsSU3(AU3 a){return AU3(abs(ASU3(a)));}
  AU4 AAbsSU4(AU4 a){return AU4(abs(ASU4(a)));}
 //------------------------------------------------------------------------------------------------------------------------------
- AU1 ABfe(AU1 src,AU1 off,AU1 bits){return bitfieldExtract(src,ASU1(off),ASU1(bits));}
+ // Emulate bitfieldExtract.
+ AU1 ABfe(AU1 src, AU1 off, AU1 bits){uint mask = (bits >= 32u) ? 0xFFFFFFFFu : ((1u << bits) - 1u);return (src >> off) & mask;}
  AU1 ABfi(AU1 src,AU1 ins,AU1 mask){return (ins&mask)|(src&(~mask));}
  // Proxy for V_BFI_B32 where the 'mask' is set as 'bits', 'mask=(1<<bits)-1', and 'bits' needs to be an immediate.
- AU1 ABfiM(AU1 src,AU1 ins,AU1 bits){return bitfieldInsert(src,ins,0,ASU1(bits));}
-//------------------------------------------------------------------------------------------------------------------------------
+ // Emulate bitfieldInsert.
+ AU1 ABfiM(AU1 src, AU1 ins, AU1 bits){uint mask = (bits >= 32u) ? 0xFFFFFFFFu : ((1u << bits) - 1u);return (src & ~mask) | (ins & mask);}
+ //------------------------------------------------------------------------------------------------------------------------------
  // V_FRACT_F32 (note DX frac() is different).
  AF1 AFractF1(AF1 x){return fract(x);}
  AF2 AFractF2(AF2 x){return fract(x);}

@@ -592,7 +592,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			return false;
 	}
 
-	if (m_features.cas_sharpening && !CreateCASShaders())
+	if (!CreateCASShaders())
 		return false;
 
 	if (!CreateImGuiResources())
@@ -715,7 +715,6 @@ void GSDevice11::SetFeatures(IDXGIAdapter1* adapter)
 	                          SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC3_UNORM);
 
 	m_features.bptc_textures = SupportsTextureFormat(m_dev.get(), DXGI_FORMAT_BC7_UNORM);
-	m_features.cas_sharpening = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.test_and_sample_depth = (m_feature_level >= D3D_FEATURE_LEVEL_11_0);
 	m_features.depth_feedback = m_features.multidraw_fb_copy && GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
@@ -2273,7 +2272,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 bool GSDevice11::CreateCASShaders()
 {
 	CD3D11_BUFFER_DESC desc(NUM_CAS_CONSTANTS * sizeof(u32), D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DEFAULT);
-	HRESULT hr = m_dev->CreateBuffer(&desc, nullptr, m_cas.cb.put());
+	const HRESULT hr = m_dev->CreateBuffer(&desc, nullptr, m_cas.cb.put());
 	if (FAILED(hr))
 		return false;
 
@@ -2281,15 +2280,13 @@ bool GSDevice11::CreateCASShaders()
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
-	static constexpr D3D_SHADER_MACRO sharpen_only_macros[] = {
-		{"CAS_SHARPEN_ONLY", "1"},
-		{nullptr, nullptr}};
+	static constexpr D3D_SHADER_MACRO sharpen_macros[] = {{"CAS_SHARPEN_ONLY", "1"}, {nullptr, nullptr}};
 
-	m_cas.cs_sharpen = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), sharpen_only_macros, "main");
-	m_cas.cs_upscale = m_shader_cache.GetComputeShader(m_dev.get(), cas_source.value(), nullptr, "main");
-	if (!m_cas.cs_sharpen || !m_cas.cs_upscale)
+	m_cas.ps_sharpen = m_shader_cache.GetPixelShader(m_dev.get(), cas_source.value(), sharpen_macros, "ps_main");
+	m_cas.ps_upscale = m_shader_cache.GetPixelShader(m_dev.get(), cas_source.value(), nullptr, "ps_main");
+	if (!m_cas.ps_sharpen || !m_cas.ps_upscale)
 	{
-		Console.Error("D3D11: Failed to create CAS compute shaders.");
+		Console.Error("D3D11: Failed to create CAS pixel shaders.");
 		return false;
 	}
 
@@ -2298,27 +2295,14 @@ bool GSDevice11::CreateCASShaders()
 
 bool GSDevice11::DoCAS(GSTexture* sTex, GSTexture* dTex, bool sharpen_only, const std::array<u32, NUM_CAS_CONSTANTS>& constants)
 {
-	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
+	const GSVector2i s = dTex->GetSize();
 
-	static constexpr int threadGroupWorkRegionDim = 16;
-	const int dispatchX = (dTex->GetWidth() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
-	const int dispatchY = (dTex->GetHeight() + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	ID3D11ShaderResourceView* srvs[1] = {*static_cast<GSTexture11*>(sTex)};
-	ID3D11UnorderedAccessView* uavs[1] = {*static_cast<GSTexture11*>(dTex)};
-	OMSetRenderTargets(nullptr, nullptr, nullptr);
 	m_ctx->UpdateSubresource(m_cas.cb.get(), 0, nullptr, constants.data(), 0, 0);
-	m_ctx->CSSetConstantBuffers(0, 1, m_cas.cb.addressof());
-	m_ctx->CSSetShader(sharpen_only ? m_cas.cs_sharpen.get() : m_cas.cs_upscale.get(), nullptr, 0);
-	m_ctx->CSSetShaderResources(0, std::size(srvs), srvs);
-	m_ctx->CSSetUnorderedAccessViews(0, std::size(uavs), uavs, nullptr);
-	m_ctx->Dispatch(dispatchX, dispatchY, 1);
 
-	// clear bindings out to prevent hazards
-	uavs[0] = nullptr;
-	srvs[0] = nullptr;
-	m_ctx->CSSetShaderResources(0, std::size(srvs), srvs);
-	m_ctx->CSSetUnorderedAccessViews(0, std::size(uavs), uavs, nullptr);
+	DoStretchRect(sTex, sRect, dTex, dRect, sharpen_only ? m_cas.ps_sharpen.get() : m_cas.ps_upscale.get(), m_cas.cb.get(), Nearest);
 
 	return true;
 }
