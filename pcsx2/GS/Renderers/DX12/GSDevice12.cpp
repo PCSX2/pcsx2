@@ -2492,9 +2492,12 @@ bool GSDevice12::CompileTFXUberPipelines()
 								if (!ps_sel.CompatibleWithAttachments(rt, ds))
 									continue;
 
+								// Don't both making non-ROV pipelines as they will likely have
+								// to be remade anyway when the colormask, blend equation, etc. changes.
 								if (ps_sel.HasColor() && !ps_sel.HasColorROV())
 									continue;
 
+								// Same with dual source blend or DATE variations.
 								if (ps_sel.color1 || ps_sel.date_init)
 									continue;
 
@@ -2506,6 +2509,8 @@ bool GSDevice12::CompileTFXUberPipelines()
 								selector.rt = rt;
 								selector.ds = ds;
 								selector.ds_as_rt = ps_sel.HasDepthFeedback();
+
+								selector.cms.wrgba = ps_sel.HasColor() ? 0xF : 0;
 
 								if (stage == 0)
 								{
