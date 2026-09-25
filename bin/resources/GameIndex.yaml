@@ -36074,7 +36074,7 @@ SLPM-60254:
 SLPM-60255:
   name: "ポンコツ浪漫大活劇バンピートロット [体験版]"
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと [たいけんばん]"
-  name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot [Trial]"
+  name-en: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Trial]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes broken load triggers.
@@ -36147,7 +36147,7 @@ SLPM-60265:
 SLPM-60266:
   name: "ポンコツ浪漫大活劇バンピートロット [体験版]"
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと [たいけんばん]"
-  name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot [Trial]"
+  name-en: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Trial]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes broken load triggers.
@@ -57520,7 +57520,7 @@ SLPS-25022:
 SLPS-25023:
   name: "バウンサー"
   name-sort: "ばうんさー"
-  name-en: "Bouncer, The"
+  name-en: "The Bouncer"
   region: "NTSC-J"
 SLPS-25024:
   name: "Disney's Dinosaur"
@@ -59161,7 +59161,7 @@ SLPS-25298:
 SLPS-25299:
   name: "新世紀エヴァンゲリオン2"
   name-sort: "しんせいきえゔぁんげりおん2"
-  name-en: "Shinseiki Evangelions 2"
+  name-en: "Shinseiki Evangelion 2"
   region: "NTSC-J"
 SLPS-25300:
   name: "R:RACING EVOLUTION"
@@ -60185,7 +60185,7 @@ SLPS-25456:
 SLPS-25457:
   name: "ポンコツ浪漫大活劇バンピートロット"
   name-sort: "ぽんこつろまんだいかつげきばんぴーとろっと"
-  name-en: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
+  name-en: "Ponkotsu Roman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0 # Fixes broken load triggers.
@@ -61676,7 +61676,7 @@ SLPS-25691:
 SLPS-25693:
   name: "プリンセス・プリンセス 姫たちのアブナい放課後 [初回限定版]"
   name-sort: "ぷりんせすぷりんせす ひめたちのあぶないほうかご [しょかいげんていばん]"
-  name-en: "Shinseiki GPX - Road to the Infinity 3 [First Limited Edition]"
+  name-en: "Princess Princess [First Limited Edition]"
   region: "NTSC-J"
 SLPS-25694:
   name: "プリンセス・プリンセス 姫たちのアブナい放課後 [通常版]"
