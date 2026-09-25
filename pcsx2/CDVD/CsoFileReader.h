@@ -40,6 +40,7 @@ private:
 	u8 m_indexShift = 0;
 	bool m_uselz4 = false; // flag to enable LZ4 decompression (ZSO files)
 	std::unique_ptr<u8[]> m_readBuffer;
+	u32 m_readBufferSize = 0;
 
 	std::unique_ptr<u32[]> m_index;
 	u64 m_totalSize = 0;
