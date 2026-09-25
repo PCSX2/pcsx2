@@ -1026,38 +1026,40 @@ float As = As_rgba.a;
 
 #if SW_BLEND_NEEDS_RT
 	vec4 RT = sample_from_rt();
+	#if PS_COLCLIP_HW
+		float color_multi = 65535.0f;
+	#else
+		float color_multi = 255.0f;
+	#endif
+	#if PS_RTA_CORRECTION
+		float alpha_multi = 128.0f;
+	#else
+		float alpha_multi = 255.0f;
+	#endif
+	RT.rgb = trunc(RT.rgb * color_multi + 0.1f);
+	RT.a = trunc(RT.a * alpha_multi + 0.1f);
 #else
 	// Not used, but we define it to make the selection below simpler.
 	vec4 RT = vec4(0.0f);
 #endif
 
-	#if PS_RTA_CORRECTION
-		float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
+#if PS_SHUFFLE && SW_BLEND_NEEDS_RT
+	uvec4 denorm_rt = uvec4(RT);
+	#if (PS_PROCESS_BA & SHUFFLE_WRITE)
+		RT.r = float((denorm_rt.b << 3) & 0xF8u);
+		RT.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
+		RT.b = float((denorm_rt.a << 1) & 0xF8u);
+		RT.a = float(denorm_rt.a & 0x80u);
 	#else
-		float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
+		RT.r = float((denorm_rt.r << 3) & 0xF8u);
+		RT.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
+		RT.b = float((denorm_rt.g << 1) & 0xF8u);
+		RT.a = float(denorm_rt.g & 0x80u);
 	#endif
+#endif
 
-	#if PS_SHUFFLE && SW_BLEND_NEEDS_RT
-		uvec4 denorm_rt = uvec4(RT);
-		#if (PS_PROCESS_BA & SHUFFLE_WRITE)
-			RT.r = float((denorm_rt.b << 3) & 0xF8u);
-			RT.g = float(((denorm_rt.b >> 2) & 0x38u) | ((denorm_rt.a << 6) & 0xC0u));
-			RT.b = float((denorm_rt.a << 1) & 0xF8u);
-			RT.a = float(denorm_rt.a & 0x80u);
-		#else
-			RT.r = float((denorm_rt.r << 3) & 0xF8u);
-			RT.g = float(((denorm_rt.r >> 2) & 0x38u) | ((denorm_rt.g << 6) & 0xC0u));
-			RT.b = float((denorm_rt.g << 1) & 0xF8u);
-			RT.a = float(denorm_rt.g & 0x80u);
-		#endif
-	#endif
-
-	// Let the compiler do its jobs !
-	#if PS_COLCLIP_HW == 1
-		vec3 Cd = trunc(RT.rgb * 65535.0f);
-	#else
-		vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
-	#endif
+	float Ad = RT.a / 128.0f;
+	vec3 Cd = RT.rgb;
 	vec3 Cs = Color.rgb;
 
 #if PS_BLEND_A == 0

@@ -1544,20 +1544,26 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			As_rgba.rgb = vec3(1.0f);
 		#endif
 
-		#if PS_FEEDBACK_LOOP_IS_NEEDED_RT
+		#if SW_BLEND_NEEDS_RT
 			vec4 RT = sample_from_rt();
+			#if PS_COLCLIP_HW
+				float color_multi = 65535.0f;
+			#else
+				float color_multi = 255.0f;
+			#endif
+			#if PS_RTA_CORRECTION
+				float alpha_multi = 128.0f;
+			#else
+				float alpha_multi = 255.0f;
+			#endif
+			RT.rgb = trunc(RT.rgb * color_multi + 0.1f);
+			RT.a = trunc(RT.a * alpha_multi + 0.1f);
 		#else
 			// Not used, but we define it to make the selection below simpler.
 			vec4 RT = vec4(0.0f);
 		#endif
 
-		#if PS_RTA_CORRECTION
-			float Ad = trunc(RT.a * 128.0f + 0.1f) / 128.0f;
-		#else
-			float Ad = trunc(RT.a * 255.0f + 0.1f) / 128.0f;
-		#endif
-
-		#if PS_SHUFFLE && PS_FEEDBACK_LOOP_IS_NEEDED_RT
+		#if PS_SHUFFLE && SW_BLEND_NEEDS_RT
 			uvec4 denorm_rt = uvec4(RT);
 			#if (PS_PROCESS_BA & SHUFFLE_WRITE)
 				RT.r = float((denorm_rt.b << 3) & 0xF8u);
@@ -1572,13 +1578,9 @@ void ps_blend(inout vec4 Color, inout vec4 As_rgba)
 			#endif
 		#endif
 
-			// Let the compiler do its jobs !
-			#if PS_COLCLIP_HW == 1
-			vec3 Cd = trunc(RT.rgb * 65535.0f);
-			#else
-			vec3 Cd = trunc(RT.rgb * 255.0f + 0.1f);
-			#endif
-			vec3 Cs = Color.rgb;
+		float Ad = RT.a / 128.0f;
+		vec3 Cd = RT.rgb;
+		vec3 Cs = Color.rgb;
 
 		#if PS_BLEND_A == 0
 			vec3 A = Cs;
