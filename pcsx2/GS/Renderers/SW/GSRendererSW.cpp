@@ -8,6 +8,8 @@
 
 #include "common/StringUtil.h"
 
+#include <float.h>
+
 MULTI_ISA_UNSHARED_IMPL;
 
 GSRenderer* CURRENT_ISA::makeGSRendererSW(int threads)
