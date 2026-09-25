@@ -265,6 +265,11 @@ void FullscreenUI::PreferEnglishGameListChanged()
 	s_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
 }
 
+void FullscreenUI::GameListFavoriteChanged()
+{
+	s_game_list_needs_sort = true;
+}
+
 // When drawing an svg to a non-integer size, we get a padded texture.
 // This function crops off this padding by setting the image UV for the draw.
 // We currently only use integer sizes for images, but I wrote this before checking that.
@@ -2478,13 +2483,16 @@ void FullscreenUI::PopulateGameListEntryList()
 {
 	const int sort = Host::GetBaseIntSettingValue("UI", "FullscreenUIGameSort", 0);
 	const bool reverse = Host::GetBaseBoolSettingValue("UI", "FullscreenUIGameSortReverse", false);
+	const bool favorites_only = Host::GetBaseBoolSettingValue("UI", "FullscreenUIFavoritesOnly", false);
 	static int s_last_sort = -1;
 	static bool s_last_reverse = false;
 	static bool s_last_prefer_eng = false;
+	static bool s_last_favorites_only = false;
 
 	// Sort can be expensive, try to avoid when possible
 	const u32 count = GameList::GetEntryCount();
-	bool needs_update = sort != s_last_sort || reverse != s_last_reverse || s_last_prefer_eng != s_prefer_english_titles;
+	bool needs_update = s_game_list_needs_sort || sort != s_last_sort || reverse != s_last_reverse ||
+	                    s_last_prefer_eng != s_prefer_english_titles || favorites_only != s_last_favorites_only;
 	needs_update |= count != s_last_unsorted_entries.size();
 	if (!needs_update)
 	{
@@ -2500,10 +2508,12 @@ void FullscreenUI::PopulateGameListEntryList()
 
 	if (!needs_update)
 		return;
+	s_game_list_needs_sort = false;
 
 	s_last_sort = sort;
 	s_last_reverse = reverse;
 	s_last_prefer_eng = s_prefer_english_titles;
+	s_last_favorites_only = favorites_only;
 
 	s_game_list_sorted_entries.resize(count);
 	s_last_unsorted_entries.resize(count);
@@ -2512,9 +2522,19 @@ void FullscreenUI::PopulateGameListEntryList()
 		s_game_list_sorted_entries[i] = GameList::GetEntryByIndex(i);
 		s_last_unsorted_entries[i] = s_game_list_sorted_entries[i];
 	}
+	if (favorites_only)
+	{
+		s_game_list_sorted_entries.erase(
+			std::remove_if(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
+				[](const GameList::Entry* entry) { return !entry->is_favorite; }),
+			s_game_list_sorted_entries.end());
+	}
 
 	std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
 		[sort, reverse](const GameList::Entry* lhs, const GameList::Entry* rhs) {
+			if (lhs->is_favorite != rhs->is_favorite)
+				return lhs->is_favorite;
+
 			switch (sort)
 			{
 				case 0: // Type
@@ -2768,8 +2788,23 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const std::string& title = entry->GetTitle(s_prefer_english_titles);
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
-				ImVec2(0.0f, 0.0f), &title_bb);
+			const bool is_favorite = entry->is_favorite;
+			const float favorite_size = GetLineHeight(g_large_font) * 0.75f;
+			const float favorite_margin = LayoutScale(8.0f);
+			ImRect visible_title_bb(title_bb);
+			if (is_favorite)
+				visible_title_bb.Max.x -= favorite_size + (favorite_margin * 2.0f);
+			ImGui::RenderTextClipped(visible_title_bb.Min, visible_title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
+				ImVec2(0.0f, 0.0f), &visible_title_bb);
+			if (is_favorite)
+			{
+				const ImVec2 star_pos(title_bb.Max.x - favorite_size - favorite_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - favorite_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
+					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
+					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
+			}
 			ImGui::PopFont();
 
 			if (!summary.empty())
@@ -3002,6 +3037,16 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			bb.Max -= style.FramePadding;
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
+			if (entry->is_favorite)
+			{
+				const float star_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
+				const ImVec2 star_pos(bb.Min.x + image_width - star_size - LayoutScale(6.0f), bb.Min.y + LayoutScale(6.0f));
+				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size,
+					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)),
+					IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
+				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size, star_pos,
+					IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
+			}
 
 			const bool show_titles = Host::GetBaseBoolSettingValue("UI", "FullscreenUIShowGameGridTitles", true);
 
@@ -3045,11 +3090,13 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
+	const bool is_favorite = entry->is_favorite;
 	ImGuiFullscreen::ChoiceDialogOptions options = {
 		{FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+		{is_favorite ? FSUI_ICONSTR(ICON_PF_STAR, "Remove from Favorites") : FSUI_ICONSTR(ICON_PF_STAR, "Add to Favorites"), false},
 		{FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
 		{FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false},
-		{FSUI_ICONSTR(ICON_PF_STAR, "Default Boot"), false},
+		{FSUI_ICONSTR(ICON_PF_START, "Default Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Fast Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Full Boot"), false},
 	};
@@ -3061,29 +3108,33 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 
 	const bool has_resume_state = VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1);
 	OpenChoiceDialog(entry->GetTitle(s_prefer_english_titles).c_str(), false, std::move(options),
-		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial, entry_title = entry->title, entry_played_time]
-		(s32 index, const std::string& title, bool checked) {
+		[has_resume_state, entry_path = entry->path, entry_serial = entry->serial, entry_title = entry->title, entry_played_time,
+			is_favorite](s32 index, const std::string& title, bool checked) {
 			switch (index)
 			{
 				case 0: // Open Game Properties
 					SwitchToGameSettings(entry_path);
 					break;
-				case 1: // Resume Game
+				case 1: // Add/Remove from Favorites
+					GameList::SaveFavoriteForPath(entry_path, !is_favorite);
+					s_game_list_needs_sort = true;
+					break;
+				case 2: // Resume Game
 					DoStartPath(entry_path, has_resume_state ? std::optional<s32>(-1) : std::optional<s32>());
 					break;
-				case 2: // Load State
+				case 3: // Load State
 					OpenLoadStateSelectorForGame(entry_path);
 					break;
-				case 3: // Default Boot
+				case 4: // Default Boot
 					DoStartPath(entry_path);
 					break;
-				case 4: // Fast Boot
+				case 5: // Fast Boot
 					DoStartPath(entry_path, std::nullopt, true);
 					break;
-				case 5: // Full Boot
+				case 6: // Full Boot
 					DoStartPath(entry_path, std::nullopt, false);
 					break;
-				case 6:
+				case 7:
 					{
 						// Close Menu
 						if (!entry_played_time)
@@ -3126,6 +3177,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		if (NavButton(ICON_PF_BACKWARD, true, true))
 		{
 			s_current_main_window = MainWindowType::GameList;
+			s_game_list_needs_sort = true;
 			QueueResetFocus(FocusResetType::WindowChanged);
 		}
 
@@ -3147,6 +3199,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
 	if (ImGui::IsWindowFocused() && WantsToCloseMenu())
 	{
 		s_current_main_window = MainWindowType::GameList;
+		s_game_list_needs_sort = true;
 		QueueResetFocus(FocusResetType::WindowChanged);
 	}
 
@@ -3265,6 +3318,9 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TAG, "Show Titles"),
 			FSUI_CSTR("Shows Titles for Games when in Game Grid View Mode"), "UI",
 			"FullscreenUIShowGameGridTitles", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_STAR, "Favorites Only"),
+			FSUI_CSTR("Only displays games marked as favorites in the list and grid."), "UI",
+			"FullscreenUIFavoritesOnly", false);
 	}
 
 	MenuHeading(FSUI_CSTR("Operations"));
@@ -3291,6 +3347,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
 void FullscreenUI::SwitchToGameList()
 {
 	s_current_main_window = MainWindowType::GameList;
+	s_game_list_needs_sort = true;
 	s_game_list_view = static_cast<GameListView>(Host::GetBaseIntSettingValue("UI", "DefaultFullscreenUIGameView", 0));
 	{
 		auto lock = Host::GetSettingsLock();
