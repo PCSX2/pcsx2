@@ -40,6 +40,7 @@ namespace FullscreenUI
 	void LocaleChanged();
 	void GamepadLayoutChanged();
 	void PreferEnglishGameListChanged();
+	void GameListFavoriteChanged();
 
 	void Shutdown(bool clear_state);
 	void Render();

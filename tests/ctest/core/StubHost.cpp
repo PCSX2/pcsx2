@@ -173,6 +173,10 @@ void Host::CancelGameListRefresh()
 {
 }
 
+void Host::OnGameListFavoriteChanged(const std::string& path)
+{
+}
+
 bool Host::IsFullscreen()
 {
 	return false;

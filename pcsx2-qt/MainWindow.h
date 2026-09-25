@@ -113,6 +113,9 @@ public:
 	/// Rescans a single file. NOTE: Happens on UI thread.
 	void rescanFile(const std::string& path);
 
+	/// Updates a favorite in the game list. NOTE: Happens on UI thread.
+	void refreshGameListFavorite(const std::string& path);
+
 	/// Start a file from a user action (e.g. dragging a file onto the main window or with macOS open with)
 	bool startFile(const QString& path);
 
