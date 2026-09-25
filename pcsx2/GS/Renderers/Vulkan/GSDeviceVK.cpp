@@ -7141,7 +7141,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(const GSHWDrawConfig& config, DrawPass
 			GSHWDrawConfig::UberVSSelector::VSExpand : GSHWDrawConfig::UberVSSelector::InputAssembly;
 
 		// Uber PS color
-		const bool color_feedback = (pipe.feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0;
+		const bool color_feedback = ps.IsFeedbackLoopRT();
 		pipe.uber_ps = {};
 		if (ps.no_color && !color_feedback)
 			pipe.uber_ps.color = UberPSSelector::Color::None;
