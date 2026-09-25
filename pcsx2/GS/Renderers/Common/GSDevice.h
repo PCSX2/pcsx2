@@ -1057,6 +1057,9 @@ struct alignas(16) GSHWDrawConfig
 			// Z write must have depth.
 			if (zwrite && depth == Depth::None)
 				return false;
+			// Depth feedback requires color.
+			if (color == Color::None && depth == Depth::Feedback)
+				return false;
 			return true;
 		}
 
