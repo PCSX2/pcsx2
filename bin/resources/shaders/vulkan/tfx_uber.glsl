@@ -896,13 +896,13 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 		aniso_line = aniso_line_dir * 0.5f * (1.0f / sz);
 	}
 
-#if PS_AUTOMATIC_LOD == 1
-	float lod = log2(length_lod);
-#elif PS_MANUAL_LOD == 1
-	float lod = manual_lod(uv_w);
-#else
-	float lod = 0.0f; // No Lod
-#endif
+	float lod = 0.0f;
+	if (PS_AUTOMATIC_LOD == 1)
+		lod = log2(length_lod);
+	else if (PS_MANUAL_LOD == 1)
+		lod = manual_lod(uv_w);
+	else
+		lod = 0.0f; // No lod
 
 	vec4 colour;
 	if (aniso_ratio == 1.0f)
