@@ -67,16 +67,6 @@ public:
 		return GSVector4(cxpr_init, x, x, x, x);
 	}
 
-	constexpr static GSVector4 cxpr(int x, int y, int z, int w)
-	{
-		return GSVector4(cxpr_init, x, y, z, w);
-	}
-
-	constexpr static GSVector4 cxpr(int x)
-	{
-		return GSVector4(cxpr_init, x, x, x, x);
-	}
-
 	constexpr static GSVector4 cxpr64(u64 x, u64 y)
 	{
 		return GSVector4(cxpr_init, x, y);
