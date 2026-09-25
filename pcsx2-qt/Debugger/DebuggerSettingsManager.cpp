@@ -54,7 +54,8 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 	if (path.empty())
 		return;
 
-	const QJsonValue breakpointsValue = loadGameSettingsJSON().value("Breakpoints");
+	const QJsonObject breakpointsFile = loadGameSettingsJSON();
+	const QJsonValue breakpointsValue = breakpointsFile.value("Breakpoints");
 	const QString valueToLoad = breakpointsValue.toString();
 	if (breakpointsValue.isUndefined() || !breakpointsValue.isArray())
 	{
@@ -67,13 +68,14 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 	// missing a description. This code will add in an empty description so that the previous
 	// version, 0.00, is compatible with 0.01.
 	bool isMissingDescription = false;
-	const QJsonValue savedVersionValue = loadGameSettingsJSON().value("Version");
+	const QJsonValue savedVersionValue = breakpointsFile.value("Version");
 	if (!savedVersionValue.isUndefined())
 	{
 		isMissingDescription = savedVersionValue.toString().toStdString() == "0.00";
 	}
 
 	const QJsonArray breakpointsArray = breakpointsValue.toArray();
+	std::vector<BreakpointMemcheck> breakpoints;
 	for (u32 row = 0; row < breakpointsArray.size(); row++)
 	{
 		const QJsonValue rowValue = breakpointsArray.at(row);
@@ -97,7 +99,31 @@ void DebuggerSettingsManager::loadGameSettings(BreakpointModel* bpModel)
 			QString headerColKey = bpModel->headerData(col, Qt::Horizontal, Qt::UserRole).toString();
 			fields << rowObject.value(headerColKey).toString();
 		}
-		bpModel->loadBreakpointFromFieldList(fields);
+		std::optional<BreakpointMemcheck> breakpoint = bpModel->getBreakpointFromFieldList(fields);
+		if (breakpoint.has_value())
+		{
+			breakpoints.push_back(breakpoint.value());
+		}
+	}
+
+	if (breakpointsArray.empty())
+	{
+		if (bpModel->rowCount() > 0)
+		{
+			bpModel->removeRows(0, bpModel->rowCount());
+		}
+	}
+	else if (!breakpointsArray.empty() && breakpoints.empty())
+	{
+		Console.WriteLn("Debugger Settings Manager: Parsing failed for every entry, preserving current breakpoints.");
+	}
+	else
+	{
+		if (bpModel->rowCount() > 0)
+		{
+			bpModel->removeRows(0, bpModel->rowCount());
+		}
+		bpModel->insertBreakpointRows(0, breakpoints.size(), breakpoints);
 	}
 }
 
