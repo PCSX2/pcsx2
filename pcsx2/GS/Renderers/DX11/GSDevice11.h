@@ -271,8 +271,8 @@ private:
 	struct
 	{
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
-		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_upscale;
-		wil::com_ptr_nothrow<ID3D11ComputeShader> cs_sharpen;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps_upscale;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps_sharpen;
 	} m_cas;
 
 	struct

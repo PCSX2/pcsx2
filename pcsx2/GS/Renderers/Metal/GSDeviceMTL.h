@@ -248,7 +248,7 @@ public:
 	MRCOwned<id<MTLFence>> m_spin_fence;
 
 	// Functions and Pipeline States
-	MRCOwned<id<MTLComputePipelineState>> m_cas_pipeline[2];
+	MRCOwned<id<MTLRenderPipelineState>> m_cas_pipeline[2];
 	std::vector<MRCOwned<id<MTLRenderPipelineState>>> m_convert_pipeline;
 	MRCOwned<id<MTLRenderPipelineState>> m_present_pipeline[static_cast<int>(PresentShader::Count)];
 	MRCOwned<id<MTLRenderPipelineState>> m_merge_pipeline[4];

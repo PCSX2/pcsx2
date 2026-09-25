@@ -16,12 +16,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+//#version 420 // Keep it for editor detection
+
+#ifdef FRAGMENT_SHADER
 uniform uvec4 const0;
 uniform uvec4 const1;
 uniform ivec2 srcOffset;
 
-layout(binding=0) uniform sampler2D imgSrc;
-layout(binding=0, rgba8) uniform writeonly image2D imgDst;
+layout(binding = 0) uniform sampler2D imgSrc;
+
+out vec4 fragColor;
 
 #define A_GPU 1
 #define A_GLSL 1
@@ -39,26 +43,17 @@ void CasInput(inout AF1 r, inout AF1 g, inout AF1 b) {}
 
 #include "ffx_cas.h"
 
-layout(local_size_x=64) in;
 void main()
 {
-	// Do remapping of local xy in workgroup for a more PS-like swizzle pattern.
-	AU2 gxy = ARmp8x8(gl_LocalInvocationID.x)+AU2(gl_WorkGroupID.x<<4u,gl_WorkGroupID.y<<4u);
+	AU2 gxy = AU2(gl_FragCoord.xy);
+#if CAS_SHARPEN_ONLY
+	const bool sharpenOnly = true;
+#else
+	const bool sharpenOnly = false;
+#endif
+	AF3 c = AF3(0.0f);
+	CasFilter(c.r, c.g, c.b, gxy, const0, const1, sharpenOnly);
 
-	// Filter.
-	AF4 c = vec4(0.0f);
-	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-	imageStore(imgDst, ASU2(gxy), c);
-	gxy.x += 8u;
-
-	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-	imageStore(imgDst, ASU2(gxy), c);
-	gxy.y += 8u;
-
-	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-	imageStore(imgDst, ASU2(gxy), c);
-	gxy.x -= 8u;
-
-	CasFilter(c.r, c.g, c.b, gxy, const0, const1, CAS_SHARPEN_ONLY);
-	imageStore(imgDst, ASU2(gxy), c);
+	fragColor = vec4(c, 1.0f);
 }
+#endif

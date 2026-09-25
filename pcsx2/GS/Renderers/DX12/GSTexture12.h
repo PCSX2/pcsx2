@@ -32,7 +32,7 @@ public:
 		ComputeShaderResource,
 		CopySrc,
 		CopyDst,
-		CASShaderUAV, // No Clear UAV Sync
+		ComputeShaderUAV, // No Clear UAV Sync
 		PixelShaderUAV,
 		Count
 	};
