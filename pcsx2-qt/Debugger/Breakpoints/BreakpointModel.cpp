@@ -566,13 +566,22 @@ void BreakpointModel::refreshData()
 
 void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 {
+	std::optional<BreakpointMemcheck> bp = getBreakpointFromFieldList(fields);
+	if (bp.has_value())
+	{
+		insertBreakpointRows(0, 1, {bp.value()});
+	}
+}
+
+std::optional<BreakpointMemcheck> BreakpointModel::getBreakpointFromFieldList(QStringList fields)
+{
 	std::string error;
 
 	bool ok;
 	if (fields.size() != BreakpointColumns::COLUMN_COUNT)
 	{
 		Console.WriteLn("Debugger Breakpoint Model: Invalid number of columns, skipping");
-		return;
+		return {};
 	}
 
 	const int type = fields[BreakpointColumns::TYPE].toUInt(&ok);
@@ -580,7 +589,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 	{
 		Console.WriteLn("Debugger Breakpoint Model: Failed to parse type '%s', skipping",
 			fields[BreakpointColumns::TYPE].toUtf8().constData());
-		return;
+		return {};
 	}
 
 	// This is how we differentiate between breakpoints and memchecks
@@ -594,7 +603,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse address '%s', skipping",
 				fields[BreakpointColumns::OFFSET].toUtf8().constData());
-			return;
+			return {};
 		}
 
 		// Condition
@@ -608,7 +617,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 			{
 				Console.WriteLn("Debugger Breakpoint Model: Failed to parse cond '%s', skipping",
 					fields[BreakpointModel::CONDITION].toUtf8().constData());
-				return;
+				return {};
 			}
 			bp.cond.expression = expr;
 			bp.cond.expressionString = fields[BreakpointColumns::CONDITION].toStdString();
@@ -620,7 +629,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse enable flag '%s', skipping",
 				fields[BreakpointColumns::ENABLED].toUtf8().constData());
-			return;
+			return {};
 		}
 
 		// Description
@@ -629,7 +638,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 			bp.description = fields[BreakpointColumns::DESCRIPTION].toStdString();
 		}
 
-		insertBreakpointRows(0, 1, {bp});
+		return bp;
 	}
 	else
 	{
@@ -639,18 +648,17 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse cond type '%s', skipping",
 				fields[BreakpointColumns::TYPE].toUtf8().constData());
-			return;
+			return {};
 		}
 		mc.memCond = static_cast<MemCheckCondition>(type);
 
 		// Address
-		QString test = fields[BreakpointColumns::OFFSET];
 		mc.start = fields[BreakpointColumns::OFFSET].toUInt(&ok, 16);
 		if (!ok)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse address '%s', skipping",
 				fields[BreakpointColumns::OFFSET].toUtf8().constData());
-			return;
+			return {};
 		}
 
 		// Size
@@ -659,7 +667,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse length '%s', skipping",
 				fields[BreakpointColumns::SIZE_LABEL].toUtf8().constData());
-			return;
+			return {};
 		}
 
 		// Condition
@@ -673,7 +681,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 			{
 				Console.WriteLn("Debugger Breakpoint Model: Failed to parse cond '%s', skipping",
 					fields[BreakpointColumns::CONDITION].toUtf8().constData());
-				return;
+				return {};
 			}
 			mc.cond.expression = expr;
 			mc.cond.expressionString = fields[BreakpointColumns::CONDITION].toStdString();
@@ -685,7 +693,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 		{
 			Console.WriteLn("Debugger Breakpoint Model: Failed to parse result flag '%s', skipping",
 				fields[BreakpointColumns::ENABLED].toUtf8().constData());
-			return;
+			return {};
 		}
 		mc.result = static_cast<MemCheckResult>(result);
 
@@ -695,7 +703,7 @@ void BreakpointModel::loadBreakpointFromFieldList(QStringList fields)
 			mc.description = fields[BreakpointColumns::DESCRIPTION].toStdString();
 		}
 
-		insertBreakpointRows(0, 1, {mc});
+		return mc;
 	}
 }
 

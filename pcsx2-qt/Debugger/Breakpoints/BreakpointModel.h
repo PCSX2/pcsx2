@@ -6,6 +6,8 @@
 #include <QtCore/QAbstractTableModel>
 #include <QtWidgets/QHeaderView>
 
+#include <optional>
+
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/Breakpoints.h"
 
@@ -57,6 +59,7 @@ public:
 	bool removeRows(int row, int count, const QModelIndex& index = QModelIndex()) override;
 	bool insertBreakpointRows(int row, int count, std::vector<BreakpointMemcheck> breakpoints, const QModelIndex& index = QModelIndex());
 	void loadBreakpointFromFieldList(QStringList breakpointFields);
+	std::optional<BreakpointMemcheck> getBreakpointFromFieldList(QStringList fields);
 
 	BreakpointMemcheck at(int row) const { return m_breakpoints.at(row); };
 
