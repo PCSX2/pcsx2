@@ -1,16 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#ifndef PCSX2_DX12
-	#define PCSX2_DX12 0
-#endif
-
-#ifndef PCSX2_DX11
-	#define PCSX2_DX11 0
-#endif
-
-#if PCSX2_DX12 == PCSX2_DX11
-	ERROR: Exactly one of PCSX2_DX12 or PCSX2_DX11 should be true.
+#if defined(PCSX2_DX12) == defined(PCSX2_DX11)
+	ERROR: Exactly one of PCSX2_DX12 or PCSX2_DX11 should be defined.
 #endif
 
 /// Start helper macros for shared shader code.
@@ -81,7 +73,19 @@
 
 #ifdef VERTEX_SHADER
 
-/// VS constants for determining base vertex/index in expand shader.
+// VS input layout
+struct VSInput
+{
+	float2 st : TEXCOORD0;
+	uint4 c : COLOR0;
+	float q : TEXCOORD1;
+	uint2 p : POSITION0;
+	uint z : POSITION1;
+	uint2 uv : TEXCOORD2;
+	float4 f : COLOR1;
+};
+
+// VS constants for determining base vertex/index in expand shader.
 #if PCSX2_DX12
 cbuffer cb2 : register(b2)
 #elif PCSX2_DX11
@@ -104,18 +108,7 @@ StructuredBuffer<uint> IndexBuffer : register(t5);
 // Note: vertex/index buffers must be defined before common code is included.
 #include "tfx_vs.inc"
 
-struct VSInput
-{
-	float2 st : TEXCOORD0;
-	uint4 c : COLOR0;
-	float q : TEXCOORD1;
-	uint2 p : POSITION0;
-	uint z : POSITION1;
-	uint2 uv : TEXCOORD2;
-	float4 f : COLOR1;
-};
-
-struct VS_OUTPUT
+struct VSOutput
 {
 	float4 p : SV_Position;
 	float4 t : TEXCOORD0;
@@ -149,24 +142,10 @@ VSUniformsGeneric GetVSUniforms()
 	return cb;
 }
 
-// Convert VS inputs for shared code.
-VSInputGeneric GetVSInput(VS_INPUT vin)
-{
-	VSInputGeneric vin_gen;
-	vin_gen.st = vin.st;
-	vin_gen.c = float4(vin.c);
-	vin_gen.q = vin.q;
-	vin_gen.p = vin.p;
-	vin_gen.z = vin.z;
-	vin_gen.uv = vin.uv;
-	vin_gen.f = vin.f;
-	return vin_gen;
-}
-
 // Convert VS outputs from generic outputs to real outputs.
-VS_OUTPUT GetVSOutput(VSOutputGeneric vout_gen)
+VSOutput GetVSOutput(VSOutputGeneric vout_gen)
 {
-	VS_OUTPUT vout;
+	VSOutput vout;
 	vout.p = vout_gen.p;
 	vout.t = vout_gen.t;
 	vout.ti = vout_gen.ti;
@@ -178,17 +157,16 @@ VS_OUTPUT GetVSOutput(VSOutputGeneric vout_gen)
 
 #if VS_EXPAND_TYPE == VS_EXPAND_NONE
 
-VS_OUTPUT vs_main(VS_INPUT vin)
+VSOutput vs_main(VSInput vin)
 {
-	VSInputGeneric vin_gen = GetVSInput(vin);
 	VSUniformsGeneric cb = GetVSUniforms();
-	VSOutputGeneric vout_gen = vs_main_impl(vin_gen, cb);
+	VSOutputGeneric vout_gen = vs_main_impl(vin, cb);
 	return GetVSOutput(vout_gen);
 }
 
 #else // VS_EXPAND_TYPE
 
-VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
+VSOutput vs_main_expand(uint vid : SV_VertexID)
 {
 	VSUniformsGeneric cb = GetVSUniforms();
 	VSOutputGeneric vout_gen = vs_expand_impl(vid, 0, cb, 0);
@@ -298,7 +276,7 @@ static uint2 get_tex_dims()
 
 static uint read_primid(uint2 pos)
 {
-	return PrimMinTexture.Load(int3(int2(pos), 0)).r;
+	return uint(PrimMinTexture.Load(int3(int2(pos), 0)).r);
 }
 
 static float4 sample_p(uint idx)
