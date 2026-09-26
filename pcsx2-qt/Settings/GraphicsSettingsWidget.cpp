@@ -246,6 +246,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.hybridShaderCacheThreads, "EmuCore/GS", "HybridShaderCacheThreads", Pcsx2Config::GSOptions::DEFAULT_HYBRID_SHADER_CACHE_THREADS);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.hybridShaderCacheLatencyMS, "EmuCore/GS", "HybridShaderCacheLatencyMS", Pcsx2Config::GSOptions::DEFAULT_HYBRID_SHADER_CACHE_LATENCY_MS);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.reducedUberShaders, "EmuCore/GS", "ReducedUberShaders", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.extendedDynamicStateVK, "EmuCore/GS", "ExtendedDynamicStateVK", false);
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
 

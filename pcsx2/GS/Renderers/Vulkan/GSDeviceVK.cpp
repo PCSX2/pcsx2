@@ -128,7 +128,7 @@ VkInstance GSDeviceVK::CreateVulkanInstance(const WindowInfo& wi, OptionalExtens
 	app_info.pEngineName = "PCSX2";
 	app_info.engineVersion = VK_MAKE_VERSION(
 		BuildVersion::GitTagHi, BuildVersion::GitTagMid, BuildVersion::GitTagLo);
-	app_info.apiVersion = VK_API_VERSION_1_3;
+	app_info.apiVersion = VK_API_VERSION_1_1;
 
 	VkInstanceCreateInfo instance_create_info = {};
 	instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -275,9 +275,8 @@ GSDeviceVK::GPUList GSDeviceVK::EnumerateGPUs(VkInstance instance)
 		VkPhysicalDeviceProperties props = {};
 		vkGetPhysicalDeviceProperties(device, &props);
 
-		// Skip GPUs which don't support Vulkan 1.3, since we won't be able to create a device with them anyway.
-		if (VK_API_VERSION_VARIANT(props.apiVersion) == 0 && VK_API_VERSION_MAJOR(props.apiVersion) <= 1 &&
-			VK_API_VERSION_MINOR(props.apiVersion) < 3)
+		// Skip GPUs which don't support Vulkan 1.1, since we won't be able to create a device with them anyway.
+		if (props.apiVersion < VK_API_VERSION_1_1)
 		{
 			Console.Warning(fmt::format("VK: Ignoring GPU '{}' because it only claims support for Vulkan {}.{}.{}",
 				props.deviceName, VK_API_VERSION_MAJOR(props.apiVersion), VK_API_VERSION_MINOR(props.apiVersion),
@@ -435,10 +434,16 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
-	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
-		m_optional_extensions.vk_ext_extended_dynamic_state_3 = SupportsExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME, false);
+	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid && GSConfig.ExtendedDynamicStateVK)
+	{
+		m_optional_extensions.vk_ext_extended_dynamic_state =
+			SupportsExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME, false) &&
+			SupportsExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME, false);
+	}
 	else
-		m_optional_extensions.vk_ext_extended_dynamic_state_3 = false;
+	{
+		m_optional_extensions.vk_ext_extended_dynamic_state = false;
+	}
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -656,7 +661,9 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT};
-	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state3_feature = {
+	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extended_dynamic_state_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT };
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state_3_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT };
 	if (m_optional_extensions.vk_ext_provoking_vertex)
 	{
@@ -688,12 +695,14 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &fragment_shader_interlock_ext_feature);
 	}
-	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
+	if (m_optional_extensions.vk_ext_extended_dynamic_state)
 	{
-		extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEnable = VK_TRUE;
-		extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEquation = VK_TRUE;
-		extended_dynamic_state3_feature.extendedDynamicState3ColorWriteMask = VK_TRUE;
-		Vulkan::AddPointerToChain(&device_info, &extended_dynamic_state3_feature);
+		extended_dynamic_state_feature.extendedDynamicState = VK_TRUE;
+		extended_dynamic_state_3_feature.extendedDynamicState3ColorBlendEnable = VK_TRUE;
+		extended_dynamic_state_3_feature.extendedDynamicState3ColorBlendEquation = VK_TRUE;
+		extended_dynamic_state_3_feature.extendedDynamicState3ColorWriteMask = VK_TRUE;
+		Vulkan::AddPointerToChain(&device_info, &extended_dynamic_state_feature);
+		Vulkan::AddPointerToChain(&device_info, &extended_dynamic_state_3_feature);
 	}
 
 	VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
@@ -770,7 +779,9 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_FEATURES_EXT};
 	VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragment_shader_interlock_ext_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT };
-	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state3_feature = {
+	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extended_dynamic_state_feature = {
+		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT };
+	VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extended_dynamic_state_3_feature = {
 		VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT };
 	// add in optional feature structs
 	if (m_optional_extensions.vk_ext_provoking_vertex)
@@ -785,8 +796,11 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &swapchain_maintenance1_feature);
 	if (m_optional_extensions.vk_ext_fragment_shader_interlock)
 		Vulkan::AddPointerToChain(&features2, &fragment_shader_interlock_ext_feature);
-	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
-		Vulkan::AddPointerToChain(&features2, &extended_dynamic_state3_feature);
+	if (m_optional_extensions.vk_ext_extended_dynamic_state)
+	{
+		Vulkan::AddPointerToChain(&features2, &extended_dynamic_state_feature);
+		Vulkan::AddPointerToChain(&features2, &extended_dynamic_state_3_feature);
+	}
 
 	// query
 	vkGetPhysicalDeviceFeatures2(m_physical_device, &features2);
@@ -867,12 +881,13 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_fragment_shader_interlock &=
 		(fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock == VK_TRUE);
 
-	if (m_optional_extensions.vk_ext_extended_dynamic_state_3)
+	if (m_optional_extensions.vk_ext_extended_dynamic_state)
 	{
-		m_optional_extensions.vk_ext_extended_dynamic_state_3 =
-			extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEnable &&
-			extended_dynamic_state3_feature.extendedDynamicState3ColorBlendEquation &&
-			extended_dynamic_state3_feature.extendedDynamicState3ColorWriteMask;
+		m_optional_extensions.vk_ext_extended_dynamic_state =
+			extended_dynamic_state_feature.extendedDynamicState &&
+			extended_dynamic_state_3_feature.extendedDynamicState3ColorBlendEnable &&
+			extended_dynamic_state_3_feature.extendedDynamicState3ColorBlendEquation &&
+			extended_dynamic_state_3_feature.extendedDynamicState3ColorWriteMask;
 	}
 
 	Console.WriteLn(
@@ -894,8 +909,11 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_extended_dynamic_state_3 is %s",
-		m_optional_extensions.vk_ext_extended_dynamic_state_3 ? "supported" : "NOT supported");
+	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid && GSConfig.ExtendedDynamicStateVK)
+	{
+		Console.WriteLn("VK_EXT_extended_dynamic_state/VK_EXT_extended_dynamic_state_3 is %s",
+			m_optional_extensions.vk_ext_extended_dynamic_state ? "supported" : "NOT supported");
+	}
 
 	return true;
 }
@@ -903,7 +921,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 bool GSDeviceVK::CreateAllocator()
 {
 	VmaAllocatorCreateInfo ci = {};
-	ci.vulkanApiVersion = VK_API_VERSION_1_3;
+	ci.vulkanApiVersion = VK_API_VERSION_1_1;
 	ci.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
 	ci.physicalDevice = m_physical_device;
 	ci.device = m_device;
@@ -2931,7 +2949,7 @@ bool GSDeviceVK::CheckFeatures()
 	                 has_rov_storage_flags &&
 	                 !m_features.framebuffer_fetch;
 
-	m_features.uber_shader = m_features.vs_expand && m_optional_extensions.vk_ext_extended_dynamic_state_3;
+	m_features.uber_shader = m_features.vs_expand && GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid;
 
 	return true;
 }
@@ -4094,7 +4112,7 @@ bool GSDeviceVK::CreatePipelineLayouts()
 		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			0, sizeof(GSHWDrawConfig::TFXPushConstants));
 	}
-	if (m_features.aa1 || GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
+	if (m_features.aa1 || m_features.uber_shader)
 		dslb.AddBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
@@ -4731,7 +4749,7 @@ bool GSDeviceVK::CompileImGuiPipeline()
 
 bool GSDeviceVK::CompileTFXUberPipelines()
 {
-	if (GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
+	if (m_features.uber_shader)
 	{
 		constexpr bool COMPILE_ASYNC = true; // Change to enable/disable async compile.
 		constexpr int SLEEP_MS = 100;
@@ -4741,6 +4759,47 @@ bool GSDeviceVK::CompileTFXUberPipelines()
 		// Compile uber pipelines async (stage 0 to start compilation, stage 1 to wait for finish).
 		for (u32 stage = 0; stage < (COMPILE_ASYNC ? 2 : 1); stage++)
 		{
+			// Vertex shaders
+			size_t num_vs = 0;
+			for (u32 vs_sel = 0; vs_sel < 2; vs_sel++)
+			{
+				if (stage == 0)
+				{
+					// Uber VS is only compiled synchronously.
+					VKShaderModuleOrJob vs = GetTFXUberVertexShader(static_cast<GSHWDrawConfig::UberVSSelector>(vs_sel));
+					if (!IsValidShaderModule(vs))
+						return false; // failed
+				}
+				num_vs++;
+			}
+
+			// Fragment shaders
+			size_t num_ps = 0;
+			for (const UberPSSelector& ps_sel : UberPSSelector::GetValidSelectors())
+			{
+				if (stage == 0)
+				{
+					// Start compilation
+					VKShaderModuleOrJob ps = GetTFXUberFragmentShader(ps_sel, COMPILE_ASYNC);
+					if (!IsValidShaderModule(ps) && !m_tfx_uber_fragment_shaders_async.contains(ps_sel.key))
+						return false; // failed
+				}
+				else
+				{
+					// Wait for compilation to finish
+					while (true)
+					{
+						VKShaderModuleOrJob ps = GetTFXUberFragmentShader(ps_sel, true);
+						if (IsValidShaderModule(ps))
+							break;
+						if (!m_tfx_uber_fragment_shaders_async.contains(ps_sel.key))
+							return false; // failed
+						std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_MS));
+					}
+				}
+				num_ps++;
+			}
+
 			size_t num_pipelines = 0;
 			PipelineSelector selector;
 			std::memset(&selector, 0, sizeof(selector));
@@ -4760,6 +4819,18 @@ bool GSDeviceVK::CompileTFXUberPipelines()
 
 								if (!ps_sel.CompatibleWithAttachments(rt, ds))
 									continue;
+
+								if (!UseExtendedDynamicState())
+								{
+									// Don't bother making non-ROV pipelines as they will likely have
+									// to be remade anyway when the colormask, blend equation, etc. changes.
+									if (ps_sel.HasColor() && !ps_sel.HasColorROV())
+										continue;
+
+									// Same with dual source blend or DATE variations.
+									if (ps_sel.color1 || ps_sel.date_init)
+										continue;
+								}
 
 								selector.uber_shader = true;
 								selector.uber_vs = static_cast<GSHWDrawConfig::UberVSSelector>(vs_sel);
@@ -4800,7 +4871,8 @@ bool GSDeviceVK::CompileTFXUberPipelines()
 			}
 
 			if (stage == (COMPILE_ASYNC ? 1 : 0))
-				Console.WriteLn("Compiled %u uber pipelines in %.2f seconds", num_pipelines, timer.GetTimeSecondsAndReset());
+				Console.WriteLn("Compiled %u uber pipelines (%u vertex shaders, %u fragment shaders) in %.2f seconds",
+					num_pipelines, num_vs, num_ps, timer.GetTimeSecondsAndReset());
 		}
 	}
 
@@ -5473,7 +5545,7 @@ GSDeviceVK::VKPipelineOrJob GSDeviceVK::CreateTFXPipeline(const PipelineSelector
 	gpb.SetDynamicViewportAndScissorState();
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_BLEND_CONSTANTS);
 	gpb.AddDynamicState(VK_DYNAMIC_STATE_LINE_WIDTH);
-	if (p.uber_shader)
+	if (p.uber_shader && UseExtendedDynamicState())
 	{
 		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT);
 		gpb.AddDynamicState(VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT);
@@ -5670,7 +5742,7 @@ bool GSDeviceVK::CreatePersistentDescriptorSets()
 		dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			m_vertex_stream_buffer.GetBuffer(), 0, VERTEX_BUFFER_SIZE);
 	}
-	if (m_features.aa1 || GSConfig.ShaderCacheType >= GSShaderCacheType::Hybrid)
+	if (m_features.aa1 || m_features.uber_shader)
 	{
 		dsub.AddBufferDescriptorWrite(m_tfx_ubo_descriptor_set, 3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
 			m_expand_index_stream_buffer.GetBuffer(), 0, GetExpandIndexStreamBufferSize());
@@ -6283,7 +6355,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
 	}
 
-	if (m_uber_dynamic_state.enabled)
+	if (UseExtendedDynamicState() && m_uber_dynamic_state.enabled)
 	{
 		if (flags & DIRTY_FLAG_TFX_UBER_COLOR_BLEND)
 		{
@@ -6331,9 +6403,9 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 
 		if (flags & DIRTY_FLAG_TFX_UBER_DEPTH)
 		{
-			vkCmdSetDepthTestEnable(cmdbuf, true);
-			vkCmdSetDepthCompareOp(cmdbuf, VK_COMPARE_OPS[m_uber_dynamic_state.dss.ztst]);
-			vkCmdSetDepthWriteEnable(cmdbuf, m_uber_dynamic_state.dss.zwe);
+			vkCmdSetDepthTestEnableEXT(cmdbuf, true);
+			vkCmdSetDepthCompareOpEXT(cmdbuf, VK_COMPARE_OPS[m_uber_dynamic_state.dss.ztst]);
+			vkCmdSetDepthWriteEnableEXT(cmdbuf, m_uber_dynamic_state.dss.zwe);
 		}
 
 		if (flags & DIRTY_FLAG_TFX_UBER_STENCIL)
@@ -6341,15 +6413,15 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			if (m_uber_dynamic_state.dss.date)
 			{
 				const VkStencilOpState& sos = GetDATEStencilOpState(m_uber_dynamic_state.dss.date_one);
-				vkCmdSetStencilOp(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, sos.failOp, sos.passOp, sos.depthFailOp, sos.compareOp);
+				vkCmdSetStencilOpEXT(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, sos.failOp, sos.passOp, sos.depthFailOp, sos.compareOp);
 				vkCmdSetStencilCompareMask(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
 				vkCmdSetStencilWriteMask(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
 				vkCmdSetStencilReference(cmdbuf, VK_STENCIL_FACE_FRONT_AND_BACK, 1);
-				vkCmdSetStencilTestEnable(cmdbuf, true);
+				vkCmdSetStencilTestEnableEXT(cmdbuf, true);
 			}
 			else
 			{
-				vkCmdSetStencilTestEnable(cmdbuf, false);
+				vkCmdSetStencilTestEnableEXT(cmdbuf, false);
 			}
 		}
 	}
@@ -7094,8 +7166,6 @@ void GSDeviceVK::UpdateHWPipelineSelector(const GSHWDrawConfig& config, DrawPass
 	// enable point size in the vertex shader if we're rendering points regardless of upscaling.
 	pipe.vs.point_size |= (config.topology == GSHWDrawConfig::Topology::Point);
 
-	m_uber_dynamic_state.enabled = false;
-
 	if (!preserve_feedback_flags)
 	{
 		pipe.feedback_loop_flags = FeedbackLoopFlag_None;
@@ -7117,20 +7187,24 @@ void GSDeviceVK::UpdateHWPipelineSelector(const GSHWDrawConfig& config, DrawPass
 	{
 		pipe.uber_shader = true;
 
-		// Clear the state that will be set with VK dynamic state.
 		pipe.vs.key = 0;
 		pipe.ps.key_lo = 0;
 		pipe.ps.key_hi = 0;
-		pipe.SetReducedUberDefaults();
+		
+		if (GSConfig.ReducedUberShaders || UseExtendedDynamicState())
+			pipe.SetReducedUberDefaults();
 
-		// Update pipeline's dynamic state.
-		SetUberDynamicState(dss, bs, cms, IsDATEModePrimIDInit(ps.date));
-
-		if (!m_uber_dynamic_state.enabled)
+		if (UseExtendedDynamicState())
 		{
-			// Refresh dynamic state if we move from non-uber to uber.
-			m_dirty_flags |= DIRTY_TFX_UBER_STATE;
-			m_uber_dynamic_state.enabled = true;
+			// Update pipeline's dynamic state.
+			SetUberDynamicState(dss, bs, cms, IsDATEModePrimIDInit(ps.date));
+
+			if (!m_uber_dynamic_state.enabled)
+			{
+				// Refresh dynamic state if we move from non-uber to uber.
+				m_dirty_flags |= DIRTY_TFX_UBER_STATE;
+				m_uber_dynamic_state.enabled = true;
+			}
 		}
 
 		// Get the state for dynamic branching in the VS/PS.

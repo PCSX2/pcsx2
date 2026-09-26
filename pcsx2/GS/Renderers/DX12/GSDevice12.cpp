@@ -2492,7 +2492,7 @@ bool GSDevice12::CompileTFXUberPipelines()
 								if (!ps_sel.CompatibleWithAttachments(rt, ds))
 									continue;
 
-								// Don't both making non-ROV pipelines as they will likely have
+								// Don't bother making non-ROV pipelines as they will likely have
 								// to be remade anyway when the colormask, blend equation, etc. changes.
 								if (ps_sel.HasColor() && !ps_sel.HasColorROV())
 									continue;

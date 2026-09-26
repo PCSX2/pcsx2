@@ -438,6 +438,13 @@
             </property>
           </widget>
           </item>
+          <item row="0" column="2">
+          <widget class="QCheckBox" name="extendedDynamicStateVK">
+            <property name="text">
+            <string>Extended Dynamic State VK</string>
+            </property>
+          </widget>
+          </item>
         </layout>
         </item>
        </layout>
