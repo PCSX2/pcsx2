@@ -4,6 +4,8 @@
 #include "Vif_UnpackSSE.h"
 #include "common/Perf.h"
 
+#include <inttypes.h>
+
 #define xMOV8(regX, loc)   xMOVSSZX(regX, loc)
 #define xMOV16(regX, loc)  xMOVSSZX(regX, loc)
 #define xMOV32(regX, loc)  xMOVSSZX(regX, loc)
