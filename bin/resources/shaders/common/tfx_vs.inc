@@ -28,7 +28,7 @@ VSInputGeneric load_vertex(VS_VERTICES_PARAM(vertices), uint index)
 		vert.p = uint2(raw.XY & 0xFFFFu, raw.XY >> 16);
 		vert.z = raw.Z;
 		vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
-		vert.f = float4_bcast(float(raw.FOG) / 255.0f);
+		vert.f = float4(float(raw.FOG & 0xFFu) / 255.0f, float3(0.f));
 	#else
 		// Don't reference the vertex buffer unless we really need to.
 		vert.st = float2_bcast(0.0f);
