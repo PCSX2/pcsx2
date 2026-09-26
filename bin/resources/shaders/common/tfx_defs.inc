@@ -55,7 +55,7 @@
 	#define PS_ROV_DEPTH_READ_WRITE 1
 	#define PS_ROV_DEPTH_READ_ONLY 2
 	#endif
-#endif // __METAL_VERSION__
+#endif // PCSX2_MSL
 
 // Raw vertex layout for vertex expand shaders.
 struct VSRawVertex

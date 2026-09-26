@@ -28,16 +28,16 @@ VSInput load_vertex(VS_VERTICES_PARAM(vertices), uint index)
 		vert.p = uint2(raw.XY & 0xFFFFu, raw.XY >> 16);
 		vert.z = raw.Z;
 		vert.uv = uint2(raw.UV & 0xFFFFu, raw.UV >> 16);
-		vert.f = float4(float(raw.FOG & 0xFFu) / 255.0f, float3(0.f));
+		vert.f = float4(float(raw.FOG & 0xFFu) / 255.0f, splat3(0.f));
 	#else
 		// Don't reference the vertex buffer unless we really need to.
-		vert.st = float2_bcast(0.0f);
-		vert.c = uint4_bcast(0);
+		vert.st = splat2(0.0f);
+		vert.c = splat4(0u);
 		vert.q = 0.0f;
-		vert.p = uint2_bcast(0);
+		vert.p = splat2(0);
 		vert.z = 0u;
-		vert.uv = uint2_bcast(0);
-		vert.f = float4_bcast(0.0f);
+		vert.uv = splat2(0);
+		vert.f = splat4(0.0f);
 	#endif
 	return vert;
 }

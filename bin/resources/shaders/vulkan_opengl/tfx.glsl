@@ -1,16 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#ifndef PCSX2_VULKAN
-	#define PCSX2_VULKAN 0
-#endif
-
-#ifndef PCSX2_OPENGL
-	#define PCSX2_OPENGL 0
-#endif
-
-#if PCSX2_VULKAN == PCSX2_OPENGL
-	ERROR: Exactly one of PCSX2_VULKAN or PCSX2_OPENGL should be true.
+#if defined(PCSX2_VULKAN) == defined(PCSX2_OPENGL)
+	ERROR: Exactly one of PCSX2_VULKAN or PCSX2_OPENGL should be defined.
 #endif
 
 /// Start helper macros for shared shader code
@@ -97,10 +89,11 @@
 
 #ifdef VERTEX_SHADER
 
+// VS input layout as a struct
 struct VSInput
 {
 	float2 st;
-	float4 c;
+	uint4 c;
 	float  q;
 	uint2  p;
 	uint   z;
@@ -233,7 +226,7 @@ VSInput GetVSInput()
 {
 	VSInput vin;
 	vin.st = a_st;
-	vin.c = float4(a_c);
+	vin.c = uint4(a_c);
 	vin.q = a_q;
 	vin.p = a_p;
 	vin.z = a_z;
@@ -244,7 +237,7 @@ VSInput GetVSInput()
 
 void main()
 {
-	VSInputGeneric vin = GetVSInput();
+	VSInput vin = GetVSInput();
 	VSUniformsGeneric cb = GetVSUniforms();
 	VSOutputGeneric vout = vs_main_impl(vin, cb);
 	WriteVSOutput(vout);
@@ -463,7 +456,7 @@ uvec2 get_tex_dims()
 
 uint read_primid(uvec2 pos)
 {
-	return texelFetch(PrimMinTexture, int2(pos), 0).r;
+	return uint(texelFetch(PrimMinTexture, int2(pos), 0).r);
 }
 
 vec4 sample_p(uint idx)
