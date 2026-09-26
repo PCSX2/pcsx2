@@ -29,6 +29,9 @@ void _vu1ExecLower(VURegs* VU, u32* ptr)
 
 int vu1branch = 0;
 
+// Only used on the MTVU thread, where VPU_STAT belongs to the EE and can't be used to tell if VU1 is running.
+static bool s_mtvu_vu1_running = false;
+
 static void _vu1Exec(VURegs* VU)
 {
 	_VURegsNum lregs;
@@ -42,22 +45,38 @@ static void _vu1Exec(VURegs* VU)
 	{
 		VU->ebit = 2;
 	}
-	if (ptr[1] & 0x10000000) // D flag
+	if (THREAD_VU1)
 	{
-		if (VU0.VI[REG_FBRST].UL & 0x400)
+		// Same as microVU: FBRST is copied to the VU thread, and D/T stops are reported
+		// back to the EE through the MTVU interrupt flags.
+		if (((ptr[1] & 0x10000000) && (vu1Thread.vuFBRST & 0x400)) || // D flag
+			((ptr[1] & 0x08000000) && (vu1Thread.vuFBRST & 0x800))) // T flag
 		{
-			VU0.VI[REG_VPU_STAT].UL |= 0x200;
-			hwIntcIrq(INTC_VU1);
+			const u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUTBit, std::memory_order_release);
+			if (old & VU_Thread::InterruptFlagVUTBit)
+				DevCon.Warning("Old TBit not registered");
 			VU->ebit = 1;
 		}
 	}
-	if (ptr[1] & 0x08000000) // T flag
+	else
 	{
-		if (VU0.VI[REG_FBRST].UL & 0x800)
+		if (ptr[1] & 0x10000000) // D flag
 		{
-			VU0.VI[REG_VPU_STAT].UL |= 0x400;
-			hwIntcIrq(INTC_VU1);
-			VU->ebit = 1;
+			if (VU0.VI[REG_FBRST].UL & 0x400)
+			{
+				VU0.VI[REG_VPU_STAT].UL |= 0x200;
+				hwIntcIrq(INTC_VU1);
+				VU->ebit = 1;
+			}
+		}
+		if (ptr[1] & 0x08000000) // T flag
+		{
+			if (VU0.VI[REG_FBRST].UL & 0x800)
+			{
+				VU0.VI[REG_VPU_STAT].UL |= 0x400;
+				hwIntcIrq(INTC_VU1);
+				VU->ebit = 1;
+			}
 		}
 	}
 
@@ -191,16 +210,28 @@ static void _vu1Exec(VURegs* VU)
 		{
 			VU->VIBackupCycles = 0;
 			_vuFlushAll(VU);
-			VU0.VI[REG_VPU_STAT].UL &= ~0x100;
-			vif1Regs.stat.VEW = false;
 
-			if(VU1.xgkickenable)
-				_vuXGKICKTransfer(0, true);
-			// In instant VU mode, VU1 goes WAY ahead of the CPU, making the XGKick fall way behind
-			// We also have some code to update it in VIF Unpacks too, since in some games (Aggressive Inline) overwrite the XGKick data
-			// VU currently flushes XGKICK on end, so this isn't needed, yet
-			if (INSTANT_VU1)
-				VU1.xgkicklastcycle = cpuRegs.cycle;
+			if (THREAD_VU1)
+			{
+				// The EE side tracks the busy flags itself with MTVU.
+				s_mtvu_vu1_running = false;
+				if (VU1.xgkickenable)
+					_vuXGKICKTransfer(0, true);
+				vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUEBit, std::memory_order_release);
+			}
+			else
+			{
+				VU0.VI[REG_VPU_STAT].UL &= ~0x100;
+				vif1Regs.stat.VEW = false;
+
+				if (VU1.xgkickenable)
+					_vuXGKICKTransfer(0, true);
+				// In instant VU mode, VU1 goes WAY ahead of the CPU, making the XGKick fall way behind
+				// We also have some code to update it in VIF Unpacks too, since in some games (Aggressive Inline) overwrite the XGKick data
+				// VU currently flushes XGKICK on end, so this isn't needed, yet
+				if (INSTANT_VU1)
+					VU1.xgkicklastcycle = cpuRegs.cycle;
+			}
 		}
 	}
 
@@ -263,9 +294,14 @@ void InterpVU1::Execute(u32 cycles)
 	VU1.VI[REG_TPC].UL <<= 3;
 	u64 startcycles = VU1.cycle;
 
+	// With MTVU, each Execute() call runs a newly started program until its E-bit.
+	const bool mtvu = THREAD_VU1;
+	if (mtvu)
+		s_mtvu_vu1_running = true;
+
 	while ((VU1.cycle - startcycles) < cycles)
 	{
-		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
+		if (mtvu ? !s_mtvu_vu1_running : !(VU0.VI[REG_VPU_STAT].UL & 0x100))
 		{
 			if (VU1.branch == 1)
 			{
@@ -277,5 +313,6 @@ void InterpVU1::Execute(u32 cycles)
 		Step();
 	}
 	VU1.VI[REG_TPC].UL >>= 3;
-	VU1.nextBlockCycles = (VU1.cycle - cpuRegs.cycle) + 1;
+	if (!mtvu)
+		VU1.nextBlockCycles = (VU1.cycle - cpuRegs.cycle) + 1;
 }

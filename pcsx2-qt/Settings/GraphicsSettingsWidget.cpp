@@ -12,6 +12,7 @@
 #include "pcsx2/GS/GS.h"
 #include "pcsx2/GS/GSCapture.h"
 #include "pcsx2/GS/GSUtil.h"
+#include "pcsx2/GS/Renderers/Common/GSDLSSNR.h"
 
 struct RendererInfo
 {
@@ -211,6 +212,15 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	//////////////////////////////////////////////////////////////////////////
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.fxaa, "EmuCore/GS", "fxaa", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.shadeBoost, "EmuCore/GS", "ShadeBoost", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_post.dlssnr, "EmuCore/GS", "DLSSNR", false);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.dlssnrIntensity, "EmuCore/GS", "DLSSNR_Intensity", 100);
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.dlssnrMaxHeight, "EmuCore/GS", "DLSSNR_MaxHeight", 448);
+	if (!GSDLSSNR::IsAvailable())
+	{
+		m_post.dlssnr->setEnabled(false);
+		m_post.dlssnrIntensity->setEnabled(false);
+		m_post.dlssnrMaxHeight->setEnabled(false);
+	}
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostBrightness, "EmuCore/GS", "ShadeBoost_Brightness", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_BRIGHTNESS);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostContrast, "EmuCore/GS", "ShadeBoost_Contrast", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_CONTRAST);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_post.shadeBoostGamma, "EmuCore/GS", "ShadeBoost_Gamma", Pcsx2Config::GSOptions::DEFAULT_SHADEBOOST_GAMMA);
@@ -711,6 +721,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 		dialog()->registerWidgetHelp(m_post.casSharpness, tr("Sharpness"), tr("50%"), tr("Determines the intensity the sharpening effect in CAS post-processing."));
 
+		dialog()->registerWidgetHelp(m_post.dlssnr, tr("DLSS-NR"), tr("Unchecked"),
+			tr("Runs every frame through the DLSS-NR neural rendering model (libframe). Very slow and experimental. "
+			   "Only available in builds made with USE_DLSSNR, which need model weights you supply yourself."));
+		dialog()->registerWidgetHelp(m_post.dlssnrIntensity, tr("DLSS-NR Intensity"), tr("100%"),
+			tr("Blend of the model's picture against the game's. Above 100% extrapolates."));
+		dialog()->registerWidgetHelp(m_post.dlssnrMaxHeight, tr("DLSS-NR Maximum Height"), tr("448px"),
+			tr("Frames taller than this are scaled down before the model runs, and back up after. Lower is faster."));
 		dialog()->registerWidgetHelp(m_post.shadeBoost, tr("Shade Boost"), tr("Unchecked"),
 			tr("Enables saturation, contrast, and brightness to be adjusted. Values of brightness, saturation, and contrast are at default "
 			   "50."));

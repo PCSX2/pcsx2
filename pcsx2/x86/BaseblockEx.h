@@ -7,6 +7,7 @@
 #include <map>
 
 #include "common/Assertions.h"
+#include "common/HostSys.h"
 
 // Every potential jump point in the PS2's addressable memory has a BASEBLOCK
 // associated with it. So that means a BASEBLOCK for every 4 bytes of PS2
@@ -188,10 +189,24 @@ public:
 		return (*this)[Index(startpc)];
 	}
 
+#ifdef ARCH_ARM64
+	// Links on ARM64 are unconditional B instructions, patched in place.
+	static __fi void PatchBranch(uptr branch_ptr, uptr target)
+	{
+		const s64 disp = (static_cast<s64>(target) - static_cast<s64>(branch_ptr)) >> 2;
+		pxAssertRel(disp >= -(1 << 25) && disp < (1 << 25), "ARM64 block link out of range");
+		const u32 insn = 0x14000000u | (static_cast<u32>(disp) & 0x03FFFFFFu);
+		std::memcpy(reinterpret_cast<void*>(branch_ptr), &insn, sizeof(insn));
+	}
+#endif
+
 	__fi void Remove(int first, int last)
 	{
 		pxAssert(first <= last);
 		int idx = first;
+#ifdef ARCH_ARM64
+		HostSys::BeginCodeWrite();
+#endif
 		do
 		{
 			pxAssert(idx <= last);
@@ -199,8 +214,16 @@ public:
 			//u32 startpc = blocks[idx].startpc;
 			std::pair<linkiter_t, linkiter_t> range = links.equal_range(blocks[idx].startpc);
 			for (linkiter_t i = range.first; i != range.second; ++i)
+			{
+#ifdef ARCH_ARM64
+				PatchBranch(i->second, recompiler);
+				HostSys::FlushInstructionCache(reinterpret_cast<void*>(i->second), sizeof(u32));
+#else
 				*(u32*)i->second = recompiler - (i->second + 4);
+#endif
+			}
 
+#ifndef ARCH_ARM64
 			if (IsDevBuild)
 			{
 				// Clear the first instruction to 0xcc (breakpoint), as a way to assert if some
@@ -211,13 +234,22 @@ public:
 				BASEBLOCKEX effu(blocks[idx]);
 				memset((void*)effu.fnptr, 0xcc, 1);
 			}
+#endif
 		} while (idx++ < last);
+#ifdef ARCH_ARM64
+		HostSys::EndCodeWrite();
+#endif
 
 		// TODO: remove links from this block?
 		blocks.erase(first, last + 1);
 	}
 
+#ifdef ARCH_ARM64
+	// branch_ptr points at a B instruction which will be patched to the target block (or the JIT compiler).
+	void Link(u32 pc, u32* branch_ptr);
+#else
 	void Link(u32 pc, s32* jumpptr);
+#endif
 
 	__fi void Reset()
 	{
