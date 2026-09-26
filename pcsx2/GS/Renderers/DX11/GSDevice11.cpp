@@ -618,6 +618,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 void GSDevice11::Destroy()
 {
 	delete m_null_texture;
+	m_null_texture = nullptr;
 	
 	GSDevice::Destroy();
 	DestroySwapChain();
