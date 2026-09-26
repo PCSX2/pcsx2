@@ -23,6 +23,26 @@ SettingsWrapper::SettingsWrapper(SettingsInterface& si)
 {
 }
 
+int SettingsWrapper::EntryFlagsBitfield(const char* section, const char* var_prefix, int value, const std::pair<int, const char*>* entries, const int defvalue /*= 0.0*/)
+{
+	std::string name;
+	int outval = 0;
+
+	int i = 0;
+	while (entries[i].second != nullptr)
+	{
+		name.assign(var_prefix);
+		name.append(entries[i].second);
+		const int bit = entries[i].first;
+		const bool def = defvalue & bit;
+		bool val = value & bit;
+		Entry(section, name.c_str(), val, def);
+		outval |= val ? bit : 0;
+		i++;
+	}
+	return outval;
+}
+
 SettingsLoadWrapper::SettingsLoadWrapper(SettingsInterface& si)
 	: SettingsWrapper(si)
 {
