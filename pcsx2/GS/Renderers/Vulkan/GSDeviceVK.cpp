@@ -649,14 +649,6 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 
 	device_info.pEnabledFeatures = &m_device_features;
 
-	// Enable debug layer on debug builds
-	if (enable_validation_layer)
-	{
-		static const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
-		device_info.enabledLayerCount = 1;
-		device_info.ppEnabledLayerNames = layer_names;
-	}
-
 	VkPhysicalDeviceSynchronization2Features sync2_features = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
 	// provoking vertex
 	VkPhysicalDeviceProvokingVertexFeaturesEXT provoking_vertex_feature = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT};
