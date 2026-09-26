@@ -97,7 +97,7 @@ struct GSMTLMainVSUniform
 	vector_float2 texture_scale;
 	vector_float2 texture_offset;
 	vector_float2 point_size;
-	uint max_depth;
+	uint max_depth_vs;
 	float line_aa1_width;
 };
 
@@ -115,7 +115,7 @@ struct GSMTLMainPSUniform
 	};
 	vector_float4 wh; ///< xy => PS2, zw => actual (upscaled)
 	vector_float2 ta;
-	float max_depth;
+	float max_depth_ps;
 	float alpha_fix;
 	vector_uint4 fbmask;
 
@@ -127,13 +127,17 @@ struct GSMTLMainPSUniform
 	};
 	vector_float4 lod_params;
 	vector_float4 st_range;
-	struct
+	union
 	{
-		unsigned int blue_mask;
-		unsigned int blue_shift;
-		unsigned int green_mask;
-		unsigned int green_shift;
-	} channel_shuffle;
+		struct
+		{
+			unsigned int channel_shuffle_blue_mask;
+			unsigned int channel_shuffle_blue_shift;
+			unsigned int channel_shuffle_green_mask;
+			unsigned int channel_shuffle_green_shift;
+		};
+		vector_uint4 channel_shuffle;
+	};
 	vector_float2 channel_shuffle_offset;
 	vector_float2 tc_offset;
 	vector_float2 st_scale;
