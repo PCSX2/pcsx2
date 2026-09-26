@@ -289,6 +289,9 @@
     <Filter Include="System\Ps2\EmotionEngine\EE\Dynarec\arm64">
       <UniqueIdentifier>{cd8ec519-2196-43f7-86de-7faced2d4296}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\GS\Shaders\VulkanOpenGL">
+      <UniqueIdentifier>{e434b266-807a-4303-8daf-6a1542a2d888}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Docs\License.txt">
@@ -363,12 +366,6 @@
     <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
       <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
-      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
-    </None>
-    <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
-      <Filter>System\Ps2\GS\Shaders\OpenGL</Filter>
-    </None>
     <None Include="..\bin\resources\shaders\vulkan\cas.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
@@ -390,32 +387,83 @@
     <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
       <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\vulkan\tfx.glsl">
-      <Filter>System\Ps2\GS\Shaders\Vulkan</Filter>
+    <None Include="..\bin\resources\shaders\vulkan_opengl\tfx.glsl">
+      <Filter>System\Ps2\GS\Shaders\VulkanOpenGL</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\convert.fx">
+    <None Include="..\bin\resources\shaders\dx\convert.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\imgui.fx">
+    <None Include="..\bin\resources\shaders\dx\imgui.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\interlace.fx">
+    <None Include="..\bin\resources\shaders\dx\interlace.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\merge.fx">
+    <None Include="..\bin\resources\shaders\dx\merge.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\present.fx">
+    <None Include="..\bin\resources\shaders\dx\present.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx">
+    <None Include="..\bin\resources\shaders\dx\shadeboost.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\tfx.fx">
+    <None Include="..\bin\resources\shaders\dx\tfx.fx">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
     </None>
-    <None Include="..\bin\resources\shaders\dx11\cas.hlsl">
+    <None Include="..\bin\resources\shaders\dx\cas.hlsl">
       <Filter>System\Ps2\GS\Shaders\Direct3D</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\ffx_a.h">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\ffx_cas.h">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_defs.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_atst.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_blend.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_color.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fetch.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_fog.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_header.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_main.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_post.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_sample_af.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_tfx.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps_util.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_ps.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
+    </None>
+    <None Include="..\bin\resources\shaders\common\tfx_vs.inc">
+      <Filter>System\Ps2\GS\Shaders\Common</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

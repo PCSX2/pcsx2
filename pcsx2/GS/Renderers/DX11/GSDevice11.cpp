@@ -212,9 +212,20 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	SetFeatures(dxgi_adapter.get());
 
-	std::optional<std::string> shader = ReadShaderSource("shaders/dx11/tfx.fx");
+	// TFX
+	std::optional<std::string> shader = ReadShaderSource("shaders/dx/tfx.fx");
 	if (!shader.has_value())
+	{
+		Host::ReportErrorAsync("GS", "Failed to read shaders/dx/tfx.fx.");
 		return false;
+	}
+
+	if (!GetTFXShaderSource(&*shader))
+	{
+		Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
+		return false;
+	}
+
 	m_tfx_source = std::move(*shader);
 
 	// convert
@@ -226,7 +237,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
-	const std::optional<std::string> convert_hlsl = ReadShaderSource("shaders/dx11/convert.fx");
+	const std::optional<std::string> convert_hlsl = ReadShaderSource("shaders/dx/convert.fx");
 	if (!convert_hlsl.has_value())
 		return false;
 	ShaderMacro sm_vs;
@@ -264,7 +275,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 			return false;
 	}
 
-	shader = ReadShaderSource("shaders/dx11/present.fx");
+	shader = ReadShaderSource("shaders/dx/present.fx");
 	if (!shader.has_value())
 		return false;
 	if (!m_shader_cache.GetVertexShaderAndInputLayout(m_dev.get(), m_present.vs.put(), m_present.il.put(),
@@ -316,7 +327,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_merge.cb.put());
 
-	shader = ReadShaderSource("shaders/dx11/merge.fx");
+	shader = ReadShaderSource("shaders/dx/merge.fx");
 	if (!shader.has_value())
 		return false;
 
@@ -351,7 +362,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_interlace.cb.put());
 
-	shader = ReadShaderSource("shaders/dx11/interlace.fx");
+	shader = ReadShaderSource("shaders/dx/interlace.fx");
 	if (!shader.has_value())
 		return false;
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
@@ -371,7 +382,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_shadeboost.cb.put());
 
-	shader = ReadShaderSource("shaders/dx11/shadeboost.fx");
+	shader = ReadShaderSource("shaders/dx/shadeboost.fx");
 	if (!shader.has_value())
 		return false;
 	m_shadeboost.ps = m_shader_cache.GetPixelShader(m_dev.get(), *shader, nullptr, "ps_main");
@@ -1992,11 +2003,12 @@ void GSDevice11::SetupVS(VSSelector sel, const GSHWDrawConfig::VSConstantBuffer*
 	{
 		ShaderMacro sm;
 
+		sm.AddMacro("PCSX2_DX11", 1);
 		sm.AddMacro("VERTEX_SHADER", 1);
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
 		sm.AddMacro("VS_IIP", sel.iip);
-		sm.AddMacro("VS_EXPAND", static_cast<int>(sel.expand));
+		sm.AddMacro("VS_EXPAND_TYPE", static_cast<int>(sel.expand));
 
 		static constexpr const D3D11_INPUT_ELEMENT_DESC layout[] =
 			{
@@ -2041,6 +2053,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 	{
 		ShaderMacro sm;
 
+		sm.AddMacro("PCSX2_DX11", 1);
 		sm.AddMacro("PIXEL_SHADER", 1);
 		sm.AddMacro("PS_HAS_CONSERVATIVE_DEPTH", m_conservative_depth);
 		sm.AddMacro("PS_DEPTH_FEEDBACK_SUPPORT", m_features.depth_feedback ? 1 : 2);
@@ -2073,7 +2086,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_SHUFFLE_ACROSS", sel.shuffle_across);
 		sm.AddMacro("PS_READ16_SRC", sel.real16src);
 		sm.AddMacro("PS_WRITE_RG", sel.write_rg);
-		sm.AddMacro("PS_CHANNEL_FETCH", sel.channel);
+		sm.AddMacro("PS_CHANNEL", sel.channel);
 		sm.AddMacro("PS_TALES_OF_ABYSS_HLE", sel.tales_of_abyss_hle);
 		sm.AddMacro("PS_URBAN_CHAOS_HLE", sel.urban_chaos_hle);
 		sm.AddMacro("PS_DST_FMT", sel.dst_fmt);
@@ -2104,7 +2117,7 @@ void GSDevice11::SetupPS(const PSSelector& sel, const GSHWDrawConfig::PSConstant
 		sm.AddMacro("PS_ZTST", sel.ztst);
 		sm.AddMacro("PS_AA1", static_cast<u32>(sel.aa1));
 		sm.AddMacro("PS_ABE", sel.abe);
-		sm.AddMacro("PS_ANISOTROPIC_FILTERING", sel.sw_aniso);
+		sm.AddMacro("PS_SW_ANISO", sel.sw_aniso);
 		sm.AddMacro("PS_ROV_COLOR", sel.rov_color);
 		sm.AddMacro("PS_ROV_DEPTH", static_cast<u32>(sel.rov_depth));
 
@@ -2277,7 +2290,7 @@ bool GSDevice11::CreateCASShaders()
 	if (FAILED(hr))
 		return false;
 
-	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx11/cas.hlsl");
+	std::optional<std::string> cas_source = ReadShaderSource("shaders/dx/cas.hlsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
 		return false;
 
@@ -2327,7 +2340,7 @@ bool GSDevice11::CreateImGuiResources()
 {
 	HRESULT hr;
 
-	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx11/imgui.fx");
+	const std::optional<std::string> hlsl = ReadShaderSource("shaders/dx/imgui.fx");
 	if (!hlsl.has_value())
 	{
 		Console.Error("D3D11: Failed to read imgui.fx");
