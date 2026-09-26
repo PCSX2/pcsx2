@@ -187,16 +187,12 @@ void _vuFlushAll(VURegs* VU)
 
 __fi void _vuTestPipes(VURegs* VU)
 {
-	bool flushed;
-
-	do
-	{
-		flushed = false;
-		flushed |= _vuFMACflush(VU);
-		flushed |= _vuFDIVflush(VU);
-		flushed |= _vuEFUflush(VU);
-		flushed |= _vuIALUflush(VU);
-	} while (flushed == true);
+	// Each flush retires everything that is ready at the current cycle, and none of them change
+	// VU->cycle or depend on another pipe, so a second pass would never flush anything more.
+	_vuFMACflush(VU);
+	_vuFDIVflush(VU);
+	_vuEFUflush(VU);
+	_vuIALUflush(VU);
 
 	if (VU == &VU1)
 	{
@@ -1871,10 +1867,22 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 		}
 		else*/
 		//{
+		if (THREAD_VU1)
+		{
+			// Same as microVU on the MTVU thread: only hand the packet over to the GIF once it is complete.
+			if ((transfersize * 0x10) < VU1.xgkicksizeremaining)
+				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+			else
+				gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		}
+		else
+		{
 			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		}
 		//}
 
-		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
+		// VU1 is always running here with MTVU, VPU_STAT is owned by the EE thread.
+		if ((THREAD_VU1 || (VU0.VI[REG_VPU_STAT].UL & 0x100)) && flush)
 			VU1.cycle += transfersize * 2;
 
 		VU1.xgkickcyclecount -= transfersize * 2;
@@ -1889,12 +1897,15 @@ void _vuXGKICKTransfer(s32 cycles, bool flush)
 		{
 			VUM_LOG("XGKICK transfer finished");
 			VU1.xgkickenable = false;
-			VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
-			// Check if VIF is waiting for the GIF to not be busy
-			if (vif1Regs.stat.VGW)
+			if (!THREAD_VU1)
 			{
-				vif1Regs.stat.VGW = false;
-				CPU_INT(DMAC_VIF1, 8);
+				VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
+				// Check if VIF is waiting for the GIF to not be busy
+				if (vif1Regs.stat.VGW)
+				{
+					vif1Regs.stat.VGW = false;
+					CPU_INT(DMAC_VIF1, 8);
+				}
 			}
 		}
 	}
@@ -1923,7 +1934,8 @@ static __ri void _vuXGKICK(VURegs* VU)
 	// XGKick command counts as one cycle for the transfer.
 	// Can be tested with Resident Evil: Outbreak, Kingdom Hearts, CART Fury.
 	VU->xgkickcyclecount = 1;
-	VU0.VI[REG_VPU_STAT].UL |= (1 << 12);
+	if (!THREAD_VU1)
+		VU0.VI[REG_VPU_STAT].UL |= (1 << 12);
 	VUM_LOG("XGKICK addr %x", addr);
 }
 

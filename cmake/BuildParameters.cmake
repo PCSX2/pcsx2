@@ -22,7 +22,12 @@ if(NOT (WIN32 AND ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYST
 	if(NOT APPLE)
 		option(USE_OPENGL "Enable OpenGL GS renderer" ON)
 	endif()
-	option(USE_VULKAN "Enable Vulkan GS renderer" ON)
+	if(APPLE)
+		# Metal is the native renderer on macOS; Vulkan (via MoltenVK) is opt-in.
+		option(USE_VULKAN "Enable Vulkan GS renderer" OFF)
+	else()
+		option(USE_VULKAN "Enable Vulkan GS renderer" ON)
+	endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -229,6 +234,13 @@ endif()
 
 if(USE_OPENGL)
 	list(APPEND PCSX2_DEFS ENABLE_OPENGL)
+endif()
+
+# DLSS-NR post-processing filter through libframe (3rdparty/dlss-nr-on-vulkan). Off by default:
+# the build embeds model weights that you supply yourself, and such a build can't be redistributed.
+option(USE_DLSSNR "Build the DLSS-NR post-processing filter (3rdparty/dlss-nr-on-vulkan, your own weights)" OFF)
+if(USE_DLSSNR)
+	list(APPEND PCSX2_DEFS ENABLE_DLSSNR)
 endif()
 
 if(USE_VULKAN)

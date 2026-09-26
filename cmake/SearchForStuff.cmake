@@ -94,6 +94,37 @@ if(USE_OPENGL)
 	add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
 endif()
 
+if(USE_DLSSNR)
+	# Links the prebuilt libdlssnr.a (the compute runtime, frame library and weights in one static archive),
+	# built separately from 3rdparty/dlss-nr-on-vulkan, e.g.:
+	#   cmake -S 3rdparty/dlss-nr-on-vulkan -B 3rdparty/dlss-nr-on-vulkan/build -DNR_BUILD_TESTS=OFF -DNR_BUILD_LAYER=OFF
+	#   cmake --build 3rdparty/dlss-nr-on-vulkan/build --target dlssnr
+	set(DLSSNR_ROOT "${CMAKE_SOURCE_DIR}/3rdparty/dlss-nr-on-vulkan")
+	find_library(DLSSNR_LIBRARY NAMES libdlssnr.a
+		HINTS "${DLSSNR_ROOT}/build" "${DLSSNR_ROOT}/work"
+		DOC "Prebuilt libdlssnr.a")
+	find_path(DLSSNR_INCLUDE_DIR nr_frame.h
+		HINTS "${DLSSNR_ROOT}/src/ref"
+		DOC "Directory containing nr_frame.h")
+	if(NOT DLSSNR_LIBRARY OR NOT DLSSNR_INCLUDE_DIR)
+		message(FATAL_ERROR "USE_DLSSNR needs a prebuilt libdlssnr.a and nr_frame.h. Build the dlssnr target of "
+			"3rdparty/dlss-nr-on-vulkan (into its build/ directory), or pass -DDLSSNR_LIBRARY= and -DDLSSNR_INCLUDE_DIR=.")
+	endif()
+	message(STATUS "Using libdlssnr: ${DLSSNR_LIBRARY}")
+
+	add_library(dlssnr STATIC IMPORTED GLOBAL)
+	set_target_properties(dlssnr PROPERTIES
+		IMPORTED_LOCATION "${DLSSNR_LIBRARY}"
+		INTERFACE_INCLUDE_DIRECTORIES "${DLSSNR_INCLUDE_DIR}")
+	# A static archive doesn't carry its dependencies: the Apple build is libmetalmx (Metal, Objective-C).
+	if(APPLE)
+		set_property(TARGET dlssnr APPEND PROPERTY INTERFACE_LINK_LIBRARIES "-framework Metal" "-framework Foundation")
+	endif()
+	if(CMAKE_DL_LIBS)
+		set_property(TARGET dlssnr APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${CMAKE_DL_LIBS})
+	endif()
+endif()
+
 if(USE_VULKAN)
 	add_subdirectory(3rdparty/vulkan EXCLUDE_FROM_ALL)
 endif()

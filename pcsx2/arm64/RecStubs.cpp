@@ -12,19 +12,3 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 {
   pxFailRel("Not implemented.");
 }
-
-bool SaveStateBase::vuJITFreeze()
-{
-	if(IsSaving())
-		vu1Thread.WaitVU();
-
-	Console.Warning("recompiler state is stubbed in arm64!");
-
-	// HACK!!
-
-	// size of microRegInfo structure
-	std::array<u8,96> empty_data{};
-	Freeze(empty_data);
-	Freeze(empty_data);
-	return true;
-}

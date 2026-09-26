@@ -26,6 +26,9 @@ GSTextureMTL::GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, M
 }
 GSTextureMTL::~GSTextureMTL()
 {
+	// Metal 4 doesn't retain resources used by in-flight command buffers
+	m_dev->DeferRelease(m_texture, true);
+	m_dev->DeferRelease(m_rov_texture, false);
 }
 
 void GSTextureMTL::FlushClears()
@@ -84,7 +87,7 @@ void* GSTextureMTL::MapWithPitch(const GSVector4i& r, int pitch, int layer)
 		needs_clear = r.left > 0 || r.top > 0 || r.right < m_size.x || r.bottom < m_size.y;
 	}
 
-	id<MTLBlitCommandEncoder> enc;
+	GSMTLBlitEncoder* enc;
 	if (m_last_read == m_dev->m_current_draw || needs_clear)
 	{
 		if (needs_clear)
@@ -92,24 +95,21 @@ void* GSTextureMTL::MapWithPitch(const GSVector4i& r, int pitch, int layer)
 			m_state = GSTexture::State::Cleared;
 			m_dev->BeginRenderPass(@"Pre-Upload Clear", this, MTLLoadActionLoad, nullptr, MTLLoadActionDontCare);
 		}
-		enc = m_dev->GetLateTextureUploadEncoder();
+		enc = &m_dev->GetLateTextureUploadEncoder();
 		map = m_dev->Allocate(m_dev->m_vertex_upload_buf, size);
 	}
 	else
 	{
-		enc = m_dev->GetTextureUploadEncoder();
+		enc = &m_dev->GetTextureUploadEncoder();
 		map = m_dev->Allocate(m_dev->m_texture_upload_buf, size);
 	}
+	// Metal 4 copies within an encoder can run concurrently, keep writes to the same texture in order
+	if (m_last_upload_encoder == enc->Serial())
+		enc->Barrier();
+	m_last_upload_encoder = enc->Serial();
 	// Copy is scheduled now, won't happen until the encoder is committed so no problems with ordering
-	[enc copyFromBuffer:map.gpu_buffer
-	       sourceOffset:map.gpu_offset
-	  sourceBytesPerRow:pitch
-	sourceBytesPerImage:size
-	         sourceSize:MTLSizeMake(r.width(), r.height(), 1)
-	          toTexture:m_texture
-	   destinationSlice:0
-	   destinationLevel:layer
-	  destinationOrigin:MTLOriginMake(r.x, r.y, 0)];
+	enc->CopyBufferToTexture(map.gpu_buffer, map.gpu_offset, pitch, size, MTLSizeMake(r.width(), r.height(), 1),
+		m_texture, layer, MTLOriginMake(r.x, r.y, 0));
 
 	g_perfmon.Put(GSPerfMon::TextureUploads, 1);
 	return map.cpu_buffer;
@@ -124,8 +124,11 @@ void GSTextureMTL::GenerateMipmap()
 { @autoreleasepool {
 	if (m_mipmap_levels > 1 && !m_has_mipmaps)
 	{
-		id<MTLBlitCommandEncoder> enc = m_dev->GetTextureUploadEncoder();
-		[enc generateMipmapsForTexture:m_texture];
+		GSMTLBlitEncoder& enc = m_dev->GetTextureUploadEncoder();
+		if (m_last_upload_encoder == enc.Serial())
+			enc.Barrier();
+		m_last_upload_encoder = enc.Serial();
+		enc.GenerateMipmaps(m_texture);
 	}
 }}
 
@@ -160,7 +163,10 @@ GSDownloadTextureMTL::GSDownloadTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLBuff
 	m_map_pointer = static_cast<const u8*>([m_buffer contents]);
 }
 
-GSDownloadTextureMTL::~GSDownloadTextureMTL() = default;
+GSDownloadTextureMTL::~GSDownloadTextureMTL()
+{
+	m_dev->DeferRelease(m_buffer, true);
+}
 
 std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* dev, u32 width, u32 height, GSTexture::Format format)
 { @autoreleasepool {
@@ -172,6 +178,7 @@ std::unique_ptr<GSDownloadTextureMTL> GSDownloadTextureMTL::Create(GSDeviceMTL* 
 		Console.Error("Failed to allocate %u byte download texture buffer (out of memory?)", buffer_size);
 		return {};
 	}
+	dev->MakeResident(buffer);
 
 	return std::unique_ptr<GSDownloadTextureMTL>(new GSDownloadTextureMTL(dev, buffer, width, height, format));
 }}
@@ -197,25 +204,20 @@ void GSDownloadTextureMTL::CopyFromTexture(
 	m_dev->EndRenderPass();
 	g_perfmon.Put(GSPerfMon::Readbacks, 1);
 
-	m_copy_cmdbuffer = MRCRetain(m_dev->GetRenderCmdBuf());
+	m_dev->EnsureRenderCmdBuf();
+	m_copy_cmdbuffer = MRCRetain(m_dev->GetRenderCmdBufWithoutCreate());
+	m_copy_draw = m_dev->m_current_draw;
 
-	[m_copy_cmdbuffer pushDebugGroup:@"GSDownloadTextureMTL::CopyFromTexture"];
-	id<MTLBlitCommandEncoder> encoder = [m_copy_cmdbuffer blitCommandEncoder];
-	[encoder copyFromTexture:mtlTex->GetTexture()
-	             sourceSlice:0
-	             sourceLevel:src_level
-	            sourceOrigin:MTLOriginMake(src.x, src.y, 0)
-	              sourceSize:MTLSizeMake(src.width(), src.height(), 1)
-	                toBuffer:m_buffer
-	       destinationOffset:copy_offset
-	  destinationBytesPerRow:m_current_pitch
-	destinationBytesPerImage:m_current_pitch * copy_rows];
+	m_dev->PushCmdBufDebugGroup(@"GSDownloadTextureMTL::CopyFromTexture");
+	GSMTLBlitEncoder encoder = m_dev->CreateBlitEncoder();
+	encoder.CopyTextureToBuffer(mtlTex->GetTexture(), src_level, MTLOriginMake(src.x, src.y, 0), MTLSizeMake(src.width(), src.height(), 1),
+		m_buffer, copy_offset, m_current_pitch, m_current_pitch * copy_rows);
 
 	if (id<MTLFence> fence = m_dev->GetSpinFence())
-		[encoder updateFence:fence];
+		encoder.UpdateFence(fence);
 
-	[encoder endEncoding];
-	[m_copy_cmdbuffer popDebugGroup];
+	encoder.End();
+	m_dev->PopCmdBufDebugGroup();
 
 	m_needs_flush = true;
 }}
@@ -237,6 +239,15 @@ void GSDownloadTextureMTL::Flush()
 		return;
 
 	m_needs_flush = false;
+
+	if (m_dev->m_use_mtl4)
+	{
+		// Metal 4 command buffers have no status, wait for the draw's completion event instead
+		if (m_copy_draw == m_dev->m_current_draw)
+			m_dev->FlushEncodersForReadback();
+		m_dev->WaitForDraw(m_copy_draw, GSConfig.HWSpinCPUForReadbacks);
+		return;
+	}
 
 	// If it's the same buffer currently being encoded, we need to kick it (and spin).
 	if (m_copy_cmdbuffer == m_dev->GetRenderCmdBufWithoutCreate())

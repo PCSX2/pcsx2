@@ -21,6 +21,7 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/QuartzCore.h>
 #include <atomic>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -117,22 +118,85 @@ struct std::hash<PipelineSelectorMTL>
 	}
 };
 
-class GSScopedDebugGroupMTL
-{
-	id<MTLCommandBuffer> m_buffer;
-public:
-	GSScopedDebugGroupMTL(id<MTLCommandBuffer> buffer, NSString* name): m_buffer(buffer)
-	{
-		[m_buffer pushDebugGroup:name];
-	}
-	~GSScopedDebugGroupMTL()
-	{
-		[m_buffer popDebugGroup];
-	}
-};
-
 struct ImDrawData;
 class GSTextureMTL;
+class GSDeviceMTL;
+
+// Metal 4 objects are only ever created after checking @available(macOS 26.0, *) and device support (see
+// GSDeviceMTL::Create), so code that only runs when they exist doesn't need its own availability checks.
+#define GSMTL4_BEGIN \
+	_Pragma("clang diagnostic push") \
+	_Pragma("clang diagnostic ignored \"-Wunguarded-availability\"") \
+	_Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"")
+#define GSMTL4_END _Pragma("clang diagnostic pop")
+
+GSMTL4_BEGIN
+
+/// Render command encoder that is either a Metal 3 MTLRenderCommandEncoder or a Metal 4 MTL4RenderCommandEncoder.
+/// On Metal 4, resources are bound through the device's argument tables and inline bytes go through the upload buffer.
+class GSMTLRenderEncoder
+{
+	friend class GSDeviceMTL;
+	GSDeviceMTL* m_dev = nullptr;
+	MRCOwned<id<MTLRenderCommandEncoder>> m_enc;
+	MRCOwned<id<MTL4RenderCommandEncoder>> m_enc4;
+
+public:
+	explicit operator bool() const { return m_enc || m_enc4; }
+	bool operator!() const { return !m_enc && !m_enc4; }
+
+	void SetLabel(NSString* label);
+	void PushDebugGroup(NSString* name);
+	void PopDebugGroup();
+	void InsertDebugSignpost(NSString* name);
+	void SetPipeline(id<MTLRenderPipelineState> pipe);
+	void SetDepthStencilState(id<MTLDepthStencilState> dss);
+	void SetStencilReferenceValue(u32 value);
+	void SetScissor(const MTLScissorRect& rect);
+	void SetBlendColor(float color);
+	void SetVertexBytes(const void* data, size_t length, u32 index);
+	void SetFragmentBytes(const void* data, size_t length, u32 index);
+	void SetVertexBuffer(id<MTLBuffer> buffer, size_t offset, u32 index);
+	/// Change the offset of an already bound vertex buffer (Metal 4 needs the buffer again to compute the address)
+	void SetVertexBufferOffset(id<MTLBuffer> buffer, size_t offset, u32 index);
+	void SetFragmentTexture(id<MTLTexture> texture, u32 index);
+	void SetFragmentSampler(id<MTLSamplerState> sampler, u32 index);
+	void Draw(MTLPrimitiveType type, size_t start, size_t count);
+	void DrawIndexed(MTLPrimitiveType type, size_t count, MTLIndexType index_type, id<MTLBuffer> buffer, size_t offset, size_t base_vertex = 0);
+	/// Barrier between fragment work of previous draws and subsequent draws (for reading the render target as a texture)
+	void TextureBarrier();
+	void WaitForFence(id<MTLFence> fence, MTLRenderStages stages);
+	void UpdateFence(id<MTLFence> fence, MTLRenderStages stages);
+	void End();
+};
+
+/// Blit encoder, which is a Metal 3 MTLBlitCommandEncoder or a Metal 4 MTL4ComputeCommandEncoder (used for copies only).
+class GSMTLBlitEncoder
+{
+	friend class GSDeviceMTL;
+	MRCOwned<id<MTLBlitCommandEncoder>> m_enc;
+	MRCOwned<id<MTL4ComputeCommandEncoder>> m_enc4;
+	u64 m_serial = 0;
+
+public:
+	explicit operator bool() const { return m_enc || m_enc4; }
+	bool operator!() const { return !m_enc && !m_enc4; }
+	/// Unique ID of this encoder, used to detect multiple writes to the same texture within one Metal 4 encoder
+	u64 Serial() const { return m_serial; }
+
+	void SetLabel(NSString* label);
+	void CopyBufferToTexture(id<MTLBuffer> buffer, size_t offset, size_t bytes_per_row, size_t bytes_per_image, MTLSize size, id<MTLTexture> texture, u32 level, MTLOrigin origin);
+	void CopyTextureToBuffer(id<MTLTexture> texture, u32 level, MTLOrigin origin, MTLSize size, id<MTLBuffer> buffer, size_t offset, size_t bytes_per_row, size_t bytes_per_image);
+	void CopyTexture(id<MTLTexture> src, MTLOrigin src_origin, MTLSize size, id<MTLTexture> dst, MTLOrigin dst_origin);
+	void GenerateMipmaps(id<MTLTexture> texture);
+	/// Metal 4 has no hazard tracking within an encoder, this orders copies that touch the same resource
+	void Barrier();
+	void WaitForFence(id<MTLFence> fence);
+	void UpdateFence(id<MTLFence> fence);
+	void End();
+};
+
+GSMTL4_END
 
 class GSDeviceMTL final : public GSDevice
 {
@@ -219,6 +283,41 @@ public:
 	GSMTLDevice m_dev;
 	MRCOwned<id<MTLCommandQueue>> m_queue;
 	MRCOwned<id<MTLFence>> m_draw_sync_fence;
+
+	/// Whether the Metal 4 command queue is in use (all MTL4 objects below are nil otherwise)
+	bool m_use_mtl4 = false;
+GSMTL4_BEGIN
+	struct MTL4State
+	{
+		struct Allocator
+		{
+			u64 draw; ///< Last draw that used this allocator, reset once it completes
+			MRCOwned<id<MTL4CommandAllocator>> allocator;
+		};
+		struct DeferredRelease
+		{
+			u64 draw; ///< Release once this draw completes
+			MRCOwned<id> object;
+			bool resident;
+		};
+		MRCOwned<id<MTL4CommandQueue>> queue;
+		MRCOwned<id<MTLSharedEvent>> event; ///< Signaled with the draw number after each submission
+		MRCOwned<id<MTLResidencySet>> residency;
+		MRCOwned<id<MTLResidencySet>> layer_residency; ///< CAMetalLayer drawables, attached to the queue
+		MRCOwned<id<MTL4ArgumentTable>> vertex_table;
+		MRCOwned<id<MTL4ArgumentTable>> fragment_table;
+		MRCOwned<id<MTL4ArgumentTable>> compute_table;
+		MRCOwned<MTL4RenderPassDescriptor*> pass_desc;
+		MRCOwned<id<MTL4CommandBuffer>> render_cmdbuf;
+		MRCOwned<id<MTL4CommandBuffer>> upload_cmdbuf;
+		std::vector<Allocator> allocators_in_use;
+		std::vector<MRCOwned<id<MTL4CommandAllocator>>> free_allocators;
+		std::deque<DeferredRelease> deferred_releases;
+		bool residency_dirty = false;
+	} m_mtl4;
+GSMTL4_END
+	/// Blit encoders get a unique serial so Metal 4 texture uploads know when they need an intra-encoder barrier
+	u64 m_blit_encoder_serial = 0;
 	MRCOwned<MTLFunctionConstantValues*> m_fn_constants;
 	MRCOwned<MTLVertexDescriptor*> m_hw_vertex;
 	MTLResourceOptions m_resource_options_shared_wc;
@@ -295,7 +394,7 @@ public:
 	MRCOwned<id<MTLCommandBuffer>> m_current_render_cmdbuf;
 	struct MainRenderEncoder
 	{
-		MRCOwned<id<MTLRenderCommandEncoder>> encoder;
+		GSMTLRenderEncoder encoder;
 		GSTexture* color_target = nullptr;
 		GSTexture* depth_target = nullptr;
 		GSTexture* stencil_target = nullptr;
@@ -327,8 +426,8 @@ public:
 		bool is_full_rov() const { return encoder && !color_target && !depth_target && !stencil_target; }
 	} m_current_render;
 	MRCOwned<id<MTLCommandBuffer>> m_texture_upload_cmdbuf;
-	MRCOwned<id<MTLBlitCommandEncoder>> m_texture_upload_encoder;
-	MRCOwned<id<MTLBlitCommandEncoder>> m_late_texture_upload_encoder;
+	GSMTLBlitEncoder m_texture_upload_encoder;
+	GSMTLBlitEncoder m_late_texture_upload_encoder;
 	MRCOwned<id<MTLCommandBuffer>> m_vertex_upload_cmdbuf;
 	MRCOwned<id<MTLBlitCommandEncoder>> m_vertex_upload_encoder;
 	id<MTLTexture> m_ds_as_rt_texture = nil;
@@ -356,21 +455,61 @@ public:
 	/// Enqueue upload of any outstanding data
 	void Sync(BufferPair& buffer);
 	/// Get the texture upload encoder, creating a new one if it doesn't exist
-	id<MTLBlitCommandEncoder> GetTextureUploadEncoder();
+	GSMTLBlitEncoder& GetTextureUploadEncoder();
 	/// Get the late texture upload encoder, creating a new one if it doesn't exist
-	id<MTLBlitCommandEncoder> GetLateTextureUploadEncoder();
+	GSMTLBlitEncoder& GetLateTextureUploadEncoder();
 	/// Get the vertex upload encoder, creating a new one if it doesn't exist
 	id<MTLBlitCommandEncoder> GetVertexUploadEncoder();
-	/// Get the render command buffer, creating a new one if it doesn't exist
+	/// Get the render command buffer, creating a new one if it doesn't exist (Metal 3 only)
 	id<MTLCommandBuffer> GetRenderCmdBuf();
-	/// Get the render command buffer, will not create a new one if it doesn't exist.
+	/// Get the render command buffer, will not create a new one if it doesn't exist (Metal 3 only)
 	id<MTLCommandBuffer> GetRenderCmdBufWithoutCreate();
+	/// Make sure there's a render command buffer to encode into
+	void EnsureRenderCmdBuf();
+	/// Create a new render encoder on the render command buffer
+	GSMTLRenderEncoder CreateRenderEncoder(MTLRenderPassDescriptor* desc);
+	/// Create a new blit encoder on the render command buffer
+	GSMTLBlitEncoder CreateBlitEncoder();
+	/// Push a debug group on the render command buffer
+	void PushCmdBufDebugGroup(NSString* name);
+	/// Pop a debug group from the render command buffer
+	void PopCmdBufDebugGroup();
 	/// Get the spin fence if spinning is enabled.
 	id<MTLFence> GetSpinFence();
 	/// Get the texture to use as RT1 depth for the given depth texture
 	id<MTLTexture> GetRT1DepthTexture(GSTextureMTL* depth);
 	/// Called by command buffers when they finish
-	void DrawCommandBufferFinished(u64 draw, id<MTLCommandBuffer> buffer);
+	void DrawCommandBufferFinished(u64 draw, double gpu_begin, double gpu_end);
+
+	// MARK: Metal 4 helpers
+	/// Check whether Metal 4 should be used for the given device
+	static bool ShouldUseMetal4(const GSMTLDevice& dev, const char** reason);
+	/// Create the Metal 4 queue and associated objects
+	bool CreateMetal4();
+	/// Release the Metal 4 objects (the GPU must be idle)
+	void DestroyMetal4();
+GSMTL4_BEGIN
+	/// Get an MTL4CommandAllocator that isn't being used by the GPU, the returned allocator is marked as in use by the current draw
+	id<MTL4CommandAllocator> GetMetal4Allocator();
+	/// Create and begin a new Metal 4 command buffer
+	MRCOwned<id<MTL4CommandBuffer>> NewMetal4CommandBuffer(NSString* label);
+	/// Commit Metal 4 command buffers and signal the current draw on completion
+	void CommitMetal4(id<MTL4CommandBuffer> const* cmdbufs, u32 count, MTL4CommitOptions* options);
+	/// Metal 4 version of FlushEncoders
+	void FlushEncodersMetal4();
+GSMTL4_END
+	/// Reset allocators and release resources the GPU is done with
+	void ReclaimMetal4Resources();
+	/// Make a resource resident for Metal 4 command buffers (no-op on Metal 3)
+	void MakeResident(id<MTLResource> resource);
+	/// Keep an object alive until the GPU is done with the current draw, removing it from the residency set if requested (no-op on Metal 3)
+	void DeferRelease(id object, bool resident);
+	/// Wait for the given draw to complete on the GPU
+	void WaitForDraw(u64 draw, bool spin);
+	/// Flush and wait for all submitted GPU work to complete
+	void WaitForGPUIdle();
+	/// Get the GPU address of the given offset within a Metal 4 upload allocation
+	static u64 GPUAddress(id<MTLBuffer> buffer, size_t offset);
 	/// Flush pending operations from all encoders to the GPU
 	void FlushEncoders();
 	/// Flush pending operations and spins the GPU for a download.
@@ -421,7 +560,7 @@ public:
 
 	bool SetGPUTimingEnabled(bool enabled) override;
 	float GetAndResetAccumulatedGPUTime() override;
-	void AccumulateCommandBufferTime(id<MTLCommandBuffer> buffer);
+	void AccumulateCommandBufferTime(double begin, double end);
 
 	bool SetGPUPipelineStatisticsEnabled(bool enabled) override { return false; }
 	GPUPipelineStatistics GetAndResetAccumulatedGPUPipelineStatistics() override { return {}; }
@@ -467,7 +606,7 @@ public:
 	void SetupDestinationAlpha(GSTexture* rt, GSTexture* ds, const GSVector4i& r, SetDATM datm);
 	void PrepareROVTexture(GSTexture** ptex);
 	void RenderHW(GSHWDrawConfig& config) override;
-	void SendHWDraw(GSHWDrawConfig& config, id<MTLRenderCommandEncoder> enc, id<MTLBuffer> buffer, size_t off,
+	void SendHWDraw(GSHWDrawConfig& config, GSMTLRenderEncoder& enc, id<MTLBuffer> buffer, size_t off,
 		bool one_barrier, bool full_barrier);
 
 	// MARK: Debug
@@ -475,9 +614,9 @@ public:
 	void PushDebugGroup(const char* fmt, ...) override;
 	void PopDebugGroup() override;
 	void InsertDebugMessage(DebugMessageCategory category, const char* fmt, ...) override;
-	void ProcessDebugEntry(id<MTLCommandEncoder> enc, const DebugEntry& entry);
-	void FlushDebugEntries(id<MTLCommandEncoder> enc);
-	void EndDebugGroup(id<MTLCommandEncoder> enc);
+	void ProcessDebugEntry(GSMTLRenderEncoder& enc, const DebugEntry& entry);
+	void FlushDebugEntries(GSMTLRenderEncoder& enc);
+	void EndDebugGroup(GSMTLRenderEncoder& enc);
 
 	// MARK: ImGui
 
@@ -488,6 +627,20 @@ protected:
 	using GSDevice::DoStretchRect; // Suppress overloaded virtual function warning
 	virtual void DoStretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect,
 		ShaderConvertSelector shader, Filter filter) override;
+};
+
+class GSScopedDebugGroupMTL
+{
+	GSDeviceMTL* m_dev;
+public:
+	GSScopedDebugGroupMTL(GSDeviceMTL* dev, NSString* name): m_dev(dev)
+	{
+		m_dev->PushCmdBufDebugGroup(name);
+	}
+	~GSScopedDebugGroupMTL()
+	{
+		m_dev->PopCmdBufDebugGroup();
+	}
 };
 
 static constexpr bool IsCommandBufferCompleted(MTLCommandBufferStatus status)

@@ -80,11 +80,15 @@ static RenderAPI GetAPIForRenderer(GSRendererType renderer)
 {
 	switch (renderer)
 	{
+#ifdef ENABLE_OPENGL
 		case GSRendererType::OGL:
 			return RenderAPI::OpenGL;
+#endif
 
+#ifdef ENABLE_VULKAN
 		case GSRendererType::VK:
 			return RenderAPI::Vulkan;
+#endif
 
 #ifdef _WIN32
 		case GSRendererType::DX11:

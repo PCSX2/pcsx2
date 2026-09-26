@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/Renderers/Common/GSDLSSNR.h"
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "GS/GSUtil.h"
@@ -1004,6 +1005,10 @@ void GSDevice::ClearCurrent()
 	delete m_mad;
 	delete m_target_tmp;
 	delete m_cas;
+	delete m_dlssnr_small;
+	delete m_dlssnr_upload;
+	delete m_dlssnr_output;
+	m_dlssnr_download.reset();
 
 	m_merge = nullptr;
 	m_weavebob = nullptr;
@@ -1011,6 +1016,9 @@ void GSDevice::ClearCurrent()
 	m_mad = nullptr;
 	m_target_tmp = nullptr;
 	m_cas = nullptr;
+	m_dlssnr_small = nullptr;
+	m_dlssnr_upload = nullptr;
+	m_dlssnr_output = nullptr;
 }
 
 void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, const GSVector2i& fs, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, u32 c)
@@ -1098,6 +1106,73 @@ void GSDevice::FXAA()
 		DoFXAA(m_current, dTex);
 		m_current = dTex;
 	}
+}
+
+void GSDevice::DLSSNR()
+{
+	// Reads the frame back, runs it through the model on the CPU-visible path, and uploads the
+	// result. Synchronous, so it stalls the GPU every frame. Needs proper testing.
+	if (!m_current || !GSDLSSNR::IsAvailable())
+		return;
+
+	const int width = m_current->GetWidth();
+	const int height = m_current->GetHeight();
+
+	// The network is expensive, so run it at no more than the configured height.
+	int filter_width = width;
+	int filter_height = height;
+	const int max_height = GSConfig.DLSSNR_MaxHeight;
+	if (max_height > 0 && height > max_height)
+	{
+		filter_height = max_height;
+		filter_width = std::max(1, (width * max_height + height / 2) / height);
+	}
+
+	GSTexture* source = m_current;
+	if (filter_width != width || filter_height != height)
+	{
+		if (!ResizeRenderTarget(&m_dlssnr_small, filter_width, filter_height, false, false))
+			return;
+		StretchRect(m_current, m_dlssnr_small, ShaderConvert::COPY, Filter::Biln);
+		source = m_dlssnr_small;
+	}
+
+	if (!m_dlssnr_download || m_dlssnr_download->GetWidth() != static_cast<u32>(filter_width) ||
+		m_dlssnr_download->GetHeight() != static_cast<u32>(filter_height))
+	{
+		m_dlssnr_download = CreateDownloadTexture(filter_width, filter_height, GSTexture::Format::Color);
+		if (!m_dlssnr_download)
+			return;
+		GSDLSSNR::ResetHistory();
+	}
+
+	const GSVector4i rc(0, 0, filter_width, filter_height);
+	const u32 stride = static_cast<u32>(filter_width) * 4;
+	m_dlssnr_pixels.resize(static_cast<size_t>(stride) * filter_height);
+	m_dlssnr_download->CopyFromTexture(rc, source, rc, 0, true);
+	if (!m_dlssnr_download->ReadTexels(rc, m_dlssnr_pixels.data(), stride))
+		return;
+
+	if (!GSDLSSNR::Process(m_dlssnr_pixels.data(), filter_width, filter_height, stride,
+			static_cast<float>(GSConfig.DLSSNR_Intensity) * (1.0f / 100.0f)))
+	{
+		return;
+	}
+
+	if (!m_dlssnr_upload || m_dlssnr_upload->GetWidth() != filter_width || m_dlssnr_upload->GetHeight() != filter_height)
+	{
+		delete m_dlssnr_upload;
+		m_dlssnr_upload = CreateTexture(filter_width, filter_height, 1, GSTexture::Format::Color);
+		if (!m_dlssnr_upload)
+			return;
+	}
+	if (!m_dlssnr_upload->Update(rc, m_dlssnr_pixels.data(), static_cast<int>(stride)))
+		return;
+
+	if (!ResizeRenderTarget(&m_dlssnr_output, width, height, false, false))
+		return;
+	StretchRect(m_dlssnr_upload, m_dlssnr_output, ShaderConvert::COPY, Filter::Biln);
+	m_current = m_dlssnr_output;
 }
 
 void GSDevice::ShadeBoost()
