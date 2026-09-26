@@ -155,13 +155,12 @@ ProcessedVertex load_vertex(uint index)
 	RawVertex rvtx = vertex_buffer[BaseVertex + index];
 
 	vec2 i_st = rvtx.ST;
-	vec4 i_c = vec4(uvec4(bitfieldExtract(rvtx.RGBA, 0, 8), bitfieldExtract(rvtx.RGBA, 8, 8),
-	                      bitfieldExtract(rvtx.RGBA, 16, 8), bitfieldExtract(rvtx.RGBA, 24, 8)));
+	vec4 i_c = vec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24);
 	float i_q = rvtx.Q;
-	uvec2 i_p = uvec2(bitfieldExtract(rvtx.XY, 0, 16), bitfieldExtract(rvtx.XY, 16, 16));
+	uvec2 i_p = uvec2(rvtx.XY & 0xFFFFu, rvtx.XY >> 16);
 	uint i_z = rvtx.Z;
-	uvec2 i_uv = uvec2(bitfieldExtract(rvtx.UV, 0, 16), bitfieldExtract(rvtx.UV, 16, 16));
-	vec4 i_f = unpackUnorm4x8(rvtx.FOG);
+	uvec2 i_uv = uvec2(rvtx.UV & 0xFFFFu, rvtx.UV >> 16);
+	vec4 i_f = vec4(float(rvtx.FOG & 0xFFu), vec3(0.0f)) / 255.0f;
 
 	ProcessedVertex vtx;
 
@@ -373,34 +372,34 @@ void main()
 	// - Vertices 27-32: Second corner cap (2 triangles).
 	// - Vertices 33-38: Third corner cap (2 triangles).
 
-	uint prim_id = vid / 39;
-	uint prim_offset = vid - 39 * prim_id; // range: 0-38
-	bool interior = prim_offset < 3;
-	bool edge = 3 <= prim_offset && prim_offset < 21;
+	uint prim_id = vid / 39u;
+	uint prim_offset = vid - 39u * prim_id; // range: 0-38
+	bool interior = prim_offset < 3u;
+	bool edge = 3u <= prim_offset && prim_offset < 21u;
 
 	if (interior)
 	{
-		vtx = load_vertex(load_index(3 * prim_id + prim_offset));
+		vtx = load_vertex(load_index(3u * prim_id + prim_offset));
 		VSout.inv_cov = 0.0f; // Full coverage
-		VSout.interior = 1;
+		VSout.interior = 1u;
 	}
 	else if (edge)
 	{
 		// Vertex indices for this edge. We need all 3 for determining exterior/interior.
-		uint prim_offset_edges = prim_offset - 3; // range: 0-17
-		uint i0 = prim_offset_edges / 6;
-		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
-		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-		uint edge_offset = prim_offset_edges - 6 * i0; // range: 0-5
+		uint prim_offset_edges = prim_offset - 3u; // range: 0-17
+		uint i0 = prim_offset_edges / 6u;
+		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
+		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
+		uint edge_offset = prim_offset_edges - 6u * i0; // range: 0-5
 
 		// Note: order of top/bottom, inside/outside is arbitrary,
 		// as long as it assembles into two triangles forming a quad.
-		bool is_bottom = (2 <= edge_offset) && (edge_offset <= 4);
-		bool is_outside = (edge_offset & 1u) != 0;
+		bool is_bottom = (2u <= edge_offset) && (edge_offset <= 4u);
+		bool is_outside = (edge_offset & 1u) != 0u;
 
-		vtx = load_vertex(load_index(3 * prim_id + (is_bottom ? i1 : i0)));
-		ProcessedVertex other = load_vertex(load_index(3 * prim_id + (is_bottom ? i0 : i1)));
-		ProcessedVertex opposite = load_vertex(load_index(3 * prim_id + i2));
+		vtx = load_vertex(load_index(3u * prim_id + (is_bottom ? i1 : i0)));
+		ProcessedVertex other = load_vertex(load_index(3u * prim_id + (is_bottom ? i0 : i1)));
+		ProcessedVertex opposite = load_vertex(load_index(3u * prim_id + i2));
 
 		mat2 pos_deltas = get_xy_deltas_unscaled(vtx, other, opposite);
 
@@ -411,25 +410,25 @@ void main()
 
 		VSout.inv_cov = is_outside ? 1.0f : 0.0f; // No coverage on outside, otherwise full.
 
-		VSout.interior = 0;
+		VSout.interior = 0u;
 	}
 	else // Corner cap
 	{
 		// Vertex indices for this cap. We need all 3 for determining exterior/interior.
-		uint prim_offset_cap = prim_offset - 21; // range: 0-8
-		uint i0 = prim_offset_cap / 6;
-		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
-		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-		uint cap_offset = prim_offset_cap - 6 * i0; // range: 0-5
+		uint prim_offset_cap = prim_offset - 21u; // range: 0-8
+		uint i0 = prim_offset_cap / 6u;
+		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
+		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
+		uint cap_offset = prim_offset_cap - 6u * i0; // range: 0-5
 
-		bool is_near_corner = cap_offset == 0 || cap_offset == 3;
-		bool is_far_corner = cap_offset == 2 || cap_offset == 5;
-		bool is_first_tri = cap_offset < 3;
+		bool is_near_corner = cap_offset == 0u || cap_offset == 3u;
+		bool is_far_corner = cap_offset == 2u || cap_offset == 5u;
+		bool is_first_tri = cap_offset < 3u;
 
 		// First triangle is on the side of vertex i1 and second is on the side of vertex i2.
-		vtx = load_vertex(load_index(3 * prim_id + i0));
-		ProcessedVertex other = load_vertex(load_index(3 * prim_id + (is_first_tri ? i1 : i2)));
-		ProcessedVertex opposite = load_vertex(load_index(3 * prim_id + (is_first_tri ? i2 : i1)));
+		vtx = load_vertex(load_index(3u * prim_id + i0));
+		ProcessedVertex other = load_vertex(load_index(3u * prim_id + (is_first_tri ? i1 : i2)));
+		ProcessedVertex opposite = load_vertex(load_index(3u * prim_id + (is_first_tri ? i2 : i1)));
 
 		mat2 pos_deltas = get_xy_deltas_unscaled(vtx, other, opposite);
 
@@ -455,7 +454,7 @@ void main()
 
 		VSout.inv_cov = is_near_corner ? 0.0f : 1.0f; // Full coverage at near corner, otherwise none.
 	
-		VSout.interior = 0;
+		VSout.interior = 0u;
 	}
 
 #endif

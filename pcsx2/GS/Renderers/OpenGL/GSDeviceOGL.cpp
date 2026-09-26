@@ -947,12 +947,12 @@ bool GSDeviceOGL::CheckFeatures()
 		m_features.depth_feedback |= GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto;
 	}
 
-	if (GLAD_GL_ARB_shader_storage_buffer_object)
+	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_shader_storage_buffer_object)
 	{
 		GLint max_vertex_ssbos = 0;
 		glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &max_vertex_ssbos);
 		DevCon.WriteLn("GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS: %d", max_vertex_ssbos);
-		m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && max_vertex_ssbos > 0 && GLAD_GL_ARB_gpu_shader5);
+		m_features.vs_expand = (!GSConfig.DisableVertexShaderExpand && max_vertex_ssbos > 0);
 	}
 
 	GLint point_range[2] = {};
@@ -1739,8 +1739,6 @@ std::string GSDeviceOGL::GenGlslHeader(const std::string_view entry, GLenum type
 	{
 		header = "#version 330 core\n";
 		header += "#extension GL_ARB_shading_language_420pack : require\n";
-		if (GLAD_GL_ARB_gpu_shader5)
-			header += "#extension GL_ARB_gpu_shader5 : require\n";
 		if (m_features.vs_expand)
 			header += "#extension GL_ARB_shader_storage_buffer_object: require\n";
 	}

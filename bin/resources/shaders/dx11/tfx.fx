@@ -1876,8 +1876,8 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	// EXPAND_LINE_AA1 also adds coverage to the output.
 
 	uint vid_base = vid >> 2;
-	bool is_bottom = vid & 2;
-	bool is_right = vid & 1;
+	bool is_bottom = (vid & 2u) != 0u;
+	bool is_right = (vid & 1u) != 0u;
 	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
 	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
 	VS_OUTPUT other = vs_main(load_vertex(vid_other));
@@ -1937,35 +1937,35 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	// - Vertices 27-32: Second corner cap (2 triangles).
 	// - Vertices 33-38: Third corner cap (2 triangles).
 
-	uint prim_id = vid / 39;
-	uint prim_offset = vid - 39 * prim_id; // range: 0-38
-	bool interior = prim_offset < 3;
-	bool edge = 3 <= prim_offset && prim_offset < 21;
+	uint prim_id = vid / 39u;
+	uint prim_offset = vid - 39u * prim_id; // range: 0-38
+	bool interior = prim_offset < 3u;
+	bool edge = 3u <= prim_offset && prim_offset < 21u;
 
 	VS_OUTPUT vtx;
 	if (interior)
 	{
-		vtx = vs_main(load_vertex(load_index(3 * prim_id + prim_offset)));
+		vtx = vs_main(load_vertex(load_index(3u * prim_id + prim_offset)));
 		vtx.inv_cov = 0.0f; // Full coverage
-		vtx.interior = 1;
+		vtx.interior = 1u;
 	}
 	else if (edge)
 	{
 		// Vertex indices for this edge. We need all 3 for determining exterior/interior.
-		uint prim_offset_edges = prim_offset - 3; // range: 0-17
-		uint i0 = prim_offset_edges / 6;
-		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
-		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-		uint edge_offset = prim_offset_edges - 6 * i0; // range: 0-5
+		uint prim_offset_edges = prim_offset - 3u; // range: 0-17
+		uint i0 = prim_offset_edges / 6u;
+		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
+		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
+		uint edge_offset = prim_offset_edges - 6u * i0; // range: 0-5
 
 		// Note: order of top/bottom, inside/outside is arbitrary,
 		// as long as it assembles into two triangles forming a quad.
-		bool is_bottom = (2 <= edge_offset) && (edge_offset <= 4);
-		bool is_outside = edge_offset & 1;
+		bool is_bottom = (2u <= edge_offset) && (edge_offset <= 4u);
+		bool is_outside = (edge_offset & 1u) != 0u;
 
-		vtx = vs_main(load_vertex(load_index(3 * prim_id + (is_bottom ? i1 : i0))));
-		VS_OUTPUT other = vs_main(load_vertex(load_index(3 * prim_id + (is_bottom ? i0 : i1))));
-		VS_OUTPUT opposite = vs_main(load_vertex(load_index(3 * prim_id + i2)));
+		vtx = vs_main(load_vertex(load_index(3u * prim_id + (is_bottom ? i1 : i0))));
+		VS_OUTPUT other = vs_main(load_vertex(load_index(3u * prim_id + (is_bottom ? i0 : i1))));
+		VS_OUTPUT opposite = vs_main(load_vertex(load_index(3u * prim_id + i2)));
 
 		float2x2 pos_deltas = get_xy_deltas_unscaled(vtx, other, opposite);
 
@@ -1976,24 +1976,24 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 		vtx.inv_cov = is_outside ? 1.0f : 0.0f; // No coverage on outside, otherwise full.
 
-		vtx.interior = 0;
+		vtx.interior = 0u;
 	}
 	else // Corner cap
 	{
 		// Vertex indices for this cap. We need all 3 for determining exterior/interior.
-		uint prim_offset_cap = prim_offset - 21; // range: 0-8
-		uint i0 = prim_offset_cap / 6;
-		uint i1 = (i0 >= 2) ? i0 - 2 : i0 + 1;
-		uint i2 = (i0 >= 1) ? i0 - 1 : i0 + 2;
-		uint cap_offset = prim_offset_cap - 6 * i0; // range: 0-5
+		uint prim_offset_cap = prim_offset - 21u; // range: 0-8
+		uint i0 = prim_offset_cap / 6u;
+		uint i1 = (i0 >= 2u) ? i0 - 2u : i0 + 1u;
+		uint i2 = (i0 >= 1u) ? i0 - 1u : i0 + 2u;
+		uint cap_offset = prim_offset_cap - 6u * i0; // range: 0-5
 
-		bool is_near_corner = cap_offset == 0 || cap_offset == 3;
-		bool is_far_corner = cap_offset == 2 || cap_offset == 5;
-		bool is_first_tri = cap_offset < 3;
+		bool is_near_corner = cap_offset == 0u || cap_offset == 3u;
+		bool is_far_corner = cap_offset == 2u || cap_offset == 5u;
+		bool is_first_tri = cap_offset < 3u;
 
-		vtx = vs_main(load_vertex(load_index(3 * prim_id + i0)));
-		VS_OUTPUT other = vs_main(load_vertex(load_index(3 * prim_id + (is_first_tri ? i1 : i2))));
-		VS_OUTPUT opposite = vs_main(load_vertex(load_index(3 * prim_id + (is_first_tri ? i2 : i1))));
+		vtx = vs_main(load_vertex(load_index(3u * prim_id + i0)));
+		VS_OUTPUT other = vs_main(load_vertex(load_index(3u * prim_id + (is_first_tri ? i1 : i2))));
+		VS_OUTPUT opposite = vs_main(load_vertex(load_index(3u * prim_id + (is_first_tri ? i2 : i1))));
 
 		float2x2 pos_deltas = get_xy_deltas_unscaled(vtx, other, opposite);
 
@@ -2019,7 +2019,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 
 		vtx.inv_cov = is_near_corner ? 0.0f : 1.0f; // Full coverage at near corner, otherwise none.
 	
-		vtx.interior = 0;
+		vtx.interior = 0u;
 	}
 
 	return vtx;
