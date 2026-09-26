@@ -1013,7 +1013,7 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 {
 	static constexpr const VkDescriptorPoolSize pool_sizes[] = {
 		{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 2},
-		{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3},
+		{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         3},
 	};
 
 	VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
@@ -1509,8 +1509,8 @@ void GSDeviceVK::ActivateCommandBuffer(u32 index)
 		LOG_VULKAN_ERROR(res, "vkResetCommandPool failed: ");
 
 	// Enable commands to be recorded to the two buffers again.
-	VkCommandBufferBeginInfo begin_info = {
-		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr};
+	VkCommandBufferBeginInfo begin_info = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+	begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	res = vkBeginCommandBuffer(resources.command_buffers[1], &begin_info);
 	if (res != VK_SUCCESS)
 		LOG_VULKAN_ERROR(res, "vkBeginCommandBuffer failed: ");
@@ -1851,7 +1851,10 @@ bool GSDeviceVK::InitSpinResources()
 	desc_set_layout_create.pBindings = &set_layout_binding;
 	CHECKED_CREATE(vkCreateDescriptorSetLayout, &desc_set_layout_create, &m_spin_descriptor_set_layout);
 
-	const VkPushConstantRange push_constant_range = {VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(u32)};
+	VkPushConstantRange push_constant_range = {};
+	push_constant_range.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+	push_constant_range.offset =  0;
+	push_constant_range.size = sizeof(u32);
 	VkPipelineLayoutCreateInfo pl_layout_create = {VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
 	pl_layout_create.setLayoutCount = 1;
 	pl_layout_create.pSetLayouts = &m_spin_descriptor_set_layout;
@@ -1867,7 +1870,7 @@ bool GSDeviceVK::InitSpinResources()
 
 	VkComputePipelineCreateInfo pl_create = {VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO};
 	pl_create.layout = m_spin_pipeline_layout;
-	pl_create.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	pl_create.stage = {VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO};
 	pl_create.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 	pl_create.stage.pName = "main";
 	pl_create.stage.module = shader_module;
@@ -2115,9 +2118,11 @@ void GSDeviceVK::CalibrateSpinTimestamp()
 	if (!m_optional_extensions.vk_ext_calibrated_timestamps)
 		return;
 	VkCalibratedTimestampInfoEXT infos[2] = {
-		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, VK_TIME_DOMAIN_DEVICE_EXT},
-		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT, nullptr, m_calibrated_timestamp_type},
+		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT},
+		{VK_STRUCTURE_TYPE_CALIBRATED_TIMESTAMP_INFO_EXT},
 	};
+	infos[0].timeDomain = VK_TIME_DOMAIN_DEVICE_EXT;
+	infos[1].timeDomain = m_calibrated_timestamp_type;
 	u64 timestamps[2];
 	u64 maxDeviation;
 	constexpr u64 MAX_MAX_DEVIATION = 100000; // 100us
@@ -2201,7 +2206,8 @@ bool GSDeviceVK::AllocatePreinitializedGPUBuffer(u32 size, VkBuffer* gpu_buffer,
 		return false;
 	}
 
-	const VkBufferCopy buf_copy = {0u, 0u, size};
+	VkBufferCopy buf_copy = {};
+	buf_copy.size = size;
 	fill_callback(cpu_ai.pMappedData);
 	vmaFlushAllocation(m_allocator, cpu_allocation, 0, size);
 	vkCmdCopyBuffer(GetCurrentInitCommandBuffer(), cpu_buffer, *gpu_buffer, 1, &buf_copy);
@@ -3114,9 +3120,19 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		(sTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	const VkImageAspectFlags dst_aspect =
 		(dTexVK->IsDepthStencil()) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-	const VkImageCopy ic = {{src_aspect, 0u, 0u, 1u}, {r.left, r.top, 0u}, {dst_aspect, 0u, 0u, 1u},
-		{static_cast<s32>(destX), static_cast<s32>(destY), 0u},
-		{static_cast<u32>(r.width()), static_cast<u32>(r.height()), 1u}};
+	VkImageCopy ic = {};
+	ic.srcSubresource.aspectMask = src_aspect;
+	ic.srcSubresource.layerCount = 1u;
+	ic.srcOffset.x = r.left;
+	ic.srcOffset.y = r.top;
+	ic.dstSubresource.aspectMask = dst_aspect;
+	ic.dstSubresource.layerCount = 1u;
+	ic.dstOffset.x = destX;
+	ic.dstOffset.y = destY;
+	ic.dstOffset.z = 0;
+	ic.extent.width  = r.width();
+	ic.extent.height = r.height();
+	ic.extent.depth  = 1u;
 
 	EndRenderPass();
 
@@ -3427,7 +3443,11 @@ void GSDeviceVK::UpdateCLUTTexture(
 		float pad2[3];
 	};
 
-	const Uniforms uniforms = {offsetX, offsetY, dOffset, 0, sScale, {}};
+	Uniforms uniforms = {};
+	uniforms.offsetX = offsetX;
+	uniforms.offsetY = offsetY;
+	uniforms.dOffset = dOffset;
+	uniforms.scale = sScale;
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
 	const GSVector4 dRect(0, 0, dSize, 1);
@@ -3449,7 +3469,11 @@ void GSDeviceVK::ConvertToIndexedTexture(
 		float pad2[3];
 	};
 
-	const Uniforms uniforms = {SBW, DBW, SPSM, {}, sScale, {}};
+	Uniforms uniforms = {};
+	uniforms.SBW = SBW;
+	uniforms.DBW = DBW;
+	uniforms.PSM = SPSM;
+	uniforms.ScaleFactor = sScale;
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
 	const ShaderConvert shader = ((SPSM & 0xE) == 0) ? ShaderConvert::RGBA_TO_8I : ShaderConvert::RGB5A1_TO_8I;
@@ -3470,8 +3494,11 @@ void GSDeviceVK::FilteredDownsampleTexture(GSTexture* sTex, GSTexture* dTex, u32
 		float pad1[2];
 	};
 
-	const Uniforms uniforms = {
-		clamp_min, static_cast<int>(downsample_factor), 0, static_cast<float>(downsample_factor * downsample_factor), (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f};
+	Uniforms uniforms = {};
+	uniforms.clamp_min = clamp_min;
+	uniforms.downsample_factor = downsample_factor;
+	uniforms.weight = downsample_factor * downsample_factor;
+	uniforms.step_multiplier = (GSConfig.UserHacks_NativeScaling > GSNativeScaling::Aggressive) ? 2.0f : 1.0f;
 	SetUtilityPushConstants(&uniforms, sizeof(uniforms));
 
 	const ShaderConvert shader = ShaderConvert::DOWNSAMPLE_COPY;
@@ -3794,7 +3821,7 @@ void GSDeviceVK::OMSetRenderTargets(
 					VkClearAttachment& ca = cas[num_ca++];
 					ca.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 					ca.colorAttachment = 1;
-					ca.clearValue.depthStencil = {vkDs->GetClearDepth()};
+					ca.clearValue.depthStencil.depth = vkDs->GetClearDepth();
 				}
 
 				vkDs->SetState(GSTexture::State::Dirty);
@@ -3803,7 +3830,10 @@ void GSDeviceVK::OMSetRenderTargets(
 			if (num_ca > 0)
 			{
 				const GSVector2i size = vkRt ? vkRt->GetSize() : vkDs->GetSize();
-				const VkClearRect cr = {{{0, 0}, {static_cast<u32>(size.x), static_cast<u32>(size.y)}}, 0u, 1u};
+				VkClearRect cr = {};
+				cr.rect.extent.width  = size.x;
+				cr.rect.extent.height = size.y;
+				cr.layerCount = 1u;
 				vkCmdClearAttachments(GetCurrentCommandBuffer(), num_ca, cas.data(), 1, &cr);
 			}
 		}
@@ -3878,7 +3908,10 @@ void GSDeviceVK::OMSetRenderTargets(
 
 	// This is used to set/initialize the framebuffer for tfx rendering.
 	const GSVector2i size = (vkRt ? vkRt->GetSize() : (vkDs ? vkDs->GetSize() : viewport_size));
-	const VkViewport vp{0.0f, 0.0f, static_cast<float>(size.x), static_cast<float>(size.y), 0.0f, 1.0f};
+	VkViewport vp = {};
+	vp.width  = size.x;
+	vp.height = size.y;
+	vp.maxDepth = 1.0f;
 
 	SetViewport(vp);
 	SetScissor(scissor);
@@ -4008,7 +4041,10 @@ bool GSDeviceVK::CreateNullTexture()
 		return false;
 
 	const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-	const VkImageSubresourceRange srr{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
+	VkImageSubresourceRange srr = {};
+	srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	srr.levelCount = 1u;
+	srr.layerCount = 1u;
 	const VkClearColorValue ccv{};
 	m_null_texture->TransitionToLayout(cmdbuf, GSTextureVK::Layout::ClearDst);
 	vkCmdClearColorImage(cmdbuf, m_null_texture->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &ccv, 1, &srr);
@@ -4835,7 +4871,10 @@ void GSDeviceVK::RenderBlankFrame()
 	GSTextureVK* sctex = m_swap_chain->GetCurrentTexture();
 	sctex->TransitionToLayout(cmdbuffer, GSTextureVK::Layout::ClearDst);
 
-	constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+	VkImageSubresourceRange srr = {};
+	srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	srr.levelCount = 1u;
+	srr.layerCount = 1u;
 	vkCmdClearColorImage(
 		cmdbuffer, sctex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &s_present_clear_color.color, 1, &srr);
 
@@ -5381,12 +5420,12 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 	const VkFramebuffer fb = swap_chain_texture->GetFramebuffer(false);
 	pxAssert(fb);
 
-	const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr,
-		GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD,
-			VK_ATTACHMENT_STORE_OP_STORE),
-		fb,
-		{{0, 0}, {static_cast<u32>(swap_chain_texture->GetWidth()), static_cast<u32>(swap_chain_texture->GetHeight())}},
-		0u, nullptr};
+	VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+	rp.renderPass = GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+	                              VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+	rp.framebuffer = fb;
+	rp.renderArea.extent.width  = swap_chain_texture->GetWidth();
+	rp.renderArea.extent.height = swap_chain_texture->GetHeight();
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
 }
 
@@ -5664,9 +5703,13 @@ void GSDeviceVK::BeginRenderPass(VkRenderPass rp, const GSVector4i& rect)
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_current_render_pass,
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}}, 0,
-		nullptr};
+	VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+	begin_info.renderPass  = m_current_render_pass;
+	begin_info.framebuffer = m_current_framebuffer;
+	begin_info.renderArea.offset.x = rect.x;
+	begin_info.renderArea.offset.y = rect.y;
+	begin_info.renderArea.extent.width  = rect.width();
+	begin_info.renderArea.extent.height = rect.height();
 
 	m_command_buffer_render_passes++;
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -5680,10 +5723,15 @@ void GSDeviceVK::BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, c
 	m_current_render_pass = rp;
 	m_current_render_pass_area = rect;
 
-	const VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_current_render_pass,
-		m_current_framebuffer, {{rect.x, rect.y}, {static_cast<u32>(rect.width()), static_cast<u32>(rect.height())}},
-		cv_count, cv};
-
+	VkRenderPassBeginInfo begin_info = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
+	begin_info.renderPass  = m_current_render_pass;
+	begin_info.framebuffer = m_current_framebuffer;
+	begin_info.renderArea.offset.x = rect.x;
+	begin_info.renderArea.offset.y = rect.y;
+	begin_info.renderArea.extent.width  = rect.width();
+	begin_info.renderArea.extent.height = rect.height();
+	begin_info.clearValueCount = cv_count;
+	begin_info.pClearValues = cv;
 	vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
@@ -5763,8 +5811,11 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 
 	if (flags & DIRTY_FLAG_SCISSOR)
 	{
-		const VkRect2D vscissor{
-			{m_scissor.x, m_scissor.y}, {static_cast<u32>(m_scissor.width()), static_cast<u32>(m_scissor.height())}};
+		VkRect2D vscissor = {};
+		vscissor.offset.x = m_scissor.x;
+		vscissor.offset.y = m_scissor.y;
+		vscissor.extent.width  = m_scissor.width();
+		vscissor.extent.height = m_scissor.height();
 		vkCmdSetScissor(cmdbuf, 0, 1, &vscissor);
 	}
 
@@ -6429,7 +6480,10 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
 	{
-		const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, {.depthStencil = {0.0f, 1u}}};
+		VkClearAttachment ca = {};
+		ca.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		ca.colorAttachment = 0u;
+		ca.clearValue.depthStencil.stencil = 1u;
 		VkClearRect rc = {};
 		rc.rect.offset = {config.drawarea.left, config.drawarea.top};
 		rc.rect.extent = {static_cast<u32>(config.drawarea.width()), static_cast<u32>(config.drawarea.height())};

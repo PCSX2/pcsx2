@@ -186,7 +186,9 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Create(Usage usage, Format format, int
 	vci.viewType   = VK_IMAGE_VIEW_TYPE_2D;
 	vci.format     = vk_format;
 	vci.components = s_identity_swizzle;
-	vci.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1};
+	vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	vci.subresourceRange.levelCount = levels;
+	vci.subresourceRange.layerCount = 1;
 
 	ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
@@ -652,15 +654,22 @@ void GSTextureVK::CommitClear(VkCommandBuffer cmdbuf)
 
 	if (IsDepthStencil())
 	{
-		const VkClearDepthStencilValue cv = {m_clear_value.depth};
-		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_DEPTH_BIT, 0u, 1u, 0u, 1u};
+		VkClearDepthStencilValue cv = {};
+		cv.depth = m_clear_value.depth;
+		VkImageSubresourceRange srr = {};
+		srr.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		srr.levelCount = 1u;
+		srr.layerCount = 1u;
 		vkCmdClearDepthStencilImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
 	}
 	else if (IsRenderTarget())
 	{
 		alignas(16) VkClearColorValue cv;
 		GSVector4::store<true>(cv.float32, GetClearForFormat());
-		const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
+		VkImageSubresourceRange srr = {};
+		srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		srr.levelCount = 1u;
+		srr.layerCount = 1u;
 		vkCmdClearColorImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cv, 1, &srr);
 	}
 	else
@@ -875,9 +884,15 @@ void GSDownloadTextureVK::CopyFromTexture(
 	image_copy.bufferOffset = copy_offset;
 	image_copy.bufferRowLength = GSTexture::CalcUploadRowLengthFromPitch(m_format, m_current_pitch);
 	image_copy.bufferImageHeight = 0;
-	image_copy.imageSubresource = {aspect, src_level, 0u, 1u};
-	image_copy.imageOffset = {src.left, src.top, 0};
-	image_copy.imageExtent = {static_cast<u32>(src.width()), static_cast<u32>(src.height()), 1u};
+	image_copy.imageSubresource.aspectMask = aspect;
+	image_copy.imageSubresource.mipLevel   = src_level;
+	image_copy.imageSubresource.layerCount = 1u;
+	image_copy.imageOffset.x = src.left;
+	image_copy.imageOffset.y = src.top;
+	image_copy.imageOffset.z = 0;
+	image_copy.imageExtent.width  = src.width();
+	image_copy.imageExtent.height = src.height();
+	image_copy.imageExtent.depth  = 1u;
 
 	// do the copy
 	vkCmdCopyImageToBuffer(cmdbuf, vkTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_buffer, 1, &image_copy);
