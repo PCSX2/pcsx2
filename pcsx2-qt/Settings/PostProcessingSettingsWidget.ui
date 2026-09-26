@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GraphicsPostProcessingSettingsTab</class>
- <widget class="QWidget" name="GraphicsPostProcessingSettingsTab">
+ <class>PostProcessingSettingsWidget</class>
+ <widget class="QWidget" name="PostProcessingSettingsWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>703</width>
-    <height>500</height>
+    <height>615</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -251,6 +251,249 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="librashaderGroup">
+     <property name="title">
+      <string>Shader Preset (librashader)</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="librashaderOuterLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item>
+       <layout class="QHBoxLayout" name="librashaderLayout">
+        <item>
+         <widget class="QLineEdit" name="librashaderPreset">
+          <property name="placeholderText">
+           <string>No preset selected.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="librashaderBrowse">
+          <property name="text">
+           <string>Browse...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="librashaderClear">
+          <property name="text">
+           <string>Clear</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="librashaderContentLayout" stretch="0,0,1">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <item>
+         <layout class="QVBoxLayout" name="librashaderPassesColumn">
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="librashaderPassesSectionLabel">
+            <property name="text">
+             <string>Passes</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="librashaderPassList">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>140</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>200</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QFrame" name="librashaderSeparator">
+          <property name="frameShape">
+           <enum>QFrame::Shape::VLine</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Shadow::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="librashaderParamsColumn">
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="librashaderParametersSectionLabel">
+            <property name="text">
+             <string>Parameters</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="librashaderParamSearch">
+            <property name="placeholderText">
+             <string>Search parameters...</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="librashaderParamsScrollArea">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>160</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::NoFrame</enum>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="librashaderParamsContainer">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>436</width>
+               <height>160</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="librashaderParamsLayout">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <property name="leftMargin">
+               <number>8</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>8</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="librashaderParamsPagerLayout">
+            <item>
+             <widget class="QPushButton" name="librashaderPrevPage">
+              <property name="text">
+               <string>Previous</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="librashaderPageLabel">
+              <property name="text">
+               <string>Page 1/1</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="librashaderNextPage">
+              <property name="text">
+               <string>Next</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="librashaderFooterLayout">
+        <item>
+         <spacer name="librashaderFooterSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="librashaderUseGlobalParams">
+          <property name="visible">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Use Global Parameters</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="librashaderRestoreDefaults">
+          <property name="text">
+           <string>Restore Defaults</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
@@ -275,6 +518,13 @@
   <tabstop>shadeBoostContrast</tabstop>
   <tabstop>shadeBoostGamma</tabstop>
   <tabstop>shadeBoostSaturation</tabstop>
+  <tabstop>librashaderPreset</tabstop>
+  <tabstop>librashaderBrowse</tabstop>
+  <tabstop>librashaderClear</tabstop>
+  <tabstop>librashaderPassList</tabstop>
+  <tabstop>librashaderParamSearch</tabstop>
+  <tabstop>librashaderPrevPage</tabstop>
+  <tabstop>librashaderNextPage</tabstop>
  </tabstops>
  <resources/>
  <connections/>
