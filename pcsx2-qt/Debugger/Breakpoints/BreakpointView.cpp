@@ -122,7 +122,6 @@ void BreakpointView::openContextMenu(QPoint pos)
 		{
 			QAction* actionLoad = menu->addAction(tr("Load from Settings"));
 			connect(actionLoad, &QAction::triggered, [this]() {
-				m_model->clear();
 				DebuggerSettingsManager::loadGameSettings(m_model);
 			});
 
