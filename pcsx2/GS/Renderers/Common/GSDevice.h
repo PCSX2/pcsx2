@@ -1497,6 +1497,13 @@ protected:
 	GSTexture* m_target_tmp = nullptr;
 	GSTexture* m_current = nullptr;
 	GSTexture* m_cas = nullptr;
+
+	// DLSS-NR filter: the downscaled source, the filtered upload and the result.
+	GSTexture* m_dlssnr_small = nullptr;
+	GSTexture* m_dlssnr_upload = nullptr;
+	GSTexture* m_dlssnr_output = nullptr;
+	std::unique_ptr<GSDownloadTexture> m_dlssnr_download;
+	std::vector<u8> m_dlssnr_pixels;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
 
@@ -1718,6 +1725,7 @@ public:
 	void Interlace(const GSVector2i& ds, int field, int mode, float yoffset);
 	void FXAA();
 	void ShadeBoost();
+	void DLSSNR();
 	void Resize(int width, int height);
 
 	void CAS(GSTexture*& tex, GSVector4i& src_rect, GSVector4& src_uv, const GSVector4& draw_rect, bool sharpen_only);

@@ -7,7 +7,16 @@ BASEBLOCKEX* BaseBlocks::New(u32 startpc, uptr fnptr)
 {
 	std::pair<linkiter_t, linkiter_t> range = links.equal_range(startpc);
 	for (linkiter_t i = range.first; i != range.second; ++i)
+	{
+#ifdef ARCH_ARM64
+		// Called while a block is being emitted, so the code is already writable.
+		// The instruction cache is flushed separately for each patched branch.
+		PatchBranch(i->second, fnptr);
+		HostSys::FlushInstructionCache(reinterpret_cast<void*>(i->second), sizeof(u32));
+#else
 		*(u32*)i->second = fnptr - (i->second + 4);
+#endif
+	}
 
 	return blocks.insert(startpc, fnptr);
 }
@@ -57,6 +66,18 @@ BASEBLOCKEX* BaseBlocks::GetByX86(uptr ip)
 }
 #endif
 
+#ifdef ARCH_ARM64
+void BaseBlocks::Link(u32 pc, u32* branch_ptr)
+{
+	// Called while the block is being emitted, so the code is already writable.
+	BASEBLOCKEX* targetblock = Get(pc);
+	if (targetblock && targetblock->startpc == pc)
+		PatchBranch(reinterpret_cast<uptr>(branch_ptr), targetblock->fnptr);
+	else
+		PatchBranch(reinterpret_cast<uptr>(branch_ptr), recompiler);
+	links.insert(std::pair<u32, uptr>(pc, reinterpret_cast<uptr>(branch_ptr)));
+}
+#else
 void BaseBlocks::Link(u32 pc, s32* jumpptr)
 {
 	BASEBLOCKEX* targetblock = Get(pc);
@@ -66,3 +87,4 @@ void BaseBlocks::Link(u32 pc, s32* jumpptr)
 		*jumpptr = (s32)(recompiler - (sptr)(jumpptr + 1));
 	links.insert(std::pair<u32, uptr>(pc, (uptr)jumpptr));
 }
+#endif

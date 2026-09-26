@@ -27,6 +27,7 @@ class GSTextureMTL : public GSTexture
 public:
 	u64 m_last_read = 0;  ///< Last time this texture was read by a draw
 	u64 m_last_write = 0; ///< Last time this texture was written by a draw
+	u64 m_last_upload_encoder = 0; ///< Serial of the last blit encoder that wrote to this texture
 	GSTextureMTL(GSDeviceMTL* dev, MRCOwned<id<MTLTexture>> texture, MRCOwned<id<MTLTexture>> rov_texture, Usage usage, Format format);
 	~GSTextureMTL();
 
@@ -74,6 +75,7 @@ private:
 	GSDeviceMTL* m_dev;
 	MRCOwned<id<MTLBuffer>> m_buffer;
 	MRCOwned<id<MTLCommandBuffer>> m_copy_cmdbuffer = nil;
+	u64 m_copy_draw = 0; ///< Draw containing the copy (Metal 4, which has no command buffer status)
 };
 
 #endif

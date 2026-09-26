@@ -510,6 +510,7 @@ set(pcsx2GSSources
 	GS/GSVector.cpp
 	GS/MultiISA.cpp
 	GS/Renderers/Common/GSDevice.cpp
+	GS/Renderers/Common/GSDLSSNR.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
 	GS/Renderers/Common/GSRenderer.cpp
@@ -550,6 +551,7 @@ set(pcsx2GSHeaders
 	GS/GSXXH.h
 	GS/MultiISA.h
 	GS/Renderers/Common/GSDevice.h
+	GS/Renderers/Common/GSDLSSNR.h
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h
 	GS/Renderers/Common/GSFunctionMap.h
@@ -634,6 +636,10 @@ if(USE_OPENGL)
 			target_include_directories(PCSX2_FLAGS INTERFACE ${Wayland_INCLUDE_DIRS})
 		endif()
 	endif()
+endif()
+
+if(USE_DLSSNR)
+	target_link_libraries(PCSX2_FLAGS INTERFACE dlssnr)
 endif()
 
 if(USE_VULKAN)
@@ -1050,13 +1056,30 @@ set(pcsx2x86Headers
 # ARM64
 set(pcsx2arm64Sources
 	arm64/AsmHelpers.cpp
+	arm64/iR3000A.cpp
+	arm64/iR5900.cpp
+	arm64/microVU.cpp
 	arm64/Vif_Dynarec.cpp
 	arm64/Vif_UnpackNEON.cpp
 	arm64/RecStubs.cpp
+	x86/BaseblockEx.cpp
 	)
 
 set(pcsx2arm64Headers
 	arm64/AsmHelpers.h
+	arm64/microVU.h
+	arm64/microVU_IR.h
+	arm64/microVU_Misc.h
+	arm64/microVU_Alloc.inl
+	arm64/microVU_Branch.inl
+	arm64/microVU_Clamp.inl
+	arm64/microVU_Compile.inl
+	arm64/microVU_Execute.inl
+	arm64/microVU_Flags.inl
+	arm64/microVU_Lower.inl
+	arm64/microVU_Misc.inl
+	arm64/microVU_Upper.inl
+	x86/BaseblockEx.h
 )
 
 # These ones benefit a lot from LTO
@@ -1420,22 +1443,25 @@ function(setup_main_executable target)
 
 		pcsx2_resource(${target} ${PCSX2_SOURCE_DIR}/Resources/PCSX2.icns ${PCSX2_SOURCE_DIR}/Resources)
 
-		# Copy shaderc into the bundle
-		target_sources(${target} PRIVATE "${SHADERC_LIBRARY}")
-		set_source_files_properties("${SHADERC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+		# Vulkan runs through MoltenVK on macOS, only bundle it when the Vulkan renderer is enabled.
+		if(USE_VULKAN)
+			# Copy shaderc into the bundle
+			target_sources(${target} PRIVATE "${SHADERC_LIBRARY}")
+			set_source_files_properties("${SHADERC_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
 
-		# Copy MoltenVK into the bundle
-		unset(MOLTENVK_PATH CACHE)
-		find_file(MOLTENVK_PATH NAMES
-			libMoltenVK.dylib
-			lib/libMoltenVK.dylib
-		)
-		if (MOLTENVK_PATH)
-			target_sources(${target} PRIVATE "${MOLTENVK_PATH}")
-			set_source_files_properties("${MOLTENVK_PATH}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
-			message(STATUS "Using MoltenVK from ${MOLTENVK_PATH}")
-		else()
-			message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
+			# Copy MoltenVK into the bundle
+			unset(MOLTENVK_PATH CACHE)
+			find_file(MOLTENVK_PATH NAMES
+				libMoltenVK.dylib
+				lib/libMoltenVK.dylib
+			)
+			if (MOLTENVK_PATH)
+				target_sources(${target} PRIVATE "${MOLTENVK_PATH}")
+				set_source_files_properties("${MOLTENVK_PATH}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+				message(STATUS "Using MoltenVK from ${MOLTENVK_PATH}")
+			else()
+				message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
+			endif()
 		endif()
 
 		# If they say to skip postprocess bundle, leave the target in but make it so they have
