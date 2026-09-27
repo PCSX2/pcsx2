@@ -29,7 +29,7 @@ namespace Vulkan
 	class RenderPassBuilder
 	{
 	public:
-		static constexpr u32 MAX_COLOR_ATTACHMENTS = 1;
+		static constexpr u32 MAX_COLOR_ATTACHMENTS = 2;
 
 		void AddColorAttachment(VkImageLayout layout, VkFormat format,
 			VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op,
@@ -143,7 +143,7 @@ namespace Vulkan
 			MAX_SHADER_STAGES = 3,
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 			MAX_DYNAMIC_STATE = 8
 		};
 
@@ -335,7 +335,7 @@ namespace Vulkan
 	{
 		enum : u32
 		{
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 		};
 
 	public:

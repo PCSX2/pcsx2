@@ -6254,16 +6254,9 @@ void GSRendererHW::DetermineBarriers(GSTextureCache::Target* rt, GSTextureCache:
 		if (m_conf.require_one_barrier || m_conf.require_full_barrier)
 			pxAssert(!m_conf.blend.enable);
 
-		// If we use depth feedback directly, we must use barriers for the depth texture.
-		// If we use depth-as-color feedback, then FB fetch can be used for depth also.
-		const bool need_barriers_for_depth = m_conf.ps.IsFeedbackLoopDepth() && features.depth_feedback;
-
-		if (!need_barriers_for_depth)
-		{
-			// Barriers aren't needed with fbfetch
-			m_conf.require_one_barrier = false;
-			m_conf.require_full_barrier = false;
-		}
+		// Barriers aren't needed with fbfetch
+		m_conf.require_one_barrier = false;
+		m_conf.require_full_barrier = false;
 	}
 	// Multi-pass algorithms shouldn't be needed with full barrier and backends may not handle this correctly
 	pxAssert(!m_conf.require_full_barrier || !m_conf.ps.colclip_hw);

@@ -527,6 +527,7 @@ bool GSDeviceVK::SelectDeviceFeatures()
 	m_device_features.geometryShader = available_features.geometryShader;
 	m_device_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
 	m_device_features.pipelineStatisticsQuery = available_features.pipelineStatisticsQuery;
+	m_device_features.independentBlend = available_features.independentBlend;
 
 	return true;
 }
@@ -1091,16 +1092,22 @@ bool GSDeviceVK::CreateGlobalDescriptorPool()
 	return true;
 }
 
-VkRenderPass GSDeviceVK::GetRenderPass(VkFormat color_format, VkFormat depth_format, VkAttachmentLoadOp color_load_op,
-	VkAttachmentStoreOp color_store_op, VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
+VkRenderPass GSDeviceVK::GetRenderPass(
+	VkFormat color_format, VkFormat depth_as_color_format, VkFormat depth_format,
+	VkAttachmentLoadOp color_load_op, VkAttachmentStoreOp color_store_op,
+	VkAttachmentLoadOp depth_as_color_load_op, VkAttachmentStoreOp depth_as_color_store_op,
+	VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
 	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op,
 	bool color_feedback_loop, bool depth_feedback_loop)
 {
 	RenderPassCacheKey key = {};
 	key.color_format = color_format;
+	key.depth_as_color_format = depth_as_color_format;
 	key.depth_format = depth_format;
 	key.color_load_op = color_load_op;
 	key.color_store_op = color_store_op;
+	key.depth_as_color_load_op = depth_as_color_load_op;
+	key.depth_as_color_store_op = depth_as_color_store_op;
 	key.depth_load_op = depth_load_op;
 	key.depth_store_op = depth_store_op;
 	key.stencil_load_op = stencil_load_op;
@@ -1142,6 +1149,39 @@ VkRenderPass GSDeviceVK::GetRenderPassForRestarting(VkRenderPass pass)
 	}
 
 	return pass;
+}
+
+VkRenderPass GSDeviceVK::GetTFXRenderPass(
+	bool rt, bool ds_as_rt, bool ds, bool colclip, bool stencil, bool rt_feedback, bool depth_feedback,
+	VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_as_rt_op, VkAttachmentLoadOp ds_op)
+{
+	if (!ds_as_rt)
+	{
+		return m_tfx_render_pass[rt][ds][colclip][stencil][rt_feedback][depth_feedback][rt_op][ds_op];
+	}
+	else
+	{
+		VkFormat invalid_format    = LookupNativeFormat(GSTexture::Format::Invalid);
+		VkFormat rt_format         = rt ? (colclip ? LookupNativeFormat(GSTexture::Format::ColorClip) :
+		                                             LookupNativeFormat(GSTexture::Format::Color)) :
+		                                   invalid_format;
+		VkFormat ds_as_rt_format   = ds_as_rt ? LookupNativeFormat(GSTexture::Format::DepthColor) : invalid_format;
+		VkFormat ds_format         = ds ? LookupNativeFormat(GSTexture::Format::DepthStencil) : invalid_format;
+
+		VkAttachmentLoadOp rt_load_op         = rt ? rt_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		VkAttachmentStoreOp rt_store_op       = rt ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		VkAttachmentLoadOp ds_as_rt_load_op   = ds_as_rt ? ds_as_rt_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		VkAttachmentStoreOp ds_as_rt_store_op = ds_as_rt ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		VkAttachmentLoadOp ds_load_op         = ds ? ds_op : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		VkAttachmentStoreOp ds_store_op       = ds ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		VkAttachmentLoadOp stencil_load_op    = stencil ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		VkAttachmentStoreOp stencil_store_op  = stencil ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		
+		return GetRenderPass(rt_format, ds_as_rt_format, ds_format,
+			rt_load_op, rt_store_op, ds_as_rt_load_op, ds_as_rt_store_op,
+			ds_load_op, ds_store_op, stencil_load_op, stencil_store_op,
+			rt_feedback, depth_feedback);
+	}
 }
 
 VkCommandBuffer GSDeviceVK::GetCurrentInitCommandBuffer()
@@ -1711,14 +1751,19 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 	const GSTextureVK::Layout color_layout =
 		key.color_feedback_loop ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::ColorAttachment;
 	
-	const GSTextureVK::Layout depth_layout =
-		key.depth_feedback_loop ?
-			(m_features.depth_feedback ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::General) :
-			GSTextureVK::Layout::DepthStencilAttachment;
+	const GSTextureVK::Layout depth_as_color_layout =
+		key.depth_feedback_loop ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::ColorAttachment;
+
+	// We sample from real depth only if we're not using depth as color.
+	const bool using_depth_as_color = key.depth_as_color_format != VK_FORMAT_UNDEFINED;
+	const bool sampling_real_depth = key.depth_feedback_loop && !using_depth_as_color;
+	const GSTextureVK::Layout depth_layout = sampling_real_depth ?
+		(m_features.depth_feedback ? GSTextureVK::Layout::FeedbackLoop : GSTextureVK::Layout::General) :
+		GSTextureVK::Layout::DepthStencilAttachment;
 
 	const VkDependencyFlags feedback_dependency = GetFeedbackBarrierDependencyFlags();
 
-	if (key.color_feedback_loop)
+	if (key.color_feedback_loop || (key.depth_feedback_loop && using_depth_as_color))
 	{
 		rpb.SetColorFeedbackBarrier(
 			s_color_feedback_src_stage, s_color_feedback_src_access,
@@ -1728,7 +1773,7 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 			rpb.AddSubpassFlags(VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_EXT);
 	}
 
-	if (key.depth_feedback_loop)
+	if (sampling_real_depth)
 	{
 		rpb.SetDepthFeedbackBarrier(
 			s_depth_feedback_src_stage, s_depth_feedback_src_access,
@@ -1748,6 +1793,18 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 			!m_features.framebuffer_fetch);
 	}
 
+	if (key.depth_as_color_format != VK_FORMAT_UNDEFINED)
+	{
+		rpb.AddColorAttachment(
+			GSTextureVK::GetVkImageLayout(depth_as_color_layout),
+			static_cast<VkFormat>(key.depth_as_color_format),
+			static_cast<VkAttachmentLoadOp>(key.depth_as_color_load_op),
+			static_cast<VkAttachmentStoreOp>(key.depth_as_color_store_op),
+			key.depth_feedback_loop,
+			!UseFeedbackLoopLayout(),
+			!m_features.framebuffer_fetch);
+	}
+
 	if (key.depth_format != VK_FORMAT_UNDEFINED)
 	{
 		rpb.AddDepthStencilAttachment(
@@ -1757,9 +1814,9 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 			static_cast<VkAttachmentStoreOp>(key.depth_store_op),
 			static_cast<VkAttachmentLoadOp>(key.stencil_load_op),
 			static_cast<VkAttachmentStoreOp>(key.stencil_store_op),
-			key.depth_feedback_loop,
+			sampling_real_depth,
 			!UseFeedbackLoopLayout(),
-			!m_features.framebuffer_fetch);
+			sampling_real_depth);
 	}
 
 	VkRenderPass pass = rpb.Create(m_device);
@@ -2565,7 +2622,8 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 
 	GSVector4i render_area(0, 0, swap_chain_texture->GetWidth(), swap_chain_texture->GetHeight());
 
-	if (!BeginPresentRenderPass(GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+	if (!BeginPresentRenderPass(GetRenderPass(
+		swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED,
 		VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE), render_area, swap_chain_texture))
 	{
 		return GSDevice::PresentResult::FrameSkipped;	
@@ -2869,8 +2927,15 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
-	m_features.depth_feedback = m_features.feedback_loops();
+	m_features.depth_feedback = (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+	                            GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth) &&
+	                            !m_features.framebuffer_fetch;
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
+
+	if (!m_features.depth_feedback && !m_device_features.independentBlend)
+	{
+		DevCon.Warning("VK: Device does not support independent blend; depth feedback with DS as RT won't function correctly.");
+	}
 
 	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
@@ -3296,8 +3361,8 @@ void GSDeviceVK::BeginRenderPassForStretchRect(
 	else
 	{
 		// integer formats, etc
-		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, load_op,
-			VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+		const VkRenderPass rp = GetRenderPass(dTex->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED,
+			load_op, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 		if (load_op == VK_ATTACHMENT_LOAD_OP_CLEAR)
 		{
 			BeginClearRenderPass(rp, dtex_rc, dTex->GetClearColor());
@@ -3760,7 +3825,7 @@ void GSDeviceVK::OMSetRenderTargets(FramebufferInfo fb, const GSVector4i& scisso
 		}
 		else
 		{
-			std::array<VkClearAttachment, 2> clear_values;
+			std::array<VkClearAttachment, 3> clear_values;
 			u32 num_clear_values = 0;
 			u32 num_color_attachments = 0;
 			for (GSTextureVK* tex : fb.Attachments())
@@ -3807,18 +3872,27 @@ void GSDeviceVK::OMSetRenderTargets(FramebufferInfo fb, const GSVector4i& scisso
 
 	if (!InRenderPass())
 	{
-		std::array<GSTextureVK*, 2> attachments = { fb.rt, fb.ds };
-		std::array<u32, 2> dirty_flags = {
-			DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_RT,
-			DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH
+		std::array<GSTextureVK*, 3> attachments = {
+			fb.rt,
+			fb.ds_as_rt,
+			fb.ds,
 		};
-		std::array<bool, 2> feedback_flags = { fb.IsRTFeedbackLoop(), fb.IsTestingAndSamplingDepth() };
+		std::array<u32, 3> dirty_texture_flag = {
+			DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_RT,    // RT
+			DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH, // DS as RT
+			DIRTY_FLAG_TFX_TEXTURE_0 << TFX_TEXTURE_DEPTH, // DS
+		};
+		std::array<bool, 3> use_feedback = {
+			fb.IsRTFeedbackLoop(),                          // RT
+			fb.IsTestingAndSamplingDepth() && fb.ds_as_rt,  // DS as RT
+			fb.IsTestingAndSamplingDepth() && !fb.ds_as_rt, // DS
+		};
 
-		for (u32 i = 0; i < 2; i++)
+		for (u32 i = 0; i < 3; i++)
 		{
 			GSTextureVK* tex = attachments[i];
-			const u32 dirty_flag = dirty_flags[i];
-			const bool feedback = feedback_flags[i];
+			const u32 dirty_flag = dirty_texture_flag[i];
+			const bool feedback = use_feedback[i];
 
 			if (tex)
 			{
@@ -4138,9 +4212,12 @@ bool GSDeviceVK::CreateRenderPasses()
 		VkAttachmentLoadOp load_rt, VkAttachmentLoadOp load_depth, VkAttachmentLoadOp load_stencil) {
 		return GetRenderPass(
 			rt,
+			VK_FORMAT_UNDEFINED, // For DS as RT (unused)
 			depth,
 			(rt != VK_FORMAT_UNDEFINED)    ? load_rt                      : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 			(rt != VK_FORMAT_UNDEFINED)    ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			VK_ATTACHMENT_LOAD_OP_DONT_CARE, // For DS as RT (unused)
+			VK_ATTACHMENT_STORE_OP_DONT_CARE, // For DS as RT (unused)
 			(depth != VK_FORMAT_UNDEFINED) ? load_depth                   : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 			(depth != VK_FORMAT_UNDEFINED) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE,
 			(depth != VK_FORMAT_UNDEFINED) ? load_stencil                 : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -4216,8 +4293,10 @@ bool GSDeviceVK::CreateRenderPasses()
 		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 	CHECK_RESULT(m_utility_depth_render_pass_discard);
 
-	m_date_setup_render_pass = GetRenderPass(VK_FORMAT_UNDEFINED, depth_format, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+	m_date_setup_render_pass = GetRenderPass(VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, depth_format,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
 		m_features.stencil_buffer ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		m_features.stencil_buffer ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
 	CHECK_RESULT(m_date_setup_render_pass);
@@ -4269,6 +4348,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		{
 			rp = GetRenderPass(
 				LookupNativeFormat(GSTexture::Format::Invalid),
+				LookupNativeFormat(GSTexture::Format::Invalid),
 				LookupNativeFormat(GSTexture::Format::DepthStencil),
 				VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 		}
@@ -4276,6 +4356,7 @@ bool GSDeviceVK::CompileConvertPipelines()
 		{
 			rp = GetRenderPass(
 				LookupNativeFormat(shader.OutputFormat()),
+				LookupNativeFormat(GSTexture::Format::Invalid),
 				LookupNativeFormat(GSTexture::Format::Invalid),
 				VK_ATTACHMENT_LOAD_OP_DONT_CARE);
 		}
@@ -4340,8 +4421,8 @@ bool GSDeviceVK::CompileConvertPipelines()
 				{
 					pxAssert(!arr[ds][fbl]);
 
-					gpb.SetRenderPass(GetTFXRenderPass(true, ds != 0, is_setup, false, fbl != 0, false,
-						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE),
+					gpb.SetRenderPass(GetTFXRenderPass(true, false, ds != 0, is_setup, false, fbl != 0, false,
+						VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 						0);
 					arr[ds][fbl] = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true), false);
 					if (!arr[ds][fbl])
@@ -4359,9 +4440,12 @@ bool GSDeviceVK::CompileConvertPipelines()
 	{
 		for (u32 clear = 0; clear < 2; clear++)
 		{
-			m_primid_image_setup_render_passes[ds][clear] = GetRenderPass(LookupNativeFormat(GSTexture::Format::PrimID),
-				ds ? LookupNativeFormat(GSTexture::Format::DepthStencil) : VK_FORMAT_UNDEFINED,
+			m_primid_image_setup_render_passes[ds][clear] = GetRenderPass(
+				LookupNativeFormat(GSTexture::Format::PrimID),
+				LookupNativeFormat(GSTexture::Format::Invalid),
+				ds ? LookupNativeFormat(GSTexture::Format::DepthStencil) : LookupNativeFormat(GSTexture::Format::Invalid),
 				VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE,
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
 				ds ? (clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD) :
 					 VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				ds ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE);
@@ -4410,7 +4494,8 @@ bool GSDeviceVK::CompilePresentPipelines()
 {
 	// we may not have a swap chain if running in headless mode.
 	m_swap_chain_render_pass =
-		GetRenderPass(m_swap_chain ? m_swap_chain->GetTextureFormat() : VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED);
+		GetRenderPass(m_swap_chain ? m_swap_chain->GetTextureFormat() : VK_FORMAT_R8G8B8A8_UNORM,
+			VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED);
 	if (m_swap_chain_render_pass == VK_NULL_HANDLE)
 		return false;
 
@@ -4472,7 +4557,8 @@ bool GSDeviceVK::CompileInterlacePipelines()
 	}
 
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color),
+			VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4523,7 +4609,8 @@ bool GSDeviceVK::CompileMergePipelines()
 	}
 
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color),
+			VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4568,7 +4655,8 @@ bool GSDeviceVK::CompileMergePipelines()
 bool GSDeviceVK::CompilePostProcessingPipelines()
 {
 	VkRenderPass rp =
-		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color), VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
+		GetRenderPass(LookupNativeFormat(GSTexture::Format::Color),
+			VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD);
 	if (!rp)
 		return false;
 
@@ -4671,7 +4759,8 @@ bool GSDeviceVK::CompileCASPipelines()
 	gpb.SetVertexShader(vs);
 
 	gpb.SetRenderPass(
-		GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_DONT_CARE), 0);
+		GetRenderPass(VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED,
+			VK_ATTACHMENT_LOAD_OP_DONT_CARE), 0);
 
 	std::optional<std::string> cas_source = ReadShaderSource("shaders/vulkan/cas.glsl");
 	if (!cas_source.has_value() || !GetCASShaderSource(&cas_source.value()))
@@ -5053,6 +5142,7 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 	std::stringstream ss;
 	AddShaderHeader(ss);
 	AddShaderStageMacro(ss, false, false, true);
+	AddMacro(ss, "PS_DEPTH_FEEDBACK_SUPPORT", m_features.depth_feedback ? 1 : 2);
 	AddMacro(ss, "PS_FST", sel.fst);
 	AddMacro(ss, "PS_WMS", sel.wms);
 	AddMacro(ss, "PS_WMT", sel.wmt);
@@ -5160,9 +5250,10 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	else
 	{
 		gpb.SetRenderPass(
-			GetTFXRenderPass(p.rt, p.ds, p.ps.colclip_hw, p.dss.date,
+			GetTFXRenderPass(p.rt, p.ds_as_rt, p.ds, p.ps.colclip_hw, p.dss.date,
 				p.IsRTFeedbackLoop(), p.IsTestingAndSamplingDepth(),
 				p.rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+				p.ds_as_rt ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 			0);
 	}
@@ -5236,10 +5327,14 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 			VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 
+	if (p.ds_as_rt)
+		gpb.SetBlendAttachment(p.rt ? 1 : 0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+			VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT);
+
 	// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
 	// between turning it on and off for different draws, and adding the required barrier between non-rast-order
 	// and rast-order draws.
-	if (m_features.framebuffer_fetch && p.IsRTFeedbackLoop())
+	if (m_features.framebuffer_fetch && (p.IsRTFeedbackLoop() || (p.ds_as_rt && p.IsDepthFeedbackLoop())))
 		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
 
 	VkPipeline pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true));
@@ -5394,7 +5489,7 @@ void GSDeviceVK::ExecuteCommandBufferAndRestartPresent(bool wait_for_completion,
 	pxAssert(fb);
 
 	VkRenderPassBeginInfo rp = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO };
-	rp.renderPass = GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED,
+	rp.renderPass = GetRenderPass(swap_chain_texture->GetVkFormat(), VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED,
 	                              VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 	rp.framebuffer = fb;
 	rp.renderArea.offset.x = 0;
@@ -6144,6 +6239,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	FramebufferInfo fb;
 	fb.rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTextureVK*>(config.rt);
+	fb.ds_as_rt = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(m_ds_as_rt);
 	fb.ds = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(config.ds);
 	GSTextureVK* draw_rt_rov = config.ps.HasColorROV() ? static_cast<GSTextureVK*>(config.rt) : nullptr;
 	GSTextureVK* draw_ds_rov = config.ps.HasDepthROV() ? static_cast<GSTextureVK*>(config.ds) : nullptr;
@@ -6211,19 +6307,19 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (fb.rt->GetState() == GSTexture::State::Cleared)
 			{
-				alignas(16) std::array<VkClearValue, 2> clear_values = fb.GetClearValues();
+				alignas(16) std::array<VkClearValue, 3> clear_values = fb.GetClearValues();
 				const u32 num_attachments = fb.NumAttachments();
 
-				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+				BeginClearRenderPass(GetTFXRenderPass(true, false, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 						pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					fb.GetRect(), clear_values.data(), num_attachments);
 				fb.rt->SetState(GSTexture::State::Dirty);
 			}
 			else
 			{
-				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD,
+				BeginRenderPass(GetTFXRenderPass(true, false, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 						pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					fb.GetRect());
 			}
@@ -6334,14 +6430,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	{
 		// avoid restarting the render pass just to switch from rt+depth to rt and vice versa
 		// keep the depth even if doing colclip hw draws, because the next draw will probably re-enable depth.
-		if (!(fb.rt || draw_rt_rov) && m_current_framebuffer.rt &&
+		if (!(fb.rt || draw_rt_rov) && !fb.ds_as_rt && m_current_framebuffer.rt &&
 			config.tex != m_current_framebuffer.rt &&
 			fb.ds && m_current_framebuffer.rt->GetSize() == fb.ds->GetSize())
 		{
 			fb.rt = m_current_framebuffer.rt;
 			m_pipeline_selector.rt = true;
 		}
-		else if (!(fb.ds || draw_ds_rov) && m_current_framebuffer.ds &&
+		else if (!(fb.ds || draw_ds_rov) && !fb.ds_as_rt && m_current_framebuffer.ds &&
 			config.tex != m_current_framebuffer.ds &&
 			fb.rt && m_current_framebuffer.ds->GetSize() == fb.rt->GetSize())
 		{
@@ -6422,12 +6518,15 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
 	}
 	
-	if (pipe.IsDepthFeedbackLoop() && fb.ds)
+	GSTextureVK* depth_for_barrier = pipe.IsDepthFeedbackLoop() ?
+		(m_features.depth_feedback ? fb.ds : fb.ds_as_rt) : nullptr;
+
+	if (depth_for_barrier)
 	{
 		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
-		PSSetShaderResource(TFX_TEXTURE_DEPTH, fb.ds, false);
+		PSSetShaderResource(TFX_TEXTURE_DEPTH, depth_for_barrier, false);
 
-		if (m_tfx_textures[TFX_TEXTURE_DEPTH_ROV] == fb.ds)
+		if (m_tfx_textures[TFX_TEXTURE_DEPTH_ROV] == depth_for_barrier)
 		{
 			// Unbind to avoid conflicts.
 			PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
@@ -6449,11 +6548,14 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (!InRenderPass())
 	{
 		const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(fb.rt);
+		const VkAttachmentLoadOp ds_as_rt_op = GetLoadOpForTexture(fb.ds_as_rt);
 		const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(fb.ds);
-		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds, pipe.ps.colclip_hw,
+		const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds_as_rt, pipe.ds, pipe.ps.colclip_hw,
 			config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
-			pipe.IsTestingAndSamplingDepth(), rt_op, ds_op);
-		const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
+			pipe.IsTestingAndSamplingDepth(), rt_op, ds_as_rt_op, ds_op);
+		const bool is_clearing_rt = rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR ||
+		                            ds_as_rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR ||
+		                            ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR;
 
 		// Only draw to the active area of the colclip hw target. Except when depth is cleared, we need to use the full
 		// buffer size, otherwise it'll only clear the draw part of the depth buffer.
@@ -6464,7 +6566,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (is_clearing_rt)
 		{
 			// when we're clearing, we set the draw area to the whole fb, otherwise part of it will be undefined
-			alignas(16) std::array<VkClearValue, 2> clear_values = fb.GetClearValues();
+			alignas(16) std::array<VkClearValue, 3> clear_values = fb.GetClearValues();
 			const u32 num_attachments = fb.NumAttachments();
 
 			BeginClearRenderPass(rp, render_area, clear_values.data(), num_attachments);
@@ -6513,7 +6615,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	// now we can do the actual draw
 	if (BindDrawPipeline(pipe))
 		SendHWDraw(config, pipe.IsRTFeedbackLoop() ? fb.rt : nullptr,
-			pipe.IsDepthFeedbackLoop() ? fb.ds : nullptr, config.require_one_barrier, config.require_full_barrier);
+			pipe.IsDepthFeedbackLoop() ? depth_for_barrier : nullptr,
+			config.require_one_barrier, config.require_full_barrier);
 
 	// blend second pass
 	if (config.blend_multi_pass.enable)
@@ -6549,8 +6652,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		if (BindDrawPipeline(pipe))
 		{
 			SendHWDraw(config, pipe.IsRTFeedbackLoop() ? fb.rt : nullptr,
-				pipe.IsDepthFeedbackLoop() ? fb.ds : nullptr, config.alpha_second_pass.require_one_barrier,
-				config.alpha_second_pass.require_full_barrier);
+				pipe.IsDepthFeedbackLoop() ? depth_for_barrier : nullptr,
+				config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
 		}
 	}
 
@@ -6581,19 +6684,19 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			// if this target was cleared and never drawn to, perform the clear as part of the resolve here.
 			if (fb.rt->GetState() == GSTexture::State::Cleared)
 			{
-				alignas(16) std::array<VkClearValue, 2> clear_values = fb.GetClearValues();
+				alignas(16) std::array<VkClearValue, 3> clear_values = fb.GetClearValues();
 				const u32 num_attachments = fb.NumAttachments();
 
-				BeginClearRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR,
+				BeginClearRenderPass(GetTFXRenderPass(true, false, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+						pipe.IsTestingAndSamplingDepth(), VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 						pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					fb.rt->GetRect(), clear_values.data(), num_attachments);
 				fb.rt->SetState(GSTexture::State::Dirty);
 			}
 			else
 			{
-				BeginRenderPass(GetTFXRenderPass(true, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
-						pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_LOAD,
+				BeginRenderPass(GetTFXRenderPass(true, false, pipe.ds, false, false, pipe.IsRTFeedbackLoop(),
+						pipe.IsDepthFeedbackLoop(), VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 						pipe.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 					fb.rt->GetRect());
 			}
@@ -6623,6 +6726,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.cms.key = config.ps.HasColorROV() ? GSHWDrawConfig::ColorMaskSelector().key : config.colormask.key;
 	pipe.topology = static_cast<u32>(config.topology);
 	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
+	pipe.ds_as_rt = m_ds_as_rt != nullptr;
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	pipe.line_width = config.line_expand;
 	FeedbackLoopFlags flags = FeedbackLoopFlags::None;
@@ -6709,10 +6813,19 @@ void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
 	if (ds)
 	{
 		VkImageMemoryBarrier2& barrier = barriers[num_barriers++] = barrier_template;
-		barrier.srcStageMask = s_depth_feedback_src_stage;
-		barrier.srcAccessMask = s_depth_feedback_src_access;
 		barrier.image = ds->GetImage();
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		if (ds->IsDepthStencil())
+		{
+			barrier.srcStageMask = s_depth_feedback_src_stage;
+			barrier.srcAccessMask = s_depth_feedback_src_access;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+		else
+		{
+			barrier.srcStageMask = s_color_feedback_src_stage;
+			barrier.srcAccessMask = s_color_feedback_src_access;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
 	}
 
 	VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};

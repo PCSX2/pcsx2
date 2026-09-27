@@ -83,9 +83,12 @@ public:
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
 	// Creates a simple render pass.
-	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
+	VkRenderPass GetRenderPass(
+		VkFormat color_format, VkFormat depth_as_color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
+		VkAttachmentLoadOp depth_as_color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
+		VkAttachmentStoreOp depth_as_color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -167,19 +170,22 @@ private:
 	{
 		struct
 		{
-			u32 color_format : 8;
-			u32 depth_format : 8;
-			u32 color_load_op : 2;
-			u32 color_store_op : 1;
-			u32 depth_load_op : 2;
-			u32 depth_store_op : 1;
-			u32 stencil_load_op : 2;
-			u32 stencil_store_op : 1;
-			u32 color_feedback_loop : 1;
-			u32 depth_feedback_loop : 1;
+			u64 color_format : 8;
+			u64 depth_as_color_format : 8;
+			u64 depth_format : 8;
+			u64 color_load_op : 2;
+			u64 color_store_op : 1;
+			u64 depth_as_color_load_op : 2;
+			u64 depth_as_color_store_op : 1;
+			u64 depth_load_op : 2;
+			u64 depth_store_op : 1;
+			u64 stencil_load_op : 2;
+			u64 stencil_store_op : 1;
+			u64 color_feedback_loop : 1;
+			u64 depth_feedback_loop : 1;
 		};
 
-		u32 key;
+		u64 key;
 	};
 
 	using ExtensionList = std::vector<const char*>;
@@ -297,7 +303,7 @@ private:
 
 	bool m_last_submit_failed = false;
 
-	std::map<u32, VkRenderPass> m_render_pass_cache;
+	std::map<u64, VkRenderPass> m_render_pass_cache;
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
@@ -341,6 +347,7 @@ public:
 			{
 				u32 topology : 2;
 				u32 rt : 1;
+				u32 ds_as_rt : 1;
 				u32 ds : 1;
 				u32 line_width : 1;
 				FeedbackLoopFlags feedback_loop_flags : 3;
@@ -541,11 +548,10 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil,
-		bool rt_feedback, bool depth_feedback, VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
-	{
-		return m_tfx_render_pass[rt][ds][colclip][stencil][rt_feedback][depth_feedback][rt_op][ds_op];
-	}
+	__fi VkRenderPass GetTFXRenderPass(
+		bool rt, bool ds_as_rt, bool ds, bool colclip, bool stencil, bool rt_feedback, bool depth_feedback,
+		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_as_rt_op, VkAttachmentLoadOp ds_op);
+
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
 

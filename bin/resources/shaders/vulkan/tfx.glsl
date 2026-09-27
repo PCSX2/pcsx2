@@ -650,6 +650,16 @@ layout(location = 0) in VSOutput
 	vec4 o_col0;
 #endif
 
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+	#if !PS_NO_COLOR || PS_DATE >= 5
+		// Color target occupies location 1.
+		layout(location = 1) out float o_col1;
+	#else
+		// No color target.
+		layout(location = 0) out float o_col1;
+	#endif
+#endif
+
 #if PS_ROV_COLOR
 	layout(set = 1, binding = 5, rgba8) uniform restrict coherent image2D RtImageRov;
 	vec4 rov_rt_value;
@@ -1974,6 +1984,10 @@ void main()
 	// Writing back depth
 	#if PS_RETURN_DEPTH
 		gl_FragDepth = input_z;
+		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+			// Output color clone for feedback.
+			o_col1 = input_z;
+		#endif
 	#elif PS_RETURN_DEPTH_ROV
 		if (!rov_discard_depth)
 			imageStore(DepthImageRov, ivec2(gl_FragCoord.xy), vec4(input_z, 0, 0, 1.0f));

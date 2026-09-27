@@ -63,20 +63,27 @@ public:
 	struct FramebufferInfo
 	{
 		GSTextureVK* rt;
+		GSTextureVK* ds_as_rt;
 		GSTextureVK* ds;
 		FeedbackLoopFlagsVK feedback_loop_flags;
 		VkFramebuffer framebuffer;
 
-		FramebufferInfo(GSTexture* rt, GSTexture* ds,
+		FramebufferInfo(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds,
 			bool rt_feedback = false, bool depth_feedback = false)
 			: rt(static_cast<GSTextureVK*>(rt))
+			, ds_as_rt(static_cast<GSTextureVK*>(ds_as_rt))
 			, ds(static_cast<GSTextureVK*>(ds))
 			, feedback_loop_flags(FeedbackLoopFlagsVK::None)
 			, framebuffer(VK_NULL_HANDLE)
 		{
 		}
 
-		FramebufferInfo() : FramebufferInfo(nullptr, nullptr, false, false)
+		FramebufferInfo(GSTexture* rt, GSTexture* ds, bool rt_feedback = false, bool depth_feedback = false)
+			: FramebufferInfo(rt, nullptr, ds, rt_feedback, depth_feedback)
+		{
+		}
+
+		FramebufferInfo() : FramebufferInfo(nullptr, nullptr, nullptr, false, false)
 		{
 		}
 
@@ -87,31 +94,34 @@ public:
 		bool Matches(const FramebufferInfo& other) const
 		{
 			return rt == other.rt &&
+				ds_as_rt == other.ds_as_rt &&
 				ds == other.ds &&
 				feedback_loop_flags == other.feedback_loop_flags;
 		}
 
 		u32 NumAttachments() const
 		{
-			return (rt ? 1 : 0) + (ds ? 1 : 0);
+			return (rt ? 1 : 0) + (ds_as_rt ? 1 : 0) + (ds ? 1 : 0);
 		}
 
 		GSTextureVK* FirstAttachment() const
 		{
-			return rt ? rt : ds;
+			return rt ? rt : (ds_as_rt ? ds_as_rt : ds);
 		}
 
-		std::array<GSTextureVK*, 2> Attachments() const
+		std::array<GSTextureVK*, 3> Attachments() const
 		{
-			return std::array{ rt, ds };
+			return std::array{ rt, ds_as_rt, ds };
 		}
 
-		std::array<VkClearValue, 2> GetClearValues() const
+		std::array<VkClearValue, 3> GetClearValues() const
 		{
-			alignas(16) std::array<VkClearValue, 2> clear_values;
+			alignas(16) std::array<VkClearValue, 3> clear_values;
 			u32 count = 0;
 			if (rt)
 				GSVector4::store<true>(&clear_values[count++].color, rt->GetClearForFormat());
+			if (ds_as_rt)
+				GSVector4::store<true>(&clear_values[count++].color, ds_as_rt->GetClearForFormat());
 			if (ds)
 			{
 				clear_values[count].depthStencil.depth =  ds->GetClearDepth();
@@ -133,7 +143,7 @@ public:
 
 		GSVector2i GetSize() const
 		{
-			return (rt ? rt->GetSize() : (ds ? ds->GetSize() : GSVector2i(0, 0)));
+			return (rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : (ds ? ds->GetSize() : GSVector2i(0, 0))));
 		}
 
 		GSVector4i GetRect() const
