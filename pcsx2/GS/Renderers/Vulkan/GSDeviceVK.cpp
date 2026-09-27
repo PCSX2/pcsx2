@@ -472,6 +472,7 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_fragment_shader_interlock = SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
@@ -682,9 +683,13 @@ bool GSDeviceVK::CreateDevice(VkSurfaceKHR surface, bool enable_validation_layer
 		line_rasterization_feature.bresenhamLines = VK_TRUE;
 		Vulkan::AddPointerToChain(&device_info, &line_rasterization_feature);
 	}
-	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
+	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access ||
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth)
 	{
-		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess = VK_TRUE;
+		rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess =
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access ? VK_TRUE : VK_FALSE;
+		rasterization_order_access_feature.rasterizationOrderDepthAttachmentAccess =
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth ? VK_TRUE : VK_FALSE;
 		Vulkan::AddPointerToChain(&device_info, &rasterization_order_access_feature);
 	}
 	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
@@ -786,7 +791,8 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		Vulkan::AddPointerToChain(&features2, &provoking_vertex_features);
 	if (m_optional_extensions.vk_ext_line_rasterization)
 		Vulkan::AddPointerToChain(&features2, &line_rasterization_feature);
-	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access)
+	if (m_optional_extensions.vk_ext_rasterization_order_attachment_access ||
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth)
 		Vulkan::AddPointerToChain(&features2, &rasterization_order_access_feature);
 	if (m_optional_extensions.vk_ext_attachment_feedback_loop_layout)
 		Vulkan::AddPointerToChain(&features2, &attachment_feedback_loop_feature);
@@ -802,6 +808,7 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_khr_synchronization2 &= !!sync2_features.synchronization2;
 	m_optional_extensions.vk_ext_provoking_vertex &= !!provoking_vertex_features.provokingVertexLast;
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access &= !!rasterization_order_access_feature.rasterizationOrderColorAttachmentAccess;
+	m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth &= !!rasterization_order_access_feature.rasterizationOrderDepthAttachmentAccess;
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout &= !!attachment_feedback_loop_feature.attachmentFeedbackLoopLayout;
 
 	VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
@@ -880,8 +887,10 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_line_rasterization is %s",
 		m_optional_extensions.vk_ext_line_rasterization ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
+	Console.WriteLn("VK_EXT_rasterization_order_attachment_access (color) is %s",
 		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_rasterization_order_attachment_access (depth) is %s",
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_attachment_feedback_loop_layout is %s",
@@ -1748,6 +1757,8 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 			s_depth_feedback_src_stage, s_depth_feedback_src_access,
 			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, static_cast<VkAccessFlags>(GetFeedbackLoopInputAccessFlags()),
 			feedback_dependency);
+		if (m_features.framebuffer_fetch_depth())
+			rpb.AddSubpassFlags(VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_EXT);
 	}
 
 	if (key.color_format != VK_FORMAT_UNDEFINED)
@@ -1785,7 +1796,7 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 			static_cast<VkAttachmentStoreOp>(key.stencil_store_op),
 			sampling_real_depth,
 			!UseFeedbackLoopLayout(),
-			sampling_real_depth);
+			!m_features.framebuffer_fetch_depth());
 	}
 
 	VkRenderPass pass = rpb.Create(m_device);
@@ -2850,7 +2861,13 @@ bool GSDeviceVK::CheckFeatures()
 	//const bool isAMD = (vendorID == 0x1002 || vendorID == 0x1022);
 	//const bool isNVIDIA = (vendorID == 0x10DE);
 
-	m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access && !GSConfig.DisableFramebufferFetch;
+	if (!GSConfig.DisableFramebufferFetch)
+	{
+		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
+		m_features.depth_feedback =
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access &&
+			m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth;
+	}
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
@@ -2890,9 +2907,11 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
-	m_features.depth_feedback = (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
-	                            GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth) &&
-	                            !m_features.framebuffer_fetch;
+	if (!m_features.framebuffer_fetch)
+	{
+		m_features.depth_feedback = (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+		                            GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth);
+	}
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
 	if (!m_features.depth_feedback && !m_device_features.independentBlend)
@@ -5257,8 +5276,13 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 			gpb.AddFlags(VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT);
 	}
 	
-	if (p.IsTestingAndSamplingDepth() && UseFeedbackLoopLayout())
-		gpb.AddFlags(VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT);
+	if (p.IsTestingAndSamplingDepth())
+	{
+		if (m_features.framebuffer_fetch_depth() && p.IsTestingAndSamplingDepth())
+			gpb.AddDepthStencilFlags(VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_EXT);
+		else if (UseFeedbackLoopLayout())
+			gpb.AddFlags(VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT);
+	}
 	
 	if (p.ds_as_rt)
 		gpb.SetBlendAttachment(p.rt ? 1 : 0, false, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
