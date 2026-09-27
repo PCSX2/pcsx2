@@ -289,30 +289,35 @@ std::unique_ptr<GSTextureVK> GSTextureVK::Adopt(
 		new GSTextureVK(usage, format, width, height, levels, image, VK_NULL_HANDLE, view, vk_format));
 }
 
+void GSTextureVK::RemoveFramebuffer(VkFramebuffer fb)
+{
+	for (auto it = m_framebuffers.begin(); it != m_framebuffers.end(); )
+	{
+		if (it->framebuffer == fb)
+			it = m_framebuffers.erase(it);
+		else
+			it++;
+	}
+}
+
 void GSTextureVK::Destroy(bool defer)
 {
 	GSDeviceVK::GetInstance()->UnbindTexture(this);
 
 	if (IsRenderTargetOrDepthStencil())
 	{
-		for (const auto& [other_tex, fb, feedback_color, feedback_depth] : m_framebuffers)
+		for (const FramebufferInfo& fb : m_framebuffers)
 		{
-			if (other_tex)
+			for (GSTextureVK* tex : fb.Attachments())
 			{
-				for (auto other_it = other_tex->m_framebuffers.begin(); other_it != other_tex->m_framebuffers.end(); ++other_it)
-				{
-					if (std::get<0>(*other_it) == this)
-					{
-						other_tex->m_framebuffers.erase(other_it);
-						break;
-					}
-				}
+				if (tex && tex != this)
+					tex->RemoveFramebuffer(fb.framebuffer);
 			}
 
 			if (defer)
-				GSDeviceVK::GetInstance()->DeferFramebufferDestruction(fb);
+				GSDeviceVK::GetInstance()->DeferFramebufferDestruction(fb.framebuffer);
 			else
-				vkDestroyFramebuffer(GSDeviceVK::GetInstance()->GetDevice(), fb, nullptr);
+				vkDestroyFramebuffer(GSDeviceVK::GetInstance()->GetDevice(), fb.framebuffer, nullptr);
 		}
 		m_framebuffers.clear();
 	}
@@ -787,42 +792,59 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 
 VkFramebuffer GSTextureVK::GetFramebuffer(bool feedback_loop)
 {
-	return GetLinkedFramebuffer(nullptr, feedback_loop, false);
+	pxAssert(IsRenderTarget() && !IsDepthColor());
+	FramebufferInfo fb = {};
+	fb.rt = this;
+	if (feedback_loop)
+		fb.feedback_loop_flags = FeedbackLoopFlagsVK::ReadAndWriteRT;
+	GetLinkedFramebuffer(fb);
+	return fb.framebuffer;
 }
 
-VkFramebuffer GSTextureVK::GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth)
+void GSTextureVK::GetLinkedFramebuffer(FramebufferInfo& fb)
 {
 	pxAssertRel(!IsTexture(), "Texture is a render target");
+	pxAssert(fb.FirstAttachment() == this);
+	pxAssert(fb.framebuffer == VK_NULL_HANDLE);
 
-	for (const auto& [other_tex, fb, other_feedback_loop_color, other_feedback_loop_depth] : m_framebuffers)
+	for (const FramebufferInfo& i : m_framebuffers)
 	{
-		if (other_tex == depth_texture && other_feedback_loop_color == feedback_loop_color && other_feedback_loop_depth == feedback_loop_depth)
-			return fb;
+		if (i.Matches(fb))
+		{
+			fb.framebuffer = i.framebuffer;
+			return;
+		}
 	}
 
 	const VkRenderPass rp = GSDeviceVK::GetInstance()->GetRenderPass(
-		!IsDepthStencil() ? m_vk_format : VK_FORMAT_UNDEFINED,
-		!IsDepthStencil() ? (depth_texture ? depth_texture->m_vk_format : VK_FORMAT_UNDEFINED) : m_vk_format,
-		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_LOAD,
-		VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, feedback_loop_color, feedback_loop_depth);
+		fb.rt ? fb.rt->GetVkFormat() : VK_FORMAT_UNDEFINED,
+		fb.ds ? fb.ds->GetVkFormat() : VK_FORMAT_UNDEFINED,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE,
+		VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		fb.IsRTFeedbackLoop(), fb.IsTestingAndSamplingDepth());
+
 	if (!rp)
-		return VK_NULL_HANDLE;
+		return;
 
 	Vulkan::FramebufferBuilder fbb;
-	fbb.AddAttachment(m_view);
-	if (depth_texture)
-		fbb.AddAttachment(depth_texture->m_view);
+	for (GSTextureVK* tex : fb.Attachments())
+	{
+		if (tex)
+			fbb.AddAttachment(tex->GetView());
+	}
 	fbb.SetSize(m_size.x, m_size.y, 1);
 	fbb.SetRenderPass(rp);
 
-	VkFramebuffer fb = fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
-	if (!fb)
-		return VK_NULL_HANDLE;
+	fb.framebuffer = fbb.Create(GSDeviceVK::GetInstance()->GetDevice());
+	if (!fb.framebuffer)
+		return;
 
-	m_framebuffers.emplace_back(depth_texture, fb, feedback_loop_color, feedback_loop_depth);
-	if (depth_texture)
-		depth_texture->m_framebuffers.emplace_back(this, fb, feedback_loop_color, feedback_loop_depth);
-	return fb;
+	for (GSTextureVK* tex : fb.Attachments())
+	{
+		if (tex)
+			tex->m_framebuffers.push_back(fb);
+	}
 }
 
 GSDownloadTextureVK::GSDownloadTextureVK(u32 width, u32 height, GSTexture::Format format)
