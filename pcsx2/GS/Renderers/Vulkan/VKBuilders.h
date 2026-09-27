@@ -173,6 +173,7 @@ namespace Vulkan
 		void SetStencilState(bool stencil_test, const VkStencilOpState& front, const VkStencilOpState& back);
 		void SetNoDepthTestState();
 		void SetNoStencilState();
+		void AddDepthStencilFlags(u32 flags);
 
 		void AddBlendAttachment(bool blend_enable, VkBlendFactor src_factor, VkBlendFactor dst_factor, VkBlendOp op,
 			VkBlendFactor alpha_src_factor, VkBlendFactor alpha_dst_factor, VkBlendOp alpha_op,
