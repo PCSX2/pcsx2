@@ -939,12 +939,15 @@ bool GSDeviceOGL::CheckFeatures()
 	m_features.prefer_new_textures = false;
 	m_features.stencil_buffer = true;
 	m_features.test_and_sample_depth = true;
-	// Auto select chooses depth-as-rt as it appears to be more compatible across hardware.
-	m_features.depth_feedback = GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
-	if (!m_features.texture_barrier && m_features.multidraw_fb_copy)
+	if (!m_features.framebuffer_fetch)
 	{
-		// Multidraw fb copy can do depth feedback just fine
-		m_features.depth_feedback |= GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto;
+		// Auto select chooses depth-as-rt as it appears to be more compatible across hardware.
+		m_features.depth_feedback = GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
+		if (!m_features.texture_barrier && m_features.multidraw_fb_copy)
+		{
+			// Multidraw fb copy can do depth feedback just fine
+			m_features.depth_feedback |= GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto;
+		}
 	}
 
 	if (GLAD_GL_VERSION_4_3 || GLAD_GL_ARB_shader_storage_buffer_object)
