@@ -39,6 +39,7 @@ public:
 		bool vk_ext_memory_budget : 1;
 		bool vk_ext_calibrated_timestamps : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
+		bool vk_ext_rasterization_order_attachment_access_depth : 1;
 		bool vk_ext_full_screen_exclusive : 1;
 		bool vk_ext_line_rasterization : 1;
 		bool vk_swapchain_maintenance1 : 1;
