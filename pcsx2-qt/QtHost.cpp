@@ -1570,6 +1570,17 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 	INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
 	Error error;
 
+	// clean unused sections, stops the file being bloated
+	sif->RemoveEmptySections();
+
+	if (!sif->Save(&error))
+	{
+		Host::ReportErrorAsync(
+			TRANSLATE_SV("QtHost", "Error"),
+			fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"), error.GetDescription()));
+		return false;
+	}
+
 	// if there's no keys, just toss the whole thing out
 	if (delete_if_empty && ini->IsEmpty())
 	{
@@ -1583,19 +1594,6 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 					error.GetDescription()));
 			return false;
 		}
-
-		return true;
-	}
-
-	// clean unused sections, stops the file being bloated
-	sif->RemoveEmptySections();
-
-	if (!sif->Save(&error))
-	{
-		Host::ReportErrorAsync(
-			TRANSLATE_SV("QtHost", "Error"),
-			fmt::format(TRANSLATE_FS("QtHost", "An error occurred while saving game settings:\n{}"), error.GetDescription()));
-		return false;
 	}
 
 	return true;
