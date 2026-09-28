@@ -6504,7 +6504,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	pipe.feedback_loop_flags = FeedbackLoopFlag_None;
-	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
+	if (m_features.texture_barrier)
 	{
 		if (config.IsFeedbackLoopRT(config.ps))
 			pipe.feedback_loop_flags |= FeedbackLoopFlag_ReadAndWriteRT;
