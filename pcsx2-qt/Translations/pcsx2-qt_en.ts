@@ -2728,7 +2728,7 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="129"/>
+        <location filename="../Debugger/Breakpoints/BreakpointView.cpp" line="128"/>
         <source>Save to Settings</source>
         <translation type="unfinished"></translation>
     </message>
