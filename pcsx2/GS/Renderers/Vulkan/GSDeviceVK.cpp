@@ -6398,7 +6398,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		FeedbackLoopFlags flags = pipe.feedback_loop_flags;
 		if (fb.rt && (m_current_framebuffer.feedback_loop_flags & FeedbackLoopFlags::ReadAndWriteRT))
 			flags |= FeedbackLoopFlags::ReadAndWriteRT;
-		if (fb.ds && (m_current_framebuffer.feedback_loop_flags & FeedbackLoopFlags::ReadAndWriteDepth))
+		if (fb.ds && (m_current_framebuffer.feedback_loop_flags & FeedbackLoopFlags::ReadAndWriteDepth) &&
+			m_features.depth_feedback)
 			flags |= FeedbackLoopFlags::ReadAndWriteDepth;
 		if (fb.ds && (m_current_framebuffer.feedback_loop_flags & FeedbackLoopFlags::ReadOnlyDepth))
 			flags |= FeedbackLoopFlags::ReadOnlyDepth;
@@ -6675,7 +6676,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.ds_as_rt = m_ds_as_rt != nullptr;
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	FeedbackLoopFlags flags = FeedbackLoopFlags::None;
-	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
+	if (m_features.texture_barrier)
 	{
 		if (config.IsFeedbackLoopRT(config.ps))
 			flags |= FeedbackLoopFlags::ReadAndWriteRT;
