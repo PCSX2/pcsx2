@@ -1595,6 +1595,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 			return false;
 		}
 	}
+	QMetaObject::invokeMethod(g_main_window, &MainWindow::onGameSettingsChanged, Qt::QueuedConnection);
 
 	return true;
 }

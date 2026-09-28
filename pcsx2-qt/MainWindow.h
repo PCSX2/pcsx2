@@ -147,6 +147,7 @@ public Q_SLOTS:
 	bool requestShutdown(bool allow_confirm = true, bool allow_save_to_state = true, bool default_save_to_state = true);
 	void requestExit(bool allow_confirm = true);
 	void checkForSettingChanges();
+	void onGameSettingsChanged();
 	std::optional<WindowInfo> getWindowInfo();
 
 private Q_SLOTS:
