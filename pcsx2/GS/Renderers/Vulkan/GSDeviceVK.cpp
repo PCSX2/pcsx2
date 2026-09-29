@@ -1750,7 +1750,7 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 				subpass_dependency[num_subpass_dependencies].srcAccessMask =
 					VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 				subpass_dependency[num_subpass_dependencies].dstAccessMask = static_cast<VkAccessFlags>(GetFeedbackLoopInputAccessFlags());
-				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags();
+				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags(true);
 				num_subpass_dependencies++;
 			}
 		}
@@ -1793,7 +1793,7 @@ VkRenderPass GSDeviceVK::CreateCachedRenderPass(RenderPassCacheKey key)
 				subpass_dependency[num_subpass_dependencies].srcAccessMask =
 					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 				subpass_dependency[num_subpass_dependencies].dstAccessMask = static_cast<VkAccessFlags>(GetFeedbackLoopInputAccessFlags());
-				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags();
+				subpass_dependency[num_subpass_dependencies].dependencyFlags = GetFeedbackBarrierDependencyFlags(true);
 				num_subpass_dependencies++;
 			}
 		}
@@ -6107,8 +6107,62 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	return image;
 }
 
+void GSDeviceVK::ExternalFeedbackBarrier(GSTextureVK* tex)
+{
+	// In case we're sampling from the RT / DS but our local feedback
+	// barriers or FB fetch does't cover it, we end the render pass
+	// and do a global barrier (rather than framebuffer local / BY_REGION).
+
+	if (InRenderPass())
+	{
+		GL_INS("VK: End render pass and barrier due to sample/write from RT or DS.");
+		EndRenderPass();
+	}
+
+	g_perfmon.Put(GSPerfMon::Barriers, 1);
+
+	// If the current layout is not feedback loop, just do a transition.
+	if (tex->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
+	{
+		tex->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
+		return;
+	}
+
+	// Barrier without the BY_REGION flag
+	if (tex->IsDepthStencil())
+	{
+		FeedbackBarrier(nullptr, tex, false);
+	}
+	else
+	{
+		FeedbackBarrier(tex, nullptr, false);
+	}
+}
+
 void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 {
+	if (config.tex &&
+		((config.rt == config.tex && config.colormask.wrgba != 0 && !config.ps.no_color) ||
+		(config.ds == config.tex && config.depth.zwe)) &&
+		!config.ps.tex_is_fb)
+	{
+		if (config.rt == config.tex)
+		{
+			ExternalFeedbackBarrier(static_cast<GSTextureVK*>(config.rt));
+
+			if (!(config.ds && config.IsFeedbackLoopDepth(config.ps)))
+				config.require_one_barrier = false; // We don't need another barrier for depth.
+		}
+
+		if (config.ds == config.tex)
+		{
+			ExternalFeedbackBarrier(static_cast<GSTextureVK*>(config.ds));
+
+			if (!(config.rt && config.IsFeedbackLoopDepth(config.ps)))
+				config.require_one_barrier = false; // We don't need another barrier for RT.
+		}
+	}
+	
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	GSTextureVK* draw_rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTextureVK*>(config.rt);
 	GSTextureVK* draw_ds = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(config.ds);
@@ -6635,10 +6689,14 @@ VkImageLayout GSDeviceVK::GetFeedbackLoopLayout() const
 	return UseFeedbackLoopLayout() ? VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT : VK_IMAGE_LAYOUT_GENERAL;
 }
 
-VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags() const
+VkDependencyFlags GSDeviceVK::GetFeedbackBarrierDependencyFlags(bool by_region) const
 {
-	return UseFeedbackLoopLayout() ? (VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT) :
-	                                 VK_DEPENDENCY_BY_REGION_BIT;
+	VkDependencyFlags flags = 0;
+	if (UseFeedbackLoopLayout())
+		flags |= VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT;
+	if (by_region)
+		flags |= VK_DEPENDENCY_BY_REGION_BIT;
+	return flags;
 }
 
 VkAccessFlags2 GSDeviceVK::GetFeedbackLoopInputAccessFlags() const
@@ -6646,7 +6704,7 @@ VkAccessFlags2 GSDeviceVK::GetFeedbackLoopInputAccessFlags() const
 	return UseFeedbackLoopLayout() ? VK_ACCESS_2_SHADER_READ_BIT : VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT;
 }
 
-void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
+void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds, bool by_region)
 {
 	VkImageMemoryBarrier2 barrier_template = {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
 	barrier_template.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
@@ -6678,7 +6736,7 @@ void GSDeviceVK::FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds)
 	}
 
 	VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-	dependency.dependencyFlags = GetFeedbackBarrierDependencyFlags();
+	dependency.dependencyFlags = GetFeedbackBarrierDependencyFlags(by_region);
 	dependency.imageMemoryBarrierCount = num_barriers;
 	dependency.pImageMemoryBarriers = barriers.data();
 
@@ -6712,7 +6770,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 
 		for (u32 n = 0, p = 0; n < draw_list_size; n++)
 		{
-			FeedbackBarrier(draw_rt, draw_ds);
+			FeedbackBarrier(draw_rt, draw_ds, true);
 
 			const u32 count = config.drawlist->at(n) * indices_per_prim;
 			Draw(config, p, count);
@@ -6725,7 +6783,7 @@ void GSDeviceVK::SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, 
 	if (one_barrier)
 	{
 		g_perfmon.Put(GSPerfMon::Barriers, n_barriers);
-		FeedbackBarrier(draw_rt, draw_ds);
+		FeedbackBarrier(draw_rt, draw_ds, true);
 	}
 
 	Draw(config);
