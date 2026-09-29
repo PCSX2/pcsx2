@@ -70,6 +70,7 @@ target_sources(pcsx2-qt PRIVATE
 	Settings/BIOSSettingsWidget.cpp
 	Settings/BIOSSettingsWidget.h
 	Settings/BIOSSettingsWidget.ui
+	Settings/ControllerBindingWidget_DualShock1.ui
 	Settings/ControllerBindingWidget_DualShock2.ui
 	Settings/ControllerBindingWidget_Guitar.ui
 	Settings/ControllerBindingWidget_Popn.ui

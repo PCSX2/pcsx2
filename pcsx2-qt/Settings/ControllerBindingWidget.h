@@ -10,6 +10,7 @@
 #include <span>
 
 #include "ui_ControllerBindingWidget.h"
+#include "ui_ControllerBindingWidget_DualShock1.h"
 #include "ui_ControllerBindingWidget_DualShock2.h"
 #include "ui_ControllerBindingWidget_Guitar.h"
 #include "ui_ControllerBindingWidget_Jogcon.h"
@@ -168,6 +169,22 @@ public:
 
 protected:
 	void initBindingWidgets();
+};
+
+class ControllerBindingWidget_DualShock1 final : public ControllerBindingWidget_Base
+{
+	Q_OBJECT
+
+public:
+	ControllerBindingWidget_DualShock1(ControllerBindingWidget* parent);
+	~ControllerBindingWidget_DualShock1();
+
+	QIcon getIcon() const override;
+
+	static ControllerBindingWidget_Base* createInstance(ControllerBindingWidget* parent);
+
+private:
+	Ui::ControllerBindingWidget_DualShock1 m_ui;
 };
 
 class ControllerBindingWidget_DualShock2 final : public ControllerBindingWidget_Base
