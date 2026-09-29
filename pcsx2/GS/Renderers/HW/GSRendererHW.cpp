@@ -104,7 +104,7 @@ void GSRendererHW::VSync(u32 field, bool registers_written, bool idle_frame)
 	{
 		// If it did draws very recently, we should keep the recent stuff in case it hasn't been preloaded/used yet.
 		// Rocky Legend does this with the main menu FMV's.
-		if ((s_n - s_last_transfer_draw_n) < 5)
+		if ((s_n - s_last_transfer_draw_n) < 20)
 		{
 			for (auto iter = m_draw_transfers.rbegin(); iter != m_draw_transfers.rend(); iter++)
 			{
