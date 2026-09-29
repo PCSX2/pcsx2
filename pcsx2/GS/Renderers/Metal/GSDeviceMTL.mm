@@ -720,6 +720,9 @@ void GSDeviceMTL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 
 	if (feedback_write_1) // FIXME I'm not sure dRect[0] is always correct
 		StretchRect(dTex, full_r, sTex[2], dRect[0], ShaderConvert::YUV, filter);
+
+	// Commit clear if nothing was drawn to dTex.
+	FlushClears(dTex);
 }}
 
 void GSDeviceMTL::DoInterlace(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderInterlace shader, Filter filter, const InterlaceConstantBuffer& cb)
