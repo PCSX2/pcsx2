@@ -383,6 +383,7 @@
     <ClCompile Include="SIO\Multitap\MultitapProtocol.cpp" />
     <ClCompile Include="SIO\Pad\PadBase.cpp" />
     <ClCompile Include="SIO\Pad\Pad.cpp" />
+    <ClCompile Include="SIO\Pad\PadDualshock1.cpp" />
     <ClCompile Include="SIO\Pad\PadDualshock2.cpp" />
     <ClCompile Include="SIO\Pad\PadGuitar.cpp" />
     <ClCompile Include="SIO\Pad\PadJogcon.cpp" />
@@ -831,6 +832,7 @@
     <ClInclude Include="SIO\Multitap\MultitapProtocol.h" />
     <ClInclude Include="SIO\Pad\PadBase.h" />
     <ClInclude Include="SIO\Pad\Pad.h" />
+    <ClInclude Include="SIO\Pad\PadDualshock1.h" />
     <ClInclude Include="SIO\Pad\PadDualshock2.h" />
     <ClInclude Include="SIO\Pad\PadGuitar.h" />
     <ClInclude Include="SIO\Pad\PadJogcon.h" />

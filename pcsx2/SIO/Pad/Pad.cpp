@@ -4,6 +4,7 @@
 #include "Host.h"
 #include "Input/InputManager.h"
 #include "SIO/Pad/Pad.h"
+#include "SIO/Pad/PadDualshock1.h"
 #include "SIO/Pad/PadDualshock2.h"
 #include "SIO/Pad/PadGuitar.h"
 #include "SIO/Pad/PadJogcon.h"
@@ -271,6 +272,7 @@ void Pad::SetDefaultHotkeyConfig(SettingsInterface& si)
 
 static const Pad::ControllerInfo* s_controller_info[] = {
 	&PadNotConnected::ControllerInfo,
+	&PadDualshock1::ControllerInfo,
 	&PadDualshock2::ControllerInfo,
 	&PadGuitar::ControllerInfo,
 	&PadJogcon::ControllerInfo,
@@ -510,6 +512,9 @@ PadBase* Pad::CreatePad(u8 unifiedSlot, ControllerType controllerType, size_t ej
 {
 	switch (controllerType)
 	{
+		case ControllerType::DualShock1:
+			s_controllers[unifiedSlot] = std::make_unique<PadDualshock1>(unifiedSlot, ejectTicks);
+			break;
 		case ControllerType::DualShock2:
 			s_controllers[unifiedSlot] = std::make_unique<PadDualshock2>(unifiedSlot, ejectTicks);
 			break;

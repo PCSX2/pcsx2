@@ -62,6 +62,7 @@ namespace Pad
 	enum class ControllerType : u8
 	{
 		NotConnected,
+		DualShock1,
 		DualShock2,
 		Guitar,
 		Jogcon,
