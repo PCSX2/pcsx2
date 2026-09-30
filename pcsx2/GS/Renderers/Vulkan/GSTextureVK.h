@@ -8,6 +8,32 @@
 #include "GS/Renderers/Vulkan/VKLoader.h"
 
 #include <limits>
+#include <tuple>
+
+enum class FeedbackLoopFlagsVK : u8
+{
+	None = 0,
+	ReadAndWriteRT = 1,
+	ReadOnlyDepth = 2,
+	ReadAndWriteDepth = 4,
+};
+
+MARK_ENUM_AS_FLAGS(FeedbackLoopFlagsVK);
+
+__forceinline_odr bool IsRTFeedbackLoop(FeedbackLoopFlagsVK f)
+{
+	return f & FeedbackLoopFlagsVK::ReadAndWriteRT;
+}
+
+__forceinline_odr bool IsDepthFeedbackLoop(FeedbackLoopFlagsVK f)
+{
+	return f & FeedbackLoopFlagsVK::ReadAndWriteDepth;
+}
+
+__forceinline_odr bool IsTestingAndSamplingDepth(FeedbackLoopFlagsVK f)
+{
+	return f & (FeedbackLoopFlagsVK::ReadOnlyDepth | FeedbackLoopFlagsVK::ReadAndWriteDepth);
+}
 
 class GSTextureVK final : public GSTexture
 {
@@ -20,9 +46,12 @@ public:
 		DepthStencilAttachment,
 		ShaderReadOnly,
 		ClearDst,
-		TransferSrc,
-		TransferDst,
-		TransferSelf,
+		CopySrc,
+		CopyDst,
+		CopySelf,
+		BlitSrc,
+		BlitDst,
+		BlitSelf,
 		PresentSrc,
 		FeedbackLoop,
 		ReadWriteImage,
@@ -31,7 +60,101 @@ public:
 		Count
 	};
 
+	struct FramebufferInfo
+	{
+		GSTextureVK* rt;
+		GSTextureVK* ds_as_rt;
+		GSTextureVK* ds;
+		FeedbackLoopFlagsVK feedback_loop_flags;
+		VkFramebuffer framebuffer;
+
+		FramebufferInfo(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds,
+			bool rt_feedback = false, bool depth_feedback = false)
+			: rt(static_cast<GSTextureVK*>(rt))
+			, ds_as_rt(static_cast<GSTextureVK*>(ds_as_rt))
+			, ds(static_cast<GSTextureVK*>(ds))
+			, feedback_loop_flags(FeedbackLoopFlagsVK::None)
+			, framebuffer(VK_NULL_HANDLE)
+		{
+		}
+
+		FramebufferInfo(GSTexture* rt, GSTexture* ds, bool rt_feedback = false, bool depth_feedback = false)
+			: FramebufferInfo(rt, nullptr, ds, rt_feedback, depth_feedback)
+		{
+		}
+
+		FramebufferInfo() : FramebufferInfo(nullptr, nullptr, nullptr, false, false)
+		{
+		}
+
+		__fi bool IsRTFeedbackLoop() const { return ::IsRTFeedbackLoop(feedback_loop_flags); }
+		__fi bool IsDepthFeedbackLoop() const { return ::IsDepthFeedbackLoop(feedback_loop_flags); }
+		__fi bool IsTestingAndSamplingDepth() const { return ::IsTestingAndSamplingDepth(feedback_loop_flags); }
+
+		bool Matches(const FramebufferInfo& other) const
+		{
+			return rt == other.rt &&
+				ds_as_rt == other.ds_as_rt &&
+				ds == other.ds &&
+				feedback_loop_flags == other.feedback_loop_flags;
+		}
+
+		u32 NumAttachments() const
+		{
+			return (rt ? 1 : 0) + (ds_as_rt ? 1 : 0) + (ds ? 1 : 0);
+		}
+
+		GSTextureVK* FirstAttachment() const
+		{
+			return rt ? rt : (ds_as_rt ? ds_as_rt : ds);
+		}
+
+		std::array<GSTextureVK*, 3> Attachments() const
+		{
+			return std::array{ rt, ds_as_rt, ds };
+		}
+
+		std::array<VkClearValue, 3> GetClearValues() const
+		{
+			alignas(16) std::array<VkClearValue, 3> clear_values;
+			u32 count = 0;
+			if (rt)
+				GSVector4::store<true>(&clear_values[count++].color, rt->GetClearForFormat());
+			if (ds_as_rt)
+				GSVector4::store<true>(&clear_values[count++].color, ds_as_rt->GetClearForFormat());
+			if (ds)
+			{
+				clear_values[count].depthStencil.depth =  ds->GetClearDepth();
+				clear_values[count].depthStencil.stencil = 1;
+				count++;
+			}
+			return clear_values;
+		}
+
+		bool HasAttachment(GSTextureVK* tex) const
+		{
+			for (GSTextureVK* t : Attachments())
+			{
+				if (t == tex)
+					return true;
+			}
+			return false;
+		}
+
+		GSVector2i GetSize() const
+		{
+			return (rt ? rt->GetSize() : (ds_as_rt ? ds_as_rt->GetSize() : (ds ? ds->GetSize() : GSVector2i(0, 0))));
+		}
+
+		GSVector4i GetRect() const
+		{
+			return GSVector4i::loadh(GetSize());
+		}
+	};
+
 	~GSTextureVK() override;
+
+	static VkImageLayout GetVkImageLayout(Layout layout);
 
 	static std::unique_ptr<GSTextureVK> Create(Usage usage, Format format, int width, int height, int levels);
 	static std::unique_ptr<GSTextureVK> Adopt(
@@ -77,7 +200,7 @@ public:
 	/// Framebuffers are lazily allocated.
 	VkFramebuffer GetFramebuffer(bool feedback_loop);
 
-	VkFramebuffer GetLinkedFramebuffer(GSTextureVK* depth_texture, bool feedback_loop_color, bool feedback_loop_depth);
+	void GetLinkedFramebuffer(FramebufferInfo& info);
 
 	// Call when the texture is bound to the pipeline, or read from in a copy.
 	__fi void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
@@ -91,6 +214,8 @@ private:
 	VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 height) const;
 	void UpdateFromBuffer(VkCommandBuffer cmdbuf, int level, u32 x, u32 y, u32 width, u32 height, u32 buffer_height,
 		u32 row_length, VkBuffer buffer, u32 buffer_offset);
+
+	void RemoveFramebuffer(VkFramebuffer fb);
 
 	VkImage m_image = VK_NULL_HANDLE;
 	VmaAllocation m_allocation = VK_NULL_HANDLE;
@@ -107,7 +232,7 @@ private:
 
 	// linked framebuffer is combined with depth texture
 	// list of color textures this depth texture is linked to or vice versa
-	std::vector<std::tuple<GSTextureVK*, VkFramebuffer, bool, bool>> m_framebuffers;
+	std::vector<FramebufferInfo> m_framebuffers;
 };
 
 class GSDownloadTextureVK final : public GSDownloadTexture

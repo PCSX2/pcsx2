@@ -25,6 +25,69 @@ namespace Vulkan
 	const char* VkResultToString(VkResult res);
 	void LogVulkanResult(const char* func_name, VkResult res, const char* msg, ...);
 
+	// Only allows single subpass render passes.
+	class RenderPassBuilder
+	{
+	public:
+		static constexpr u32 MAX_COLOR_ATTACHMENTS = 2;
+
+		void AddColorAttachment(VkImageLayout layout, VkFormat format,
+			VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op,
+			bool feedback_loop, bool input_reference, bool subpass_self_dependency);
+
+		void AddDepthStencilAttachment(VkImageLayout layout, VkFormat depth_format,
+			VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
+			VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op,
+			bool feedback_loop, bool input_reference, bool subpass_self_dependency);
+		
+		void SetColorFeedbackBarrier(
+			VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+			VkPipelineStageFlags dst_stage, VkAccessFlags dst_access,
+			VkDependencyFlags dependency);
+		void SetDepthFeedbackBarrier(
+			VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+			VkPipelineStageFlags dst_stage, VkAccessFlags dst_access,
+			VkDependencyFlags dependency);
+
+		void AddSubpassFlags(VkSubpassDescriptionFlags subpass_flags);
+
+		void Clear();
+
+		VkRenderPass Create(VkDevice device);
+	private:
+		std::array<VkAttachmentReference, MAX_COLOR_ATTACHMENTS> m_color_reference{};
+		u32 m_num_color_attachments = 0;
+
+		VkAttachmentReference m_depth_reference{};
+		bool m_has_depth_attachment = false;
+
+		std::array<VkAttachmentReference, MAX_COLOR_ATTACHMENTS + 1> m_input_reference{};
+		u32 m_num_subpass_inputs = 0;
+
+		std::array<VkSubpassDependency, MAX_COLOR_ATTACHMENTS + 1> m_subpass_dependency{};
+		u32 m_num_subpass_dependencies = 0;
+
+		std::array<VkAttachmentDescription, MAX_COLOR_ATTACHMENTS + 1> m_attachments{};
+		u32 m_num_attachments = 0;
+
+		VkSubpassDescriptionFlags m_subpass_flags = 0;
+
+		struct
+		{
+			VkPipelineStageFlags color_src_stage;
+			VkAccessFlags color_src_access;
+			VkPipelineStageFlags color_dst_stage;
+			VkAccessFlags color_dst_access;
+			VkDependencyFlags color_dependency;
+
+			VkPipelineStageFlags depth_src_stage;
+			VkAccessFlags depth_src_access;
+			VkPipelineStageFlags depth_dst_stage;
+			VkAccessFlags depth_dst_access;
+			VkDependencyFlags depth_dependency;
+		} m_feedback_barriers{};
+	};
+
 	class DescriptorSetLayoutBuilder
 	{
 	public:
@@ -80,7 +143,7 @@ namespace Vulkan
 			MAX_SHADER_STAGES = 3,
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 			MAX_DYNAMIC_STATE = 8
 		};
 
@@ -110,6 +173,7 @@ namespace Vulkan
 		void SetStencilState(bool stencil_test, const VkStencilOpState& front, const VkStencilOpState& back);
 		void SetNoDepthTestState();
 		void SetNoStencilState();
+		void AddDepthStencilFlags(u32 flags);
 
 		void AddBlendAttachment(bool blend_enable, VkBlendFactor src_factor, VkBlendFactor dst_factor, VkBlendOp op,
 			VkBlendFactor alpha_src_factor, VkBlendFactor alpha_dst_factor, VkBlendOp alpha_op,
@@ -272,7 +336,7 @@ namespace Vulkan
 	{
 		enum : u32
 		{
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 		};
 
 	public:
@@ -291,37 +355,6 @@ namespace Vulkan
 	private:
 		VkFramebufferCreateInfo m_ci;
 		std::array<VkImageView, MAX_ATTACHMENTS> m_images;
-	};
-
-	class RenderPassBuilder
-	{
-		enum : u32
-		{
-			MAX_ATTACHMENTS = 2,
-			MAX_ATTACHMENT_REFERENCES = 2,
-			MAX_SUBPASSES = 1,
-		};
-
-	public:
-		RenderPassBuilder();
-
-		void Clear();
-
-		VkRenderPass Create(VkDevice device, bool clear = true);
-
-		u32 AddAttachment(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp load_op,
-			VkAttachmentStoreOp store_op, VkImageLayout initial_layout, VkImageLayout final_layout);
-
-		u32 AddSubpass();
-		void AddSubpassColorAttachment(u32 subpass, u32 attachment, VkImageLayout layout);
-		void AddSubpassDepthAttachment(u32 subpass, u32 attachment, VkImageLayout layout);
-
-	private:
-		VkRenderPassCreateInfo m_ci;
-		std::array<VkAttachmentDescription, MAX_ATTACHMENTS> m_attachments;
-		std::array<VkAttachmentReference, MAX_ATTACHMENT_REFERENCES> m_attachment_references;
-		u32 m_num_attachment_references = 0;
-		std::array<VkSubpassDescription, MAX_SUBPASSES> m_subpasses;
 	};
 
 	class BufferViewBuilder

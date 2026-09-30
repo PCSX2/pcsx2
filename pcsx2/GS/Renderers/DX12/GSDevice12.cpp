@@ -4650,11 +4650,6 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	if (!InRenderPass())
 	{
 		GSVector4 clear_color = draw_rt ? draw_rt->GetClearForFormat() : GSVector4::zero();
-		if (pipe.ps.colclip_hw)
-		{
-			// Denormalize clear color for hw colclip.
-			clear_color *= GSVector4::cxpr(255.0f / 65535.0f, 255.0f / 65535.0f, 255.0f / 65535.0f, 1.0f);
-		}
 
 		const bool stencil_DATE = config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::Stencil ||
 		                          config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne;
