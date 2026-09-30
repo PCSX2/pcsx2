@@ -346,7 +346,6 @@ public:
 				u32 topology : 2;
 				u32 rt : 1;
 				u32 ds : 1;
-				u32 line_width : 1;
 				u32 feedback_loop_flags : 3;
 			};
 
