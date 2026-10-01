@@ -20,6 +20,7 @@
 #include "common/MemoryInterface.h"
 #include "common/SmallString.h"
 
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -81,37 +82,12 @@ namespace Patch
 
 	struct PatchCommand
 	{
-		patch_place_type placetopatch;
-		patch_cpu_type cpu;
-		patch_data_type type;
-		u32 addr;
-		u64 data;
-		u8* data_ptr;
-
-		// needed because of the pointer
-		PatchCommand() { std::memset(static_cast<void*>(this), 0, sizeof(*this)); }
-		PatchCommand(const PatchCommand& p) = delete;
-		PatchCommand(PatchCommand&& p)
-		{
-			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
-			p.data_ptr = nullptr;
-		}
-		~PatchCommand()
-		{
-			if (data_ptr)
-				std::free(data_ptr);
-		}
-
-		PatchCommand& operator=(const PatchCommand& p) = delete;
-		PatchCommand& operator=(PatchCommand&& p)
-		{
-			std::memcpy(static_cast<void*>(this), &p, sizeof(*this));
-			p.data_ptr = nullptr;
-			return *this;
-		}
-
-		bool operator==(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) == 0; }
-		bool operator!=(const PatchCommand& p) const { return std::memcmp(this, &p, sizeof(*this)) != 0; }
+		patch_place_type placetopatch = PPT_ONCE_ON_LOAD;
+		patch_cpu_type cpu = CPU_EE;
+		patch_data_type type = BYTE_T;
+		u32 addr = 0;
+		u64 data = 0;
+		std::unique_ptr<u8[]> data_ptr;
 
 		SmallString ToString() const
 		{
