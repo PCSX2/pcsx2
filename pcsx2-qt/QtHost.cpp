@@ -1268,6 +1268,11 @@ void Host::CancelGameListRefresh()
 	QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
+void Host::OnGameListFavoriteChanged(const std::string& path)
+{
+	QtHost::RunOnUIThread([path]() { g_main_window->refreshGameListFavorite(path); });
+}
+
 void Host::RequestExitApplication(bool allow_confirm)
 {
 	QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, allow_confirm));

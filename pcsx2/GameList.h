@@ -74,6 +74,7 @@ namespace GameList
 	{
 		EntryType type = EntryType::PS2Disc;
 		Region region = Region::Other;
+		bool is_favorite = false;
 
 		std::string path;
 		std::string serial;
@@ -160,5 +161,6 @@ namespace GameList
 	void CheckCustomAttributesForPath(const std::string& path, bool& has_custom_title, bool& has_custom_region);
 	void SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
 	void SaveCustomRegionForPath(const std::string& path, int custom_region);
+	void SaveFavoriteForPath(const std::string& path, bool favorite);
 	std::string GetCustomTitleForPath(const std::string& path);
 } // namespace GameList

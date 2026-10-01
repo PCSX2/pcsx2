@@ -65,7 +65,8 @@ namespace GameList
 	static bool GetGameListEntryFromCache(const std::string& path, GameList::Entry* entry);
 	static void ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
 		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress);
-	static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map);
+	static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
+		const INISettingsInterface& custom_attributes_ini);
 	static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
 		const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini);
 
@@ -716,7 +717,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 		}
 
 		std::unique_lock lock(s_mutex);
-		if (GetEntryForPath(ffd.FileName.c_str()) || AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map) || only_cache)
+		if (GetEntryForPath(ffd.FileName.c_str()) ||
+			AddFileFromCache(ffd.FileName, ffd.ModificationTime, played_time_map, custom_attributes_ini) || only_cache)
 		{
 			continue;
 		}
@@ -731,7 +733,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, 
 	progress->PopState();
 }
 
-bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map)
+bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
+	const INISettingsInterface& custom_attributes_ini)
 {
 	Entry entry;
 	if (!GetGameListEntryFromCache(path, &entry) || entry.last_modified_time != timestamp)
@@ -747,6 +750,7 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
 		entry.last_played_time = iter->second.last_played_time;
 		entry.total_played_time = iter->second.total_played_time;
 	}
+	entry.is_favorite = custom_attributes_ini.GetBoolValue(EncodeIniKey(entry.path).c_str(), "Favorite", false);
 
 	s_entries.push_back(std::move(entry));
 	return true;
@@ -800,6 +804,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 			entry.region = static_cast<Region>(custom_region_value);
 		}
 	}
+	entry.is_favorite = custom_attributes_ini.GetBoolValue(EncodeIniKey(entry.path).c_str(), "Favorite", false);
 
 	lock.lock();
 
@@ -1523,6 +1528,33 @@ void GameList::SaveCustomRegionForPath(const std::string& path, int custom_regio
 		// Let the cache update by rescanning
 		RescanPath(path);
 	}
+}
+
+void GameList::SaveFavoriteForPath(const std::string& path, bool favorite)
+{
+	INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+	custom_attributes_ini.Load();
+	const std::string key(EncodeIniKey(path));
+	if (favorite)
+		custom_attributes_ini.SetBoolValue(key.c_str(), "Favorite", true);
+	else
+		custom_attributes_ini.DeleteValue(key.c_str(), "Favorite");
+
+	if (!custom_attributes_ini.Save())
+		return;
+
+	{
+		std::unique_lock lock(s_mutex);
+		for (Entry& entry : s_entries)
+		{
+			if (entry.path == path)
+			{
+				entry.is_favorite = favorite;
+				break;
+			}
+		}
+	}
+	Host::OnGameListFavoriteChanged(path);
 }
 
 std::string GameList::GetCustomTitleForPath(const std::string& path)

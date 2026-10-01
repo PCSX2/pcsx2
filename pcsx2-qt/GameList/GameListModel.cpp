@@ -242,6 +242,8 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 	const GameList::Entry* ge = GameList::GetEntryByIndex(row);
 	if (!ge)
 		return QVariant();
+	if (role == FavoriteRole)
+		return ge->is_favorite;
 
 	// See: https://doc.qt.io/qt-6/qt.html#ItemDataRole-enum
 	switch (role)
@@ -283,6 +285,11 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 		{
 			switch (index.column())
 			{
+				case Column_Title:
+					if (ge->is_favorite)
+						return m_favorite_pixmap;
+					return QVariant();
+
 				case Column_Type:
 					return m_type_pixmaps[static_cast<u32>(ge->type)];
 
@@ -366,6 +373,21 @@ void GameListModel::refresh()
 	beginResetModel();
 	loadSettings();
 	endResetModel();
+}
+
+void GameListModel::refreshFavorite(const std::string& path)
+{
+	const auto lock = GameList::GetLock();
+	const u32 count = GameList::GetEntryCount();
+	for (u32 row = 0; row < count; row++)
+	{
+		const GameList::Entry* entry = GameList::GetEntryByIndex(row);
+		if (entry && entry->path == path)
+		{
+			emit dataChanged(index(static_cast<int>(row), 0), index(static_cast<int>(row), Column_Count - 1));
+			break;
+		}
+	}
 }
 
 bool GameListModel::titlesLessThan(const int left_row, const int right_row) const
@@ -525,6 +547,8 @@ void GameListModel::loadCommonImages()
 	loadThemeSpecificImages();
 
 	const QString base_path(QtHost::GetResourcesBasePath());
+	m_favorite_pixmap = QIcon(QStringLiteral("%1/icons/star.svg").arg(base_path)).pixmap(QSize(20, 20), m_dpr);
+
 	for (u32 rating = 1; rating < GameList::CompatibilityRatingCount; rating++)
 		m_compatibility_pixmaps[rating] = QIcon((QStringLiteral("%1/icons/star-%2.svg").arg(base_path).arg(rating - 1))).pixmap(QSize(88, 16), m_dpr);
 
