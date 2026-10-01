@@ -22923,6 +22923,19 @@ SLES-53235:
 SLES-53236:
   name: "Buzzrod Fishing Fantasy"
   region: "PAL-E"
+  patches:
+    default:
+      content: |-
+        author=amamic1803
+        comment=Fix unobtainable Buzz lure
+        // This is a game progression lock fix.
+        // The "Buzz" lure is unobtainable because of the wrong recipe
+        // (it requires 3 "Mysterious Lithograph 3" items, while only 2 are obtainable).
+        // The fix removes the 3rd "Mysterious Lithograph 3" item from the "Buzz" lure recipe,
+        // therefore enabling the creation of this lure and further game progression.
+        patch=1,EE,007826B8,byte,2B
+        patch=1,EE,007826BA,byte,2C
+        patch=1,EE,007826BC,bytes,0000
 SLES-53237:
   name: "Fire Heroes"
   region: "PAL-M4"
