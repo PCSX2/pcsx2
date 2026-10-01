@@ -20,9 +20,12 @@ public:
 		DepthStencilAttachment,
 		ShaderReadOnly,
 		ClearDst,
-		TransferSrc,
-		TransferDst,
-		TransferSelf,
+		CopySrc,
+		CopyDst,
+		CopySelf,
+		BlitSrc,
+		BlitDst,
+		BlitSelf,
 		PresentSrc,
 		FeedbackLoop,
 		ReadWriteImage,
@@ -32,6 +35,8 @@ public:
 	};
 
 	~GSTextureVK() override;
+
+	static VkImageLayout GetVkImageLayout(Layout layout);
 
 	static std::unique_ptr<GSTextureVK> Create(Usage usage, Format format, int width, int height, int levels);
 	static std::unique_ptr<GSTextureVK> Adopt(
