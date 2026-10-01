@@ -31,6 +31,7 @@ class GameCheatSettingsWidget;
 class GameFixSettingsWidget;
 class GamePatchSettingsWidget;
 class GraphicsSettingsWidget;
+class PostProcessingSettingsWidget;
 class OSDSettingsWidget;
 class AudioSettingsWidget;
 class MemoryCardSettingsWidget;
@@ -66,6 +67,7 @@ public:
 	__fi GameFixSettingsWidget* getGameFixSettingsWidget() const { return m_game_fix_settings_widget; }
 	__fi GamePatchSettingsWidget* getGamePatchSettingsWidget() const { return m_game_patch_settings_widget; }
 	__fi GraphicsSettingsWidget* getGraphicsSettingsWidget() const { return m_graphics_settings; }
+	__fi PostProcessingSettingsWidget* getPostProcessingSettingsWidget() const { return m_post_processing_settings; }
 	__fi OSDSettingsWidget* getOSDSettingsWidget() const { return m_osd_settings; }
 	__fi AudioSettingsWidget* getAudioSettingsWidget() const { return m_audio_settings; }
 	__fi MemoryCardSettingsWidget* getMemoryCardSettingsWidget() const { return m_memory_card_settings; }
@@ -118,7 +120,7 @@ protected:
 private:
 	enum : u32
 	{
-		MAX_SETTINGS_WIDGETS = 14
+		MAX_SETTINGS_WIDGETS = 15
 	};
 
 	void setupUi(const GameList::Entry* game);
@@ -140,6 +142,7 @@ private:
 	GameFixSettingsWidget* m_game_fix_settings_widget = nullptr;
 	GamePatchSettingsWidget* m_game_patch_settings_widget = nullptr;
 	GraphicsSettingsWidget* m_graphics_settings = nullptr;
+	PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
 	OSDSettingsWidget* m_osd_settings = nullptr;
 	AudioSettingsWidget* m_audio_settings = nullptr;
 	MemoryCardSettingsWidget* m_memory_card_settings = nullptr;

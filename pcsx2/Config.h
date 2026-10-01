@@ -815,6 +815,7 @@ struct Pcsx2Config
 					UserHacks_RewriteLargeSTCoords : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
+					LibrashaderEnabled : 1,
 					DumpGSData : 1,
 					SaveRT : 1,
 					SaveFrame : 1,
@@ -906,6 +907,9 @@ struct Pcsx2Config
 		u8 ShadeBoost_Gamma = DEFAULT_SHADEBOOST_GAMMA;
 		u8 PNGCompressionLevel = 1;
 
+		std::string LibrashaderPreset;
+		std::vector<std::pair<std::string, float>> LibrashaderPresetParams;
+
 		u16 SWExtraThreads = 2;
 		u16 SWExtraThreadsHeight = 4;
 
@@ -943,6 +947,9 @@ struct Pcsx2Config
 		GSOptions();
 
 		void LoadSave(SettingsWrapper& wrap);
+
+		/// Loads saved overrides for the currently selected librashader preset into LibrashaderPresetParams.
+		void LoadLibrashaderPresetParams(std::string_view game_serial, u32 game_crc);
 
 		/// Sets user hack values to defaults when user hacks are not enabled.
 		void MaskUserHacks();
