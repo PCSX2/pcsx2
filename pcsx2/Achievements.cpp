@@ -753,7 +753,7 @@ void Achievements::ClientServerCall(
 	{
 		const bool is_error = (status_code <= 0);
 		const bool is_retryable =
-			is_error && (status_code == HTTPDownloader::HTTP_STATUS_TIMEOUT);
+			is_error && (status_code != HTTPDownloader::HTTP_STATUS_CANCELLED);
 
 		rc_api_server_response_t rr;
 		rr.http_status_code =
