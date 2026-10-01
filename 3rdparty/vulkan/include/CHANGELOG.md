@@ -1,14 +1,19 @@
-# 3.4.0 (2026-??-??)
+# 3.4.0 (2026-06-05)
 
+- Added file `AGENTS.md` for agentic AI.
 - Added member `VmaAllocationCreateInfo::minAlignment` (#523).
   - Remember to always fully initialize structures with zeros and don't rely on their specific `sizeof` to ensure backward compatibility!
   - Function `vmaCreateBufferWithAlignment` is now deprecated.
 - Improvements for external memory export & import (#503):
   - Added functions `vmaCreateDedicatedBuffer`, `vmaCreateDedicatedImage`, `vmaAllocateDedicatedMemory` offering extra parameter `void* pMemoryAllocateNext`.
   - Added function `vmaGetMemoryWin32Handle2` offering extra parameter `VkExternalMemoryHandleTypeFlagBits handleType`.
+- Added member `VmaVulkanFunctions::vkGetPhysicalDeviceProperties2KHR` and macro `VMA_GET_PHYSICAL_DEVICE_PROPERTIES2` to fix validation layer warnings about the usage of legacy commands on Vulkan >= 1.1 (#530, #531).
 - Added `VMA_VERSION` macro with library version number (#507).
+- Added support for `VMA_VULKAN_HEADERS_ALREADY_INCLUDED`. When defined, VMA does not include `<vulkan/vulkan.h>`.
 - Improvements in the algorithm choosing memory type when `VMA_MEMORY_USAGE_AUTO*` is used (#520).
-- Fixes for compatibility with C++20 modules on Clang 21 and GCC15 (#513, #514).
+- Fixed compatibility with C++20 modules on Clang 21 and GCC15 (#513, #514).
+- Fixed a bug in buffer-image granularity handling (#517).
+- Fixed race conditions in defragmentation (#529, #313) and other places (#525).
 - Other fixes and improvements, including compatibility with various platforms and compilers, improvements in documentation, sample application, and tests.
 
 # 3.3.0 (2025-05-12)
