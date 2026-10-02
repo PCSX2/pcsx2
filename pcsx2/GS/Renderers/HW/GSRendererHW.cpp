@@ -11016,6 +11016,7 @@ GSHWDrawConfig& GSRendererHW::BeginHLEHardwareDraw(
 	config.ps.key_lo = 0;
 	config.ps.key_hi = 0;
 	config.ps.tfx = tex ? TFX_DECAL : TFX_NONE;
+	config.ps.tcc = true;
 	config.ps.iip = true;
 	config.ps.fst = true;
 
