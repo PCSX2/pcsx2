@@ -897,7 +897,15 @@ bool FolderMemoryCard::ReadFromFile(u8* dest, u32 adr, u32 dataLength)
 	const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
 	const u32 cluster = adr / ClusterSizeRaw;
-	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
+
+	const u32 startDataCluster = m_superBlock.data.alloc_offset;
+	const u32 endDataCluster = startDataCluster + m_superBlock.data.alloc_end;
+	if (cluster < startDataCluster || cluster >= endDataCluster)
+	{
+		return false;
+	}
+
+	const u32 fatCluster = cluster - startDataCluster;
 
 	// if the cluster is unused according to FAT, just return
 	if ((m_fat.data[0][0][fatCluster] & DataClusterInUseMask) == 0)
@@ -1503,7 +1511,15 @@ bool FolderMemoryCard::WriteToFile(const u8* src, u32 adr, u32 dataLength)
 	const u32 cluster = adr / ClusterSizeRaw;
 	const u32 page = adr / PageSizeRaw;
 	const u32 offset = adr % PageSizeRaw;
-	const u32 fatCluster = cluster - m_superBlock.data.alloc_offset;
+
+	const u32 startDataCluster = m_superBlock.data.alloc_offset;
+	const u32 endDataCluster = startDataCluster + m_superBlock.data.alloc_end;
+	if (cluster < startDataCluster || cluster >= endDataCluster)
+	{
+		return false;
+	}
+
+	const u32 fatCluster = cluster - startDataCluster;
 
 	// if the cluster is unused according to FAT, just skip all this, we're not gonna find anything anyway
 	if ((m_fat.data[0][0][fatCluster] & DataClusterInUseMask) == 0)
