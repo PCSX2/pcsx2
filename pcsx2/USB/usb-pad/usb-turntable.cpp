@@ -10,8 +10,8 @@
 #include "USB/deviceproxy.h"
 #include "USB/qemu-usb/USBinternal.h"
 #include "USB/qemu-usb/desc.h"
+#include "USB/usb-pad/usb-rhythm.h" // rb1_config_descriptor
 #include "USB/usb-pad/usb-turntable.h"
-#include "USB/usb-pad/usb-pad.h"
 
 namespace usb_pad
 {
