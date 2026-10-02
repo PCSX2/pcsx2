@@ -1068,8 +1068,7 @@ void SYSCALL()
 			if (CurrentBiosInformation.eeThreadListAddr == 0)
 			{
 				u32 offset = 0x0;
-				// Suprisingly not that slow :)
-				while (offset < 0x5000) // I find that the instructions are in between 0x4000 -> 0x5000
+				while (offset < 0x5000) // Instr pattern is within the first 0x5000 bytes of the bios
 				{
 					u32 addr = 0x80000000 + offset;
 					const u32 inst1 = memRead32(addr);
@@ -1080,20 +1079,19 @@ void SYSCALL()
 						ThreadListInstructions[1] == inst2 && // no-op
 						ThreadListInstructions[2] == inst3) // no-op
 					{
-						// We've found the instruction pattern!
-						// We (well, I) know that the thread address is always 0x8001 + the immediate of the 6th instruction from here
+						// After some reversing, it appears that 0x8001 + the immediate of the 6th instruction from here points to the thread list
 						const u32 op = memRead32(0x80000000 + offset + (sizeof(u32) * 6));
-						CurrentBiosInformation.eeThreadListAddr = 0x80010000 + static_cast<u16>(op) - 8; // Subtract 8 because the address here is offset by 8.
-						DevCon.WriteLn("BIOS: Successfully found the instruction pattern. Assuming the thread list is here: %0x", CurrentBiosInformation.eeThreadListAddr);
+						CurrentBiosInformation.eeThreadListAddr = 0x80010000 + static_cast<u16>(op) - 8;
 						break;
 					}
 					offset += 4;
 				}
 				if (!CurrentBiosInformation.eeThreadListAddr)
 				{
-					// We couldn't find the address
+					
 					CurrentBiosInformation.eeThreadListAddr = -1;
-					// If you're here because a user has reported this message, this means that the instruction pattern is not present on their bios, or it is aligned weirdly.
+					// If the thread list offset isn't found, the heuristics for finding it above will have to be updated.
+					// It's lasted 5 years so far without any reports.
 					Console.Warning("BIOS Warning: Unable to get a thread list offset. The debugger thread and stack frame views will not be functional.");
 				}
 			}
