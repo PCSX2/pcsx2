@@ -27,6 +27,14 @@ enum class VMState
 	Stopping,
 };
 
+/// Snapshot of a loaded M3U playlist. Returned under a single lock so the entries and
+/// current index are always consistent with each other.
+struct M3UPlaylistSnapshot
+{
+	std::vector<std::string> entries;
+	int current_index = -1;
+};
+
 struct VMBootParameters
 {
 	std::string filename;
@@ -89,6 +97,10 @@ namespace VMManager
 
 	/// Returns the path of the disc currently running.
 	std::string GetDiscPath();
+
+	/// Returns the entries and current disc index of the loaded M3U playlist as a single
+	/// snapshot, taken under one lock so callers can't observe a mixed state.
+	M3UPlaylistSnapshot GetM3UPlaylistSnapshot();
 
 	/// Returns the serial of the disc currently running.
 	std::string GetDiscSerial();
@@ -233,6 +245,9 @@ namespace VMManager
 
 	/// Returns true if the specified path is a save state.
 	bool IsSaveStateFileName(const std::string_view path);
+
+	/// Returns true if the specified path is an M3U playlist.
+	bool IsM3UFileName(const std::string_view path);
 
 	/// Returns true if the specified path is a disc image.
 	bool IsDiscFileName(const std::string_view path);
