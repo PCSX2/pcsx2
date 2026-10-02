@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <ctime>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -55,6 +56,7 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter);
 
 std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_cards);
 std::optional<AvailableMcdInfo> FileMcd_GetCardInfo(const std::string_view name);
+bool FileMcd_IsFolder(const std::string& path);
 bool FileMcd_IsMemoryCardFormatted(const std::string& path);
 bool FileMcd_IsMemoryCardFormatted(std::FILE* fp);
 bool FileMcd_CreateNewCard(const std::string_view name, MemoryCardType type, MemoryCardFileType file_type);

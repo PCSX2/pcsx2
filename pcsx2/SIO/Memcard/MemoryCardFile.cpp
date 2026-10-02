@@ -3,6 +3,7 @@
 
 #include "SIO/Memcard/MemoryCardFile.h"
 
+#include "SIO/Memcard/MemoryCardBackup.h"
 #include "SIO/Memcard/MemoryCardFolder.h"
 #include "SIO/Sio.h"
 #include <SIO/SioTypes.h>
@@ -265,7 +266,7 @@ void FileMemoryCard::Open()
 	{
 		m_filenames[slot] = {};
 
-		if (EmuConfig.Mcd[slot].Type != MemoryCardType::File)
+		if (EmuConfig.MemoryCard.Slots[slot].Type != MemoryCardType::File)
 			continue;
 
 		if (FileMcd_IsMultitapSlot(slot))
@@ -278,11 +279,14 @@ void FileMemoryCard::Open()
 
 		const std::string fname = EmuConfig.FullpathToMcd(slot);
 
-		if (!EmuConfig.Mcd[slot].Enabled || fname.empty())
+		if (!EmuConfig.MemoryCard.Slots[slot].Enabled || fname.empty())
 		{
 			Console.WriteLnFmt("McdSlot {} [File]: [disabled/empty filename]", slot);
 			continue;
 		}
+
+		if (EmuConfig.MemoryCard.Backup.EnableAutomaticBackups)
+			MemoryCardBackup::MakeBackup(fname, true);
 
 		if (FileSystem::GetPathFileSize(fname.c_str()) <= 0)
 		{
@@ -586,11 +590,11 @@ void FileMcd_SetType()
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
 	{
-		if (EmuConfig.Mcd[slot].Filename.empty())
+		if (EmuConfig.MemoryCard.Slots[slot].Filename.empty())
 		{
-			EmuConfig.Mcd[slot].Type = MemoryCardType::Empty;
+			EmuConfig.MemoryCard.Slots[slot].Type = MemoryCardType::Empty;
 		}
-		else if (EmuConfig.Mcd[slot].Enabled)
+		else if (EmuConfig.MemoryCard.Slots[slot].Enabled)
 		{
 			MemoryCardType type = MemoryCardType::File; // default to file if we can't find anything at the path so it gets auto-generated
 
@@ -598,7 +602,7 @@ void FileMcd_SetType()
 			if (FileSystem::DirectoryExists(path.c_str()))
 				type = MemoryCardType::Folder;
 
-			EmuConfig.Mcd[slot].Type = type;
+			EmuConfig.MemoryCard.Slots[slot].Type = type;
 		}
 	}
 }
@@ -672,8 +676,8 @@ void FileMcd_Swap()
 	const std::string card2Filename = Host::GetStringSettingValue("MemoryCards", "Slot2_Filename");
 
 	// Copy each McdOptions to local memory
-	Pcsx2Config::McdOptions firstSlot = EmuConfig.Mcd[0];
-	Pcsx2Config::McdOptions secondSlot = EmuConfig.Mcd[1];
+	Pcsx2Config::McdOptions firstSlot = EmuConfig.MemoryCard.Slots[0];
+	Pcsx2Config::McdOptions secondSlot = EmuConfig.MemoryCard.Slots[1];
 
 	if (!firstSlot.Enabled || !secondSlot.Enabled || card1Filename.empty() || card2Filename.empty())
 	{
@@ -686,21 +690,21 @@ void FileMcd_Swap()
 	Host::SetBaseStringSettingValue("MemoryCards", "Slot2_Filename", card1Filename.c_str());
 	Host::CommitBaseSettingChanges();
 	VMManager::ApplySettings();
-	EmuConfig.Mcd[0] = secondSlot;
-	EmuConfig.Mcd[1] = firstSlot;
+	EmuConfig.MemoryCard.Slots[0] = secondSlot;
+	EmuConfig.MemoryCard.Slots[1] = firstSlot;
 
 	// Reopen them
 	FileMcd_EmuClose();
 	FileMcd_SetType();
 	FileMcd_EmuOpen();
 	AutoEject::SetAll();
-	Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, fmt::format(TRANSLATE_FS("MemoryCardSwap", "Memory Cards have been swapped.\nSlot 1: {}\nSlot 2: {}"), EmuConfig.Mcd[0].Filename, EmuConfig.Mcd[1].Filename), Host::OSD_INFO_DURATION);
+	Host::AddIconOSDMessage("MemoryCardSwap", ICON_PF_MEMORY_CARD, fmt::format(TRANSLATE_FS("MemoryCardSwap", "Memory Cards have been swapped.\nSlot 1: {}\nSlot 2: {}"), EmuConfig.MemoryCard.Slots[0].Filename, EmuConfig.MemoryCard.Slots[1].Filename), Host::OSD_INFO_DURATION);
 }
 
 s32 FileMcd_IsPresent(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.IsPresent(combinedSlot);
@@ -714,7 +718,7 @@ s32 FileMcd_IsPresent(uint port, uint slot)
 void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			Mcd::impl.GetSizeInfo(combinedSlot, *outways);
@@ -730,7 +734,7 @@ void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 bool FileMcd_IsPSX(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.IsPSX(combinedSlot);
@@ -744,7 +748,7 @@ bool FileMcd_IsPSX(uint port, uint slot)
 s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.Read(combinedSlot, dest, adr, size);
@@ -758,7 +762,7 @@ s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.Save(combinedSlot, src, adr, size);
@@ -772,7 +776,7 @@ s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.EraseBlock(combinedSlot, adr);
@@ -786,7 +790,7 @@ s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 u64 FileMcd_GetCRC(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		case MemoryCardType::File:
 			return Mcd::impl.GetCRC(combinedSlot);
@@ -800,7 +804,7 @@ u64 FileMcd_GetCRC(uint port, uint slot)
 void FileMcd_NextFrame(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		//case MemoryCardType::MemoryCard_File:
 		//	Mcd::impl.NextFrame( combinedSlot );
@@ -817,7 +821,7 @@ int FileMcd_ReIndex(uint port, uint slot, const std::string& filter)
 {
 	const int combinedSlot = FileMcd_ConvertToSlot(port, slot);
 
-	switch (EmuConfig.Mcd[combinedSlot].Type)
+	switch (EmuConfig.MemoryCard.Slots[combinedSlot].Type)
 	{
 		//case MemoryCardType::File:
 		//	return Mcd::impl.ReIndex( combinedSlot, filter );
@@ -855,7 +859,7 @@ static MemoryCardFileType GetMemoryCardFileTypeFromSize(s64 size)
 		return MemoryCardFileType::Unknown;
 }
 
-static bool FileMcd_IsFolder(const std::string& path)
+bool FileMcd_IsFolder(const std::string& path)
 {
 	const std::string superblock_path(Path::Combine(path, s_folder_mem_card_id_file));
 	return FileSystem::FileExists(superblock_path.c_str());
@@ -903,9 +907,9 @@ std::vector<AvailableMcdInfo> FileMcd_GetAvailableCards(bool include_in_use_card
 		if (!include_in_use_cards)
 		{
 			bool in_use = false;
-			for (size_t i = 0; i < std::size(EmuConfig.Mcd); i++)
+			for (size_t i = 0; i < std::size(EmuConfig.MemoryCard.Slots); i++)
 			{
-				if (EmuConfig.Mcd[i].Filename == basename)
+				if (EmuConfig.MemoryCard.Slots[i].Filename == basename)
 				{
 					in_use = true;
 					break;
