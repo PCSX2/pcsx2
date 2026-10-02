@@ -5654,22 +5654,24 @@ bool GSTextureCache::ShuffleMove(u32 BP, u32 BW, u32 PSM, int sx, int sy, int dx
 	const bool read_ba = (diff_x < 0);
 	const bool write_rg = (diff_x < 0);
 
-	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w, dy + h) : GSVector4i(sx, sy, sx + w, sy + h);
-
-	if (read_ba || !write_rg)
-		tgt->UnscaleRTAlpha();
+	const GSVector4i bbox = write_rg ? GSVector4i(dx, dy, dx + w + 8, dy + h) : GSVector4i(sx, sy, sx + w + 8, sy + h);
 
 	tgt->Update();
+	tgt->UnscaleRTAlpha();
 
 	GSHWDrawConfig& config = GSRendererHW::GetInstance()->BeginHLEHardwareDraw(tgt->m_texture, nullptr, tgt->m_scale, tgt->m_texture, tgt->m_scale, bbox);
 	config.colormask.wrgba = (write_rg ? (1 | 2) : (4 | 8));
 	config.ps.process_ba = read_ba ? 1 : 0;
 	config.ps.process_rg = !read_ba ? 1 : 0;
-	config.ps.process_ba = !write_rg ? 2 : 0;
-	config.ps.process_rg = write_rg ? 2 : 0;
+	config.ps.process_ba |= !write_rg ? 2 : 0;
+	config.ps.process_rg |= write_rg ? 2 : 0;
 	config.ps.shuffle_across = true;
 	config.ps.write_rg = write_rg;
 	config.ps.shuffle = true;
+	GSVector4 ta(GSVector4(0.0f, 128.0f));
+	ta /= 255.0f;
+	config.cb_ps.TA_MaxDepth_Af.x = ta.x;
+	config.cb_ps.TA_MaxDepth_Af.y = ta.y;
 	GSRendererHW::GetInstance()->EndHLEHardwareDraw(false);
 
 	if (!write_rg)
