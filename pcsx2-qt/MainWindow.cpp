@@ -1782,6 +1782,11 @@ void MainWindow::checkForSettingChanges()
 	LogWindow::updateSettings();
 }
 
+void MainWindow::onGameSettingsChanged()
+{
+	updateGameDependentActions();
+}
+
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
 	if (!m_display_surface || isRenderingToMain())
@@ -1855,7 +1860,16 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 	if (entry.has_value())
 	{
-		QAction* action = menu.addAction(tr("Properties..."));
+		std::string filename(VMManager::GetGameSettingsPath(entry->serial, entry->crc));
+		if (!FileSystem::FileExists(filename.c_str()))
+			filename = VMManager::GetGameSettingsPath({}, entry->crc);
+		const bool gameSettingsExist = FileSystem::FileExists(filename.c_str());
+
+		QAction* action;
+		if (gameSettingsExist)
+			action = menu.addAction(tr("Properties... (Edit)"));
+		else
+			action = menu.addAction(tr("Properties... (New)"));
 		action->setEnabled(!entry->serial.empty() || entry->type == GameList::EntryType::ELF);
 		if (action->isEnabled())
 		{
@@ -1906,9 +1920,11 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 		if (!s_vm_valid)
 		{
-			action = menu.addAction(tr("Default Boot"));
+			if (gameSettingsExist)
+				action = menu.addAction(tr("Default Boot (Custom settings)"));
+			else
+				action = menu.addAction(tr("Default Boot (Global settings)"));
 			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry); });
-
 			// Make bold to indicate it's the default choice when double-clicking
 			if (!VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
 				QtUtils::MarkActionAsDefault(action);
@@ -3849,6 +3865,20 @@ void MainWindow::updateGameDependentActions()
 	m_ui.actionEditCheats->setEnabled(can_use_pnach);
 	m_ui.actionEditPatches->setEnabled(can_use_pnach);
 	m_ui.actionReloadPatches->setEnabled(s_vm_valid);
+
+	if (s_vm_valid)
+	{
+		std::string filename(VMManager::GetGameSettingsPath(VMManager::GetDiscSerial(), VMManager::GetDiscCRC()));
+		if (!FileSystem::FileExists(filename.c_str()))
+			filename = VMManager::GetGameSettingsPath({}, VMManager::GetDiscCRC());
+		const bool gameSettingsExist = FileSystem::FileExists(filename.c_str());
+		if (gameSettingsExist)
+			m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties (Edit)", nullptr));
+		else
+			m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties (New)", nullptr));
+	}
+	else
+		m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties", nullptr));
 }
 
 void MainWindow::updateGameGridActions(const bool show_game_grid, const bool show_grid_cover_titles)
