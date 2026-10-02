@@ -4372,6 +4372,12 @@ void GSRendererHW::Draw()
 		}
 		else
 			m_last_channel_shuffle_end_block = 0xFFFF;
+
+		if (((fm_mask & ~fm) & 0xFFFFFF) && rt->m_TEX0.TBP0 == FRAME_TEX0.TBP0 && FRAME_TEX0.TBW > 1 &&
+			!GSLocalMemory::m_psm[FRAME_TEX0.PSM].depth)
+		{
+			rt->m_last_rgb_draw_TEX0 = FRAME_TEX0;
+		}
 	}
 
 	// Only run if DS was new and matched the framebuffer.
