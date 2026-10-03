@@ -799,7 +799,10 @@ struct Pcsx2Config
 					HWROV : 1,
 					HWROVLogging : 1,
 					HWROVBarriersVK : 1,
-					ExtendedDynamicStateVK : 1,
+					ExtendedDynamicStateColorBlendVK : 1,
+					ExtendedDynamicStateColorMaskVK : 1,
+					ExtendedDynamicStateDepthVK : 1,
+					ExtendedDynamicStateStencilVK : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -966,6 +969,14 @@ struct Pcsx2Config
 
 		// Should we dump this draw/frame?
 		bool ShouldDump(u64 draw, int frame) const;
+
+		bool ExtendedDynamicStateVK() const
+		{
+			return ExtendedDynamicStateColorBlendVK ||
+				ExtendedDynamicStateColorMaskVK ||
+				ExtendedDynamicStateDepthVK ||
+				ExtendedDynamicStateStencilVK;
+		}
 	};
 
 	struct SPU2Options

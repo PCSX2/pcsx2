@@ -760,7 +760,10 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
-	ExtendedDynamicStateVK = false;
+	ExtendedDynamicStateColorBlendVK = false;
+	ExtendedDynamicStateColorMaskVK = false;
+	ExtendedDynamicStateDepthVK = false;
+	ExtendedDynamicStateStencilVK = false;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -922,7 +925,10 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
 		   OpEqu(ExclusiveFullscreenControl) &&
-	       OpEqu(ExtendedDynamicStateVK);
+		   OpEqu(ExtendedDynamicStateColorBlendVK) &&
+		   OpEqu(ExtendedDynamicStateColorMaskVK) &&
+		   OpEqu(ExtendedDynamicStateDepthVK) &&
+		   OpEqu(ExtendedDynamicStateStencilVK);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -1061,7 +1067,10 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWROV);
 	SettingsWrapBitBool(HWROVLogging);
 	SettingsWrapBitBool(HWROVBarriersVK);
-	SettingsWrapBitBool(ExtendedDynamicStateVK);
+	SettingsWrapBitBool(ExtendedDynamicStateColorBlendVK);
+	SettingsWrapBitBool(ExtendedDynamicStateColorMaskVK);
+	SettingsWrapBitBool(ExtendedDynamicStateStencilVK);
+	SettingsWrapBitBool(ExtendedDynamicStateDepthVK);
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");

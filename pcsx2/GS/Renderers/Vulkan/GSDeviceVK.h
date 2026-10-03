@@ -73,6 +73,26 @@ public:
 			m_optional_extensions.vk_ext_extended_dynamic_state3;
 	}
 
+	__fi bool UseExtendedDynamicStateColorBlend() const
+	{
+		return GSConfig.ExtendedDynamicStateColorBlendVK;
+	}
+
+	__fi bool UseExtendedDynamicStateColorMask() const
+	{
+		return GSConfig.ExtendedDynamicStateColorMaskVK;
+	}
+
+	__fi bool UseExtendedDynamicStateDepth() const
+	{
+		return GSConfig.ExtendedDynamicStateDepthVK;
+	}
+
+	__fi bool UseExtendedDynamicStateStencil() const
+	{
+		return GSConfig.ExtendedDynamicStateStencilVK;
+	}
+
 	// Helpers for getting constants
 	__fi u32 GetBufferCopyOffsetAlignment() const
 	{
@@ -784,7 +804,7 @@ private:
 		GSHWDrawConfig::BlendState bs;
 		GSHWDrawConfig::ColorMaskSelector cms;
 		bool date_primid_init;
-	} m_tfx_extended_dynamic_state = {};
+	} m_tfx_extended_dynamic_state{};
 
 	std::array<GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
