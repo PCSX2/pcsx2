@@ -9,11 +9,13 @@
 #include "GS/GSPerfMon.h"
 #include "GS/GSUtil.h"
 #include "GS/GSXXH.h"
+#include "GS/GSDebugWriter.h"
 
 #include "common/Console.h"
 #include "common/BitUtils.h"
 #include "common/HashCombine.h"
 #include "common/SmallString.h"
+#include "common/FileSystem.h"
 
 #include "fmt/format.h"
 
@@ -7595,11 +7597,21 @@ GSTextureCache::Source::Source(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 {
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
+
+	if (GSConfig.SaveTextureCache)
+	{
+		g_texture_cache->DumpChange(this, true);
+	}
 }
 
 GSTextureCache::Source::~Source()
 {
 	_aligned_free(m_write.rect);
+
+	if (GSConfig.SaveTextureCache)
+	{
+		g_texture_cache->DumpChange(this, false);
+	}
 
 	// Shared textures are pointers copy. Therefore no allocation
 	// to recycle.
@@ -7923,6 +7935,11 @@ GSTextureCache::Target::Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unsc
 		m_alpha_max = 0;
 	}
 	m_32_bits_fmt |= (GSLocalMemory::m_psm[TEX0.PSM].trbpp != 16);
+
+	if (GSConfig.SaveTextureCache)
+	{
+		g_texture_cache->DumpChange(this, true);
+	}
 }
 
 GSTextureCache::Target::~Target()
@@ -7934,6 +7951,11 @@ GSTextureCache::Target::~Target()
 	{
 		g_texture_cache->m_target_memory_usage -= m_texture->GetMemUsage();
 		g_gs_device->Recycle(m_texture);
+	}
+
+	if (GSConfig.SaveTextureCache)
+	{
+		g_texture_cache->DumpChange(this, false);
 	}
 
 #ifdef PCSX2_DEVBUILD
@@ -8792,6 +8814,229 @@ void GSTextureCache::InjectHashCacheTexture(const HashCacheKey& key, GSTexture* 
 	m_src.SwapTexture(it->second.texture, tex);
 	g_gs_device->Recycle(it->second.texture);
 	it->second.texture = tex;
+}
+
+static void DumpSurface(GSDebugWriter& writer, GSTextureCache::Surface* s)
+{
+	writer.WriteLn("m_TEX0: {{TBP0: 0x{:X}, TBW: {}, PSM: {}, TW: {}, TH: {}, TCC: {}, TFX: {}, CBP: 0x{:X}, CPSM: {}, CSM: {}, CSA: {}, CLD: {}}}",
+		s->m_TEX0.TBP0, s->m_TEX0.TBW, GSUtil::GetPSMName(s->m_TEX0.PSM), s->m_TEX0.TW, s->m_TEX0.TH, GSUtil::GetTCCName(s->m_TEX0.TCC), GSUtil::GetTFXName(s->m_TEX0.TFX), s->m_TEX0.CBP, GSUtil::GetPSMName(s->m_TEX0.CPSM), s->m_TEX0.CSM, s->m_TEX0.CSA, s->m_TEX0.CLD);
+	writer.WriteLn("m_TEXA: {{TA0: {}, TA1: {}, AEM: {}}}", s->m_TEXA.TA0, s->m_TEXA.TA1, s->m_TEXA.AEM);
+	writer.WriteVector2("m_unscaled_size", s->m_unscaled_size);
+	writer.WriteLn("other_surface_fields: {{m_scale: {}, m_age: {}, m_end_block: 0x{:X}, m_32_bits_fmt: {}, m_was_dst_matched: {}, m_shared_texture: {}}}",
+		s->m_scale, s->m_age, s->m_end_block, s->m_32_bits_fmt, s->m_was_dst_matched, s->m_shared_texture);
+}
+
+static void DumpTarget(GSDebugWriter& writer, GSTextureCache::Target* t)
+{
+	DumpSurface(writer, t);
+
+	writer.WriteVector4("m_valid", t->m_valid);
+	writer.WriteVector4("m_drawn_since_read", t->m_drawn_since_read);
+	
+	writer.WriteLn("other_target_fields: {{m_dirty_size: {}, m_type: {}, m_alpha_max: {}, m_alpha_min: {}, m_alpha_range: {}, m_valid_alpha_low: {}, m_valid_alpha_high: {}, m_valid_rgb: {}, m_rt_alpha_scale: {}, m_downscaled: {}, m_last_draw: {}, m_is_frame: {}, m_used: {}, OffsetHack_modxy: {}, readbacks_since_draw: {}}}",
+		t->m_dirty.size(), t->m_type == GSTextureCache::RenderTarget ? "RenderTarget" : "DepthStencil", t->m_alpha_max, t->m_alpha_min, t->m_alpha_range, t->m_valid_alpha_low, t->m_valid_alpha_high, t->m_valid_rgb, t->m_rt_alpha_scale, t->m_downscaled, t->m_last_draw, t->m_is_frame, t->m_used, t->OffsetHack_modxy, t->readbacks_since_draw);
+}
+
+static void DumpSource(GSDebugWriter& writer, GSTextureCache::Source* s)
+{
+	DumpSurface(writer, s);
+	writer.WriteVector4("m_valid_rect", s->m_valid_rect);
+	writer.WriteVector2("m_lod", s->m_lod);
+	writer.WriteVector4("m_region", GSVector4i(
+		s->m_region.GetMinX(), s->m_region.GetMinY(),
+		s->m_region.GetMaxX(), s->m_region.GetMaxY()));
+	writer.WriteLn("other_source_fields: {{m_valid_hashes: {}, m_complete_layers: {}, m_target: {}, m_target_direct: {}, m_repeating: {}, m_valid_alpha_minmax: {}, m_alpha_minmax: [{},{}]}}",
+		s->m_valid_hashes, s->m_complete_layers, s->m_target, s->m_target_direct, s->m_repeating, s->m_valid_alpha_minmax, s->m_alpha_minmax.first, s->m_alpha_minmax.second);
+}
+
+void GSTextureCache::DumpSummary(const std::string& filename)
+{
+	GSDebugWriter writer;
+
+	for (u32 i = 0; i < 2; i++)
+	{
+		if (!m_dst[i].empty())
+		{
+			const char* type = (i == 0) ? "rt" : "ds";
+			writer.WriteLn("m_dst[{}]: ({})", i, type);
+			{
+				auto indent = writer.WithIndent();
+				u32 j = 0;
+				for (Target* t : m_dst[i])
+				{
+					writer.WriteLn("{}{}:", type, j++);
+					DumpTarget(writer.WithIndent(), t);
+				}
+			}
+			writer.WriteLn("");
+		}
+	}
+
+	writer.WriteLn("m_src:");
+	{
+		auto indent = writer.WithIndent();
+		// Sort to avoid non-deterministic iteration order.
+		std::vector<Source*> src_sorted(m_src.m_surfaces.begin(), m_src.m_surfaces.end());
+		std::sort(
+			src_sorted.begin(), src_sorted.end(),
+			[](Source* a, Source* b) {
+				// The TEX0 bits shouldn't collide, otherwise something went wrong...
+				return a->m_TEX0.TBP0 == b->m_TEX0.TBP0 ?
+					(a->m_TEX0.U64 < b->m_TEX0.U64) : (a->m_TEX0.TBP0 < b->m_TEX0.TBP0);
+			});
+		u32 j = 0;
+		for (Source* s : src_sorted)
+		{
+			writer.WriteLn("src{}:", j++);
+			DumpSource(writer.WithIndent(), s);
+		}
+	}
+	writer.WriteLn("");
+
+	writer.WriteLn("m_target_heights:");
+	{
+		auto indent = writer.WithIndent();
+		for (const TargetHeightElem& height : m_target_heights)
+		{
+			writer.WriteLn("- {{bp: 0x{:X}, fbw: {}, psm: {}, width: {}, height: {}, age: {}}}",
+				height.bp, height.fbw, GSUtil::GetPSMName(height.psm), height.width, height.height, height.age);
+		}
+	}
+	writer.WriteLn("");
+
+	writer.WriteLn("m_expected_src_bp: {}", m_expected_src_bp);
+	writer.WriteLn("m_remembered_src_bp: {}", m_remembered_src_bp);
+	writer.WriteLn("m_expected_dst_bp: {}", m_expected_dst_bp);
+	writer.WriteLn("m_remembered_dst_bp: {}", m_remembered_dst_bp);
+
+	if (m_temporary_source)
+	{
+		writer.WriteLn("m_temporary_source:");
+		{
+			auto indent = writer.WithIndent();
+			DumpSource(writer, m_temporary_source);
+		}
+		writer.WriteLn("");
+	}
+
+	if (m_temporary_z)
+	{
+		writer.WriteLn("m_temporary_z_info: {{ZBP: {:#0X}, offset: {}, rt_offset: {}, rect_since: [{}, {}, {}, {}]}}",
+			m_temporary_z_info.ZBP, m_temporary_z_info.offset, m_temporary_z_info.rt_offset,
+			m_temporary_z_info.rect_since.x, m_temporary_z_info.rect_since.y, m_temporary_z_info.rect_since.z, m_temporary_z_info.rect_since.w);
+	}
+
+	// Include transfers from GSState since that influences what happens to the TC.
+	const std::vector<GSState::GSUploadQueue>& draw_transfers = GSRendererHW::GetInstance()->m_draw_transfers;
+	if (!draw_transfers.empty())
+	{
+		writer.WriteLn("draw_transfers:");
+		{
+			auto indent = writer.WithIndent();
+			u32 i = 0;
+			for (const GSState::GSUploadQueue& transfer : draw_transfers)
+			{
+				writer.WriteLn("transfer{}:", i++);
+				{
+					auto indent = writer.WithIndent();
+					static constexpr const char* s_transfer_names[] = {"EE_to_GS","GS_to_GS", "GS_to_EE", "Clear"};
+					const u32 transfer_type = static_cast<u32>(transfer.transfer_type);
+					writer.WriteLn("transfer_type: {}", transfer_type < std::size(s_transfer_names) ? s_transfer_names[transfer_type] : "Invalid");
+					if (transfer.transfer_type == GSState::EEGS_TransferType::GS_to_GS)
+					{
+						writer.WriteLn("blit: {{SBP: 0x{:04x}, SBW: {}, SPSM: {}, DBP: 0x{:04x}, DBW: {}, DPSM: {}}}",
+							transfer.blit.SBP, transfer.blit.SBW, GSUtil::GetPSMName(transfer.blit.SPSM),
+							transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM));
+					}
+					else if (transfer.transfer_type == GSState::EEGS_TransferType::EE_to_GS ||
+						transfer.transfer_type == GSState::EEGS_TransferType::Clear)
+					{
+						writer.WriteLn("blit: {{DBP: 0x{:04x}, DBW: {}, DPSM: {}}}",
+							transfer.blit.DBP, transfer.blit.DBW, GSUtil::GetPSMName(transfer.blit.DPSM));
+					}
+					writer.WriteLn("draw: {}", transfer.draw);
+					writer.WriteVector4("rect", transfer.rect);
+					writer.WriteLn("was_hardware_only: {}", transfer.was_hardware_only);
+				}
+			}
+		}
+	}
+
+	if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(filename.c_str(), "w"))
+	{
+		fwrite(writer.buffer.data(), 1, writer.buffer.size(), file.get());
+	}
+}
+
+void GSTextureCache::DumpChange(Surface* s, bool addition, bool source)
+{
+	GSDebugWriter writer;
+	if (addition)
+		writer.WriteLn("{}{}:", "addition", m_debug_num_additions++);
+	else
+		writer.WriteLn("{}{}:", "deletion", m_debug_num_deletions++);
+	auto indent = writer.WithIndent();
+	{
+		writer.WriteLn("type: {}", source ? "source" : "target");
+		if (source)
+		{
+			DumpSource(writer, static_cast<Source*>(s));
+		}
+		else
+		{
+			DumpTarget(writer, static_cast<Target*>(s));
+		}
+	}
+	if (addition)
+		m_debug_additions += fmt::to_string(writer.buffer);
+	else
+		m_debug_deletions += fmt::to_string(writer.buffer);
+	
+	// These strings should be at most a few KB
+	if (m_debug_additions.size() > _1mb)
+	{
+		Console.Warning("TC: Huge 'additions' debug string, clearing...");
+		m_debug_additions.clear();
+	}
+	if (m_debug_deletions.size() > _1mb)
+	{
+		Console.Warning("TC: Huge 'deletions' debug string, clearing...");
+		m_debug_deletions.clear();
+	}
+}
+
+void GSTextureCache::DumpChange(Target* t, bool addition)
+{
+	DumpChange(t, addition, false);
+}
+
+void GSTextureCache::DumpChange(Source* s, bool addition)
+{
+	DumpChange(s, addition, true);
+}
+
+void GSTextureCache::DumpChangesToFile(const std::string& filename)
+{
+	if (m_debug_num_additions > 0)
+	{
+		const std::string additions_file = filename + "_additions.txt";
+		if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(additions_file.c_str(), "w"))
+		{
+			fwrite(m_debug_additions.data(), 1, m_debug_additions.size(), file.get());
+		}
+		m_debug_additions.clear();
+		m_debug_num_additions = 0;
+	}
+	if (m_debug_num_deletions > 0)
+	{
+		const std::string deletions_file = filename + "_deletions.txt";
+		if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(deletions_file.c_str(), "w"))
+		{
+			fwrite(m_debug_deletions.data(), 1, m_debug_deletions.size(), file.get());
+		}
+		m_debug_deletions.clear();
+		m_debug_num_deletions = 0;
+	}
 }
 
 // GSTextureCache::Palette

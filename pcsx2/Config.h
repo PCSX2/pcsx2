@@ -827,6 +827,7 @@ struct Pcsx2Config
 					SaveDrawStats : 1,
 					SaveFrameStats : 1,
 					SaveHWConfig : 1,
+					SaveTextureCache : 1,
 					DumpReplayUseFrameRange : 1,
 					DumpReplaceableTextures : 1,
 					DumpReplaceableMipmaps : 1,

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0+
 
 #include "GS/Renderers/Common/GSDevice.h"
+#include "GS/GSDebugWriter.h"
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 #include "GS/GSUtil.h"
@@ -1280,57 +1281,6 @@ bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
 	                  ((colormask.key & 8u) && (src_factor_alpha != GSDevice::CONST_ONE || dst_factor_alpha != GSDevice::CONST_ZERO)));
 }
 
-struct DrawConfigWriter
-{
-	fmt::memory_buffer buffer;
-	u32 indent = 0;
-	bool beginning_of_line = true;
-
-	/// Uses RAII to add 1 to indent on construction and remove on destruction
-	struct RAIIIndent
-	{
-		DrawConfigWriter& writer;
-		RAIIIndent(RAIIIndent&&) = delete;
-		explicit RAIIIndent(DrawConfigWriter& writer): writer(writer) { writer.PushIndent(); }
-		~RAIIIndent() { writer.PopIndent(); }
-		operator DrawConfigWriter&() { return writer; }
-	};
-
-	void PushIndent() { indent++; }
-	void PopIndent() { indent--; }
-	RAIIIndent WithIndent() { return RAIIIndent(*this); }
-
-	template <typename... T>
-	FMT_INLINE void WriteLn(fmt::format_string<T...> fmt, T&&... args)
-	{
-		fmt::vargs<T...> va = {{args...}};
-		if (beginning_of_line)
-			WriteIndent();
-		beginning_of_line = true;
-		fmt::detail::vformat_to(buffer, fmt.str, va);
-		buffer.push_back('\n');
-	}
-
-	template <typename... T>
-	FMT_INLINE void Write(fmt::format_string<T...> fmt, T&&... args)
-	{
-		fmt::vargs<T...> va = {{args...}};
-		if (beginning_of_line)
-			WriteIndent();
-		beginning_of_line = false;
-		fmt::detail::vformat_to(buffer, fmt.str, va);
-	}
-
-private:
-	void WriteIndent()
-	{
-		size_t sz = buffer.size();
-		buffer.resize(sz + indent);
-		for (u32 i = 0; i < indent; i++)
-			buffer[sz + i] = '\t';
-	}
-};
-
 static const char* GetTopologyName(GSHWDrawConfig::Topology topology)
 {
 	switch (topology)
@@ -1627,7 +1577,7 @@ static const char* GetPSROVDepthname(GSHWDrawConfig::PS_ROV_DEPTH rov_depth)
 	return "Unknown";
 }
 
-static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelector& ps)
+static void DumpPSSelector(GSDebugWriter& out, const GSHWDrawConfig::PSSelector& ps)
 {
 	out.WriteLn("aem_fmt: {}", ps.aem_fmt);
 	out.WriteLn("pal_fmt: {}", ps.pal_fmt);
@@ -1691,7 +1641,7 @@ static void DumpPSSelector(DrawConfigWriter& out, const GSHWDrawConfig::PSSelect
 	out.WriteLn("zfloor: {}", static_cast<u32>(ps.zfloor));
 }
 
-static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelector& vs)
+static void DumpVSSelector(GSDebugWriter& out, const GSHWDrawConfig::VSSelector& vs)
 {
 	out.WriteLn("fst: {}", vs.fst);
 	out.WriteLn("tme: {}", vs.tme);
@@ -1700,7 +1650,7 @@ static void DumpVSSelector(DrawConfigWriter& out, const GSHWDrawConfig::VSSelect
 	out.WriteLn("expand: {} ({})", GetVSExpandName(vs.expand), static_cast<u32>(vs.expand));
 }
 
-static void DumpBlendEquation(DrawConfigWriter& out, const char* name, u32 op, u32 src_factor, u32 dst_factor)
+static void DumpBlendEquation(GSDebugWriter& out, const char* name, u32 op, u32 src_factor, u32 dst_factor)
 {
 	const char* src_formula = GetBlendFactorFormula(static_cast<GSDevice::BlendFactor>(src_factor));
 	const char* dst_formula = GetBlendFactorFormula(static_cast<GSDevice::BlendFactor>(dst_factor));
@@ -1711,7 +1661,7 @@ static void DumpBlendEquation(DrawConfigWriter& out, const char* name, u32 op, u
 		out.WriteLn("{}: Cs * {} {} Cd * {}", name, src_formula, symbol, dst_formula);
 }
 
-static void DumpBlendState(DrawConfigWriter& out, const GSHWDrawConfig::BlendState& bs)
+static void DumpBlendState(GSDebugWriter& out, const GSHWDrawConfig::BlendState& bs)
 {
 	out.WriteLn("enable: {}", bs.enable);
 	out.WriteLn("constant_enable: {}", bs.constant_enable);
@@ -1720,7 +1670,7 @@ static void DumpBlendState(DrawConfigWriter& out, const GSHWDrawConfig::BlendSta
 	DumpBlendEquation(out, "equation_alpha", GSDevice::OP_ADD, bs.src_factor_alpha, bs.dst_factor_alpha);
 }
 
-static void DumpDepthStencilSelctor(DrawConfigWriter& out, const GSHWDrawConfig::DepthStencilSelector& dss)
+static void DumpDepthStencilSelctor(GSDebugWriter& out, const GSHWDrawConfig::DepthStencilSelector& dss)
 {
 	out.WriteLn("ztst: {} ({})", GSUtil::GetZTSTName(dss.ztst), dss.ztst);
 	out.WriteLn("zwe: {}", dss.zwe);
@@ -1728,7 +1678,7 @@ static void DumpDepthStencilSelctor(DrawConfigWriter& out, const GSHWDrawConfig:
 	out.WriteLn("date_one: {}", dss.date_one);
 }
 
-static void DumpSamplerSelector(DrawConfigWriter& out, const GSHWDrawConfig::SamplerSelector& ss)
+static void DumpSamplerSelector(GSDebugWriter& out, const GSHWDrawConfig::SamplerSelector& ss)
 {
 	out.WriteLn("tau: {}", ss.tau);
 	out.WriteLn("tav: {}", ss.tav);
@@ -1737,7 +1687,7 @@ static void DumpSamplerSelector(DrawConfigWriter& out, const GSHWDrawConfig::Sam
 	out.WriteLn("lodclamp: {}", ss.lodclamp);
 }
 
-static void DumpAlphaPass(DrawConfigWriter& out, const GSHWDrawConfig::AlphaPass& ap)
+static void DumpAlphaPass(GSDebugWriter& out, const GSHWDrawConfig::AlphaPass& ap)
 {
 	out.WriteLn("enable: {}", ap.enable);
 	out.WriteLn("require_one_barrier: {}", ap.require_one_barrier);
@@ -1752,7 +1702,7 @@ static void DumpAlphaPass(DrawConfigWriter& out, const GSHWDrawConfig::AlphaPass
 	DumpDepthStencilSelctor(out.WithIndent(), ap.depth);
 }
 
-static void DumpBlendMultipass(DrawConfigWriter& out, const GSHWDrawConfig::BlendMultiPass& bmp)
+static void DumpBlendMultipass(GSDebugWriter& out, const GSHWDrawConfig::BlendMultiPass& bmp)
 {
 	out.WriteLn("enable: {}", bmp.enable);
 	out.WriteLn("no_color1: {}", bmp.no_color1);
@@ -1763,59 +1713,47 @@ static void DumpBlendMultipass(DrawConfigWriter& out, const GSHWDrawConfig::Blen
 	DumpBlendState(out.WithIndent(), bmp.blend);
 }
 
-template<typename T>
-static void DumpVector4(DrawConfigWriter& out, const char* name, const T& val)
+static void DumpPSConstantBuffer(GSDebugWriter& out, const GSHWDrawConfig::PSConstantBuffer& cb)
 {
-	out.WriteLn("{}: [{}, {}, {}, {}]", name, val.x, val.y, val.z, val.w);
-};
-
-template<typename T>
-static void DumpVector2(DrawConfigWriter& out, const char* name, const T& val)
-{
-	out.WriteLn("{}: [{}, {}]", name, val.x, val.y);
-};
-
-static void DumpPSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::PSConstantBuffer& cb)
-{
-	DumpVector4(out, "FogColor_AREF", cb.FogColor_AREF);
-	DumpVector4(out, "WH", cb.WH);
-	DumpVector4(out, "TA_MaxDepth_Af", cb.TA_MaxDepth_Af);
-	DumpVector4(out, "FbMask", cb.FbMask);
-	DumpVector4(out, "HalfTexel", cb.HalfTexel);
-	DumpVector4(out, "MinMax", cb.MinMax);
-	DumpVector4(out, "LODParams", cb.LODParams);
-	DumpVector4(out, "STRange", cb.STRange);
-	DumpVector4(out, "ChannelShuffle", cb.ChannelShuffle);
-	DumpVector2(out, "ChannelShuffleOffset", cb.ChannelShuffleOffset);
-	DumpVector2(out, "TCOffsetHack", cb.TCOffsetHack);
-	DumpVector2(out, "STScale", cb.STScale);
-	DumpVector4(out, "DitherMatrix_0", cb.DitherMatrix[0]);
-	DumpVector4(out, "DitherMatrix_1", cb.DitherMatrix[1]);
-	DumpVector4(out, "DitherMatrix_2", cb.DitherMatrix[2]);
-	DumpVector4(out, "DitherMatrix_3", cb.DitherMatrix[3]);
-	DumpVector4(out, "ScaleFactor", cb.ScaleFactor);
+	out.WriteVector4("FogColor_AREF", cb.FogColor_AREF);
+	out.WriteVector4("WH", cb.WH);
+	out.WriteVector4("TA_MaxDepth_Af", cb.TA_MaxDepth_Af);
+	out.WriteVector4("FbMask", cb.FbMask);
+	out.WriteVector4("HalfTexel", cb.HalfTexel);
+	out.WriteVector4("MinMax", cb.MinMax);
+	out.WriteVector4("LODParams", cb.LODParams);
+	out.WriteVector4("STRange", cb.STRange);
+	out.WriteVector4("ChannelShuffle", cb.ChannelShuffle);
+	out.WriteVector2("ChannelShuffleOffset", cb.ChannelShuffleOffset);
+	out.WriteVector2("TCOffsetHack", cb.TCOffsetHack);
+	out.WriteVector2("STScale", cb.STScale);
+	out.WriteVector4("DitherMatrix_0", cb.DitherMatrix[0]);
+	out.WriteVector4("DitherMatrix_1", cb.DitherMatrix[1]);
+	out.WriteVector4("DitherMatrix_2", cb.DitherMatrix[2]);
+	out.WriteVector4("DitherMatrix_3", cb.DitherMatrix[3]);
+	out.WriteVector4("ScaleFactor", cb.ScaleFactor);
 	out.WriteLn("LineCovScale: {}", cb.LineCovScale);
 }
 
-static void DumpVSConstantBuffer(DrawConfigWriter& out, const GSHWDrawConfig::VSConstantBuffer& cb)
+static void DumpVSConstantBuffer(GSDebugWriter& out, const GSHWDrawConfig::VSConstantBuffer& cb)
 {
-	DumpVector2(out, "vertex_scale", cb.vertex_scale);
-	DumpVector2(out, "vertex_offset", cb.vertex_offset);
-	DumpVector2(out, "texture_scale", cb.texture_scale);
-	DumpVector2(out, "texture_offset", cb.texture_offset);
-	DumpVector2(out, "point_size", cb.point_size);
+	out.WriteVector2("vertex_scale", cb.vertex_scale);
+	out.WriteVector2("vertex_offset", cb.vertex_offset);
+	out.WriteVector2("texture_scale", cb.texture_scale);
+	out.WriteVector2("texture_offset", cb.texture_offset);
+	out.WriteVector2("point_size", cb.point_size);
 	out.WriteLn("max_depth: {}", cb.max_depth);
 	out.WriteLn("line_aa1_width: {}", cb.line_aa1_width);
 }
 
-static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
+static void DumpConfig(GSDebugWriter& out, const GSHWDrawConfig& conf,
 	bool ps, bool vs, bool bs, bool dss, bool ss, bool asp, bool bmp, bool cbvs, bool cbps)
 {
 	out.WriteLn("topology: {} ({})", GetTopologyName(conf.topology), static_cast<u32>(conf.topology));
 	out.WriteLn("require_one_barrier: {}", conf.require_one_barrier);
 	out.WriteLn("require_full_barrier: {}", conf.require_full_barrier);
-	DumpVector4(out, "drawarea", conf.drawarea);
-	DumpVector4(out, "samplearea", conf.samplearea);
+	out.WriteVector4("drawarea", conf.drawarea);
+	out.WriteVector4("samplearea", conf.samplearea);
 	out.WriteLn("tex_hazard: {}", GetTexHazardName(conf.tex_hazard));
 
 	out.WriteLn("destination_alpha: {} ({})", GetDestinationAlphaModeName(conf.destination_alpha), static_cast<u32>(conf.destination_alpha));
@@ -1827,7 +1765,7 @@ static void DumpConfig(DrawConfigWriter& out, const GSHWDrawConfig& conf,
 	out.WriteLn("colclip_frame: {{ FBP: 0x{:04x}, FBW: {}, PSM: {}, FBMSK: 0x{:08x} }}",
 		conf.colclip_frame.FBP, conf.colclip_frame.FBW, GSUtil::GetPSMName(conf.colclip_frame.PSM),
 		conf.colclip_frame.FBMSK);
-	DumpVector4(out, "colclip_update_area", conf.colclip_update_area);
+	out.WriteVector4("colclip_update_area", conf.colclip_update_area);
 
 	if (ps)
 	{
@@ -1889,7 +1827,7 @@ void GSHWDrawConfig::DumpConfig(const std::string& path, const GSHWDrawConfig& c
 {
 	if (FileSystem::ManagedCFilePtr file = FileSystem::OpenManagedCFile(path.c_str(), "w"))
 	{
-		DrawConfigWriter writer;
+		GSDebugWriter writer;
 		::DumpConfig(writer, conf, ps, vs, bs, dss, ss, asp, bmp, cbvs, cbps);
 		fwrite(writer.buffer.data(), 1, writer.buffer.size(), file.get());
 	}
