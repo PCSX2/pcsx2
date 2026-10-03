@@ -2775,6 +2775,13 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
+	if (GSConfig.SaveTextureCache)
+	{
+		// Save the texture cache up here for the 'before' summary since the lookups done
+		// below mutate the cache.
+		g_texture_cache->DumpSummary(GetDrawDumpPath("%05lld_texture_cache_0.txt", s_n));
+	}
+
 	static u32 num_skipped_channel_shuffle_draws = 0;
 	GSVertexBuff& vtx_buff = *m_vertex;
 	GSIndexBuff& idx_buff = *m_index;
@@ -5289,6 +5296,11 @@ void GSRendererHW::Draw()
 				g_texture_cache->GetTemporaryZ()->Save(s);
 			else
 				ds->m_texture->Save(s);
+		}
+
+		if (GSConfig.SaveTextureCache)
+		{
+			g_texture_cache->DumpSummary(GetDrawDumpPath("%05lld_texture_cache_1.txt", s_n));
 		}
 	}
 
