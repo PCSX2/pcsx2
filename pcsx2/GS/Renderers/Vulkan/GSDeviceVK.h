@@ -591,8 +591,8 @@ public:
 	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion);
 
 	// Main GS primitive draws.
-	void Draw(const GSHWDrawConfig& config);
-	void Draw(const GSHWDrawConfig& config, int offset, int count);
+	void Draw(const DrawPassConfig& config);
+	void Draw(const DrawPassConfig& config, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -639,14 +639,13 @@ public:
 	bool BindDrawPipeline(const PipelineSelector& p);
 
 	void RenderHW(GSHWDrawConfig& config) override;
-	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
+	void UpdateHWPipelineSelector(const DrawPassConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
 	VkImageLayout GetFeedbackLoopLayout() const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
 	VkAccessFlags2 GetFeedbackLoopInputAccessFlags() const;
 	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
-		bool one_barrier, bool full_barrier);
+	void SendHWDraw(const DrawPassConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State
@@ -684,7 +683,7 @@ public:
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
 	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
-	void BeginTFXRenderPass(const GSHWDrawConfig& config, GSTextureVK* rt, GSTextureVK* ds, const GSVector2i& rtsize);
+	void BeginTFXRenderPass(const DrawPassConfig& config, GSTextureVK* rt, GSTextureVK* ds, const GSVector2i& rtsize);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
