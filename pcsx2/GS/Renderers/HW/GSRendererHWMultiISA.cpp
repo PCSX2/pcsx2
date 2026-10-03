@@ -563,7 +563,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 	if (add_ee_transfer)
 	{
 		GSRendererHW::GSUploadQueue uq;
-		uq.transfer_type = GSRendererHW::GetInstance()->EEGS_TransferType::EE_to_GS;
+		uq.transfer_type = GSState::EEGS_TransferType::EE_to_GS;
 		uq.blit.U64 = 0;
 		uq.blit.DBP = hw.m_cached_ctx.FRAME.Block();
 		uq.blit.DBW = hw.m_cached_ctx.FRAME.FBW;
@@ -572,6 +572,7 @@ bool GSRendererHWFunctions::SwPrimRender(GSRendererHW& hw, bool invalidate_tc, b
 		uq.rect = bbox;
 		uq.was_hardware_only = false;
 		hw.m_draw_transfers.push_back(uq);
+		GSState::s_last_transfer_draw_n = GSState::s_n;
 	}
 
 	return true;

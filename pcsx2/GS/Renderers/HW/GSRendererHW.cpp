@@ -2374,6 +2374,7 @@ void GSRendererHW::Move()
 			transfer.draw = s_n;
 			transfer.was_hardware_only = true;
 			m_draw_transfers.push_back(transfer);
+			s_last_transfer_draw_n = s_n;
 		}
 		else
 		{
@@ -10458,6 +10459,7 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 			clear_queue.blit.DPSM = m_cached_ctx.FRAME.PSM;
 			clear_queue.was_hardware_only = false;
 			m_draw_transfers.push_back(clear_queue);
+			s_last_transfer_draw_n = s_n;
 		}
 		else
 		{
@@ -10489,6 +10491,7 @@ bool GSRendererHW::TryGSMemClear(bool no_rt, bool preserve_rt, bool invalidate_r
 			clear_queue.blit.DPSM = m_cached_ctx.ZBUF.PSM;
 			clear_queue.was_hardware_only = false;
 			m_draw_transfers.push_back(clear_queue);
+			s_last_transfer_draw_n = s_n;
 		}
 	}
 
