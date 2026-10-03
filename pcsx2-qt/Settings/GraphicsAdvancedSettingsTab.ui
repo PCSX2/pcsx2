@@ -138,6 +138,34 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="edsColorMaskVK">
+          <property name="text">
+           <string>Extended Dynamic State Color Mask VK</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QCheckBox" name="edsColorBlendVK">
+          <property name="text">
+           <string>Extended Dynamic State Color Blend VK</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QCheckBox" name="edsDepthVK">
+          <property name="text">
+           <string>Extended Dynamic State Depth VK</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QCheckBox" name="edsStencilVK">
+          <property name="text">
+           <string>Extended Dynamic State Stencil VK</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="6" column="0">

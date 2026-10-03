@@ -217,6 +217,16 @@ VULKAN_DEVICE_ENTRY_POINT(vkGetSwapchainImagesKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireNextImageKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkQueuePresentKHR, false)
 
+// VK_EXT_extended_dynamic_state and VK_EXT_extended_dynamic_state3 functions
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthTestEnableEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthWriteEnableEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetDepthCompareOpEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetStencilTestEnableEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetStencilOpEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorBlendEquationEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorBlendEnableEXT, false)
+VULKAN_DEVICE_ENTRY_POINT(vkCmdSetColorWriteMaskEXT, false)
+
 // Vulkan 1.1 functions.
 VULKAN_DEVICE_ENTRY_POINT(vkGetBufferMemoryRequirements2, true)
 VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, true)
