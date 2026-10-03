@@ -2418,6 +2418,7 @@ void GSState::FlushWrite()
 			if (m_draw_transfers.size() > 0 && m_tr.m_blit.DBP == m_draw_transfers.back().blit.DBP)
 			{
 				m_draw_transfers.back().rect = m_draw_transfers.back().rect.runion(r);
+				s_last_transfer_draw_n = s_n;
 			}
 		}
 	}
