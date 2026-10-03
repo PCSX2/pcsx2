@@ -47,6 +47,31 @@ enum : u32
 	TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
 };
 
+static constexpr std::array<VkPrimitiveTopology, 3> s_vk_topology = {{
+	VK_PRIMITIVE_TOPOLOGY_POINT_LIST, // Point
+	VK_PRIMITIVE_TOPOLOGY_LINE_LIST, // Line
+	VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // Triangle
+}};
+
+static constexpr std::array<VkBlendFactor, 16> s_vk_blend_factors = { {
+	VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+	VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+	VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+	VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
+} };
+
+static constexpr std::array<VkBlendOp, 3> s_vk_blend_ops = { {
+	VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
+} };
+
+static constexpr std::array<VkCompareOp, 4> s_vk_compare_ops = {
+	VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER };
+
+static VkStencilOpState GetDATEStencilOpState(const bool date_one)
+{
+	return VkStencilOpState{ VK_STENCIL_OP_KEEP, date_one ? VK_STENCIL_OP_ZERO : VK_STENCIL_OP_KEEP,
+		VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 1u, 1u, 1u };
+}
 
 #ifdef ENABLE_OGL_DEBUG
 static u32 s_debug_scope_depth = 0;
@@ -5135,12 +5160,6 @@ VkShaderModule GSDeviceVK::GetTFXFragmentShader(const GSHWDrawConfig::PSSelector
 
 VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 {
-	static constexpr std::array<VkPrimitiveTopology, 3> topology_lookup = {{
-		VK_PRIMITIVE_TOPOLOGY_POINT_LIST, // Point
-		VK_PRIMITIVE_TOPOLOGY_LINE_LIST, // Line
-		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // Triangle
-	}};
-
 	GSHWDrawConfig::BlendState pbs{p.bs};
 	GSHWDrawConfig::PSSelector pps{p.ps};
 	if (!p.bs.IsEffective(p.cms))
@@ -5174,7 +5193,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 				p.ds ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE),
 			0);
 	}
-	gpb.SetPrimitiveTopology(topology_lookup[p.topology]);
+	gpb.SetPrimitiveTopology(s_vk_topology[p.topology]);
 	gpb.SetRasterizationState(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
 	if (m_optional_extensions.vk_ext_line_rasterization &&
 		p.topology == static_cast<u8>(GSHWDrawConfig::Topology::Line))
@@ -5203,13 +5222,10 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 
 	// DepthStencil
-	static const VkCompareOp ztst[] = {
-		VK_COMPARE_OP_NEVER, VK_COMPARE_OP_ALWAYS, VK_COMPARE_OP_GREATER_OR_EQUAL, VK_COMPARE_OP_GREATER};
-	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, ztst[p.dss.ztst]);
+	gpb.SetDepthState((p.dss.ztst != ZTST_ALWAYS || p.dss.zwe), p.dss.zwe, s_vk_compare_ops[p.dss.ztst]);
 	if (p.dss.date)
 	{
-		const VkStencilOpState sos{VK_STENCIL_OP_KEEP, p.dss.date_one ? VK_STENCIL_OP_ZERO : VK_STENCIL_OP_KEEP,
-			VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 1u, 1u, 1u};
+		const VkStencilOpState sos = GetDATEStencilOpState(p.dss.date_one);
 		gpb.SetStencilState(true, sos, sos);
 	}
 
@@ -5222,20 +5238,8 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	}
 	else if (pbs.enable)
 	{
-		// clang-format off
-		static constexpr std::array<VkBlendFactor, 16> vk_blend_factors = { {
-			VK_BLEND_FACTOR_SRC_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR, VK_BLEND_FACTOR_DST_COLOR, VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
-			VK_BLEND_FACTOR_SRC1_COLOR, VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-			VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA, VK_BLEND_FACTOR_SRC1_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-			VK_BLEND_FACTOR_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO
-		}};
-		static constexpr std::array<VkBlendOp, 3> vk_blend_ops = {{
-				VK_BLEND_OP_ADD, VK_BLEND_OP_SUBTRACT, VK_BLEND_OP_REVERSE_SUBTRACT
-		}};
-		// clang-format on
-
-		gpb.SetBlendAttachment(0, true, vk_blend_factors[pbs.src_factor], vk_blend_factors[pbs.dst_factor],
-			vk_blend_ops[pbs.op], vk_blend_factors[pbs.src_factor_alpha], vk_blend_factors[pbs.dst_factor_alpha],
+		gpb.SetBlendAttachment(0, true, s_vk_blend_factors[pbs.src_factor], s_vk_blend_factors[pbs.dst_factor],
+			s_vk_blend_ops[pbs.op], s_vk_blend_factors[pbs.src_factor_alpha], s_vk_blend_factors[pbs.dst_factor_alpha],
 			VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 	else
