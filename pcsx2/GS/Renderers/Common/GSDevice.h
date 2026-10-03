@@ -1341,6 +1341,188 @@ struct alignas(16) GSHWDrawConfig
 		return blend.enable || blend_multi_pass.enable || ps.IsSWBlending();
 	}
 
+	// Draw pass selectors
+	enum class DrawPass
+	{
+		Main,
+		AlphaSecond,
+		PrimID,
+		Blend,
+	};
+
+	// Read only view of a specific pass's config. Stores a pointer to the config,
+	// so will change if the underlying config changes (which is usually what we want).
+	class DrawPassConfig
+	{
+	public:
+		DrawPassConfig(const GSHWDrawConfig* config, DrawPass pass)
+			: m_config(config), m_pass(pass)
+		{
+		}
+
+		DrawPass GetPass() const { return m_pass; }
+
+		GSTexture* rt() const { return m_config->rt; }
+		GSTexture* ds() const { return m_config->ds; }
+		GSTexture* tex() const { return m_config->tex; }
+		GSHWDrawConfig::Topology topology() const { return m_config->topology; }
+		const std::vector<std::size_t>* drawlist() const { return m_config->drawlist; }
+		const std::vector<GSVector4i>* drawlist_bbox() const { return m_config->drawlist_bbox; }
+		u32 indices_per_prim() const { return m_config->indices_per_prim; }
+		u32 tex_hazard() const { return m_config->tex_hazard; }
+		GSHWDrawConfig::DestinationAlphaMode destination_alpha() const { return m_config->destination_alpha; }
+		GSHWDrawConfig::ColClipMode colclip_mode() const { return m_config->colclip_mode; }
+		GSVector4i drawarea() const { return m_config->drawarea; }
+
+		bool full_barrier() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->require_full_barrier;
+				case DrawPass::AlphaSecond: return m_config->alpha_second_pass.require_full_barrier;
+				case DrawPass::PrimID: return false;
+				case DrawPass::Blend: return false;
+			}
+		}
+
+		bool one_barrier() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->require_one_barrier;
+				case DrawPass::AlphaSecond: return m_config->alpha_second_pass.require_one_barrier;
+				case DrawPass::PrimID: return false;
+				case DrawPass::Blend: return false;
+			}
+		}
+
+		const VSSelector& vs() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->vs;
+				case DrawPass::AlphaSecond: return m_config->vs;
+				case DrawPass::Blend: return m_config->vs;
+				case DrawPass::PrimID: return m_config->vs;
+			}
+		}
+
+		// Need a copy here since the Blend and PrimID override values.
+		const PSSelector ps() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->ps;
+				case DrawPass::AlphaSecond: return m_config->alpha_second_pass.ps;
+				case DrawPass::Blend:
+				{
+					PSSelector ps_blend = m_config->ps;
+					ps_blend.no_color1 = m_config->blend_multi_pass.no_color1;
+					ps_blend.blend_hw = m_config->blend_multi_pass.blend_hw;
+					ps_blend.dither = m_config->blend_multi_pass.dither;
+					return ps_blend;
+				}
+				case DrawPass::PrimID:
+				{
+					PSSelector ps_primid = m_config->ps;
+					ps_primid.blend_a = ps_primid.blend_b = ps_primid.blend_c = ps_primid.blend_d = false;
+					ps_primid.no_color = false;
+					ps_primid.no_color1 = true;
+					return ps_primid;
+				}
+			}
+		}
+
+		ColorMaskSelector colormask() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->colormask;
+				case DrawPass::AlphaSecond: return m_config->alpha_second_pass.colormask;
+				case DrawPass::Blend: return m_config->colormask;
+				case DrawPass::PrimID: return GSHWDrawConfig::ColorMaskSelector(1);
+			}
+		}
+
+		DepthStencilSelector depth() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->depth;
+				case DrawPass::AlphaSecond: return m_config->alpha_second_pass.depth;
+				case DrawPass::Blend: return m_config->depth;
+				case DrawPass::PrimID:
+				{
+					DepthStencilSelector primid_depth = m_config->depth;
+					primid_depth.zwe = false;
+					return primid_depth;
+				}
+			}
+		}
+
+		BlendState blend() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::AlphaSecond:
+				case DrawPass::PrimID:
+				case DrawPass::Main:
+					return m_config->blend;
+				case DrawPass::Blend:;
+					return m_config->blend_multi_pass.blend;
+			}
+		}
+
+		bool IsFeedbackLoopRT() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->IsFeedbackLoopRT(m_config->ps);
+				case DrawPass::AlphaSecond: return m_config->IsFeedbackLoopRT(m_config->alpha_second_pass.ps);
+				case DrawPass::Blend: return false;
+				case DrawPass::PrimID: return false;
+			}
+		}
+
+		bool IsFeedbackLoopDepth() const
+		{
+			switch (m_pass)
+			{
+				default:
+				case DrawPass::Main: return m_config->IsFeedbackLoopDepth(m_config->ps);
+				case DrawPass::AlphaSecond: return m_config->IsFeedbackLoopDepth(m_config->alpha_second_pass.ps);
+				case DrawPass::Blend: return false;
+				case DrawPass::PrimID: return false;
+			}
+		}
+
+		bool HasColorROV() const
+		{
+			return m_config->ps.HasColorROV();
+		}
+
+		bool HasDepthROV() const
+		{
+			return m_config->ps.HasDepthROV();
+		}
+	private:
+		const GSHWDrawConfig* m_config;
+		DrawPass m_pass;
+	};
+
+	DrawPassConfig GetDrawPassConfig(DrawPass pass) const
+	{
+		return DrawPassConfig(this, pass);
+	}
+
 	// Dumping
 	static void DumpConfig(const std::string& path, const GSHWDrawConfig& conf,
 		bool ps = true, bool vs = true, bool bs = true, bool dss = true, bool ss = true, bool asp = true, bool bmp = true,
@@ -1379,6 +1561,9 @@ static inline u32 GetVertexAlignment(GSHWDrawConfig::VSExpand expand)
 class GSDevice : public GSAlignedClass<32>
 {
 public:
+	using DrawPass = GSHWDrawConfig::DrawPass;
+	using DrawPassConfig = GSHWDrawConfig::DrawPassConfig;
+
 	enum class PresentResult
 	{
 		OK,
