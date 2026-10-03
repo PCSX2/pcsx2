@@ -138,6 +138,13 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="edsVK">
+          <property name="text">
+           <string>Extended Dynamic State VK</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="6" column="0">
