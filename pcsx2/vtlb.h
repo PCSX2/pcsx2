@@ -46,6 +46,7 @@ extern void vtlb_Init();
 extern void vtlb_Shutdown();
 extern void vtlb_Reset();
 extern void vtlb_ResetFastmem();
+extern void vtlb_ResetQueuedErrors();
 
 extern vtlbHandler vtlb_NewHandler();
 
