@@ -407,16 +407,22 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 			return false;
 	}
 
+#ifdef _WIN32
+	m_optional_extensions.vk_ext_full_screen_exclusive =
+		enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
+#endif
+
 	m_optional_extensions.vk_ext_provoking_vertex = SupportsExtension(VK_EXT_PROVOKING_VERTEX_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_calibrated_timestamps =
-		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_rasterization_order_attachment_access =
 		SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_fragment_shader_interlock = SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
 	m_optional_extensions.vk_ext_attachment_feedback_loop_layout =
 		SupportsExtension(VK_EXT_ATTACHMENT_FEEDBACK_LOOP_LAYOUT_EXTENSION_NAME, false);
-	m_optional_extensions.vk_ext_line_rasterization = SupportsExtension(VK_EXT_LINE_RASTERIZATION_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
 	m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+	m_optional_extensions.vk_ext_calibrated_timestamps =
+		SupportsExtension(VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME, false);
 
 	if (m_optional_extensions.vk_swapchain_maintenance1)
 	{
@@ -438,13 +444,6 @@ bool GSDeviceVK::SelectDeviceExtensions(ExtensionList* extension_list, bool enab
 		m_optional_extensions.vk_khr_shader_non_semantic_info =
 			SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
 	}
-
-#ifdef _WIN32
-	m_optional_extensions.vk_ext_full_screen_exclusive =
-		enable_surface && SupportsExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME, false);
-#endif
-
-	m_optional_extensions.vk_ext_fragment_shader_interlock = SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
 
 	return true;
 }
@@ -834,25 +833,27 @@ bool GSDeviceVK::ProcessDeviceExtensions()
 	m_optional_extensions.vk_ext_fragment_shader_interlock &=
 		(fragment_shader_interlock_ext_feature.fragmentShaderPixelInterlock == VK_TRUE);
 
-	Console.WriteLn(
-		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
-	Console.WriteLn(
-		"VK_EXT_memory_budget is %s", m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
-		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
-		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	Console.WriteLn("VK_%s_swapchain_maintenance1 is %s",
 		m_optional_extensions.vk_swapchain_maintenance1_is_khr ? "KHR" : "EXT",
 		m_optional_extensions.vk_swapchain_maintenance1 ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_full_screen_exclusive is %s",
 		m_optional_extensions.vk_ext_full_screen_exclusive ? "supported" : "NOT supported");
-	Console.WriteLn("VK_KHR_driver_properties is %s",
-		m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
-	Console.WriteLn("VK_EXT_attachment_feedback_loop_layout is %s",
-		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
+	Console.WriteLn(
+		"VK_EXT_provoking_vertex is %s", m_optional_extensions.vk_ext_provoking_vertex ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_line_rasterization is %s",
+		m_optional_extensions.vk_ext_line_rasterization ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_rasterization_order_attachment_access is %s",
+		m_optional_extensions.vk_ext_rasterization_order_attachment_access ? "supported" : "NOT supported");
 	Console.WriteLn("VK_EXT_fragment_shader_interlock is %s",
 		m_optional_extensions.vk_ext_fragment_shader_interlock ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_attachment_feedback_loop_layout is %s",
+		m_optional_extensions.vk_ext_attachment_feedback_loop_layout ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_memory_budget is %s",
+		m_optional_extensions.vk_ext_memory_budget ? "supported" : "NOT supported");
+	Console.WriteLn("VK_KHR_driver_properties is %s",
+		m_optional_extensions.vk_khr_driver_properties ? "supported" : "NOT supported");
+	Console.WriteLn("VK_EXT_calibrated_timestamps is %s",
+		m_optional_extensions.vk_ext_calibrated_timestamps ? "supported" : "NOT supported");
 
 	return true;
 }
