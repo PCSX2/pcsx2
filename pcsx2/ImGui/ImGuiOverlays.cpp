@@ -999,6 +999,8 @@ __ri void ImGuiManager::DrawSettingsOverlay(float scale, float margin, float spa
 			APPEND("DRWB ");
 		if (GSConfig.UserHacks_RewriteLargeSTCoords)
 			APPEND("RWST ");
+		if (GSConfig.UserHacks_TargetPageRearranging)
+			APPEND("TPGR ");
 		if (GSConfig.HWSpinGPUForReadbacks)
 			APPEND("RBSG ");
 		if (GSConfig.HWSpinCPUForReadbacks)

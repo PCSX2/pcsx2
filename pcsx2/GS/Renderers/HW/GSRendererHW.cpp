@@ -3348,6 +3348,18 @@ void GSRendererHW::Draw()
 				TryGSMemClear(frame_masked, false, false, 0, z_masked, false, false, 0);
 			}
 		}
+		else if (GSConfig.UserHacks_TargetPageRearranging)
+		{
+			// Try not to do black draws if the mem clear happens but target invalidation doesn't and no target exists.
+			no_rt |= is_zero_color_clear && !preserve_rt_color && (no_rt || g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.PSM) == nullptr);
+			no_ds |= is_zero_depth_clear && !preserve_depth && (no_ds || g_texture_cache->GetTargetWithSharedBits(m_cached_ctx.ZBUF.Block(), m_cached_ctx.ZBUF.PSM) == nullptr);
+
+			if (no_rt && no_ds)
+			{
+				CleanupDraw(false);
+				return;
+			}
+		}
 	}
 
 	GIFRegTEX0 TEX0 = {};
@@ -4674,6 +4686,21 @@ void GSRendererHW::Draw()
 			if (FRAME_TEX0.TBW != 1 || (m_r.width() > frame_psm.pgs.x || m_r.height() > frame_psm.pgs.y) || (scale_draw == 1 && !scaled_copy))
 			{
 				FRAME_TEX0.TBP0 = rt->m_TEX0.TBP0;
+
+				if (GSConfig.UserHacks_TargetPageRearranging && FRAME_TEX0.TBW != rt->m_TEX0.TBW)
+				{
+					bool can_recycle = true;
+					if (src && src->m_from_target && src->m_from_target == rt)
+					{
+						src->m_target_direct = false;
+						src->m_shared_texture = false;
+						src->m_texture = rt->m_texture;
+						can_recycle = false;
+					}
+
+					rt->RearrangeTarget(FRAME_TEX0.TBW, can_recycle);
+				}
+
 				rt->m_TEX0 = FRAME_TEX0;
 			}
 
@@ -4684,12 +4711,44 @@ void GSRendererHW::Draw()
 				rt->ResizeValidity(new_valid_width);
 			}
 		}
+		else if (GSConfig.UserHacks_TargetPageRearranging && !m_in_target_draw && rt && is_possible_mem_clear)
+		{
+			if (FRAME_TEX0.TBW != rt->m_TEX0.TBW)
+			{
+				bool can_recycle = true;
+				if (src && src->m_from_target && src->m_from_target == rt)
+				{
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+					src->m_texture = rt->m_texture;
+					can_recycle = false;
+				}
+				rt->RearrangeTarget(FRAME_TEX0.TBW, can_recycle);
+			}
+
+			rt->m_TEX0.TBW = FRAME_TEX0.TBW;
+		}
 
 		if (ds && (!is_possible_mem_clear || ds->m_TEX0.PSM != ZBUF_TEX0.PSM || (rt && ds->m_TEX0.TBW != rt->m_TEX0.TBW)) && !m_in_target_draw)
 		{
 			if (ZBUF_TEX0.TBW != 1 || (m_r.width() > frame_psm.pgs.x || m_r.height() > frame_psm.pgs.y) || (scale_draw == 1 && !scaled_copy))
 			{
 				ZBUF_TEX0.TBP0 = ds->m_TEX0.TBP0;
+
+				if (GSConfig.UserHacks_TargetPageRearranging && ZBUF_TEX0.TBW != ds->m_TEX0.TBW)
+				{
+					bool can_recycle = true;
+					if (src && src->m_from_target && src->m_from_target == ds && (ZBUF_TEX0.TBW != ds->m_TEX0.TBW))
+					{
+						src->m_target_direct = false;
+						src->m_shared_texture = false;
+						src->m_texture = ds->m_texture;
+						can_recycle = false;
+					}
+
+					ds->RearrangeTarget(ZBUF_TEX0.TBW, can_recycle);
+				}
+
 				ds->m_TEX0 = ZBUF_TEX0;
 			}
 			if (valid_width_change)
@@ -4698,6 +4757,24 @@ void GSRendererHW::Draw()
 				new_valid_width.z = std::min(new_valid_width.z, static_cast<int>(ds->m_TEX0.TBW) * 64);
 				ds->ResizeValidity(new_valid_width);
 			}
+		}
+		else if (GSConfig.UserHacks_TargetPageRearranging && !m_in_target_draw && ds && is_possible_mem_clear)
+		{
+			if (ZBUF_TEX0.TBW != ds->m_TEX0.TBW)
+			{
+				bool can_recycle = true;
+				if (src && src->m_from_target && src->m_from_target == ds && (ZBUF_TEX0.TBW != ds->m_TEX0.TBW))
+				{
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+					src->m_texture = ds->m_texture;
+					can_recycle = false;
+				}
+
+				ds->RearrangeTarget(ZBUF_TEX0.TBW, can_recycle);
+			}
+
+			ds->m_TEX0.TBW = ZBUF_TEX0.TBW;
 		}
 
 		if (rt)
@@ -4712,13 +4789,60 @@ void GSRendererHW::Draw()
 		if (rt)
 		{
 			const bool update_fbw = (FRAME_TEX0.TBW != rt->m_TEX0.TBW || rt->m_TEX0.TBW == 1) && !m_in_target_draw && (m_channel_shuffle && src->m_target) && (!NeedsBlending() || IsOpaque() || m_context->ALPHA.IsBlack());
+
+			if (GSConfig.UserHacks_TargetPageRearranging && !m_in_target_draw && update_fbw && FRAME_TEX0.TBW != rt->m_TEX0.TBW)
+			{
+				bool can_recycle = true;
+				if (src && src->m_from_target && src->m_from_target == rt)
+				{
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+					src->m_texture = rt->m_texture;
+					can_recycle = false;
+				}
+				rt->RearrangeTarget(((src && src->m_from_target && src->m_from_target->m_32_bits_fmt) ? src->m_from_target->m_TEX0.TBW : FRAME_TEX0.TBW), can_recycle);
+			}
+
 			rt->m_TEX0.TBW = update_fbw ? ((src && src->m_from_target && src->m_from_target->m_32_bits_fmt) ? src->m_from_target->m_TEX0.TBW : FRAME_TEX0.TBW) : std::max(rt->m_TEX0.TBW, FRAME_TEX0.TBW);
 			rt->m_TEX0.PSM = FRAME_TEX0.PSM;
 		}
 		if (ds)
 		{
+			if (GSConfig.UserHacks_TargetPageRearranging && !m_in_target_draw && ZBUF_TEX0.TBW != ds->m_TEX0.TBW)
+			{
+				bool can_recycle = true;
+				if (src && src->m_from_target && src->m_from_target == ds && (ZBUF_TEX0.TBW != ds->m_TEX0.TBW))
+				{
+					src->m_target_direct = false;
+					src->m_shared_texture = false;
+					src->m_texture = ds->m_texture;
+					can_recycle = false;
+				}
+				ds->RearrangeTarget(ZBUF_TEX0.TBW, can_recycle);
+			}
+
 			ds->m_TEX0.TBW = std::max(ds->m_TEX0.TBW, ZBUF_TEX0.TBW);
 			ds->m_TEX0.PSM = ZBUF_TEX0.PSM;
+		}
+	}
+	else if (GSConfig.UserHacks_TargetPageRearranging && m_texture_shuffle && rt && FRAME_TEX0.TBW > 1 && ((FRAME_TEX0.TBW != rt->m_TEX0.TBW * 2) || (src && src->m_from_target && src->m_from_target->m_TEX0.TBW == FRAME_TEX0.TBW)))
+	{
+		// Could check it's using the exact RT, but it might be shuffling the Z which will be a copy on the rt side, so it won't match.
+		if (!m_in_target_draw && src && src->m_from_target && src->m_from_target->m_TEX0.TBP0 != rt->m_TEX0.TBP0 && src->m_from_target->m_TEX0.TBW != rt->m_TEX0.TBW)
+		{
+			rt->RearrangeTarget(FRAME_TEX0.TBW);
+
+			rt->m_TEX0.TBW = FRAME_TEX0.TBW;
+
+			if (ds)
+			{
+				if (!m_in_target_draw && ZBUF_TEX0.TBW != ds->m_TEX0.TBW)
+				{
+					ds->RearrangeTarget(ZBUF_TEX0.TBW);
+				}
+
+				ds->m_TEX0.TBW = ZBUF_TEX0.TBW;
+			}
 		}
 	}
 
@@ -4792,9 +4916,10 @@ void GSRendererHW::Draw()
 		// We still need to make sure the dimensions of the targets match.
 		// Limit new size to 2048, the GS can't address more than this so may avoid some bugs/crashes.
 		GSVector2i ds_size = m_using_temp_z ? GSVector2i(g_texture_cache->GetTemporaryZ()->GetSize() / ds->m_scale) : (ds ? ds->m_unscaled_size : GSVector2i(0,0));
-
-		const int new_w = std::min(2048, std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds_size.x : 0)));
-		const int new_h = std::min(2048, std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds_size.y : 0)));
+		// This is an artificial limit, however when we're rearranging pages, the amount of data can go over 2048, we need to let it remember that information.
+		const int size_max = GSConfig.UserHacks_TargetPageRearranging ? 999999 : 2048;
+		const int new_w = std::min(size_max, std::max(new_size.x, std::max(rt ? rt->m_unscaled_size.x : 0, ds ? ds_size.x : 0)));
+		const int new_h = std::min(size_max, std::max(new_size.y, std::max(rt ? rt->m_unscaled_size.y : 0, ds ? ds_size.y : 0)));
 
 		const bool full_cover_clear = is_possible_mem_clear && GSLocalMemory::IsPageAligned(m_cached_ctx.FRAME.PSM, m_r) && m_r.x == 0 && m_r.y == 0 && !preserve_rt_rgb &&
 									  !IsPageCopy() && m_r.width() == (m_cached_ctx.FRAME.FBW * 64);

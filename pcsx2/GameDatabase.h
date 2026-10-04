@@ -62,6 +62,7 @@ namespace GameDatabaseSchema
 		EstimateTextureRegion,
 		DrawBuffering,
 		RewriteLargeSTCoords,
+		TargetPageRearranging,
 		PCRTCOffsets,
 		PCRTCOverscan,
 
