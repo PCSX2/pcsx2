@@ -14631,7 +14631,7 @@ SLES-50072:
   region: "PAL-E"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_SFEX3"
+    targetPageRearranging: 1 # Fixes overlay on bottom of screen.
     halfPixelOffset: 4 # Aligns post effects.
 SLES-50073:
   name: "Driving Emotion Type-S"
@@ -15588,7 +15588,7 @@ SLES-50479:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
-    getSkipCount: "GSC_Turok"
+    targetPageRearranging: 1 # Fixes rearranged clear problems introduced with Tex in RT.
 SLES-50480:
   name: "Aggressive Inline"
   region: "PAL-M4"
@@ -17115,7 +17115,7 @@ SLES-51124:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
-    getSkipCount: "GSC_Turok"
+    targetPageRearranging: 1 # Fixes rearranged clear problems introduced with Tex in RT.
 SLES-51125:
   name: "Sega Soccer Slam"
   region: "PAL-E"
@@ -19016,6 +19016,8 @@ SLES-51877:
 SLES-51879:
   name: "Hot Wheels World Race"
   region: "PAL-E"
+  gsHWFixes:
+    targetPageRearranging: 1 # Fixes top of screen corruption due to game bug.
 SLES-51881:
   name: "World Racing"
   region: "PAL-F-G"
@@ -29873,6 +29875,9 @@ SLES-55355:
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post-processing.
     nativeScaling: 1 # Fixes post-processing smoothness and position.
+    targetPageRearranging: 1 # Fixes half screen issues.
+    preloadFrameData: 1 # Makes button text visible.
+    bilinearUpscale: 2 # Fixes button images when upscaling.
 SLES-55356:
   name: "Bratz - Girlz Really Rock"
   region: "PAL-M3"
@@ -35366,7 +35371,7 @@ SLPM-60105:
   name-en: "Street Fighter EX3 [Trial]"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_SFEX3"
+    targetPageRearranging: 1 # Fixes overlay on bottom of screen.
     halfPixelOffset: 4 # Aligns post effects.
 SLPM-60106:
   name: "コーエー”プレイステーション2”ラインナップ [体験版]"
@@ -54828,7 +54833,7 @@ SLPS-20003:
   name-en: "Street Fighter EX3"
   region: "NTSC-J"
   gsHWFixes:
-    getSkipCount: "GSC_SFEX3"
+    targetPageRearranging: 1 # Fixes overlay on bottom of screen.
     halfPixelOffset: 4 # Aligns post effects.
 SLPS-20004:
   name: "柿木将棋Ⅳ"
@@ -56660,6 +56665,7 @@ SLPS-20380:
   gsHWFixes:
     halfPixelOffset: 4 # Fixes ghosting.
     nativeScaling: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes garbage on screen.
 SLPS-20381:
   name: "モンキーターンV"
   name-sort: "もんきーたーんV"
@@ -64954,7 +64960,7 @@ SLUS-20130:
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
-    getSkipCount: "GSC_SFEX3"
+    targetPageRearranging: 1 # Fixes overlay on bottom of screen.
     halfPixelOffset: 4 # Aligns post effects.
 SLUS-20131:
   name: "Dark Angel - Vampire Apocalypse"
@@ -65929,7 +65935,7 @@ SLUS-20333:
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth/fog lines.
     textureInsideRT: 1 # Fixes underwater levels.
-    getSkipCount: "GSC_Turok"
+    targetPageRearranging: 1 # Fixes rearranged clear problems introduced with Tex in RT.
 SLUS-20334:
   name: "Kelly Slater's Pro Surfer"
   region: "NTSC-U"
@@ -68109,6 +68115,8 @@ SLUS-20737:
   name: "Hot Wheels - World Race"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    targetPageRearranging: 1 # Fixes top of screen corruption due to game bug.
 SLUS-20738:
   name: "Van Helsing"
   region: "NTSC-U"
@@ -69180,6 +69188,7 @@ SLUS-20929:
   gsHWFixes:
     halfPixelOffset: 4 # Improves clarity of the UI when upscaling.
     nativeScaling: 1 # Fixes post-processing and lighting smoothness and position.
+    targetPageRearranging: 1 # Fixes garbage on screen.
 SLUS-20930:
   name: "ChoroQ"
   region: "NTSC-U"
@@ -70732,6 +70741,8 @@ SLUS-21181:
   name: "D.I.C.E. - DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    targetPageRearranging: 1 # Fixes some on-screen garbage.
 SLUS-21182:
   name: "TOCA Race Driver 3 - The Ultimate Racing Simulator"
   region: "NTSC-U"
@@ -74445,6 +74456,9 @@ SLUS-21781:
   gsHWFixes:
     halfPixelOffset: 4 # Mostly aligns post-processing.
     nativeScaling: 1 # Fixes post-processing smoothness and position.
+    targetPageRearranging: 1 # Fixes half screen issues.
+    preloadFrameData: 1 # Makes button text visible.
+    bilinearUpscale: 2 # Fixes button images when upscaling.
 SLUS-21782:
   name: "Shin Megami Tensei - Persona 4"
   region: "NTSC-U"
@@ -75020,10 +75034,13 @@ SLUS-21898:
   name: "Band Hero"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vu1RoundMode: 0 # Fixes VU size spam and potential graphical issues.
   gsHWFixes:
     autoFlush: 1 # Fixes character shadow misalignment.
     preloadFrameData: 1 # Fixes icons.
     halfPixelOffset: 4 # Aligns UI and other elements.
+    targetPageRearranging: 1 # Fixes some texture errors.
 SLUS-21899:
   name: "Silent Hill - Shattered Memories"
   region: "NTSC-U"
