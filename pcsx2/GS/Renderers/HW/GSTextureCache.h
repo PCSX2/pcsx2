@@ -273,6 +273,7 @@ public:
 
 		void ScaleRTAlpha();
 		void UnscaleRTAlpha();
+		void RearrangeTarget(u32 new_bw, bool recycle = true);
 
 		void Update(bool cannot_scale = false);
 

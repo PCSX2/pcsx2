@@ -813,6 +813,7 @@ struct Pcsx2Config
 					UserHacks_EstimateTextureRegion : 1,
 					UserHacks_DrawBuffering : 1,
 					UserHacks_RewriteLargeSTCoords : 1,
+					UserHacks_TargetPageRearranging : 1,
 					FXAA : 1,
 					ShadeBoost : 1,
 					DumpGSData : 1,

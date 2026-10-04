@@ -3340,6 +3340,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				FSUI_CSTR("Truncate 32-bit depth values to 24 bits. Helps games struggling with Z-fighting."), "EmuCore/GS",
 				"UserHacks_Limit24BitDepth", static_cast<int>(GSLimit24BitDepth::Disabled), s_limit_24bit_depth_options,
 				std::size(s_limit_24bit_depth_options), true, 0, manual_hw_fixes);
+			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Target Page Rearranging"),
+				FSUI_CSTR("Rearranges memory pages of a target if the game changes the layout at that current VRAM address."),
+				"EmuCore/GS", "UserHacks_TargetPageRearranging", false, manual_hw_fixes);
 
 			MenuHeading(FSUI_CSTR("Upscaling Fixes"));
 			DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT, "Half Pixel Offset"), FSUI_CSTR("Might fix some misaligned fog, bloom, or blend effect."), "EmuCore/GS",
