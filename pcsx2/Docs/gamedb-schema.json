@@ -214,6 +214,11 @@
               "minimum": 0,
               "maximum": 1
             },
+			"targetPageRearranging": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1
+            },
             "PCRTCOffsets": {
               "type": "integer",
               "minimum": 0,
