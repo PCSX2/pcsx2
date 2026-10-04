@@ -46,7 +46,7 @@ const float exp_min32 = exp2(-32.0f);
 #if VS_EXPAND == VS_EXPAND_NONE
 
 layout(location = 0) in vec2  i_st;
-layout(location = 2) in vec4  i_c;
+layout(location = 2) in uvec4 i_c;
 layout(location = 3) in float i_q;
 layout(location = 4) in uvec2 i_p;
 layout(location = 5) in uint  i_z;
@@ -95,7 +95,7 @@ void vs_main()
 
 	texture_coord();
 
-	VSout.c = i_c;
+	VSout.c = vec4(i_c);
 	VSout.t_float.z = i_f.x; // pack for with texture
 
 	#if VS_POINT_SIZE
@@ -155,7 +155,7 @@ ProcessedVertex load_vertex(uint index)
 	RawVertex rvtx = vertex_buffer[BaseVertex + index];
 
 	vec2 i_st = rvtx.ST;
-	vec4 i_c = vec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24);
+	uvec4 i_c = uvec4(rvtx.RGBA & 0xFFu, (rvtx.RGBA >> 8) & 0xFFu, (rvtx.RGBA >> 16) & 0xFFu, rvtx.RGBA >> 24);
 	float i_q = rvtx.Q;
 	uvec2 i_p = uvec2(rvtx.XY & 0xFFFFu, rvtx.XY >> 16);
 	uint i_z = rvtx.Z;
@@ -189,7 +189,7 @@ ProcessedVertex load_vertex(uint index)
 	vtx.t_int.zw = st / TextureScale;
 #endif
 
-	vtx.c = i_c;
+	vtx.c = vec4(i_c);
 	vtx.t_float.z = i_f.x;
 
 	return vtx;
