@@ -290,7 +290,7 @@ void EmuThread::shutdownVM(bool save_state /* = true */)
 		return;
 
 	m_save_state_on_shutdown = save_state;
-	VMManager::SetState(VMState::Stopping);
+	VMManager::Stop();
 }
 
 void EmuThread::loadState(const QString& filename)
