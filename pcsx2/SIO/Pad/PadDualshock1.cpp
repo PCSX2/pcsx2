@@ -345,7 +345,7 @@ u8 PadDualshock1::StatusInfo(u8 commandByte)
 	switch (commandBytesReceived)
 	{
 		case 3:
-			return static_cast<u8>(Pad::PhysicalType::STANDARD);
+			return static_cast<u8>(Pad::PhysicalType::PS1_ANALOG);
 		case 4:
 			return 0x02;
 		case 5:
@@ -536,7 +536,7 @@ void PadDualshock1::Set(u32 index, float value)
 
 		// merge left/right or up/down into rx or ry
 
-#define MERGE(pos, neg) ((this->rawInputs[pos] != 0) ? (127u + ((this->rawInputs[pos] + 1u) / 2u)) : (127u - (this->rawInputs[neg] / 2u)))
+#define MERGE(pos, neg) ((this->rawInputs[pos] != 0) ? (128u + (this->rawInputs[pos] / 2u)) : (128u - ((this->rawInputs[neg] + 1u) / 2u)))
 		if (index <= Inputs::PAD_L_LEFT)
 		{
 			// Left Stick
@@ -545,14 +545,21 @@ void PadDualshock1::Set(u32 index, float value)
 
 			if (this->useDiagonalScaleCorrection)
 			{
-				const float normalizedX = (combinedX - 127.5f) / 127.5f;
-				const float normalizedY = (combinedY - 127.5f) / 127.5f;
+				const float normalizedX = (combinedX >= 0x80) ? ((combinedX - 128.0f) / 127.0f) : ((combinedX - 128.0f) / 128.0f);
+				const float normalizedY = (combinedY >= 0x80) ? ((combinedY - 128.0f) / 127.0f) : ((combinedY - 128.0f) / 128.0f);
 				const float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
 				const float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
-				const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
-				const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
-				this->analogs.lx = static_cast<u8>((scaledX * 127.5f) + 127.5f);
-				this->analogs.ly = static_cast<u8>((scaledY * 127.5f) + 127.5f);
+				if (max > 0.0f)
+				{
+					const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+					const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+					this->analogs.lx = static_cast<u8>((scaledX >= 0.0f) ? (scaledX * 127.0f + 128.0f) : (scaledX * 128.0f + 128.0f));
+					this->analogs.ly = static_cast<u8>((scaledY >= 0.0f) ? (scaledY * 127.0f + 128.0f) : (scaledY * 128.0f + 128.0f));
+				}
+				else
+				{
+					this->analogs.lx = this->analogs.ly = 0x80;
+				}
 			}
 			else
 			{
@@ -568,14 +575,21 @@ void PadDualshock1::Set(u32 index, float value)
 
 			if (this->useDiagonalScaleCorrection)
 			{
-				const float normalizedX = (combinedX - 127.5f) / 127.5f;
-				const float normalizedY = (combinedY - 127.5f) / 127.5f;
+				const float normalizedX = (combinedX >= 0x80) ? ((combinedX - 128.0f) / 127.0f) : ((combinedX - 128.0f) / 128.0f);
+				const float normalizedY = (combinedY >= 0x80) ? ((combinedY - 128.0f) / 127.0f) : ((combinedY - 128.0f) / 128.0f);
 				const float magnitude = std::sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY));
 				const float max = std::max(std::abs(normalizedX), std::abs(normalizedY));
-				const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
-				const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
-				this->analogs.rx = static_cast<u8>((scaledX * 127.5f) + 127.5f);
-				this->analogs.ry = static_cast<u8>((scaledY * 127.5f) + 127.5f);
+				if (max > 0.0f)
+				{
+					const float scaledX = (normalizedX / max) * std::min(magnitude, 1.0f);
+					const float scaledY = (normalizedY / max) * std::min(magnitude, 1.0f);
+					this->analogs.rx = static_cast<u8>((scaledX >= 0.0f) ? (scaledX * 127.0f + 128.0f) : (scaledX * 128.0f + 128.0f));
+					this->analogs.ry = static_cast<u8>((scaledY >= 0.0f) ? (scaledY * 127.0f + 128.0f) : (scaledY * 128.0f + 128.0f));
+				}
+				else
+				{
+					this->analogs.rx = this->analogs.ry = 0x80;
+				}
 			}
 			else
 			{
@@ -619,14 +633,14 @@ void PadDualshock1::Set(u32 index, float value)
 				
 				if (inX && inY)
 				{
-					// In deadzone. Set to 127 (center).
+					// In deadzone. Set to neutral.
 					if (index <= Inputs::PAD_L_LEFT)
 					{
-						this->analogs.lx = this->analogs.ly = 127;
+						this->analogs.lx = this->analogs.ly = 0x80;
 					}
 					else
 					{
-						this->analogs.rx = this->analogs.ry = 127;
+						this->analogs.rx = this->analogs.ry = 0x80;
 					}	
 				}
 			}
@@ -646,9 +660,8 @@ void PadDualshock1::Set(u32 index, float value)
 	else
 	{
 		// Don't affect L2/R2, since they are analog on most pads.
-		const float pMod = ((this->buttons & (1u << Inputs::PAD_PRESSURE)) == 0 && !IsTriggerKey(index)) ? this->pressureModifier : 1.0f;
 		const float dzValue = (value < this->buttonDeadzone) ? 0.0f : value;
-		this->rawInputs[index] = static_cast<u8>(std::clamp(dzValue * pMod * 255.0f, 0.0f, 255.0f));
+		this->rawInputs[index] = static_cast<u8>(std::clamp(dzValue * 255.0f, 0.0f, 255.0f));
 
 		if (dzValue > 0.0f)
 		{
@@ -657,24 +670,6 @@ void PadDualshock1::Set(u32 index, float value)
 		else
 		{
 			this->buttons |= (1u << bitmaskMapping[index]);
-		}
-
-		// Adjust pressure of all other face buttons which are active when pressure modifier is pressed..
-		if (index == Inputs::PAD_PRESSURE)
-		{
-			const float adjustPMod = ((this->buttons & (1u << Inputs::PAD_PRESSURE)) == 0) ? this->pressureModifier : (1.0f / this->pressureModifier);
-
-			for (u32 i = 0; i < Inputs::LENGTH; i++)
-			{
-				if (i == index || IsAnalogKey(i) || IsTriggerKey(i))
-				{
-					continue;
-				}
-
-				// We add 0.5 here so that the round trip between 255->127->255 when applying works as expected.
-				const float add = (this->rawInputs[i] != 0) ? 0.5f : 0.0f;
-				this->rawInputs[i] = static_cast<u8>(std::clamp((static_cast<float>(this->rawInputs[i]) + add) * adjustPMod, 0.0f, 255.0f));
-			}
 		}
 
 		if (index == Inputs::PAD_ANALOG && !this->analogPressed && value > 0)
@@ -754,12 +749,11 @@ void PadDualshock1::SetVibrationScale(u32 motor, float scale)
 
 float PadDualshock1::GetPressureModifier() const
 {
-	return this->pressureModifier;
+	return 1.0f;
 }
 
-void PadDualshock1::SetPressureModifier(float mod)
+void PadDualshock1::SetPressureModifier(float)
 {
-	this->pressureModifier = mod;
 }
 
 void PadDualshock1::SetButtonDeadzone(float deadzone)
@@ -787,28 +781,28 @@ float PadDualshock1::GetEffectiveInput(u32 index) const
 	switch (index)
 	{
 	case Inputs::PAD_L_LEFT:
-		return (analogs.lx < 127) ? -((127 - analogs.lx) / 127.0f) : 0;
+		return (analogs.lx < 128) ? -((128 - analogs.lx) / 128.0f) : 0;
 
 	case Inputs::PAD_L_RIGHT:
-		return (analogs.lx > 127) ? ((analogs.lx - 127) / 128.0f) : 0;
+		return (analogs.lx > 128) ? ((analogs.lx - 128) / 127.0f) : 0;
 
 	case Inputs::PAD_L_UP:
-		return (analogs.ly < 127) ? -((127 - analogs.ly) / 127.0f) : 0;
+		return (analogs.ly < 128) ? -((128 - analogs.ly) / 128.0f) : 0;
 
 	case Inputs::PAD_L_DOWN:
-		return (analogs.ly > 127) ? ((analogs.ly - 127) / 128.0f) : 0;
+		return (analogs.ly > 128) ? ((analogs.ly - 128) / 127.0f) : 0;
 
 	case Inputs::PAD_R_LEFT:
-		return (analogs.rx < 127) ? -((127 - analogs.rx) / 127.0f) : 0;
+		return (analogs.rx < 128) ? -((128 - analogs.rx) / 128.0f) : 0;
 
 	case Inputs::PAD_R_RIGHT:
-		return (analogs.rx > 127) ? ((analogs.rx - 127) / 128.0f) : 0;
+		return (analogs.rx > 128) ? ((analogs.rx - 128) / 127.0f) : 0;
 
 	case Inputs::PAD_R_UP:
-		return (analogs.ry < 127) ? -((127 - analogs.ry) / 127.0f) : 0;
+		return (analogs.ry < 128) ? -((128 - analogs.ry) / 128.0f) : 0;
 
 	case Inputs::PAD_R_DOWN:
-		return (analogs.ry > 127) ? ((analogs.ry - 127) / 128.0f) : 0;
+		return (analogs.ry > 128) ? ((analogs.ry - 128) / 127.0f) : 0;
 
 	default:
 		return 0;
