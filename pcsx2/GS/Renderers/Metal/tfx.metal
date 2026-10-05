@@ -140,7 +140,7 @@ constant bool PS_INTERIOR = PS_AA1 == AA1::TRIANGLE_SW_Z;
 struct MainVSIn
 {
 	float2 st [[attribute(GSMTLAttributeIndexST)]];
-	float4 c  [[attribute(GSMTLAttributeIndexC)]];
+	uint4  c  [[attribute(GSMTLAttributeIndexC)]];
 	float  q  [[attribute(GSMTLAttributeIndexQ)]];
 	uint2  p  [[attribute(GSMTLAttributeIndexXY)]];
 	uint   z  [[attribute(GSMTLAttributeIndexZ)]];
@@ -240,9 +240,9 @@ static MainVSOut vs_main_run(thread const MainVSIn& v, constant GSMTLMainVSUnifo
 	texture_coord(v, out, cb);
 
 	if (IIP)
-		out.c = v.c;
+		out.c = float4(v.c);
 	else
-		out.fc = v.c;
+		out.fc = float4(v.c);
 
 	out.t.z = v.f.x; // pack fog with texture
 
@@ -269,7 +269,7 @@ static MainVSIn load_vertex(GSMTLMainVertex base)
 {
 	MainVSIn out;
 	out.st = base.st;
-	out.c = float4(base.rgba);
+	out.c = uint4(base.rgba);
 	out.q = base.q;
 	out.p = uint2(base.xy);
 	out.z = base.z;
