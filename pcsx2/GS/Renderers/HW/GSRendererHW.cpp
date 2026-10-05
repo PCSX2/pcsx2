@@ -9999,7 +9999,13 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	// double-half cleared. For testing, ignore any targets that don't have the bits we're drawing to.
 	const bool req_valid_alpha = ((frame_psm.fmsk & zbuf_psm.fmsk) & 0xFF000000u) != 0;
 	GSTextureCache::Target* half_point = g_texture_cache->GetExactTarget(half << 5, m_cached_ctx.FRAME.FBW, clear_depth ? GSTextureCache::RenderTarget : GSTextureCache::DepthStencil, half << 5);
-	half_point = (half_point && half_point->m_valid_rgb && half_point->HasValidAlpha() == req_valid_alpha) ? half_point : nullptr;
+	if (half_point)
+	{
+		int half_point_pages = 0;
+		half_point_pages = (half_point->m_valid.z + (zbuf_psm.pgs.x - 1)) / zbuf_psm.pgs.x;
+		half_point_pages *= (half_point->m_valid.w + (zbuf_psm.pgs.y - 1)) / zbuf_psm.pgs.y;
+		half_point = (half_point && half_point->m_valid_rgb && half_point->HasValidAlpha() == req_valid_alpha && half_point_pages >= written_pages) ? half_point : nullptr;
+	}
 	if (half_point && half_point->m_age <= 1)
 		return false;
 
