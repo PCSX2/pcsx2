@@ -309,7 +309,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 		position_y += text_size.y + spacing; \
 	} while (0)
 
-	if (VMManager::GetState() != VMState::Paused)
+	if (!VMManager::IsPaused())
 	{
 		if (s_last_update_timer.GetTimeNanoseconds() >= UPDATE_INTERVAL)
 		{
@@ -1331,7 +1331,7 @@ __ri void ImGuiManager::DrawIndicatorsOverlay(float& position_y, float scale, fl
 			position_y += text_size.y + spacing; \
 		} while (0)
 
-		if (VMManager::GetState() != VMState::Paused)
+		if (!VMManager::IsPaused())
 		{
 			// Draw Speed indicator
 			const float target_speed = VMManager::GetTargetSpeed();

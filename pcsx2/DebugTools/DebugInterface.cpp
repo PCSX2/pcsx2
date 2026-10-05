@@ -50,7 +50,7 @@ bool DebugInterface::isAlive()
 
 bool DebugInterface::isCpuPaused()
 {
-	return VMManager::GetState() == VMState::Paused;
+	return VMManager::IsPaused();
 }
 
 void DebugInterface::pauseCpu()

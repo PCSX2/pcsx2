@@ -958,7 +958,7 @@ void MTGS::ResizeDisplayWindow(u32 width, u32 height, float scale)
 		GSResizeDisplayWindow(width, height, scale);
 
 		// If we're paused, re-present the current frame at the new window size.
-		if (VMManager::GetState() == VMState::Paused)
+		if (VMManager::IsPaused())
 			GSPresentCurrentFrame();
 	});
 }
@@ -970,7 +970,7 @@ void MTGS::UpdateDisplayWindow()
 		GSUpdateDisplayWindow();
 
 		// If we're paused, re-present the current frame at the new window size.
-		if (VMManager::GetState() == VMState::Paused)
+		if (VMManager::IsPaused())
 		{
 			// Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
 			// displayed. Two seems to be good enough. Maybe something to do with direct scanout.

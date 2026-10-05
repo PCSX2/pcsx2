@@ -284,7 +284,7 @@ void EmuThread::shutdownVM(bool save_state /* = true */)
 	}
 
 	const VMState state = VMManager::GetState();
-	if (state == VMState::Paused)
+	if (VMManager::IsPaused())
 		m_event_loop->quit();
 	else if (state != VMState::Running)
 		return;
@@ -399,6 +399,7 @@ void EmuThread::run()
 
 			case VMState::Shutdown:
 			case VMState::Paused:
+			case VMState::Halted:
 				m_event_loop->exec();
 				continue;
 

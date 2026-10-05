@@ -493,7 +493,7 @@ void FullscreenUI::UpdateGameDetails(std::string path, std::string serial, std::
 
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
-	s_was_paused_on_quick_menu_open = (VMManager::GetState() == VMState::Paused);
+	s_was_paused_on_quick_menu_open = VMManager::IsPaused();
 	if (Host::GetBoolSettingValue("UI", "PauseOnMenu", true) && !s_was_paused_on_quick_menu_open)
 		Host::RunOnCPUThread([]() { VMManager::SetPaused(true); });
 
@@ -528,7 +528,7 @@ void FullscreenUI::ClosePauseMenu()
 	if (!IsInitialized() || !VMManager::HasValidVM())
 		return;
 
-	if (VMManager::GetState() == VMState::Paused && !s_was_paused_on_quick_menu_open)
+	if (VMManager::IsPaused() && !s_was_paused_on_quick_menu_open)
 		Host::RunOnCPUThread([]() { VMManager::SetPaused(false); });
 
 	s_current_main_window = MainWindowType::None;
