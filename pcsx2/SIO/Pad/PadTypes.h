@@ -46,6 +46,7 @@ namespace Pad
 	enum class PhysicalType : u8
 	{
 		NOT_SET = 0x00,
+		PS1_ANALOG = 0x01,
 		GUITAR = 0x01,
 		STANDARD = 0x03
 	};
