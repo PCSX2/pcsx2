@@ -77,7 +77,7 @@ static const SettingInfo s_settings[] = {
 };
 
 const Pad::ControllerInfo PadDualshock1::ControllerInfo = {Pad::ControllerType::DualShock1, "DualShock1",
-	TRANSLATE_NOOP("Pad", "DualShock 1"), ICON_PF_DUALSHOCK2, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
+	TRANSLATE_NOOP("Pad", "PS1 Analog Controller"), ICON_PF_DUALSHOCK2, s_bindings, s_settings, Pad::VibrationCapabilities::LargeSmallMotors};
 
 void PadDualshock1::ConfigLog()
 {
