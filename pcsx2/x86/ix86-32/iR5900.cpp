@@ -2770,4 +2770,5 @@ R5900cpu recCpu = {
 
 	recSafeExitExecution,
 	recCancelInstruction,
+	recExitExecution,
 	recClear};
