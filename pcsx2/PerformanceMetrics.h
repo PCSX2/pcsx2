@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <cstdlib>
 #include "common/Threading.h"
 
 namespace PerformanceMetrics
