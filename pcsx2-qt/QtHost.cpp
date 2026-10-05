@@ -238,7 +238,7 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 		if (!Host::GetBoolSettingValue("UI", "StartPaused", false))
 		{
 			// This will come back and call OnVMResumed().
-			VMManager::SetState(VMState::Running);
+			VMManager::SetPaused(false);
 		}
 		else
 		{
@@ -290,7 +290,7 @@ void EmuThread::shutdownVM(bool save_state /* = true */)
 		return;
 
 	m_save_state_on_shutdown = save_state;
-	VMManager::SetState(VMState::Stopping);
+	VMManager::Stop();
 }
 
 void EmuThread::loadState(const QString& filename)

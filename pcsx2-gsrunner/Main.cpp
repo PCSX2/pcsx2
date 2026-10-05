@@ -340,7 +340,7 @@ void Host::RequestExitBigPicture()
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
 {
-	VMManager::SetState(VMState::Stopping);
+	VMManager::Stop();
 }
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
@@ -856,7 +856,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 		if (VMManager::Initialize(*params) == VMBootResult::StartupSuccess)
 		{
 			// run until end
-			VMManager::SetState(VMState::Running);
+			VMManager::SetPaused(false);
 			if (s_perf_enable)
 			{
 				VMManager::SetLimiterMode(LimiterModeType::Unlimited);

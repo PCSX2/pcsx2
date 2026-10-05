@@ -139,6 +139,11 @@ namespace VMManager
 
 	/// Changes the pause state of the VM, resetting anything needed when unpausing.
 	void SetPaused(bool paused);
+	void Pause();
+	void Resume();
+
+	/// Stop the VM
+	void Stop();
 
 	/// Reloads settings, and applies any changes present.
 	void ApplySettings();

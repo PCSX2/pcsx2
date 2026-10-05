@@ -879,7 +879,7 @@ void FullscreenUI::DoVMInitialize(const VMBootParameters& boot_params, bool swit
 			return;
 		}
 
-		VMManager::SetState(VMState::Running);
+		VMManager::SetPaused(false);
 	};
 
 	VMManager::InitializeAsync(boot_params, std::move(hardcore_disable_callback), std::move(done_callback));
