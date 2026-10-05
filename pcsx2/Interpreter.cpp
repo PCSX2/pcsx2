@@ -684,5 +684,7 @@ R5900cpu intCpu =
 	intSafeExitExecution,
 	intCancelInstruction,
 
+	intCancelInstruction,
+
 	intClear
 };

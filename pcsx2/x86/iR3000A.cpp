@@ -308,7 +308,7 @@ static void iopRecError(int err)
 	}
 
 	VMManager::SetPaused(true);
-	Cpu->ExitExecution();
+	Cpu->ForceExit();
 }
 
 ////////////////////////////////////////////////////
