@@ -1558,7 +1558,7 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	recExitExecution();
 }
 
@@ -1582,7 +1582,7 @@ void dynarecMemcheck(size_t i)
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	recExitExecution();
 }
 
