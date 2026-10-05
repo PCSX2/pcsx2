@@ -283,10 +283,9 @@ void EmuThread::shutdownVM(bool save_state /* = true */)
 		return;
 	}
 
-	const VMState state = VMManager::GetState();
 	if (VMManager::IsPaused())
 		m_event_loop->quit();
-	else if (state != VMState::Running)
+	else if (VMManager::IsRunning())
 		return;
 
 	m_save_state_on_shutdown = save_state;
@@ -807,7 +806,7 @@ void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)
 		if (m_pause_on_focus_loss && !m_was_paused_by_focus_loss && VMManager::GetState() == VMState::Running)
 		{
 			m_was_paused_by_focus_loss = true;
-			VMManager::SetPaused(true);
+			VMManager::Pause();
 		}
 
 		// Clear the state of all keyboard binds.
@@ -821,7 +820,7 @@ void EmuThread::onApplicationStateChanged(Qt::ApplicationState state)
 		{
 			m_was_paused_by_focus_loss = false;
 			if (VMManager::GetState() == VMState::Paused)
-				VMManager::SetPaused(false);
+				VMManager::Resume();
 		}
 	}
 }
@@ -835,7 +834,7 @@ void EmuThread::redrawDisplayWindow()
 	}
 
 	// If we're running, we're going to re-present anyway.
-	if (!VMManager::HasValidVM() || VMManager::GetState() == VMState::Running)
+	if (!VMManager::HasValidVM() || VMManager::IsRunning())
 		return;
 
 	MTGS::PresentCurrentFrame();
@@ -1763,13 +1762,13 @@ void Host::OnInputDeviceDisconnected(const InputBindingKey key, const std::strin
 {
 	emit g_emu_thread->onInputDeviceDisconnected(identifier.empty() ? QString() : QString::fromUtf8(identifier.data(), identifier.size()));
 
-	if (VMManager::GetState() == VMState::Running && Host::GetBoolSettingValue("UI", "PauseOnControllerDisconnection", false) &&
+	if (VMManager::IsRunning() && Host::GetBoolSettingValue("UI", "PauseOnControllerDisconnection", false) &&
 		InputManager::HasAnyBindingsForSource(key))
 	{
 		std::string message =
 			fmt::format(TRANSLATE_FS("QtHost", "System paused because controller {} was disconnected."), identifier);
 		Host::RunOnCPUThread([message = QString::fromStdString(message)]() {
-			VMManager::SetPaused(true);
+			VMManager::Pause();
 
 			// has to be done after pause, otherwise pause message takes precedence
 			emit g_emu_thread->statusMessage(message);

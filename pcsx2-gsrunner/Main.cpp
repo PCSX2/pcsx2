@@ -854,7 +854,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 				VMManager::SetLimiterMode(LimiterModeType::Unlimited);
 				g_gs_device->SetGPUTimingEnabled(true);
 			}
-			while (VMManager::GetState() == VMState::Running)
+			while (VMManager::IsRunning())
 				VMManager::Execute();
 			VMManager::Shutdown(false);
 			ret->store(EXIT_SUCCESS);

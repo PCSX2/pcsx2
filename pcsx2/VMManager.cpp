@@ -719,7 +719,7 @@ void VMManager::ApplySettings()
 	Console.WriteLn("Applying settings...");
 
 	// If we're running, ensure the threads are synced.
-	if (GetState() == VMState::Running)
+	if (IsRunning())
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
@@ -742,7 +742,7 @@ void VMManager::ApplyCoreSettings()
 	Console.WriteLn("Applying core settings...");
 
 	// If we're running, ensure the threads are synced.
-	if (GetState() == VMState::Running)
+	if (IsRunning())
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
@@ -2773,6 +2773,12 @@ bool VMManager::IsPaused()
 	VMState state = GetState();
 
 	return state == VMState::Paused || state == VMState::Halted;
+}
+
+bool VMManager::IsRunning() {
+	VMState state = GetState();
+
+	return state == VMState::Running;
 }
 
 void VMManager::Pause()

@@ -142,6 +142,9 @@ namespace VMManager
 	// Check if the VM is paused (paused or halted).
 	bool IsPaused();
 
+	// Check if the VM is running.
+	bool IsRunning();
+
 	/// Changes the pause state of the VM, resetting anything needed when unpausing.
 	void SetPaused(bool paused);
 	void Pause();
