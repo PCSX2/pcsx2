@@ -29,7 +29,6 @@ public:
 		PAD_L3, // Left joystick button (L3)
 		PAD_R3, // Right joystick button (R3)
 		PAD_ANALOG, // Analog mode toggle
-	PAD_PRESSURE, // Pressure modifier
 		PAD_L_UP, // Left joystick (Up) 
 		PAD_L_RIGHT, // Left joystick (Right) 
 		PAD_L_DOWN, // Left joystick (Down) 
@@ -46,10 +45,10 @@ public:
 protected:
 	struct Analogs
 	{
-		u8 lx = Pad::ANALOG_NEUTRAL_POSITION;
-		u8 ly = Pad::ANALOG_NEUTRAL_POSITION;
-		u8 rx = Pad::ANALOG_NEUTRAL_POSITION;
-		u8 ry = Pad::ANALOG_NEUTRAL_POSITION;
+		u8 lx = 0x80;
+		u8 ly = 0x80;
+		u8 rx = 0x80;
+		u8 ry = 0x80;
 		bool lxInvert = false;
 		bool lyInvert = false;
 		bool rxInvert = false;
@@ -70,10 +69,6 @@ protected:
 	// Determines if inputs from the host should be corrected from square pickup zone to circular
 	bool useDiagonalScaleCorrection = false;
 	std::array<float, 2> vibrationScale = {1.0f, 1.0f};
-	// When the pressure modifier binding is activated, this is multiplied against
-	// all values in pressures, to artificially reduce pressures and give players
-	// a way to simulate pressure sensitive controls.
-	float pressureModifier = 0.5f;
 	float buttonDeadzone = 0.0f;
 	// Used to store the last vibration mapping request the PS2 made for the small motor.
 	u8 smallMotorLastConfig = 0xff;
@@ -99,7 +94,6 @@ protected:
 		9, // PAD_L3
 		10, // PAD_R3
 		16, // PAD_ANALOG
-		17, // PAD_PRESSURE
 		// remainder are analogs and not used here
 	}};
 
