@@ -149,7 +149,7 @@ void InputRecording::closeActiveFile()
 
 void InputRecording::stop()
 {
-	if (VMManager::GetState() == VMState::Paused)
+	if (VMManager::IsPaused())
 	{
 		closeActiveFile();
 	}

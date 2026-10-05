@@ -548,7 +548,7 @@ static void recError(u32 error)
 			break;
 	}
 
-	VMManager::SetPaused(true);
+	VMManager::Halt();
 	recExitExecution();
 }
 

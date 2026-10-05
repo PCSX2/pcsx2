@@ -130,7 +130,7 @@ void SPU2::CreateOutputStream()
 
 	SPU2::UpdateOutputVolume();
 	s_output_stream->SetNominalRate(GetNominalRate());
-	s_output_stream->SetPaused(VMManager::GetState() == VMState::Paused);
+	s_output_stream->SetPaused(VMManager::IsPaused());
 }
 
 void SPU2::UpdateSampleRate()

@@ -2775,6 +2775,13 @@ void VMManager::IdlePollUpdate()
 	InputManager::PollSources();
 }
 
+bool VMManager::IsPaused()
+{
+	VMState state = GetState();
+
+	return state == VMState::Paused || state == VMState::Halted;
+}
+
 void VMManager::Pause()
 {
 	if (!HasValidVM())
@@ -2782,7 +2789,7 @@ void VMManager::Pause()
 
 	VMState state = GetState();
 
-	if (state == VMState::Paused)
+	if (state == VMState::Paused || state == VMState::Halted)
 	{
 		// Already paused
 		return;
@@ -2813,7 +2820,7 @@ void VMManager::Resume()
 
 	VMState state = GetState();
 
-	if (state == VMState::Running) {
+	if (state == VMState::Running || state == VMState::Halted) {
 		return;
 	}
 
@@ -2832,6 +2839,17 @@ void VMManager::Resume()
 	ResetResumeTimestamp();
 
 	SetState(VMState::Running);
+}
+
+void VMManager::Halt() {
+	if (!HasValidVM())
+		return;
+
+	// Do normal pause
+	Pause();
+
+	// Then change to the unresumable halted state
+	SetState(VMState::Halted);
 }
 
 void VMManager::Stop() {
