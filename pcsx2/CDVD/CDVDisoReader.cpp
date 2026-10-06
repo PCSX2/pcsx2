@@ -18,6 +18,44 @@ static int pmode, cdtype;
 static s32 layer1start = -1;
 static bool layer1searched = false;
 
+static void ISOParseTOC()
+{
+	tracks.fill(cdvdTrack{});
+	if (iso.GetType() != ISOTYPE_AUDIO)
+	{
+		strack = 1;
+		etrack = 1;
+		return;
+	}
+
+	strack = 0xFF;
+	etrack = 0;
+	// Audio CD
+	for (const auto& entry : iso.ReadTOC())
+	{
+		const u8 track = entry.track;
+		if (track < 1 || track >= tracks.size())
+		{
+			Console.Warning("CDVD: Invalid track index %u, ignoring\n", track);
+			continue;
+		}
+		strack = std::min(strack, track);
+		etrack = std::max(etrack, track);
+		tracks[track].start_lba = entry.lba;
+
+		if ((entry.control & 0x0C) == 0x04)
+		{
+				Console.Warning("CDVD: Unsupported data track reading. Assuming MODE1?\n");
+				tracks[track].type = CDVD_MODE1_TRACK;
+		}
+		else
+		{
+			tracks[track].type = CDVD_AUDIO_TRACK;
+		}
+	}
+	
+}
+
 static void ISOclose()
 {
 	iso.Close();
@@ -49,6 +87,8 @@ static bool ISOopen(std::string filename, Error* error)
 			break;
 	}
 
+	ISOParseTOC();
+
 	layer1start = -1;
 	layer1searched = false;
 
@@ -60,34 +100,56 @@ static bool ISOprecache(ProgressCallback* progress, Error* error)
 	return iso.Precache(progress, error);
 }
 
+static void lsn_to_msf(u8* minute, u8* second, u8* frame, u32 lsn)
+{
+	*frame = itob(lsn % 75);
+	lsn /= 75;
+	*second = itob(lsn % 60);
+	lsn /= 60;
+	*minute = itob(lsn % 100);
+}
+
 static s32 ISOreadSubQ(u32 lsn, cdvdSubQ* subq)
 {
 	// fake it
-	u8 min, sec, frm;
-	subq->ctrl = 4;
-	subq->adr = 1;
-	subq->trackNum = itob(1);
-	subq->trackIndex = itob(1);
+	
 
-	lba_to_msf(lsn, &min, &sec, &frm);
-	subq->trackM = itob(min);
-	subq->trackS = itob(sec);
-	subq->trackF = itob(frm);
+	memset(subq, 0, sizeof(cdvdSubQ));
 
-	subq->pad = 0;
+	lsn_to_msf(&subq->discM, &subq->discS, &subq->discF, lsn + 150);
 
-	lba_to_msf(lsn + (2 * 75), &min, &sec, &frm);
-	subq->discM = itob(min);
-	subq->discS = itob(sec);
-	subq->discF = itob(frm);
+	// FIXME: Verify this is correct for ISOTYPE_CD :S
+	if (iso.GetType() != ISOTYPE_AUDIO && iso.GetType() != ISOTYPE_CD)
+	{
+		subq->ctrl = 4;
+		subq->adr = 1;
+		subq->trackNum = itob(1);
+		subq->trackIndex = itob(1);
+	}
+	else
+	{
+		u8 i = strack;
+		while (i < etrack && lsn >= tracks[i + 1].start_lba)
+			++i;
 
+		lsn -= tracks[i].start_lba;
+
+		subq->ctrl = 1;
+		subq->adr = 1;
+		subq->trackNum = i;
+		subq->trackIndex = 1; // FIXME ???
+	}
+
+	lsn_to_msf(&subq->trackM, &subq->trackS, &subq->trackF, lsn);
+
+	Console.Warning("CDVD: SubQ M %02x S %02x F %02x\n", subq->trackM, subq->trackS, subq->trackF);
 	return 0;
 }
 
 static s32 ISOgetTN(cdvdTN* Buffer)
 {
-	Buffer->strack = 1;
-	Buffer->etrack = 1;
+	Buffer->strack = strack;
+	Buffer->etrack = etrack;
 
 	return 0;
 }
@@ -97,13 +159,15 @@ static s32 ISOgetTD(u8 Track, cdvdTD* Buffer)
 	if (Track == 0)
 	{
 		Buffer->lsn = iso.GetBlockCount();
+		Buffer->type = 0;
+		return 0;
 	}
-	else
-	{
-		Buffer->type = CDVD_MODE1_TRACK;
-		Buffer->lsn = 0;
-	}
-
+	
+	if (Track < strack || Track > etrack)
+		return -1;
+	
+	Buffer->lsn = tracks[Track].start_lba;
+	Buffer->type = tracks[Track].type;
 	return 0;
 }
 
@@ -299,11 +363,12 @@ static s32 ISOgetTOC(void* toc)
 		{
 			err = ISOgetTD(i, &trackInfo);
 			lba_to_msf(trackInfo.lsn, &min, &sec, &frm);
-			tocBuff[i * 10 + 30] = trackInfo.type;
-			tocBuff[i * 10 + 32] = err == -1 ? 0 : itob(i); //number
-			tocBuff[i * 10 + 37] = itob(min);
-			tocBuff[i * 10 + 38] = itob(sec);
-			tocBuff[i * 10 + 39] = itob(frm);
+			const u8 tocIndex = i - diskInfo.strack;
+			tocBuff[tocIndex * 10 + 30] = trackInfo.type;
+			tocBuff[tocIndex * 10 + 32] = err == -1 ? 0 : itob(i); //number
+			tocBuff[tocIndex * 10 + 37] = itob(min);
+			tocBuff[tocIndex * 10 + 38] = itob(sec);
+			tocBuff[tocIndex * 10 + 39] = itob(frm);
 		}
 	}
 	else
