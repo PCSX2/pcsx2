@@ -34,6 +34,8 @@
 #define TEXTURE_FILENAME_CLUT_FORMAT_STRING "%" PRIx64 "-%" PRIx64 "-%08x"
 #define TEXTURE_FILENAME_REGION_FORMAT_STRING "%" PRIx64 "-r%ux%u-%08x"
 #define TEXTURE_FILENAME_REGION_CLUT_FORMAT_STRING "%" PRIx64 "-%" PRIx64 "-r%ux%u-%08x"
+#define TEXTURE_ALIAS_FILENAME_CLUT_FORMAT_STRING "$-%" PRIx64 "-%08x"
+#define TEXTURE_ALIAS_FILENAME_REGION_CLUT_FORMAT_STRING "$-%" PRIx64 "-r%ux%u-%08x"
 #define TEXTURE_FILENAME_OLD_REGION_FORMAT_STRING "%" PRIx64 "-r%" PRIx64 "-%08x"
 #define TEXTURE_FILENAME_OLD_REGION_CLUT_FORMAT_STRING "%" PRIx64 "-%" PRIx64 "-r%" PRIx64 "-%08x"
 #define TEXTURE_REPLACEMENT_SUBDIRECTORY_NAME "replacements"
@@ -80,6 +82,38 @@ namespace
 		}
 	};
 	static_assert(sizeof(TextureName) == 32, "ReplacementTextureName is expected size");
+
+	struct TextureAliasName // 24 bytes
+	{
+		u64 CLUTHash;
+		u32 region_width;
+		u32 region_height;
+
+		union
+		{
+			struct
+			{
+				u32 TEX0_PSM : 6;
+				u32 TEX0_TW : 4;
+				u32 TEX0_TH : 4;
+				u32 unused0 : 1; // was TCC
+				u32 TEXA_TA0 : 8;
+				u32 TEXA_AEM : 1;
+				u32 TEXA_TA1 : 8;
+			};
+			u32 bits;
+		};
+		u32 miplevel;
+
+		__fi bool operator==(const TextureAliasName& rhs) const { return BitEqual(*this, rhs); }
+
+		__fi void RemoveUnusedBits()
+		{
+			// Remove bits which were previously present, but no longer used.
+			unused0 = 0;
+		}
+	};
+	static_assert(sizeof(TextureAliasName) == 24, "TextureAliasName is expected size");
 } // namespace
 
 namespace std
@@ -96,15 +130,32 @@ namespace std
 			return h;
 		}
 	};
+
+	template <>
+	struct hash<TextureAliasName>
+	{
+		std::size_t operator()(const TextureAliasName& val) const
+		{
+			std::size_t h = 0;
+			HashCombine(h, val.CLUTHash,
+				static_cast<u64>(val.region_width) | (static_cast<u64>(val.region_height) << 32),
+				static_cast<u64>(val.bits) | (static_cast<u64>(val.miplevel) << 32));
+			return h;
+		}
+	};
 } // namespace std
 
 namespace GSTextureReplacements
 {
 	static TextureName CreateTextureName(const GSTextureCache::HashCacheKey& hash, u32 miplevel);
+	static TextureAliasName CreateTextureAliasName(const TextureName& name);
 	static GSTextureCache::HashCacheKey HashCacheKeyFromTextureName(const TextureName& tn);
 	static std::optional<TextureName> ParseReplacementName(const std::string& filename);
+	static std::optional<TextureAliasName> ParseReplacementAliasName(const std::string& filename);
+	static const std::string* FindReplacementTextureFilename(const TextureName& name);
 	static std::string GetGameTextureDirectory();
 	static std::string GetDumpFilename(const TextureName& name, u32 level);
+	static void ReloadDumpedTextureList();
 	template <GSTexture::Format format>
 	std::pair<u8, u8> GetBCAlphaMinMax(ReplacementTexture& rtex);
 	static void SetReplacementTextureAlphaMinMax(ReplacementTexture& rtex);
@@ -128,6 +179,9 @@ namespace GSTextureReplacements
 
 	/// Lookup map of texture names to replacements, if they exist.
 	static std::unordered_map<TextureName, std::string> s_replacement_texture_filenames;
+
+	/// Lookup map of wildcard texture aliases to replacements, if they exist.
+	static std::unordered_map<TextureAliasName, std::string> s_replacement_texture_alias_filenames;
 
 	/// Lookup map of texture names without CLUT hash, to know when we need to disable paltex.
 	static std::unordered_set<TextureName> s_replacement_textures_without_clut_hash;
@@ -167,6 +221,17 @@ TextureName GSTextureReplacements::CreateTextureName(const GSTextureCache::HashC
 	name.region_width = hash.region_width;
 	name.region_height = hash.region_height;
 	return name;
+}
+
+TextureAliasName GSTextureReplacements::CreateTextureAliasName(const TextureName& name)
+{
+	TextureAliasName alias_name;
+	alias_name.CLUTHash = name.CLUTHash;
+	alias_name.region_width = name.region_width;
+	alias_name.region_height = name.region_height;
+	alias_name.bits = name.bits;
+	alias_name.miplevel = name.miplevel;
+	return alias_name;
 }
 
 GSTextureCache::HashCacheKey GSTextureReplacements::HashCacheKeyFromTextureName(const TextureName& tn)
@@ -259,6 +324,49 @@ std::optional<TextureName> GSTextureReplacements::ParseReplacementName(const std
 	return std::nullopt;
 }
 
+std::optional<TextureAliasName> GSTextureReplacements::ParseReplacementAliasName(const std::string& filename)
+{
+	TextureAliasName ret;
+	ret.miplevel = 0;
+
+	char extension_dot;
+	if (std::sscanf(filename.c_str(), TEXTURE_ALIAS_FILENAME_REGION_CLUT_FORMAT_STRING "-mip%u%c",
+			&ret.CLUTHash, &ret.region_width, &ret.region_height, &ret.bits, &ret.miplevel, &extension_dot) == 6 &&
+		extension_dot == '.')
+	{
+		ret.RemoveUnusedBits();
+		return ret;
+	}
+
+	if (std::sscanf(filename.c_str(), TEXTURE_ALIAS_FILENAME_REGION_CLUT_FORMAT_STRING "%c",
+			&ret.CLUTHash, &ret.region_width, &ret.region_height, &ret.bits, &extension_dot) == 5 &&
+		extension_dot == '.')
+	{
+		ret.RemoveUnusedBits();
+		return ret;
+	}
+
+	ret.region_width = 0;
+	ret.region_height = 0;
+	if (std::sscanf(filename.c_str(), TEXTURE_ALIAS_FILENAME_CLUT_FORMAT_STRING "-mip%u%c",
+			&ret.CLUTHash, &ret.bits, &ret.miplevel, &extension_dot) == 4 &&
+		extension_dot == '.')
+	{
+		ret.RemoveUnusedBits();
+		return ret;
+	}
+
+	if (std::sscanf(filename.c_str(), TEXTURE_ALIAS_FILENAME_CLUT_FORMAT_STRING "%c",
+			&ret.CLUTHash, &ret.bits, &extension_dot) == 3 &&
+		extension_dot == '.')
+	{
+		ret.RemoveUnusedBits();
+		return ret;
+	}
+
+	return std::nullopt;
+}
+
 std::string GSTextureReplacements::GetGameTextureDirectory()
 {
 	return Path::Combine(EmuFolders::Textures, s_current_serial);
@@ -330,6 +438,35 @@ std::string GSTextureReplacements::GetDumpFilename(const TextureName& name, u32 
 	return ret;
 }
 
+void GSTextureReplacements::ReloadDumpedTextureList()
+{
+	std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
+	s_dumped_textures.clear();
+
+	if (s_current_serial.empty())
+		return;
+
+	const std::string dump_dir(Path::Combine(GetGameTextureDirectory(), TEXTURE_DUMP_SUBDIRECTORY_NAME));
+
+	FileSystem::FindResultsArray files;
+	if (!FileSystem::FindFiles(dump_dir.c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES | FILESYSTEM_FIND_RECURSIVE, &files))
+		return;
+
+	std::string filename;
+	for (FILESYSTEM_FIND_DATA& fd : files)
+	{
+		filename = Path::GetFileName(fd.FileName);
+		if (!GetLoader(filename))
+			continue;
+
+		std::optional<TextureName> name = ParseReplacementName(filename);
+		if (!name.has_value())
+			continue;
+
+		s_dumped_textures.insert(name.value());
+	}
+}
+
 void GSTextureReplacements::Initialize()
 {
 	s_current_serial = VMManager::GetDiscSerial();
@@ -338,6 +475,8 @@ void GSTextureReplacements::Initialize()
 		StartWorkerThread();
 
 	ReloadReplacementMap();
+	if (GSConfig.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
 }
 
 void GSTextureReplacements::GameChanged()
@@ -348,7 +487,10 @@ void GSTextureReplacements::GameChanged()
 
 	s_current_serial = std::move(new_serial);
 	ReloadReplacementMap();
-	ClearDumpedTextureList();
+	if (GSConfig.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
+	else
+		ClearDumpedTextureList();
 }
 
 /// If the given file exists in the given directory, but with a different case than the original file, write its path to `*output` and return true.
@@ -380,6 +522,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 	// clear out the caches
 	{
 		s_replacement_texture_filenames.clear();
+		s_replacement_texture_alias_filenames.clear();
 		s_replacement_textures_without_clut_hash.clear();
 
 		std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
@@ -427,7 +570,15 @@ void GSTextureReplacements::ReloadReplacementMap()
 		// parse the name if it's valid
 		std::optional<TextureName> name = ParseReplacementName(filename);
 		if (!name.has_value())
+		{
+			std::optional<TextureAliasName> alias_name = ParseReplacementAliasName(filename);
+			if (!alias_name.has_value())
+				continue;
+
+			DbgCon.WriteLn("Found wildcard replacement '%.*s'", static_cast<int>(filename.size()), filename.data());
+			s_replacement_texture_alias_filenames.emplace(alias_name.value(), std::move(fd.FileName));
 			continue;
+		}
 
 		DbgCon.WriteLn("Found %ux%u replacement '%.*s'", name->Width(), name->Height(), static_cast<int>(filename.size()), filename.data());
 		s_replacement_texture_filenames.emplace(name.value(), std::move(fd.FileName));
@@ -437,7 +588,7 @@ void GSTextureReplacements::ReloadReplacementMap()
 		s_replacement_textures_without_clut_hash.insert(name.value());
 	}
 
-	if (!s_replacement_texture_filenames.empty())
+	if (!s_replacement_texture_filenames.empty() || !s_replacement_texture_alias_filenames.empty())
 	{
 		if (GSConfig.PrecacheTextureReplacements)
 			PrecacheReplacementTextures();
@@ -470,7 +621,9 @@ void GSTextureReplacements::UpdateConfig(Pcsx2Config::GSOptions& old_config)
 	else if (!GSConfig.LoadTextureReplacements && old_config.LoadTextureReplacements)
 		ClearReplacementTextures();
 
-	if (!GSConfig.DumpReplaceableTextures && old_config.DumpReplaceableTextures)
+	if (GSConfig.DumpReplaceableTextures && !old_config.DumpReplaceableTextures)
+		ReloadDumpedTextureList();
+	else if (!GSConfig.DumpReplaceableTextures && old_config.DumpReplaceableTextures)
 		ClearDumpedTextureList();
 
 	if (GSConfig.LoadTextureReplacements && GSConfig.PrecacheTextureReplacements && !old_config.PrecacheTextureReplacements)
@@ -493,7 +646,7 @@ u32 GSTextureReplacements::CalcMipmapLevelsForReplacement(u32 width, u32 height)
 
 bool GSTextureReplacements::HasAnyReplacementTextures()
 {
-	return !s_replacement_texture_filenames.empty();
+	return !s_replacement_texture_filenames.empty() || !s_replacement_texture_alias_filenames.empty();
 }
 
 bool GSTextureReplacements::HasReplacementTextureWithOtherPalette(const GSTextureCache::HashCacheKey& hash)
@@ -502,15 +655,29 @@ bool GSTextureReplacements::HasReplacementTextureWithOtherPalette(const GSTextur
 	return s_replacement_textures_without_clut_hash.find(name) != s_replacement_textures_without_clut_hash.end();
 }
 
+const std::string* GSTextureReplacements::FindReplacementTextureFilename(const TextureName& name)
+{
+	auto fnit = s_replacement_texture_filenames.find(name);
+	if (fnit != s_replacement_texture_filenames.end())
+		return &fnit->second;
+
+	const TextureAliasName alias_name(CreateTextureAliasName(name));
+	auto ait = s_replacement_texture_alias_filenames.find(alias_name);
+	if (ait != s_replacement_texture_alias_filenames.end())
+		return &ait->second;
+
+	return nullptr;
+}
+
 GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache::HashCacheKey& hash, bool mipmap,
 	bool* pending, std::pair<u8, u8>* alpha_minmax)
 {
 	const TextureName name(CreateTextureName(hash, 0));
 	*pending = false;
 
-	// replacement for this name exists?
-	auto fnit = s_replacement_texture_filenames.find(name);
-	if (fnit == s_replacement_texture_filenames.end())
+	// Exact replacements win, wildcard aliases only run as a fallback.
+	const std::string* replacement_filename = FindReplacementTextureFilename(name);
+	if (!replacement_filename)
 		return nullptr;
 
 	// try the full cache first, to avoid reloading from disk
@@ -530,7 +697,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 	{
 		// replacement will be injected into the TC later on
 		std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
-		QueueAsyncReplacementTextureLoad(name, fnit->second, mipmap, false);
+		QueueAsyncReplacementTextureLoad(name, *replacement_filename, mipmap, false);
 
 		*pending = true;
 		return nullptr;
@@ -538,7 +705,7 @@ GSTexture* GSTextureReplacements::LookupReplacementTexture(const GSTextureCache:
 	else
 	{
 		// synchronous load
-		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(name, fnit->second, !mipmap));
+		std::optional<ReplacementTexture> replacement(LoadReplacementTexture(name, *replacement_filename, !mipmap));
 		if (!replacement.has_value())
 			return nullptr;
 
@@ -719,6 +886,7 @@ void GSTextureReplacements::PrecacheReplacementTextures()
 void GSTextureReplacements::ClearReplacementTextures()
 {
 	s_replacement_texture_filenames.clear();
+	s_replacement_texture_alias_filenames.clear();
 	s_replacement_textures_without_clut_hash.clear();
 
 	std::unique_lock<std::mutex> lock(s_replacement_texture_cache_mutex);
@@ -805,7 +973,7 @@ void GSTextureReplacements::DumpTexture(const GSTextureCache::HashCacheKey& hash
 	const TextureName name(CreateTextureName(hash, level));
 	{
 		std::unique_lock<std::mutex> lock(s_dumped_textures_mutex);
-		if (s_dumped_textures.find(name) != s_dumped_textures.end() || s_replacement_texture_filenames.find(name) != s_replacement_texture_filenames.end())
+		if (s_dumped_textures.find(name) != s_dumped_textures.end() || FindReplacementTextureFilename(name))
 			return;
 
 		s_dumped_textures.insert(name);
