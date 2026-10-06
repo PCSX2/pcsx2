@@ -165,6 +165,18 @@ bool SaveStateBase::FreezeBios()
 			BiosDescription.c_str(), BiosChecksum,
 			biosdesc, bioscheck
 		);
+
+		// Don't used the saved thread lists if the BIOSes don't match
+		u32 _ = 0;
+		Freeze(_);
+		Freeze(_);
+		Freeze(_);
+	}
+	else
+	{
+		Freeze(CurrentBiosInformation.eeThreadListAddr);
+		Freeze(CurrentBiosInformation.iopThreadListAddr);
+		Freeze(CurrentBiosInformation.iopModListAddr);
 	}
 
 	return IsOkay();
