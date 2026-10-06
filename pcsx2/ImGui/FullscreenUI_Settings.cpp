@@ -6226,6 +6226,7 @@ TRANSLATE_NOOP("FullscreenUI", "Rewrite large ST coordinates and clamp the value
 TRANSLATE_NOOP("FullscreenUI", "When enabled GPU converts colormap-textures, otherwise the CPU will. It is a trade-off between GPU and CPU.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to reduce draw calls in games which do heavy context switching for blending purposes.");
 TRANSLATE_NOOP("FullscreenUI", "Truncate 32-bit depth values to 24 bits. Helps games struggling with Z-fighting.");
+TRANSLATE_NOOP("FullscreenUI", "Rearranges memory pages of a target if the game changes the layout at that current VRAM address.");
 TRANSLATE_NOOP("FullscreenUI", "Upscaling Fixes");
 TRANSLATE_NOOP("FullscreenUI", "Might fix some misaligned fog, bloom, or blend effect.");
 TRANSLATE_NOOP("FullscreenUI", "Emulates native PS2 coordinate scaling behavior when upscaling to reduce misalignment artifacts and seams in games that draw custom 2D elements.");
@@ -6854,6 +6855,7 @@ TRANSLATE_NOOP("FullscreenUI", "Estimate Texture Region");
 TRANSLATE_NOOP("FullscreenUI", "GPU Palette Conversion");
 TRANSLATE_NOOP("FullscreenUI", "Draw Buffering");
 TRANSLATE_NOOP("FullscreenUI", "Limit Depth to 24 Bits");
+TRANSLATE_NOOP("FullscreenUI", "Target Page Rearranging");
 TRANSLATE_NOOP("FullscreenUI", "Half Pixel Offset");
 TRANSLATE_NOOP("FullscreenUI", "Native Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Round Sprite");
