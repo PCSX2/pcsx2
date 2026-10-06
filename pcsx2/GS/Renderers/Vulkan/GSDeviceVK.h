@@ -48,6 +48,8 @@ public:
 		bool vk_khr_synchronization2 : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
+		bool vk_ext_extended_dynamic_state : 1;
+		bool vk_ext_extended_dynamic_state3 : 1;
 	};
 
 	// Global state accessors
@@ -64,6 +66,12 @@ public:
 	__fi bool UseFeedbackLoopLayout() const
 	{
 		return m_optional_extensions.vk_ext_attachment_feedback_loop_layout && !m_features.framebuffer_fetch;
+	}
+
+	__fi bool UseExtendedDynamicState() const
+	{
+		return m_optional_extensions.vk_ext_extended_dynamic_state &&
+			m_optional_extensions.vk_ext_extended_dynamic_state3;
 	}
 
 	// Helpers for getting constants
@@ -641,6 +649,9 @@ public:
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(const DrawPassConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
+	void SetTFXExtendedDynamicState(
+		const GSHWDrawConfig::DepthStencilSelector& dss, const GSHWDrawConfig::BlendState& bs,
+		const GSHWDrawConfig::ColorMaskSelector& cms, bool date_primid_init);
 	VkImageLayout GetFeedbackLoopLayout() const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
 	VkAccessFlags2 GetFeedbackLoopInputAccessFlags() const;
@@ -709,6 +720,13 @@ private:
 		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 16),
 		DIRTY_FLAG_VS_PUSH_CONSTANTS = (1 << 17),
 
+		DIRTY_FLAG_TFX_EDS_COLOR_BLEND = (1 << 18),
+		DIRTY_FLAG_TFX_EDS_COLOR_MASK = (1 << 19),
+		DIRTY_FLAG_TFX_EDS_DEPTH = (1 << 20),
+		DIRTY_FLAG_TFX_EDS_STENCIL = (1 << 21),
+		DIRTY_TFX_EDS_STATE = DIRTY_FLAG_TFX_EDS_COLOR_BLEND | DIRTY_FLAG_TFX_EDS_COLOR_MASK |
+		                      DIRTY_FLAG_TFX_EDS_DEPTH | DIRTY_FLAG_TFX_EDS_STENCIL,
+
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
@@ -724,7 +742,7 @@ private:
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
-		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES,
+		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_TFX_EDS_STATE,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER | DIRTY_FLAG_VS_PUSH_CONSTANTS,
 		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,
@@ -760,6 +778,15 @@ private:
 	VkViewport m_viewport = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 	float m_current_line_width = 1.0f;
 	u8 m_blend_constant_color = 0;
+
+	// Dynamic state for TFX pipelines.
+	struct TFXExtendedDynamicState
+	{
+		GSHWDrawConfig::DepthStencilSelector dss;
+		GSHWDrawConfig::BlendState bs;
+		GSHWDrawConfig::ColorMaskSelector cms;
+		bool date_primid_init;
+	} m_tfx_extended_dynamic_state = {};
 
 	std::array<GSTextureVK*, NUM_TFX_TEXTURES> m_tfx_textures{};
 	VkSampler m_tfx_sampler = VK_NULL_HANDLE;
