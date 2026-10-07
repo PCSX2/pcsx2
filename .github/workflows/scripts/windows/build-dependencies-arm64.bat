@@ -92,7 +92,7 @@ set SHADERC_SPIRVHEADERS=58006c901d1d5c37dece6b6610e9af87fa951375
 set SHADERC_SPIRVTOOLS=6337eb62cadd7d124ac6789bf39c0f71148f0a73
 
 set AGILITYSDK=1.619.5
-set DXHEADERS=1.619.1
+set DXHEADERS=1.619.5
 set DXC=1.9.2609.5
 
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 0529901575c413e34ded504eeda177c4a6dfd0dff1e39ed52c811dc5204b43c7 || goto error
@@ -125,7 +125,7 @@ call :downloadfile "KDDockWidgets-%KDDOCKWIDGETS%.zip" "https://github.com/KDAB/
 call :downloadfile "plutovg-%PLUTOVG%.zip" "https://github.com/sammycage/plutovg/archive/v%PLUTOVG%.zip" 030b656758a5d48bc82e931caba7e13f6b672345cebb9c2893c09223ac322ecf || goto error
 call :downloadfile "plutosvg-%PLUTOSVG%.zip" "https://github.com/sammycage/plutosvg/archive/v%PLUTOSVG%.zip" bf2223c3ae69b2dfc8d69b238e26d2d877a1315a9e355671ea937a970f1cacd0 || goto error
 call :downloadfile "agility-sdk-%AGILITYSDK%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%AGILITYSDK%" 0e9bcf32aac9a79343ede9b21e4864950ee54577e3d8e19bfcdf002bb4e9bfd6 || goto error
-call :downloadfile "DirectX-Headers-%DXHEADERS%.zip" "https://github.com/microsoft/DirectX-Headers/archive/v%DXHEADERS%.zip" 9eb8b102a90a42e4ea72a825f7d249d55ec90d164f030966c9b7784b93374927 || goto error
+call :downloadfile "DirectX-Headers-%DXHEADERS%.zip" "https://github.com/microsoft/DirectX-Headers/archive/v%DXHEADERS%.zip" e839554c5c14e2fcce85ca99085ffa255626f054b44c2c10683f1062bc30401b  || goto error
 call :downloadfile "DirectXShaderCompiler-%DXC%.nupkg" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXC%" 73cfa082245918c2cc1ec6740250eb7377e83a757b3b3a3e16e0d71535bfbfc3 || goto error
 call :downloadfile "rapidyaml-%RAPIDYAML%-src.zip" "https://github.com/biojppm/rapidyaml/releases/download/v%RAPIDYAML%/rapidyaml-%RAPIDYAML%-src.zip" 96276f55b9fa7837ac8f3f72fd52965879cbb5d5d2e6af548c69a177fb078304 || goto error
 
