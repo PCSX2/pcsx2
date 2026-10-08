@@ -262,8 +262,8 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.xz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Building HarfBuzz..."
@@ -271,8 +271,8 @@ rm -fr "harfbuzz-$HARFBUZZ"
 tar xf "harfbuzz-$HARFBUZZ.tar.gz"
 cd "harfbuzz-$HARFBUZZ"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -DHB_BUILD_GPU=OFF -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
 echo "Building FreeType with HarfBuzz..."
@@ -280,20 +280,22 @@ rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.xz"
 cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
-cmake --build build --parallel
-cmake --install build
+make -C build "-j$NPROCS"
+make -C build install
 cd ..
 
-# MoltenVK already builds universal binaries, nothing special to do here.
 echo "Installing MoltenVK..."
 rm -fr "MoltenVK-${MOLTENVK}"
 tar xf "MoltenVK-$MOLTENVK.tar.gz"
 cd "MoltenVK-${MOLTENVK}"
 patch -p1 < "$SCRIPTDIR/4cf93f0f16b1503580cdb7ffdedb056321446677.patch"
 patch -p1 < "$SCRIPTDIR/mvk-texture-swizzle.patch"
-./fetchDependencies --macos
-make macos MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0 MVK_CONFIG_USE_METAL_PRIVATE_API=1
-cp Package/Latest/MoltenVK/dynamic/dylib/macOS/libMoltenVK.dylib "$INSTALLDIR/lib/"
+MVKWARNFLAGS="-Wno-unguarded-availability-new"
+MVKBUILDFLAGS="$CXXFLAGS $MVKWARNFLAGS -DMVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS=0 -DMVK_CONFIG_USE_METAL_PRIVATE_API=1"
+CXXFLAGS="$MVKBUILDFLAGS" OBJCXXFLAGS="$MVKBUILDFLAGS" CFLAGS="$CFLAGS $MVKWARNFLAGS" \
+	cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DMVK_EXCLUDE_SPIRV_TOOLS=ON -B build
+make -C build "-j$NPROCS"
+cp build/MoltenVK/libMoltenVK.dylib "$INSTALLDIR/lib/"
 cd ..
 
 echo "Installing Qt Base..."
@@ -303,8 +305,6 @@ cd "qtbase-everywhere-src-$QT"
 
 # Patch Qt to support macOS 11
 patch -p1 < "$SCRIPTDIR/qt-macos11compat.patch"
-# Backport fix build on Xcode 26.4 (https://codereview.qt-project.org/c/qt/qtbase/+/724619)
-patch -p1 < "$SCRIPTDIR/qt110-xcode264.patch"
 
 # since we don't have a direct reference to QtSvg, it doesn't deployed directly from the main binary
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
@@ -330,7 +330,7 @@ patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
  
      // Platforminputcontext plugins if QtGui is in use
 EOF
-cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
+cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DFEATURE_dup3=OFF -DFEATURE_dbus=OFF -DFEATURE_framework=OFF -DFEATURE_icu=OFF -DFEATURE_opengl=OFF -DFEATURE_printsupport=OFF -DFEATURE_sql=OFF -DFEATURE_gssapi=OFF -DFEATURE_system_png=ON -DFEATURE_system_jpeg=ON -DFEATURE_system_zlib=ON -DFEATURE_system_freetype=ON -DFEATURE_system_harfbuzz=ON
 make -C build "-j$NPROCS"
 make -C build install
 cd ..
