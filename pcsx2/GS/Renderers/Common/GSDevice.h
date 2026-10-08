@@ -1416,6 +1416,7 @@ public:
 		bool depth_feedback       : 1; ///< Depth feedback loops can be done with DS directly (otherwise need to copy to separate RT).  Implies `feedback_loops`.
 		bool aa1                  : 1; ///< Supports the GS AA1 feature.
 		bool rov                  : 1; ///< Supports rasterizer ordered views for both depth and color.
+		bool copyless_ds_as_rt    : 1; ///< Supports DS as RT without any copies.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -1500,6 +1501,8 @@ protected:
 	GSTexture* m_cas = nullptr;
 	GSTexture* m_colclip_rt = nullptr; ///< Temp hw colclip texture
 	GSTexture* m_ds_as_rt = nullptr; ///< Depth as color
+	GSTexture* m_ds_as_rt_orig = nullptr; ///< Where the depth as color came from
+	GSVector4i m_ds_as_rt_valid = GSVector4i::zero(); ///< The region of the depth as color that is identical to the original
 
 	bool AcquireWindow(bool recreate_window);
 
@@ -1541,9 +1544,10 @@ public:
 		
 	void SetColorClipTexture(GSTexture* tex) { m_colclip_rt = tex; }
 
-	bool IsDSInRTActive() const { return m_ds_as_rt; }
+	bool IsDSAsRTActive() const { return m_ds_as_rt; }
 	/// Create a temporary color clone of depth for depth feedback
 	virtual void BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea);
+	void InvalidateDSAsRT(GSTexture* ds);
 	void EndDSAsRT();
 
 	/// Returns a string representing the specified API.

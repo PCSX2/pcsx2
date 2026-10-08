@@ -1952,6 +1952,9 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 		return;
 	}
 
+	if (dTex->IsDepthStencil())
+		InvalidateDSAsRT(dTex);
+
 	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
 	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
 	const GSVector4i dst_rect(0, 0, dTex->GetWidth(), dTex->GetHeight());
@@ -2918,7 +2921,8 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor)
 {
 	const bool rt_changed = (rt != GLState::current_rt);
-	const bool ds_as_rt_changed = (ds_as_rt != GLState::current_ds_as_rt);
+	const bool ds_as_rt_changed = (ds_as_rt != GLState::current_ds_as_rt) ||
+		(ds_as_rt && ds_as_rt->GetState() == GSTexture::State::Cleared); // See note about clearing below.
 	const bool ds_changed = (ds != GLState::current_ds);
 	const u32 draw_buffers = GLState::draw_buffers;
 
@@ -2943,7 +2947,8 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextu
 	if (ds_as_rt)
 	{
 		OMAttachDsAsRt(ds_as_rt);
-		CommitClear(ds_as_rt, false);
+		// Clearing DS as RT on the main FBO appears to cause problems so use the alternate FBO.
+		CommitClear(ds_as_rt, true);
 		GLState::ds_as_rt_written = ds_as_rt_changed;
 	}
 	else
@@ -2954,6 +2959,13 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTextu
 		OMAttachDs(ds);
 		CommitClear(ds, false);
 		GLState::ds_written = ds_changed;
+
+		// Invalidate DS as RT if we're updating DS alone.
+		if (!ds_as_rt)
+			InvalidateDSAsRT(ds);
+
+		// Make sure something didn't go wrong with DS as RT caching.
+		pxAssert(!ds_as_rt || m_ds_as_rt_orig == ds);
 	}
 	else
 		OMAttachDs();
@@ -3053,7 +3065,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 	GSTexture* draw_rt = config.rt;
 	GSTexture* draw_ds = config.ds;
-	GSTexture* draw_ds_as_rt = m_ds_as_rt;
+	GSTexture* draw_ds_as_rt = config.ps.IsFeedbackLoopDepth() ? m_ds_as_rt : nullptr;
 	GSTexture* draw_rt_clone = nullptr;
 	GSTexture* draw_ds_clone = nullptr;
 	GSTexture* primid_texture = nullptr;
@@ -3174,7 +3186,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier))
 		PSSetShaderResource(TEXTURE_RT, colclip_rt ? colclip_rt : config.rt);
 	if (m_features.texture_barrier && (config.require_one_barrier || config.require_full_barrier) && config.ps.IsFeedbackLoopDepth())
-		PSSetShaderResource(TEXTURE_DEPTH, m_features.depth_feedback ? config.ds : m_ds_as_rt);
+		PSSetShaderResource(TEXTURE_DEPTH, m_features.depth_feedback ? config.ds : draw_ds_as_rt);
 
 	SetupSampler(config.sampler);
 
