@@ -6,9 +6,11 @@
 #include <functional>
 #include <mutex>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <variant>
 #include <utility>
+#include <vector>
 
 #include "common/Pcsx2Types.h"
 #include "common/SettingsInterface.h"
@@ -167,12 +169,14 @@ namespace InputManager
 	static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 
 	/// Maximum number of host mouse devices.
-	static constexpr u32 MAX_POINTER_DEVICES = 1;
+	/// Pointer-0 is the system cursor, unless multi-mouse raw input is enabled (Windows only),
+	/// in which case each physical mouse/lightgun gets its own index.
+	static constexpr u32 MAX_POINTER_DEVICES = 4;
 	static constexpr u32 MAX_POINTER_BUTTONS = 3;
 
 	/// Maximum number of software cursors. We allocate an extra two for USB devices with
 	/// positioning data from the controller instead of a mouse.
-	static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_BUTTONS + 2;
+	static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 
 	/// Returns a pointer to the external input source class, if present.
 	InputSource* GetInputSourceInterface(InputSourceType type);
@@ -306,6 +310,19 @@ namespace InputManager
 
 	/// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate reporting.
 	void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
+
+	/// When true (multi-mouse raw input), Pointer-0 no longer moves the UI/menu cursor; the host
+	/// passes the real system cursor to ImGuiManager::UpdateMousePosition() itself instead.
+	void SetUICursorFromHost(bool enabled);
+
+	/// Device names (e.g. raw input device paths) for each host pointer, indexed by pointer number.
+	/// Empty entries are free slots. Set by the host when multi-mouse raw input is active.
+	void SetHostPointerDeviceNames(std::vector<std::string> names);
+	std::vector<std::string> GetHostPointerDeviceNames();
+
+	/// Detected multi-mouse devices that aren't (yet) assigned a pointer, for settings UIs.
+	void SetUnassignedHostPointerDeviceNames(std::vector<std::string> names);
+	std::vector<std::string> GetUnassignedHostPointerDeviceNames();
 
 	/// Updates host mouse mode (relative/cursor hiding).
 	void UpdateHostMouseMode();

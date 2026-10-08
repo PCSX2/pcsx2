@@ -5297,6 +5297,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 #ifdef _WIN32
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable SDL Raw Input"), FSUI_CSTR("Allow SDL to use raw access to input devices."),
 		"InputSources", "SDLRawInput", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable Multi-Mouse Raw Input"),
+		FSUI_CSTR("Gives each mouse or lightgun its own pointer (Pointer-0, Pointer-1, ...) so two lightguns can aim separately."),
+		"InputSources", "RawInputMouse", false, true, false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
 		FSUI_CSTR("The XInput source provides support for XBox 360/XBox One/XBox Series controllers."), "InputSources", "XInput", false,
 		true, false);

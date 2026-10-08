@@ -244,6 +244,16 @@
         </item>
        </layout>
       </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QCheckBox" name="enableRawInputMouse">
+        <property name="toolTip">
+         <string>Gives each mouse or lightgun its own pointer (Pointer-0, Pointer-1, ...) so two lightguns can aim separately. Windows only. Restart the game after changing this.</string>
+        </property>
+        <property name="text">
+         <string>Enable Multi-Mouse Raw Input (separate lightguns)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

@@ -28,6 +28,7 @@ public:
 	std::optional<WindowInfo> getWindowInfo();
 
 	void updateRelativeMode(bool enabled);
+	bool isRelativeMouseMode() const { return m_relative_mouse_enabled; }
 	void updateCursor(bool hidden);
 
 	bool isFullScreen() const;
@@ -72,3 +73,21 @@ private:
 	QTimer* m_resize_debounce_timer = nullptr;
 	QWidget* m_container = nullptr;
 };
+
+#ifdef _WIN32
+/// Multi-mouse raw input (Windows only): gives each physical mouse/lightgun its own Pointer-N,
+/// instead of every mouse moving the one system cursor (Pointer-0).
+/// Enabled with [InputSources] RawInputMouse = true. Call these on the UI thread.
+namespace QtRawMouse
+{
+	/// Starts or stops raw input to match the RawInputMouse setting, and re-reads the device list.
+	void UpdateFromSettings();
+
+	/// True while raw input owns the pointers, so Qt's merged cursor should be ignored.
+	bool IsActive();
+
+	/// The game display that pointer positions are relative to. Clear only clears if it's still this surface.
+	void SetDisplaySurface(DisplaySurface* surface);
+	void ClearDisplaySurface(DisplaySurface* surface);
+} // namespace QtRawMouse
+#endif

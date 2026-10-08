@@ -21,6 +21,7 @@
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
 #include "Settings/SettingsWindow.h"
+#include "DisplayWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
@@ -1104,6 +1105,11 @@ void USBDeviceWidget::populatePages()
 		delete m_settings_widget;
 		m_settings_widget = nullptr;
 	}
+
+#ifdef _WIN32
+	// Start multi-mouse raw input now (if enabled) so the Lightgun Device list is filled in without a game running.
+	QtRawMouse::UpdateFromSettings();
+#endif
 
 	const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(m_device_type, m_device_subtype));
 	const std::span<const SettingInfo> settings(USB::GetDeviceSettings(m_device_type, m_device_subtype));

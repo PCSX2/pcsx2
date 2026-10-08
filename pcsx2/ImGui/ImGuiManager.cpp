@@ -51,6 +51,9 @@ namespace ImGuiManager
 		float extent_x;
 		float extent_y;
 		std::pair<float, float> pos;
+
+		// Set when image_path/scale changed; the GS thread (re)loads the texture the next time it draws.
+		bool texture_dirty;
 	};
 
 	static void UpdateScale();
@@ -127,6 +130,8 @@ static bool s_fullscreen_ui_was_initialized = false;
 static bool s_scale_changed = false;
 
 static std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> s_software_cursors = {};
+// Guards s_software_cursors, which is written from the CPU/UI threads and drawn on the GS thread.
+static std::mutex s_software_cursor_lock;
 
 void ImGuiManager::SetFonts(std::vector<FontInfo> info)
 {
@@ -1357,18 +1362,24 @@ bool ImGuiManager::IsGamepadNorthWestSwapped()
 
 void ImGuiManager::CreateSoftwareCursorTextures()
 {
-	for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
+	// Include the extra USB-device cursors (GunCon 2 relative aiming), not just the pointer devices.
+	std::unique_lock lock(s_software_cursor_lock);
+	for (u32 i = 0; i < InputManager::MAX_SOFTWARE_CURSORS; i++)
 	{
 		if (!s_software_cursors[i].image_path.empty())
 			UpdateSoftwareCursorTexture(i);
+		s_software_cursors[i].texture_dirty = false;
 	}
 }
 
 void ImGuiManager::DestroySoftwareCursorTextures()
 {
-	for (u32 i = 0; i < InputManager::MAX_POINTER_DEVICES; i++)
+	std::unique_lock lock(s_software_cursor_lock);
+	for (u32 i = 0; i < InputManager::MAX_SOFTWARE_CURSORS; i++)
 	{
 		s_software_cursors[i].texture.reset();
+		// Reload on the next draw if the GS comes back without calling CreateSoftwareCursorTextures().
+		s_software_cursors[i].texture_dirty = !s_software_cursors[i].image_path.empty();
 	}
 }
 
@@ -1417,6 +1428,20 @@ void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<
 void ImGuiManager::DrawSoftwareCursors()
 {
 	// This one's okay to race, worst that happens is we render the wrong number of cursors for a frame.
+	std::unique_lock lock(s_software_cursor_lock);
+
+	// Load any textures whose settings changed. Done here (on the GS thread, at draw time) rather than in a
+	// queued GS command, because those commands can be dropped when the GS resets right after the USB devices
+	// open - which is why only player 1's crosshair used to appear (PCSX2 issue #11423).
+	for (u32 i = 0; i < InputManager::MAX_SOFTWARE_CURSORS; i++)
+	{
+		if (s_software_cursors[i].texture_dirty)
+		{
+			s_software_cursors[i].texture_dirty = false;
+			UpdateSoftwareCursorTexture(i);
+		}
+	}
+
 	const u32 pointer_count = InputManager::MAX_POINTER_DEVICES;
 	for (u32 i = 0; i < pointer_count; i++)
 		DrawSoftwareCursor(s_software_cursors[i], InputManager::GetPointerAbsolutePosition(i));
@@ -1427,27 +1452,31 @@ void ImGuiManager::DrawSoftwareCursors()
 
 void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float image_scale, u32 multiply_color)
 {
-	MTGS::RunOnGSThread([index, image_path = std::move(image_path), image_scale, multiply_color]() {
-		pxAssert(index < std::size(s_software_cursors));
+	// Update the state directly and let the GS thread load the texture when it next draws
+	// (see DrawSoftwareCursors). A queued GS command could be dropped by a GS reset.
+	pxAssert(index < std::size(s_software_cursors));
+	bool is_hiding_or_showing;
+	{
+		std::unique_lock lock(s_software_cursor_lock);
 		SoftwareCursor& sc = s_software_cursors[index];
 		sc.color = multiply_color | 0xFF000000;
 		if (sc.image_path == image_path && sc.scale == image_scale)
 			return;
 
-		const bool is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
+		is_hiding_or_showing = (image_path.empty() != sc.image_path.empty());
 		sc.image_path = std::move(image_path);
 		sc.scale = image_scale;
-		if (MTGS::IsOpen())
-			UpdateSoftwareCursorTexture(index);
+		sc.texture_dirty = true;
+	}
 
-		// Hide the system cursor when we activate a software cursor.
-		if (is_hiding_or_showing && index == 0)
-			Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
-	});
+	// Hide the system cursor when we activate a software cursor for any pointer device.
+	if (is_hiding_or_showing && index < InputManager::MAX_POINTER_DEVICES)
+		Host::RunOnCPUThread(&InputManager::UpdateHostMouseMode);
 }
 
 bool ImGuiManager::HasSoftwareCursor(u32 index)
 {
+	std::unique_lock lock(s_software_cursor_lock);
 	return (index < s_software_cursors.size() && !s_software_cursors[index].image_path.empty());
 }
 

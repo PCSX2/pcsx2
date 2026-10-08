@@ -177,8 +177,12 @@ static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis:
 static std::array<float, 2> s_pointer_axis_speed;
 static std::array<float, 2> s_pointer_axis_dead_zone;
 static std::array<float, 2> s_pointer_axis_range;
-static std::array<float, 2> s_pointer_pos = {0.0f, 0.0f};
+static std::array<std::array<float, 2>, InputManager::MAX_POINTER_DEVICES> s_pointer_pos = {};
 static float s_pointer_inertia = 0.0f;
+static std::atomic_bool s_ui_cursor_from_host{false};
+static std::mutex s_host_pointer_names_lock;
+static std::vector<std::string> s_host_pointer_names;
+static std::vector<std::string> s_unassigned_host_pointer_names;
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 using KeyboardEventCallback = std::function<void(InputBindingKey key, float value)>;
@@ -516,7 +520,12 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
 					ICON_PF_MOUSE_BUTTON_5,
 				};
 				if (key->data < std::size(button_icons))
+				{
+					// With multi-mouse raw input, show which pointer (gun) it is; the icon alone looks the same for all.
+					if (key->source_index != 0)
+						ret.append_format("Pointer-{} ", u32{key->source_index});
 					ret.append(button_icons[key->data]);
+				}
 				else
 					ret.append(ConvertPointerKeyToString(key.value(), true));
 			}
@@ -1369,10 +1378,12 @@ void InputManager::GenerateRelativeMouseEvents()
 
 			if (axis <= static_cast<u32>(InputPointerAxis::Y))
 			{
-				s_pointer_pos[axis] += delta * s_pointer_axis_speed[axis];
-				value = std::clamp(s_pointer_pos[axis], -1.0f, 1.0f);
-				s_pointer_pos[axis] -= value;
-				s_pointer_pos[axis] *= s_pointer_inertia;
+				// Tracked per device, so two mice don't feed into each other's relative axes.
+				float& pos = s_pointer_pos[device][axis];
+				pos += delta * s_pointer_axis_speed[axis];
+				value = std::clamp(pos, -1.0f, 1.0f);
+				pos -= value;
+				pos *= s_pointer_inertia;
 
 				value *= s_pointer_axis_range[axis];
 				if (value > 0.0f)
@@ -1409,12 +1420,18 @@ void InputManager::GenerateRelativeMouseEvents()
 
 std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 {
+	if (index >= MAX_POINTER_DEVICES)
+		return std::make_pair(0.0f, 0.0f);
+
 	return std::make_pair(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)],
 		s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 {
+	if (index >= MAX_POINTER_DEVICES)
+		return;
+
 	const float dx = x - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)], x);
 	const float dy = y - std::exchange(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)], y);
 
@@ -1425,17 +1442,49 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 		s_pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta.fetch_add(
 			static_cast<s32>(dy * 65536.0f), std::memory_order_release);
 
-	if (index == 0)
+	if (index == 0 && !s_ui_cursor_from_host.load(std::memory_order_relaxed))
 		ImGuiManager::UpdateMousePosition(x, y);
 }
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
 {
+	if (index >= MAX_POINTER_DEVICES)
+		return;
+
 	s_host_pointer_positions[index][static_cast<u8>(axis)] += d;
 	s_pointer_state[index][static_cast<u8>(axis)].delta.fetch_add(static_cast<s32>(d * 65536.0f), std::memory_order_release);
 
-	if (index == 0 && axis <= InputPointerAxis::Y)
+	if (index == 0 && axis <= InputPointerAxis::Y && !s_ui_cursor_from_host.load(std::memory_order_relaxed))
 		ImGuiManager::UpdateMousePosition(s_host_pointer_positions[0][0], s_host_pointer_positions[0][1]);
+}
+
+void InputManager::SetUICursorFromHost(bool enabled)
+{
+	s_ui_cursor_from_host.store(enabled, std::memory_order_relaxed);
+}
+
+void InputManager::SetHostPointerDeviceNames(std::vector<std::string> names)
+{
+	std::unique_lock lock(s_host_pointer_names_lock);
+	s_host_pointer_names = std::move(names);
+}
+
+std::vector<std::string> InputManager::GetHostPointerDeviceNames()
+{
+	std::unique_lock lock(s_host_pointer_names_lock);
+	return s_host_pointer_names;
+}
+
+void InputManager::SetUnassignedHostPointerDeviceNames(std::vector<std::string> names)
+{
+	std::unique_lock lock(s_host_pointer_names_lock);
+	s_unassigned_host_pointer_names = std::move(names);
+}
+
+std::vector<std::string> InputManager::GetUnassignedHostPointerDeviceNames()
+{
+	std::unique_lock lock(s_host_pointer_names_lock);
+	return s_unassigned_host_pointer_names;
 }
 
 void InputManager::OnInputDeviceConnected(const std::string_view identifier, const std::string_view device_name)
@@ -1677,7 +1726,10 @@ void InputManager::UpdateHostMouseMode()
 		}
 	}
 
-	const bool has_software_cursor = ImGuiManager::HasSoftwareCursor(0);
+	// Any pointer's crosshair counts, e.g. lightguns on Pointer-1/2 with multi-mouse raw input.
+	bool has_software_cursor = false;
+	for (u32 i = 0; i < MAX_POINTER_DEVICES && !has_software_cursor; i++)
+		has_software_cursor = ImGuiManager::HasSoftwareCursor(i);
 	Host::SetMouseMode(has_relative_mode_bindings, has_relative_mode_bindings || has_software_cursor);
 }
 

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "DisplayWidget.h"
 #include "QtHost.h"
 #include "QtUtils.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
@@ -68,6 +69,16 @@ InputBindingDialog::~InputBindingDialog()
 bool InputBindingDialog::eventFilter(QObject* watched, QEvent* event)
 {
 	const QEvent::Type event_type = event->type();
+
+#ifdef _WIN32
+	// With multi-mouse raw input, mouse buttons arrive through the input hook tagged with the right
+	// Pointer-N (which gun fired). Qt only knows the merged cursor, so ignore its clicks here.
+	if (QtRawMouse::IsActive() && (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick ||
+									  event_type == QEvent::MouseButtonRelease))
+	{
+		return true;
+	}
+#endif
 
 	// if the key is being released, set the input
 	if (event_type == QEvent::KeyRelease || event_type == QEvent::MouseButtonRelease)
@@ -164,6 +175,10 @@ void InputBindingDialog::onInputListenTimerTimeout()
 
 void InputBindingDialog::startListeningForInput(u32 timeout_in_seconds)
 {
+#ifdef _WIN32
+	// Make sure raw input is running even if no game has been started yet.
+	QtRawMouse::UpdateFromSettings();
+#endif
 	m_value_ranges.clear();
 	m_new_bindings.clear();
 	m_mouse_mapping_enabled = InputBindingWidget::isMouseMappingEnabled(m_sif);

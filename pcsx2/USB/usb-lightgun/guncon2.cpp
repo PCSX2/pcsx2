@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "GS.h"
 #include "GS/GS.h"
 #include "Host.h"
+#include "MTGS.h"
 #include "IconsPromptFont.h"
 #include "ImGui/ImGuiManager.h"
 #include "Input/InputManager.h"
@@ -15,9 +17,14 @@
 #include "VMManager.h"
 
 #include "common/Console.h"
+#include "common/Path.h"
 #include "common/StringUtil.h"
 
+#include <algorithm>
+#include <cstring>
 #include <tuple>
+
+#include "fmt/format.h"
 
 namespace usb_lightgun
 {
@@ -133,6 +140,10 @@ namespace usb_lightgun
 		//////////////////////////////////////////////////////////////////////////
 		bool has_relative_binds = false;
 		bool custom_config = false;
+
+		// Which host pointer (Pointer-N) this gun aims with. Only differs from 0 when multi-mouse
+		// raw input is enabled on Windows. -1 in the config means "follow the Trigger binding".
+		u32 pointer_index = 0;
 		u32 screen_width = 640;
 		u32 screen_height = 240;
 		float center_x = 320;
@@ -161,6 +172,39 @@ namespace usb_lightgun
 		s16 calibration_pos_y = 0;
 
 		bool auto_config_done = false;
+
+		// Shot diagnostics (not saved): log where each trigger pull aimed, and where the aim was a few polls later.
+		bool trigger_was_down = false;
+		u8 shot_log_polls = 0;
+		s16 shot_pos_x = 0, shot_pos_y = 0;
+		u64 last_display_key = 0;
+
+		// Debug: screenshot a few polls after each trigger pull ([USBn] guncon2_shot_screenshots = true).
+		bool shot_screenshots = false;
+		u8 shot_screenshot_delay = 12; // polls after the trigger; the game flashes the screen for the first few
+		u8 shot_screenshot_polls = 0;
+		u32 shot_counter = 0;
+		float shot_display_x = 0.0f, shot_display_y = 0.0f;
+		void LogDisplayModeChanges();
+
+		// Real-TV mapping: a real GunCon reads the CRT beam position, so if a game shrinks/moves its picture
+		// (e.g. Time Crisis 2's half-height 2-player split screen) the readings change accordingly. PCSX2
+		// stretches the picture to the window, so we map the aim back to where it would be on the CRT, relative
+		// to the largest picture the game has shown (its normal full-screen mode, which the scale values assume).
+		struct CRTRect
+		{
+			float x0 = 0.0f, y0 = 0.0f, x1 = 0.0f, y1 = 0.0f;
+			bool valid() const { return (x1 > x0 && y1 > y0); }
+		};
+		CRTRect display_ref; // largest display area seen
+		CRTRect display_cur;
+		bool real_tv_mapping = true;
+		// extra vertical correction while the picture is reduced (e.g. TC2 2P), separately above/below the middle
+		float reduced_picture_y_gain_top = 1.02f;
+		float reduced_picture_y_gain_bottom = 0.78f;
+		bool split_aim_tuned = false; // the gains above were measured for this game (Time Crisis 2/3 NTSC)
+		std::string geometry_serial; // game the display geometry/tuning below belongs to
+		void UpdateDisplayRects();
 
 		void AutoConfigure();
 
@@ -253,7 +297,9 @@ namespace usb_lightgun
 			us->param_x = static_cast<u16>(data[0]) | (static_cast<u16>(data[1]) << 8);
 			us->param_y = static_cast<u16>(data[2]) | (static_cast<u16>(data[3]) << 8);
 			us->param_mode = static_cast<u16>(data[4]) | (static_cast<u16>(data[5]) << 8);
-			DevCon.WriteLn("GunCon2 Set Param %04X %d %d", us->param_mode, us->param_x, us->param_y);
+			// Logged so unexpected recalibrations (offset changes mid-game) show up. Needs proper testing.
+			Console.WriteLn("(GunCon2) USB port %u: game set calibration offset x=%d y=%d (mode %04X)", us->port + 1,
+				us->param_x, us->param_y, us->param_mode);
 			return;
 		}
 
@@ -271,6 +317,38 @@ namespace usb_lightgun
 				if (p->ep->nr == 1)
 				{
 					const auto [pos_x, pos_y] = us->CalculatePosition();
+					us->LogDisplayModeChanges();
+
+					// Shot diagnostics: did the aim move while the trigger was being pulled (e.g. recoil)?
+					const bool trigger_down = (us->button_state & (1u << BID_TRIGGER)) != 0;
+					if (trigger_down && !us->trigger_was_down)
+					{
+						us->shot_pos_x = pos_x;
+						us->shot_pos_y = pos_y;
+						us->shot_log_polls = 6;
+
+						if (us->shot_screenshots)
+						{
+							// Where the gun was aimed, as a fraction of the game picture (0..1) - same as the screenshot area.
+							const auto& [wx, wy] = InputManager::GetPointerAbsolutePosition(us->pointer_index);
+							GSTranslateWindowToDisplayCoordinates(wx, wy, &us->shot_display_x, &us->shot_display_y);
+							us->shot_screenshot_polls = us->shot_screenshot_delay;
+						}
+					}
+					if (us->shot_screenshot_polls > 0 && --us->shot_screenshot_polls == 0)
+					{
+						const std::string path = Path::Combine(EmuFolders::Snapshots,
+							fmt::format("guncon_port{}_shot{:03}.png", us->port + 1, ++us->shot_counter));
+						Console.WriteLn("(GunCon2) USB port %u: shot screenshot %03u aim=(%.4f,%.4f) guncon=(%d,%d) -> %s", us->port + 1,
+							us->shot_counter, us->shot_display_x, us->shot_display_y, us->shot_pos_x, us->shot_pos_y, path.c_str());
+						MTGS::RunOnGSThread([path]() { GSQueueSnapshot(path, 0); });
+					}
+					us->trigger_was_down = trigger_down;
+					if (us->shot_log_polls > 0 && --us->shot_log_polls == 0)
+					{
+						Console.WriteLn("(GunCon2) USB port %u: shot at (%d,%d), 6 polls later (%d,%d), moved (%+d,%+d)", us->port + 1,
+							us->shot_pos_x, us->shot_pos_y, pos_x, pos_y, pos_x - us->shot_pos_x, pos_y - us->shot_pos_y);
+					}
 
 					// Time Crisis games do a "calibration" by displaying a black frame for a single frame,
 					// waiting for the gun to report (0, 0), and then computing an offset on the first non-zero
@@ -346,6 +424,7 @@ namespace usb_lightgun
 	void GunCon2State::AutoConfigure()
 	{
 		const std::string serial = VMManager::GetDiscSerial();
+
 		for (const GameConfig& gc : s_game_config)
 		{
 			if (serial != gc.serial)
@@ -368,12 +447,115 @@ namespace usb_lightgun
 		Console.Warning(fmt::format("(GunCon2) No automatic config found for '{}'.", serial));
 	}
 
+	// Diagnostic: log the PS2's display output settings whenever they change, to see whether a game
+	// (e.g. Time Crisis 2 in 2-player split screen) moves/resizes its picture. A real GunCon reads the
+	// TV beam position, so such a change shifts its readings, while PCSX2 uses fixed per-game numbers.
+	void GunCon2State::LogDisplayModeChanges()
+	{
+		GSRegPMODE pmode;
+		GSRegSMODE2 smode2;
+		GSRegDISPLAY disp[2];
+		std::memcpy(&pmode, PS2GS_BASE(0x0000), sizeof(pmode));
+		std::memcpy(&smode2, PS2GS_BASE(0x0020), sizeof(smode2));
+		std::memcpy(&disp[0], PS2GS_BASE(0x0080), sizeof(disp[0]));
+		std::memcpy(&disp[1], PS2GS_BASE(0x00A0), sizeof(disp[1]));
+
+		u64 d0, d1;
+		std::memcpy(&d0, &disp[0], sizeof(d0));
+		std::memcpy(&d1, &disp[1], sizeof(d1));
+		const u64 key = d0 ^ (d1 * 0x9E3779B97F4A7C15ULL) ^ (static_cast<u64>(pmode.EN1 | (pmode.EN2 << 1) | (smode2.INT << 2) | (smode2.FFMD << 3)) << 60);
+		if (key == last_display_key)
+			return;
+		last_display_key = key;
+
+		Console.WriteLn("(GunCon2) USB port %u: display changed: EN1=%u EN2=%u INT=%u FFMD=%u | "
+						"D1 DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u | D2 DX=%u DY=%u DW=%u DH=%u MAGH=%u MAGV=%u",
+			port + 1, pmode.EN1, pmode.EN2, smode2.INT, smode2.FFMD, disp[0].DX, disp[0].DY, disp[0].DW, disp[0].DH,
+			disp[0].MAGH, disp[0].MAGV, disp[1].DX, disp[1].DY, disp[1].DW, disp[1].DH, disp[1].MAGH, disp[1].MAGV);
+	}
+
+	void GunCon2State::UpdateDisplayRects()
+	{
+		GSRegPMODE pmode;
+		GSRegDISPLAY disp[2];
+		std::memcpy(&pmode, PS2GS_BASE(0x0000), sizeof(pmode));
+		std::memcpy(&disp[0], PS2GS_BASE(0x0080), sizeof(disp[0]));
+		std::memcpy(&disp[1], PS2GS_BASE(0x00A0), sizeof(disp[1]));
+
+		// Union of the enabled read circuits (2-player split screen uses both, side by side).
+		CRTRect r;
+		bool any = false;
+		const bool enabled[2] = {pmode.EN1 != 0, pmode.EN2 != 0};
+		for (u32 i = 0; i < 2; i++)
+		{
+			if (!enabled[i] || disp[i].DW == 0 || disp[i].DH == 0)
+				continue;
+			const float x0 = static_cast<float>(disp[i].DX);
+			const float y0 = static_cast<float>(disp[i].DY);
+			const float x1 = x0 + static_cast<float>(disp[i].DW + 1);
+			const float y1 = y0 + static_cast<float>(disp[i].DH + 1);
+			if (!any)
+			{
+				r = CRTRect{x0, y0, x1, y1};
+				any = true;
+			}
+			else
+			{
+				r.x0 = std::min(r.x0, x0);
+				r.y0 = std::min(r.y0, y0);
+				r.x1 = std::max(r.x1, x1);
+				r.y1 = std::max(r.y1, y1);
+			}
+		}
+
+		// While the picture is blanked (both circuits off, e.g. scene changes), keep the last geometry.
+		if (!any)
+			return;
+
+		display_cur = r;
+		if (!display_ref.valid() || ((r.x1 - r.x0) * (r.y1 - r.y0)) > ((display_ref.x1 - display_ref.x0) * (display_ref.y1 - display_ref.y0)))
+			display_ref = r;
+	}
+
 	std::tuple<s16, s16> GunCon2State::CalculatePosition()
 	{
 		float pointer_x, pointer_y;
 		const auto& [window_x, window_y] =
-			(has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(0);
+			(has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(pointer_index);
 		GSTranslateWindowToDisplayCoordinates(window_x, window_y, &pointer_x, &pointer_y);
+
+		// Map from "fraction of the stretched picture" to "fraction of the game's normal full-screen area on a
+		// real TV". No change while the game shows its normal full picture. Needs proper testing with other games.
+		// New game (or a savestate of another game): forget the previous game's picture geometry, and only
+		// use the split-screen aim corrections for the game they were measured on.
+		if (std::string serial = VMManager::GetDiscSerial(); serial != geometry_serial)
+		{
+			// Time Crisis 2 and 3 (NTSC) use the same split-screen layout and measured the same.
+			split_aim_tuned = (serial == "SLUS-20219" || serial == "SLPS-20122" || serial == "SLPS-20113" ||
+							   serial == "SLUS-20645");
+			Console.WriteLn(fmt::format("(GunCon2) USB port {}: game '{}', split-screen aim tuning {}", port + 1, serial,
+				split_aim_tuned ? "on" : "off"));
+			geometry_serial = std::move(serial);
+			display_ref = CRTRect();
+			display_cur = CRTRect();
+		}
+		UpdateDisplayRects();
+		if (real_tv_mapping && pointer_x >= 0.0f && pointer_y >= 0.0f && display_cur.valid() && display_ref.valid())
+		{
+			const CRTRect& c = display_cur;
+			const CRTRect& f = display_ref;
+			pointer_x = (c.x0 + pointer_x * (c.x1 - c.x0) - f.x0) / (f.x1 - f.x0);
+			pointer_y = (c.y0 + pointer_y * (c.y1 - c.y0) - f.y0) / (f.y1 - f.y0);
+
+			// Measured in Time Crisis 2's 2-player split screen: after the mapping above, hits below the middle
+			// needed ~0.78x and hits above it ~1.02x (fitted from shot screenshots; the game responds differently above/below). Only applied
+			// while the game shows a shorter picture than its normal one, so 1-player aim is unchanged.
+			if (split_aim_tuned && (c.y1 - c.y0) < (f.y1 - f.y0) * 0.9f)
+			{
+				const float gain = (pointer_y < 0.5f) ? reduced_picture_y_gain_top : reduced_picture_y_gain_bottom;
+				pointer_y = std::max(0.0f, 0.5f + (pointer_y - 0.5f) * gain);
+			}
+		}
 
 		s16 pos_x, pos_y;
 		if (pointer_x < 0.0f || pointer_y < 0.0f)
@@ -426,7 +608,7 @@ namespace usb_lightgun
 
 	u32 GunCon2State::GetSoftwarePointerIndex() const
 	{
-		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : 0;
+		return has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + port) : pointer_index;
 	}
 
 	void GunCon2State::UpdateSoftwarePointerPosition()
@@ -436,6 +618,43 @@ namespace usb_lightgun
 
 		const auto& [window_x, window_y] = GetAbsolutePositionFromRelativeAxes();
 		ImGuiManager::SetSoftwareCursorPosition(GetSoftwarePointerIndex(), window_x, window_y);
+	}
+
+	// Short, readable label for a raw input device path such as
+	// \\?\HID#VID_16C0&PID_0F38&MI_02#7&2a1b3c4d&0&0000#{guid}  ->  VID_16C0&PID_0F38&MI_02 [7&2a1b3c4d&0&0000]
+	static std::string GetShortDeviceLabel(const std::string& path)
+	{
+		const size_t vid = path.find("VID_");
+		if (vid == std::string::npos)
+			return path;
+
+		const size_t id_end = path.find('#', vid);
+		std::string label = path.substr(vid, (id_end == std::string::npos) ? std::string::npos : (id_end - vid));
+		if (id_end != std::string::npos)
+		{
+			const size_t inst_end = path.find('#', id_end + 1);
+			const std::string instance = path.substr(id_end + 1, (inst_end == std::string::npos) ? std::string::npos : (inst_end - id_end - 1));
+			if (!instance.empty())
+				label += fmt::format(" [{}]", instance);
+		}
+		return label;
+	}
+
+	static std::vector<std::pair<std::string, std::string>> GetLightgunDeviceOptions()
+	{
+		std::vector<std::pair<std::string, std::string>> options;
+		options.emplace_back(std::string(), TRANSLATE_STR("USB", "Auto (aim follows the Trigger binding)"));
+
+		const std::vector<std::string> assigned = InputManager::GetHostPointerDeviceNames();
+		for (size_t i = 0; i < assigned.size(); i++)
+		{
+			if (!assigned[i].empty())
+				options.emplace_back(assigned[i], fmt::format("{} (now Pointer-{})", GetShortDeviceLabel(assigned[i]), i));
+		}
+		for (const std::string& name : InputManager::GetUnassignedHostPointerDeviceNames())
+			options.emplace_back(name, fmt::format("{} (no pointer)", GetShortDeviceLabel(name)));
+
+		return options;
 	}
 
 	const char* GunCon2Device::Name() const
@@ -488,6 +707,11 @@ namespace usb_lightgun
 		GunCon2State* s = USB_CONTAINER_OF(dev, GunCon2State, dev);
 
 		s->custom_config = USB::GetConfigBool(si, s->port, TypeName(), "custom_config", false);
+		s->shot_screenshots = USB::GetConfigBool(si, s->port, TypeName(), "shot_screenshots", false);
+		s->real_tv_mapping = USB::GetConfigBool(si, s->port, TypeName(), "real_tv_mapping", true);
+		s->reduced_picture_y_gain_top = std::clamp(USB::GetConfigFloat(si, s->port, TypeName(), "reduced_picture_y_gain_top", 102.0f), 25.0f, 200.0f) / 100.0f;
+		s->reduced_picture_y_gain_bottom = std::clamp(USB::GetConfigFloat(si, s->port, TypeName(), "reduced_picture_y_gain_bottom", 78.0f), 25.0f, 200.0f) / 100.0f;
+		s->shot_screenshot_delay = static_cast<u8>(std::clamp(USB::GetConfigInt(si, s->port, TypeName(), "shot_screenshot_delay", 12), 1, 120));
 
 		// Don't override auto config if we've set it.
 		if (!s->auto_config_done || s->custom_config)
@@ -503,6 +727,10 @@ namespace usb_lightgun
 		// Pointer settings.
 		const std::string pointer_binding = USB::GetConfigString(si, s->port, TypeName(), "Pointer", "");
 		std::string cursor_path(USB::GetConfigString(si, s->port, TypeName(), "cursor_path"));
+		// The settings file picker can store paths relative to the user data folder; resolve them there,
+		// not against the working directory, or the image won't load.
+		if (!cursor_path.empty() && !Path::IsAbsolute(cursor_path))
+			cursor_path = Path::Combine(EmuFolders::DataRoot, cursor_path);
 		const float cursor_scale = USB::GetConfigFloat(si, s->port, TypeName(), "cursor_scale", 1.0f);
 		u32 cursor_color = 0xFFFFFF;
 		if (std::string cursor_color_str(USB::GetConfigString(si, s->port, TypeName(), "cursor_color")); !cursor_color_str.empty())
@@ -516,6 +744,29 @@ namespace usb_lightgun
 		}
 
 		const s32 prev_pointer_index = s->GetSoftwarePointerIndex();
+
+		// Pick the host pointer to aim with. Needs proper testing with real multi-gun setups.
+		const s32 aim_pointer_setting = USB::GetConfigInt(si, s->port, TypeName(), "pointer_index", -1);
+		if (aim_pointer_setting >= 0)
+		{
+			s->pointer_index = static_cast<u32>(aim_pointer_setting);
+		}
+		else if (!USB::GetConfigString(si, s->port, TypeName(), "lightgun_device", "").empty())
+		{
+			// A specific gun was picked for this port; the host pins it to Pointer-<port>.
+			s->pointer_index = s->port;
+		}
+		else
+		{
+			// Auto: if the trigger is bound to e.g. "Pointer-1/LeftButton", aim with Pointer-1 too.
+			s->pointer_index = 0;
+			const std::string trigger_binding = USB::GetConfigString(si, s->port, TypeName(), "Trigger", "");
+			const std::string_view trigger_device = std::string_view(trigger_binding).substr(0, trigger_binding.find('/'));
+			if (const std::optional<u32> idx = InputManager::GetIndexFromPointerBinding(trigger_device); idx.has_value())
+				s->pointer_index = idx.value();
+		}
+		if (s->pointer_index >= InputManager::MAX_POINTER_DEVICES)
+			s->pointer_index = 0;
 
 		s->has_relative_binds = (USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeLeft") ||
 			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeRight") ||
@@ -590,7 +841,7 @@ namespace usb_lightgun
 			{"Trigger", TRANSLATE_NOOP("USB", "Trigger"), nullptr, InputBindingInfo::Type::Button, BID_TRIGGER, GenericInputBinding::R2},
 			{"ShootOffscreen", TRANSLATE_NOOP("USB", "Shoot Offscreen"), nullptr, InputBindingInfo::Type::Button, BID_SHOOT_OFFSCREEN,
 				GenericInputBinding::R1},
-			{"Recalibrate", TRANSLATE_NOOP("USB", "Calibration Shot"), nullptr, InputBindingInfo::Type::Button, BID_RECALIBRATE,
+			{"Recalibrate", TRANSLATE_NOOP("USB", "Calibration Shot (not Trigger)"), nullptr, InputBindingInfo::Type::Button, BID_RECALIBRATE,
 				GenericInputBinding::Unknown},
 			{"A", TRANSLATE_NOOP("USB", "A"), nullptr, InputBindingInfo::Type::Button, BID_A, GenericInputBinding::Cross},
 			{"B", TRANSLATE_NOOP("USB", "B"), nullptr, InputBindingInfo::Type::Button, BID_B, GenericInputBinding::Circle},
@@ -620,6 +871,29 @@ namespace usb_lightgun
 				TRANSLATE_NOOP("USB", "Applies a color to the chosen crosshair images, can be used for multiple "
 									  "players. Specify in HTML/CSS format (e.g. #aabbcc)"),
 				"#ffffff"},
+			{SettingInfo::Type::StringList, "lightgun_device", TRANSLATE_NOOP("USB", "Lightgun Device"),
+				TRANSLATE_NOOP("USB", "Which physical mouse/lightgun this port uses (needs multi-mouse raw input). The chosen gun "
+									  "always gets Pointer-0 on USB port 1 and Pointer-1 on USB port 2, so bind this port's buttons to that "
+									  "pointer. Takes effect when a game starts or a binding is set."),
+				"", nullptr, nullptr, nullptr, nullptr, nullptr, &GetLightgunDeviceOptions, 1.0f},
+			{SettingInfo::Type::Integer, "pointer_index", TRANSLATE_NOOP("USB", "Aim Pointer"),
+				TRANSLATE_NOOP("USB", "Which mouse/lightgun (Pointer-N) aims this gun. -1 follows the Trigger binding. "
+									  "Values above 0 need multi-mouse raw input enabled in Controller settings."),
+				"-1", "-1", "3", "1", TRANSLATE_NOOP("USB", "%d"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Boolean, "real_tv_mapping", TRANSLATE_NOOP("USB", "Follow Game Resolution Changes"),
+				TRANSLATE_NOOP("USB", "Adjusts aiming when a game switches to a smaller or lower-resolution picture (e.g. Time Crisis 2's "
+									  "2-player split screen), so shots keep landing under the crosshair. Turn off if a game's aim is off "
+									  "only when this is on."),
+				"true"},
+			{SettingInfo::Type::Float, "reduced_picture_y_gain_top", TRANSLATE_NOOP("USB", "Split Screen Aim: Top Half"),
+				TRANSLATE_NOOP("USB", "Extra up/down correction for the top half of the screen, used only while the game shows a smaller "
+									  "picture (e.g. Time Crisis 2 2-player split screen) and Follow Game Resolution Changes is on. Lower it "
+									  "if shots land above the crosshair; raise it if they land below. 100% = no extra correction."),
+				"102", "25", "200", "1", TRANSLATE_NOOP("USB", "%.0f%%"), nullptr, nullptr, 1.0f},
+			{SettingInfo::Type::Float, "reduced_picture_y_gain_bottom", TRANSLATE_NOOP("USB", "Split Screen Aim: Bottom Half"),
+				TRANSLATE_NOOP("USB", "Same as above for the bottom half of the screen. Lower it if shots land below the crosshair; "
+									  "raise it if they land above."),
+				"78", "25", "200", "1", TRANSLATE_NOOP("USB", "%.0f%%"), nullptr, nullptr, 1.0f},
 			{SettingInfo::Type::Boolean, "custom_config", TRANSLATE_NOOP("USB", "Manual Screen Configuration"),
 				TRANSLATE_NOOP("USB",
 					"Forces the use of the screen parameters below, instead of automatic parameters if available."),

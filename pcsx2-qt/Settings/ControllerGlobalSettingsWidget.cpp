@@ -4,6 +4,7 @@
 #include "Settings/ControllerGlobalSettingsWidget.h"
 #include "Settings/ControllerSettingsWindow.h"
 #include "Settings/ControllerSettingWidgetBinder.h"
+#include "DisplayWidget.h"
 #include "QtUtils.h"
 #include "SettingWidgetBinder.h"
 
@@ -44,6 +45,13 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #endif
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableMouseMapping, "UI", "EnableMouseMapping", false);
+#ifdef _WIN32
+	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInputMouse, "InputSources", "RawInputMouse", false);
+	// Connected after the binder, so the setting is already saved when this runs.
+	connect(m_ui.enableRawInputMouse, &QCheckBox::checkStateChanged, this, []() { QtRawMouse::UpdateFromSettings(); });
+#else
+	m_ui.enableRawInputMouse->setVisible(false);
+#endif
 	connect(m_ui.mouseSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::mouseSettingsClicked);
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.multitapPort1, "Pad", "MultitapPort1", false);

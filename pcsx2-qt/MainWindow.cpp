@@ -1782,6 +1782,11 @@ void MainWindow::requestExit(bool allow_confirm)
 
 void MainWindow::checkForSettingChanges()
 {
+#ifdef _WIN32
+	// Picks up the multi-mouse raw input toggle when it's changed from the Big Picture settings.
+	QtRawMouse::UpdateFromSettings();
+#endif
+
 	if (m_display_surface)
 		updateDisplayWidgetCursor();
 
