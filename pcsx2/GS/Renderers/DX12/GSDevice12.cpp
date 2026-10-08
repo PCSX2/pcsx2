@@ -2264,7 +2264,7 @@ void GSDevice12::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 		OMSetRenderTargets(sTex[2], nullptr, nullptr, fbarea);
 		BeginRenderPass(
 			D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE);
-		DrawStretchRect(full_r, dRect[2], dsize);
+		DrawStretchRect(full_r, dRect[2], fbsize);
 	}
 
 	EndRenderPass();
