@@ -14,9 +14,6 @@ namespace R5900 {
 extern const char* const bios[256];
 }
 
-extern s32 EEsCycle;
-extern u64 EEoCycle;
-
 union GPR_reg {   // Declare union type GPR register
 	u128 UQ;
 	s128 SQ;
@@ -405,6 +402,8 @@ extern void cpuClearInt(uint n);
 extern void GoemonPreloadTlb();
 extern void GoemonUnloadTlb(u32 key);
 
+extern u64 EEToIOPCycles(u64 cycles);
+extern u64 IOPToEECycles(u64 cycles);
 extern void cpuSetNextEvent( u64 startCycle, s32 delta );
 extern void cpuSetNextEventDelta( s32 delta );
 extern int  cpuTestCycle( u64 startCycle, s32 delta );
