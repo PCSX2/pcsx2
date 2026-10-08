@@ -704,6 +704,8 @@ void LD()
 	if (addr & 7) [[unlikely]]
 		RaiseAddressError(addr, false);
 
+	if (!_Rt_) return;
+
 	cpuRegs.GPR.r[_Rt_].UD[0] = memRead64(addr);
 }
 
