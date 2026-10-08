@@ -14,7 +14,11 @@
 
 GSTexture::GSTexture() = default;
 
-GSTexture::~GSTexture() = default;
+GSTexture::~GSTexture()
+{
+	if (IsDepthStencil())
+		g_gs_device->InvalidateDSAsRT(this);
+}
 
 bool GSTexture::ValidateUsageAndFormat(Usage usage, Format format)
 {
