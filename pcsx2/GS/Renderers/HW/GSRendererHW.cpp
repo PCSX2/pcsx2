@@ -11181,9 +11181,14 @@ void GSRendererHW::EndHLEHardwareDraw(bool force_copy_on_hazard /* = false */)
 			config.require_one_barrier = !features.framebuffer_fetch;
 		}
 		else if (!force_copy_on_hazard && config.tex == config.ds && !config.depth.zwe &&
-				 features.test_and_sample_depth)
+				 (features.test_and_sample_depth || features.feedback_loops()))
 		{
-			// Safe to read depth buffer.
+			// Check if depth buffer is safe to read.
+			if (!features.test_and_sample_depth)
+			{
+				config.tex_hazard = GSHWDrawConfig::TEX_HAZARD_DEPTH;
+				config.require_one_barrier = !features.framebuffer_fetch;
+			}
 		}
 		else
 		{
