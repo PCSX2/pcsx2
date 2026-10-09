@@ -2901,6 +2901,7 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.framebuffer_fetch &= m_features.texture_barrier;
 
 	// Buggy drivers with broken barriers probably have no chance using GENERAL layout for depth either...
+	// TODO: VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL ?
 	m_features.test_and_sample_depth = true;
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.

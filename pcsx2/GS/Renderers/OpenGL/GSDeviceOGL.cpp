@@ -938,7 +938,9 @@ bool GSDeviceOGL::CheckFeatures()
 		GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc;
 	m_features.prefer_new_textures = false;
 	m_features.stencil_buffer = true;
-	m_features.test_and_sample_depth = true;
+	// Attachment can not be bound as read only unlike on dx11/12/vk,
+	// and it's not always guaranteed to work properly even if depth write is disabled.
+	m_features.test_and_sample_depth = false;
 	// Auto select chooses depth-as-rt as it appears to be more compatible across hardware.
 	m_features.depth_feedback = GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth;
 	if (!m_features.texture_barrier && m_features.multidraw_fb_copy)
@@ -3271,12 +3273,12 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	bool fb_optimization_needs_barrier = false;
-	if (!(draw_rt || draw_ds_as_rt) && draw_ds && GLState::rt && GLState::rt->GetSize() == draw_ds->GetSize())
+	if (!(draw_rt || draw_ds_as_rt) && draw_ds && config.tex != GLState::rt && GLState::rt && GLState::rt->GetSize() == draw_ds->GetSize())
 	{
 		draw_rt = GLState::rt;
 		fb_optimization_needs_barrier = !GLState::rt_written && GLState::ds == draw_ds;
 	}
-	else if (!(draw_ds || draw_ds_as_rt) && draw_rt && GLState::ds && GLState::ds->GetSize() == draw_rt->GetSize())
+	else if (!(draw_ds || draw_ds_as_rt) && draw_rt && config.tex != GLState::ds && GLState::ds && GLState::ds->GetSize() == draw_rt->GetSize())
 	{
 		draw_ds = GLState::ds;
 		fb_optimization_needs_barrier = !GLState::ds_written && GLState::rt == draw_rt;
