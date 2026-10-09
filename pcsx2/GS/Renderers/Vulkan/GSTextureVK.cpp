@@ -35,7 +35,7 @@ static constexpr const VkComponentMapping s_identity_swizzle {
 	VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
 };
 
-static VkImageLayout GetVkImageLayout(GSTextureVK::Layout layout)
+VkImageLayout GSTextureVK::GetVkImageLayout(GSTextureVK::Layout layout)
 {
 	static constexpr VkImageLayout s_vk_layout_mapping[] = {
 		VK_IMAGE_LAYOUT_UNDEFINED,            // Undefined
