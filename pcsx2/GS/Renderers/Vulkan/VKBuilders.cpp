@@ -115,6 +115,178 @@ void Vulkan::LogVulkanResult(const char* func_name, VkResult res, const char* ms
 	Console.Error("(%s) %s (%d: %s)", func_name, real_msg.c_str(), static_cast<int>(res), VkResultToString(res));
 }
 
+void Vulkan::RenderPassBuilder::SetColorFeedbackBarrier(
+	VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+	VkPipelineStageFlags dst_stage, VkAccessFlags dst_access,
+	VkDependencyFlags dependency)
+{
+	m_feedback_barriers.color_src_stage = src_stage;
+	m_feedback_barriers.color_src_access = src_access;
+	m_feedback_barriers.color_dst_stage = dst_stage;
+	m_feedback_barriers.color_dst_access = dst_access;
+	m_feedback_barriers.color_dependency = dependency;
+}
+
+void Vulkan::RenderPassBuilder::SetDepthFeedbackBarrier(
+	VkPipelineStageFlags src_stage, VkAccessFlags src_access,
+	VkPipelineStageFlags dst_stage, VkAccessFlags dst_access,
+	VkDependencyFlags dependency)
+{
+	m_feedback_barriers.depth_src_stage = src_stage;
+	m_feedback_barriers.depth_src_access = src_access;
+	m_feedback_barriers.depth_dst_stage = dst_stage;
+	m_feedback_barriers.depth_dst_access = dst_access;
+	m_feedback_barriers.depth_dependency = dependency;
+}
+
+void Vulkan::RenderPassBuilder::AddColorAttachment(
+	VkImageLayout layout, VkFormat format, VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op,
+	bool feedback_loop, bool input_reference, bool subpass_self_dependency)
+{
+	pxAssert(m_num_color_attachments < MAX_COLOR_ATTACHMENTS);
+
+	m_attachments[m_num_attachments].flags = 0;
+	m_attachments[m_num_attachments].format = format;
+	m_attachments[m_num_attachments].samples = VK_SAMPLE_COUNT_1_BIT;
+	m_attachments[m_num_attachments].loadOp = load_op;
+	m_attachments[m_num_attachments].storeOp = store_op;
+	m_attachments[m_num_attachments].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	m_attachments[m_num_attachments].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	m_attachments[m_num_attachments].initialLayout = layout;
+	m_attachments[m_num_attachments].finalLayout = layout;
+
+	m_color_reference[m_num_color_attachments].attachment = m_num_attachments;
+	m_color_reference[m_num_color_attachments].layout = layout;
+	m_num_color_attachments++;
+
+	if (feedback_loop)
+	{
+		if (input_reference)
+		{
+			m_input_reference[m_num_subpass_inputs].attachment = m_num_attachments;
+			m_input_reference[m_num_subpass_inputs].layout = layout;
+			m_num_subpass_inputs++;
+		}
+
+		if (subpass_self_dependency)
+		{
+			m_subpass_dependency[m_num_subpass_dependencies].srcSubpass = 0;
+			m_subpass_dependency[m_num_subpass_dependencies].dstSubpass = 0;
+			m_subpass_dependency[m_num_subpass_dependencies].srcStageMask = m_feedback_barriers.color_src_stage;
+			m_subpass_dependency[m_num_subpass_dependencies].dstStageMask = m_feedback_barriers.color_dst_stage;
+			m_subpass_dependency[m_num_subpass_dependencies].srcAccessMask = m_feedback_barriers.color_src_access;
+			m_subpass_dependency[m_num_subpass_dependencies].dstAccessMask = m_feedback_barriers.color_dst_access;
+			m_subpass_dependency[m_num_subpass_dependencies].dependencyFlags = m_feedback_barriers.color_dependency;
+			m_num_subpass_dependencies++;
+		}
+	}
+
+	m_num_attachments++;
+}
+
+void Vulkan::RenderPassBuilder::AddDepthStencilAttachment(
+	VkImageLayout layout, VkFormat depth_format, VkAttachmentLoadOp depth_load_op, VkAttachmentStoreOp depth_store_op,
+	VkAttachmentLoadOp stencil_load_op, VkAttachmentStoreOp stencil_store_op,
+	bool feedback_loop, bool input_reference, bool subpass_self_dependency)
+{
+	pxAssert(m_num_attachments < std::size(m_attachments));
+
+	m_attachments[m_num_attachments].flags = 0;
+	m_attachments[m_num_attachments].format = depth_format;
+	m_attachments[m_num_attachments].samples = VK_SAMPLE_COUNT_1_BIT;
+	m_attachments[m_num_attachments].loadOp = depth_load_op;
+	m_attachments[m_num_attachments].storeOp = depth_store_op;
+	m_attachments[m_num_attachments].stencilLoadOp = stencil_load_op;
+	m_attachments[m_num_attachments].stencilStoreOp = stencil_store_op;
+	m_attachments[m_num_attachments].initialLayout = layout;
+	m_attachments[m_num_attachments].finalLayout = layout;
+
+	pxAssert(!m_has_depth_attachment);
+	m_depth_reference.attachment = m_num_attachments;
+	m_depth_reference.layout = layout;
+	m_has_depth_attachment = true;
+
+	if (feedback_loop)
+	{
+		if (input_reference)
+		{
+			m_input_reference[m_num_subpass_inputs].attachment = m_num_attachments;
+			m_input_reference[m_num_subpass_inputs].layout = layout;
+			m_num_subpass_inputs++;
+		}
+
+		if (subpass_self_dependency)
+		{
+			m_subpass_dependency[m_num_subpass_dependencies].srcSubpass = 0;
+			m_subpass_dependency[m_num_subpass_dependencies].dstSubpass = 0;
+			m_subpass_dependency[m_num_subpass_dependencies].srcStageMask = m_feedback_barriers.depth_src_stage;
+			m_subpass_dependency[m_num_subpass_dependencies].dstStageMask = m_feedback_barriers.depth_dst_stage;
+			m_subpass_dependency[m_num_subpass_dependencies].srcAccessMask = m_feedback_barriers.depth_src_access;
+			m_subpass_dependency[m_num_subpass_dependencies].dstAccessMask = m_feedback_barriers.depth_dst_access;
+			m_subpass_dependency[m_num_subpass_dependencies].dependencyFlags = m_feedback_barriers.depth_dependency;
+			m_num_subpass_dependencies++;
+		}
+	}
+
+	m_num_attachments++;
+}
+
+void Vulkan::RenderPassBuilder::AddSubpassFlags(VkSubpassDescriptionFlags subpass_flags)
+{
+	m_subpass_flags |= subpass_flags;
+}
+
+VkRenderPass Vulkan::RenderPassBuilder::Create(VkDevice device)
+{
+	VkSubpassDescription subpass = {};
+	subpass.flags = m_subpass_flags;
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.inputAttachmentCount = m_num_subpass_inputs;
+	subpass.pInputAttachments = m_input_reference.data();
+	subpass.colorAttachmentCount = m_num_color_attachments;
+	subpass.pColorAttachments = m_color_reference.data();
+	subpass.pDepthStencilAttachment = m_has_depth_attachment ? &m_depth_reference : nullptr;
+
+	VkRenderPassCreateInfo pass_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO};
+	pass_info.attachmentCount = m_num_attachments;
+	pass_info.pAttachments = m_attachments.data();
+	pass_info.subpassCount = 1u;
+	pass_info.pSubpasses = &subpass;
+	pass_info.dependencyCount = m_num_subpass_dependencies;
+	pass_info.pDependencies = m_subpass_dependency.data();
+
+	VkRenderPass pass;
+	const VkResult res = vkCreateRenderPass(device, &pass_info, nullptr, &pass);
+	if (res != VK_SUCCESS)
+	{
+		LOG_VULKAN_ERROR(res, "vkCreateRenderPass() failed: ");
+	}
+
+	return pass;
+}
+
+void Vulkan::RenderPassBuilder::Clear()
+{
+	m_color_reference = {};
+	m_num_color_attachments = 0;
+
+	m_depth_reference = {};
+	m_has_depth_attachment = false;
+
+	m_input_reference = {};
+	m_num_subpass_inputs = 0;
+
+	m_subpass_dependency = {};
+	m_num_subpass_dependencies = 0;
+
+	m_attachments = {};
+	m_num_attachments = 0;
+
+	m_feedback_barriers = {};
+
+	m_subpass_flags = 0;
+}
+
 Vulkan::DescriptorSetLayoutBuilder::DescriptorSetLayoutBuilder()
 {
 	Clear();
@@ -955,96 +1127,6 @@ void Vulkan::FramebufferBuilder::SetSize(u32 width, u32 height, u32 layers)
 void Vulkan::FramebufferBuilder::SetRenderPass(VkRenderPass render_pass)
 {
 	m_ci.renderPass = render_pass;
-}
-
-Vulkan::RenderPassBuilder::RenderPassBuilder()
-{
-	Clear();
-}
-
-void Vulkan::RenderPassBuilder::Clear()
-{
-	m_ci = {};
-	m_ci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	m_attachments = {};
-	m_attachment_references = {};
-	m_num_attachment_references = 0;
-	m_subpasses = {};
-}
-
-VkRenderPass Vulkan::RenderPassBuilder::Create(VkDevice device, bool clear /*= true*/)
-{
-	VkRenderPass rp;
-	VkResult res = vkCreateRenderPass(device, &m_ci, nullptr, &rp);
-	if (res != VK_SUCCESS)
-	{
-		LOG_VULKAN_ERROR(res, "vkCreateRenderPass() failed: ");
-		return VK_NULL_HANDLE;
-	}
-
-	return rp;
-}
-
-u32 Vulkan::RenderPassBuilder::AddAttachment(VkFormat format, VkSampleCountFlagBits samples, VkAttachmentLoadOp load_op,
-	VkAttachmentStoreOp store_op, VkImageLayout initial_layout, VkImageLayout final_layout)
-{
-	pxAssert(m_ci.attachmentCount < MAX_ATTACHMENTS);
-
-	const u32 index = m_ci.attachmentCount;
-	VkAttachmentDescription& ad = m_attachments[index];
-	ad.format = format;
-	ad.samples = samples;
-	ad.loadOp = load_op;
-	ad.storeOp = store_op;
-	ad.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	ad.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	ad.initialLayout = initial_layout;
-	ad.finalLayout = final_layout;
-
-	m_ci.attachmentCount++;
-	m_ci.pAttachments = m_attachments.data();
-
-	return index;
-}
-
-u32 Vulkan::RenderPassBuilder::AddSubpass()
-{
-	pxAssert(m_ci.subpassCount < MAX_SUBPASSES);
-
-	const u32 index = m_ci.subpassCount;
-	VkSubpassDescription& sp = m_subpasses[index];
-	sp.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
-	m_ci.subpassCount++;
-	m_ci.pSubpasses = m_subpasses.data();
-
-	return index;
-}
-
-void Vulkan::RenderPassBuilder::AddSubpassColorAttachment(u32 subpass, u32 attachment, VkImageLayout layout)
-{
-	pxAssert(subpass < m_ci.subpassCount && m_num_attachment_references < MAX_ATTACHMENT_REFERENCES);
-
-	VkAttachmentReference& ar = m_attachment_references[m_num_attachment_references++];
-	ar.attachment = attachment;
-	ar.layout = layout;
-
-	VkSubpassDescription& sp = m_subpasses[subpass];
-	if (sp.colorAttachmentCount == 0)
-		sp.pColorAttachments = &ar;
-	sp.colorAttachmentCount++;
-}
-
-void Vulkan::RenderPassBuilder::AddSubpassDepthAttachment(u32 subpass, u32 attachment, VkImageLayout layout)
-{
-	pxAssert(subpass < m_ci.subpassCount && m_num_attachment_references < MAX_ATTACHMENT_REFERENCES);
-
-	VkAttachmentReference& ar = m_attachment_references[m_num_attachment_references++];
-	ar.attachment = attachment;
-	ar.layout = layout;
-
-	VkSubpassDescription& sp = m_subpasses[subpass];
-	sp.pDepthStencilAttachment = &ar;
 }
 
 Vulkan::BufferViewBuilder::BufferViewBuilder()

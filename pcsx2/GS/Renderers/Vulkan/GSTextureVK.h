@@ -36,6 +36,8 @@ public:
 
 	~GSTextureVK() override;
 
+	static VkImageLayout GetVkImageLayout(Layout layout);
+
 	static std::unique_ptr<GSTextureVK> Create(Usage usage, Format format, int width, int height, int levels);
 	static std::unique_ptr<GSTextureVK> Adopt(
 		VkImage image, Usage usage, Format format, int width, int height, int levels, VkFormat vk_format);
