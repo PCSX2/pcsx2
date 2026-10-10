@@ -52,8 +52,9 @@ namespace GLState
 		return draw_buffers;
 	}
 
-	void Clear()
+	void Init()
 	{
+		// Set the state to match initial API values.
 		vao = 0;
 		fbo = 0;
 		viewport = GSVector2i(1, 1);
@@ -89,5 +90,36 @@ namespace GLState
 		draw_buffers = 0;
 
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+	}
+
+	void Invalidate()
+	{
+		Init();
+
+		// Set the state to invalid values (or fetch from the API).
+		blend = glIsEnabled(GL_BLEND);
+		eq_RGB = 0xFFFF;
+		f_sRGB = 0xFFFF;
+		f_dRGB = 0xFFFF;
+		f_sA = 0xFFFF;
+		f_dA = 0xFFFF;
+		{
+			// We only track a single value for all channels.
+			// So instead reset back to default values.
+			glBlendColor(0, 0, 0, 0);
+		}
+		wrgba = 0xFF;
+
+		depth = glIsEnabled(GL_DEPTH_TEST);
+		depth_func = 0xFFFFFFFF;
+		{
+			GLboolean mask;
+			glGetBooleanv(GL_DEPTH_WRITEMASK, &mask);
+			depth_mask = mask;
+		}
+
+		stencil = glIsEnabled(GL_STENCIL_TEST);
+		stencil_func = 0xFFFFFFFF;
+		stencil_pass = 0xFFFFFFFF;
 	}
 } // namespace GLState

@@ -87,6 +87,20 @@ jobs:
           cd bin/resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
 
+      - name: Generate librashader cargo sources
+        shell: bash
+        run: |
+          pip3 install aiohttp toml
+
+          COMMIT=$(jq -r '[.sources[] | objects | select(.type == "git")][0].commit' .github/workflows/scripts/linux/flatpak/modules/29-librashader.json)
+          CARGO_GEN_COMMIT="f03a673abe6ce189cea1c2857e2b44af2dd79d1f"
+          CARGO_GEN_URL="https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/${CARGO_GEN_COMMIT}/cargo/flatpak-cargo-generator.py"
+
+          curl -sSfL "https://raw.githubusercontent.com/SnowflakePowered/librashader/${COMMIT}/Cargo.lock" -o /tmp/librashader-Cargo.lock
+          curl -sSfL "${CARGO_GEN_URL}" -o /tmp/flatpak-cargo-generator.py
+
+          python3 /tmp/flatpak-cargo-generator.py /tmp/librashader-Cargo.lock -o .github/workflows/scripts/linux/flatpak/modules/librashader-cargo-sources.json
+
       - name: Validate manifest
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.pcsx2.PCSX2.json
