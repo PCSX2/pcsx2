@@ -13,6 +13,7 @@
 #include "common/StringUtil.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cfloat>
 #include <fstream>
 #include <sstream>
@@ -7649,4 +7650,3 @@ void GSState::GSPCRTCRegs::CalculateDisplayOffset(bool scanmask)
 		}
 	}
 }
-
