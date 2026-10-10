@@ -95,6 +95,12 @@ namespace HostSys
 
 	extern std::string GetFileMappingName(const char* prefix);
 	extern void* CreateSharedMemory(const char* name, size_t size);
+	
+	extern void* CreateMappingFromFile(FILE* file);
+	extern void* MapMapping(void* handle, size_t size, const PageProtectionMode& mode);
+	extern void DestroyMapping(void* handle);
+	extern void FlushMapping(void* handle, void* baseAddr, size_t size);
+
 	extern void DestroySharedMemory(void* ptr);
 
 	/// JIT write protect for Apple Silicon. Needs to be called prior to writing to any RWX pages.
