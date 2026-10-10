@@ -712,7 +712,6 @@ void GSTextureVK::TransitionSubresourcesToLayout(
 	barrier.subresourceRange = {aspect, static_cast<u32>(start_level), static_cast<u32>(num_levels), 0u, 1u};
 
 	VkDependencyInfo dependency = {VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-	dependency.dependencyFlags = GSDeviceVK::GetInstance()->GetFeedbackBarrierDependencyFlags();
 	dependency.imageMemoryBarrierCount = 1;
 	dependency.pImageMemoryBarriers = &barrier;
 
