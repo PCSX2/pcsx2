@@ -1548,13 +1548,13 @@ void GSDeviceOGL::CommitClear(GSTexture* t, bool use_write_fbo)
 		OMSetFBO(m_fbo);
 		if (T->IsDepthStencil())
 		{
-			if (GLState::rt && GLState::rt->GetSize() != T->GetSize())
+			if (GLState::current_rt && GLState::current_rt->GetSize() != T->GetSize())
 				OMAttachRt(nullptr);
 			OMAttachDs(T);
 		}
 		else
 		{
-			if (GLState::ds && GLState::ds->GetSize() != T->GetSize())
+			if (GLState::current_ds && GLState::current_ds->GetSize() != T->GetSize())
 				OMAttachDs(nullptr);
 			OMAttachRt(T);
 		}
@@ -2803,30 +2803,30 @@ void GSDeviceOGL::RenderBlankFrame()
 
 void GSDeviceOGL::OMAttachRt(GSTexture* rt)
 {
-	if (GLState::rt == rt)
+	if (GLState::current_rt == rt)
 		return;
 
-	GLState::rt = static_cast<GSTextureOGL*>(rt);
+	GLState::current_rt = static_cast<GSTextureOGL*>(rt);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
 		rt ? static_cast<GSTextureOGL*>(rt)->GetID() : 0, 0);
 }
 
 void GSDeviceOGL::OMAttachDsAsRt(GSTexture* ds_as_rt)
 {
-	if (GLState::ds_as_rt == ds_as_rt)
+	if (GLState::current_ds_as_rt == ds_as_rt)
 		return;
 
-	GLState::ds_as_rt = static_cast<GSTextureOGL*>(ds_as_rt);
+	GLState::current_ds_as_rt = static_cast<GSTextureOGL*>(ds_as_rt);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D,
 		ds_as_rt ? static_cast<GSTextureOGL*>(ds_as_rt)->GetID() : 0, 0);
 }
 
 void GSDeviceOGL::OMAttachDs(GSTexture* ds)
 {
-	if (GLState::ds == ds)
+	if (GLState::current_ds == ds)
 		return;
 
-	GLState::ds = static_cast<GSTextureOGL*>(ds);
+	GLState::current_ds = static_cast<GSTextureOGL*>(ds);
 
 	const GLenum target = m_features.framebuffer_fetch ? GL_DEPTH_ATTACHMENT : GL_DEPTH_STENCIL_ATTACHMENT;
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, target, GL_TEXTURE_2D, ds ? static_cast<GSTextureOGL*>(ds)->GetID() : 0, 0);
@@ -2859,15 +2859,15 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 void GSDeviceOGL::OMUnbindTexture(GSTextureOGL* tex)
 {
-	if (GLState::rt != tex && GLState::ds_as_rt != tex && GLState::ds != tex)
+	if (GLState::current_rt != tex && GLState::current_ds_as_rt != tex && GLState::current_ds != tex)
 		return;
 
 	OMSetFBO(m_fbo);
-	if (GLState::rt == tex)
+	if (GLState::current_rt == tex)
 		OMAttachRt();
-	if (GLState::ds_as_rt == tex)
+	if (GLState::current_ds_as_rt == tex)
 		OMAttachDsAsRt();
-	if (GLState::ds == tex)
+	if (GLState::current_ds == tex)
 		OMAttachDs();
 }
 
@@ -2917,9 +2917,9 @@ void GSDeviceOGL::OMSetBlendState(bool enable, GLenum src_factor, GLenum dst_fac
 
 void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds_as_rt, GSTexture* ds, const GSVector4i* scissor)
 {
-	const bool rt_changed = (rt != GLState::rt);
-	const bool ds_as_rt_changed = (ds_as_rt != GLState::ds_as_rt);
-	const bool ds_changed = (ds != GLState::ds);
+	const bool rt_changed = (rt != GLState::current_rt);
+	const bool ds_as_rt_changed = (ds_as_rt != GLState::current_ds_as_rt);
+	const bool ds_changed = (ds != GLState::current_ds);
 	const u32 draw_buffers = GLState::draw_buffers;
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, static_cast<double>(rt_changed || ds_as_rt_changed || ds_changed));
@@ -3198,7 +3198,7 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 	// Pretty sure GL is supposed to guarantee that the blend unit is coherent with previous pixel write out, so calling this a bug.
 	bool broken_blend_coherency_barrier = false;
 	if (m_bugs.broken_blend_coherency)
-		broken_blend_coherency_barrier = (config.IsFeedbackLoopRT(psel.ps) || psel.ps.blend_c == 1) && GLState::rt == config.rt;
+		broken_blend_coherency_barrier = (config.IsFeedbackLoopRT(psel.ps) || psel.ps.blend_c == 1) && GLState::current_rt == config.rt;
 	if (config.require_one_barrier || !m_features.texture_barrier)
 	{
 		broken_blend_coherency_barrier = false;
@@ -3273,15 +3273,15 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 
 	// Avoid changing framebuffer just to switch from rt+depth to rt and vice versa.
 	bool fb_optimization_needs_barrier = false;
-	if (!(draw_rt || draw_ds_as_rt) && draw_ds && config.tex != GLState::rt && GLState::rt && GLState::rt->GetSize() == draw_ds->GetSize())
+	if (!(draw_rt || draw_ds_as_rt) && draw_ds && GLState::current_rt && config.tex != GLState::current_rt && GLState::current_rt->GetSize() == draw_ds->GetSize())
 	{
-		draw_rt = GLState::rt;
-		fb_optimization_needs_barrier = !GLState::rt_written && GLState::ds == draw_ds;
+		draw_rt = GLState::current_rt;
+		fb_optimization_needs_barrier = !GLState::rt_written && GLState::current_ds == draw_ds;
 	}
-	else if (!(draw_ds || draw_ds_as_rt) && draw_rt && config.tex != GLState::ds && GLState::ds && GLState::ds->GetSize() == draw_rt->GetSize())
+	else if (!(draw_ds || draw_ds_as_rt) && draw_rt && GLState::current_ds && config.tex != GLState::current_ds && GLState::current_ds->GetSize() == draw_rt->GetSize())
 	{
-		draw_ds = GLState::ds;
-		fb_optimization_needs_barrier = !GLState::ds_written && GLState::rt == draw_rt;
+		draw_ds = GLState::current_ds;
+		fb_optimization_needs_barrier = !GLState::ds_written && GLState::current_rt == draw_rt;
 	}
 
 	// Be careful of the rt already being bound and the blend using the RT without a barrier.
