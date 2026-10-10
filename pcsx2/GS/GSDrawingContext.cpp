@@ -49,7 +49,7 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 
 static int reduce(int uv, int size)
 {
-	while (size > 3 && (1 << (size - 1)) >= uv)
+	while (size > 3 && (1 << (size - 1)) > uv)
 	{
 		size--;
 	}
@@ -59,7 +59,7 @@ static int reduce(int uv, int size)
 
 static int extend(int uv, int size)
 {
-	while (size < 10 && (1 << size) < uv)
+	while (size < 10 && (1 << size) <= uv)
 	{
 		size++;
 	}
