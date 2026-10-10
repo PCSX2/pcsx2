@@ -262,7 +262,7 @@ bool VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mod
 			{
 				*present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 			}
-			else if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR))
+			else if (CheckForMode(VK_PRESENT_MODE_MAILBOX_KHR) && !EmuConfig.GS.DisableMailboxPresentation)
 			{
 				WARNING_LOG("Immediate not supported for vsync-disabled, using mailbox.");
 				*present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -270,7 +270,7 @@ bool VKSwapChain::SelectPresentMode(VkSurfaceKHR surface, GSVSyncMode* vsync_mod
 			}
 			else
 			{
-				WARNING_LOG("Mailbox not supported for vsync-disabled, using FIFO.");
+				WARNING_LOG("Immediate not supported for vsync-disabled and mailbox unsupported or disabled, using FIFO.");
 				*present_mode = VK_PRESENT_MODE_FIFO_KHR;
 				*vsync_mode = GSVSyncMode::FIFO;
 			}
