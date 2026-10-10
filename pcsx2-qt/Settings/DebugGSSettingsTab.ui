@@ -99,6 +99,13 @@
 			</property>
 		  </widget>
 		</item>
+		<item row="6" column="0">
+		  <widget class="QCheckBox" name="saveTextureCache">
+	        <property name="text">
+			  <string>Save Texture Cache</string>
+			</property>
+		  </widget>
+		</item>
        </layout>
       </item>
       <item row="1" column="0">
