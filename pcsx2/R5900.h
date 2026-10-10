@@ -343,6 +343,10 @@ struct R5900cpu
 	// Currently only works for the interpreter.
 	void (*CancelInstruction)();
 
+	// Instantly exits the recompiler, throwing away the current VM state.
+	// Use this when a fatal error has been encountered.
+	void (*ForceExit)();
+
 	// Manual recompiled code cache clear; typically useful to recompilers only.  Size is
 	// in MIPS words (32 bits).  Dev note: this callback is nearly obsolete, and might be
 	// better off replaced with some generic API callbacks from VTLB block protection.

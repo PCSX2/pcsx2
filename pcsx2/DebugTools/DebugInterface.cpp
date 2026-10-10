@@ -50,17 +50,17 @@ bool DebugInterface::isAlive()
 
 bool DebugInterface::isCpuPaused()
 {
-	return VMManager::GetState() == VMState::Paused;
+	return VMManager::IsPaused();
 }
 
 void DebugInterface::pauseCpu()
 {
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 }
 
 void DebugInterface::resumeCpu()
 {
-	VMManager::SetPaused(false);
+	VMManager::Resume();
 }
 
 std::optional<u32> DebugInterface::getCallerStackPointer(const ccc::Function& currentFunction)

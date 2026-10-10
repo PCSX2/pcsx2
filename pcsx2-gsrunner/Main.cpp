@@ -336,7 +336,7 @@ void Host::RequestExitBigPicture()
 
 void Host::RequestVMShutdown(bool allow_confirm, bool allow_save_state, bool default_save_state)
 {
-	VMManager::SetState(VMState::Stopping);
+	VMManager::Stop();
 }
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
@@ -858,7 +858,7 @@ static void CPUThreadMain(VMBootParameters* params, std::atomic<int>* ret)
 				VMManager::SetLimiterMode(LimiterModeType::Unlimited);
 				g_gs_device->SetGPUTimingEnabled(true);
 			}
-			while (VMManager::GetState() == VMState::Running)
+			while (VMManager::IsRunning())
 				VMManager::Execute();
 			VMManager::Shutdown(false);
 			ret->store(EXIT_SUCCESS);

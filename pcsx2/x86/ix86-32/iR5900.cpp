@@ -548,7 +548,7 @@ static void recError(u32 error)
 			break;
 	}
 
-	VMManager::SetPaused(true);
+	VMManager::Halt();
 	recExitExecution();
 }
 
@@ -1558,7 +1558,7 @@ void dynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	recExitExecution();
 }
 
@@ -1582,7 +1582,7 @@ void dynarecMemcheck(size_t i)
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	recExitExecution();
 }
 
@@ -2770,4 +2770,5 @@ R5900cpu recCpu = {
 
 	recSafeExitExecution,
 	recCancelInstruction,
+	recExitExecution,
 	recClear};

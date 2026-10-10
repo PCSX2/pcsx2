@@ -735,6 +735,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 						status = EmuStatus::Running;
 						break;
 					case VMState::Paused:
+					case VMState::Halted:
 						status = EmuStatus::Paused;
 						break;
 					default:
