@@ -38,9 +38,9 @@ namespace GLState
 
 	extern GLuint ps_ss; // sampler
 
-	extern GSTextureOGL* rt; // render target
-	extern GSTextureOGL* ds_as_rt; // Depth-Stencil as color
-	extern GSTextureOGL* ds; // Depth-Stencil
+	extern GSTextureOGL* current_rt; // render target
+	extern GSTextureOGL* current_ds_as_rt; // Depth-Stencil as color
+	extern GSTextureOGL* current_ds; // Depth-Stencil
 
 	extern u32 draw_buffers; // Number of color attachments to framebuffer.
 
