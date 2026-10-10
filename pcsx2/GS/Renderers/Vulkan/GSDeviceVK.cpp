@@ -5245,11 +5245,19 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 			VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, p.cms.wrgba);
 	}
 
-	// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
-	// between turning it on and off for different draws, and adding the required barrier between non-rast-order
-	// and rast-order draws.
-	if (m_features.framebuffer_fetch && p.IsRTFeedbackLoop())
-		gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
+	if (p.IsRTFeedbackLoop())
+	{
+		// Tests have shown that it's faster to just enable rast order on the entire pass, rather than alternating
+		// between turning it on and off for different draws, and adding the required barrier between non-rast-order
+		// and rast-order draws.
+		if (m_features.framebuffer_fetch)
+			gpb.AddBlendFlags(VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT);
+		else if (UseFeedbackLoopLayout())
+			gpb.AddFlags(VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT);
+	}
+	
+	if (p.IsTestingAndSamplingDepth() && UseFeedbackLoopLayout())
+		gpb.AddFlags(VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT);
 
 	VkPipeline pipeline = gpb.Create(m_device, g_vulkan_shader_cache->GetPipelineCache(true));
 	if (pipeline)

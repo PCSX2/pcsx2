@@ -574,6 +574,11 @@ void Vulkan::GraphicsPipelineBuilder::SetProvokingVertex(VkProvokingVertexModeEX
 	m_provoking_vertex.provokingVertexMode = mode;
 }
 
+void Vulkan::GraphicsPipelineBuilder::AddFlags(u32 flags)
+{
+	m_ci.flags |= flags;
+}
+
 Vulkan::ComputePipelineBuilder::ComputePipelineBuilder()
 {
 	Clear();

@@ -141,6 +141,7 @@ namespace Vulkan
 
 		void SetProvokingVertex(VkProvokingVertexModeEXT mode);
 
+		void AddFlags(u32 flags);
 	private:
 		VkGraphicsPipelineCreateInfo m_ci;
 		std::array<VkPipelineShaderStageCreateInfo, MAX_SHADER_STAGES> m_shader_stages;
