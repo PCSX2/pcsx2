@@ -2345,8 +2345,10 @@ void GSTextureCache::CombineAlignedInsideTargets(Target* target, GSTextureCache:
 
 		if (t != target)
 		{
+			const GSVector4i t_check_rect = t->m_drawn_since_read.eq(GSVector4i::zero()) ? t->m_valid : t->m_drawn_since_read;
 			// Target not contained, skip it.
-			if (t->m_TEX0.TBP0 < target->m_TEX0.TBP0 || t->UnwrappedEndBlock() > target->UnwrappedEndBlock())
+			// Go from the drawn rect rather than valid as this can be false if expanded by LookupDisplayTarget, we use this metric for the copy anyway.
+			if (t->m_TEX0.TBP0 < target->m_TEX0.TBP0 || GSLocalMemory::GetUnwrappedEndBlockAddress(t->m_TEX0.TBP0, t->m_TEX0.TBW, t->m_TEX0.PSM, t_check_rect) > target->UnwrappedEndBlock())
 			{
 				i++;
 				continue;
