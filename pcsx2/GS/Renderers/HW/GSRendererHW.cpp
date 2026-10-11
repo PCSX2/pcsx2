@@ -4954,7 +4954,7 @@ void GSRendererHW::Draw()
 				}
 			}*/
 
-			if ((new_w > rt->m_unscaled_size.x || new_h > rt->m_unscaled_size.y) && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
+			if ((new_w > rt->m_unscaled_size.x || new_h > rt->m_unscaled_size.y || !m_r.rintersect(rt->m_valid).eq(m_r)) && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 				merge_targets = true;
 
 			rt->ResizeTexture(new_w, new_h);
