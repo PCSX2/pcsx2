@@ -2627,6 +2627,13 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 					if (!is_shuffle && (ds && offset == 0 && (t->m_valid.w >= 896) && ((((t->m_end_block + 1) - t->m_TEX0.TBP0) >> 1) + t->m_TEX0.TBP0) <= bp))
 					{
 						const u32 local_offset = (((bp - t->m_TEX0.TBP0) >> 5) / std::max(t->m_TEX0.TBW, 1U)) * s_psm.pgs.y;
+						// If the ds was derrived from the current target and we plan on splitting it, we need to separate them out so now the first half is just the DS.
+						if (ds->m_was_dst_matched && ds->m_TEX0.TBP0 == t->m_TEX0.TBP0)
+						{
+							ds->m_was_dst_matched = false;
+							ds->m_valid.w -= local_offset;
+							ds->ResizeValidity(ds->m_valid);
+						}
 						if ((new_dst = CreateTarget(TEX0, GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), GSVector2i(t->m_valid.z, t->m_valid.w - local_offset), rescaler.m_scale, type, true, fbmask, false, false, preserve_rgb || preserve_alpha, GSVector4i::zero(), src)))
 							new_dst->m_32_bits_fmt |= (psm_s.bpp != 16);
 
