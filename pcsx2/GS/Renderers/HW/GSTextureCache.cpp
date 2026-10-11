@@ -3157,7 +3157,8 @@ GSTextureCache::Target* GSTextureCache::ProcessTargetAfterLookup(RescaleHelper& 
 			if (!is_shuffle || (is_shuffle && GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16))
 			{
 				dst->m_TEX0.PSM = TEX0.PSM;
-				dst->m_TEX0.TBW = TEX0.TBW;
+				if (!GSConfig.UserHacks_TargetPageRearranging)
+					dst->m_TEX0.TBW = TEX0.TBW;
 			}
 		}
 		// LEGO Dome Racers does a copy to a target as 8bit in alpha only, this doesn't really work great for us, so let's make it 32bit with invalid RGB.
