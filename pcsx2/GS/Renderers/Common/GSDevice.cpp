@@ -774,6 +774,9 @@ void GSDevice::Recycle(GSTexture* t)
 	t->SetDebugName("");
 #endif
 
+	if (t->IsDepthStencil())
+		InvalidateDSAsRT(t);
+
 	FastList<GSTexture*>& pool = m_pool[!t->IsTexture()];
 	pool.push_front(t);
 	m_pool_memory_usage += t->GetMemUsage();
@@ -1184,16 +1187,125 @@ bool GSDevice::ResizeRenderTarget(GSTexture** t, int w, int h, bool preserve_con
 	return true;
 }
 
-void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea)
+static GSVector4i GetExpandRectRegions(GSVector4i old, GSVector4i new_, GSVector4i* regions, u32* n_regions)
 {
-	// Create a temporary RT and copy the area needed for the draw.
+	*n_regions = 0;
+
+	if (old.rcontains(new_))
+		return old;
+
+	new_ = new_.runion(old);
+
+	// Left region
+	if (new_.left < old.left)
+	{
+		regions[(*n_regions)++] = GSVector4i(new_.left, new_.top, old.left, old.bottom);
+	}
+
+	// Top region
+	if (new_.top < old.top)
+	{
+		regions[(*n_regions)++] = GSVector4i(old.left, new_.top, new_.right, old.top);
+	}
+
+	// Right region
+	if (new_.right > old.right)
+	{
+		regions[(*n_regions)++] = GSVector4i(old.right, old.top, new_.right, new_.bottom);
+	}
+
+	// Bottom region
+	if (new_.bottom > old.bottom)
+	{
+		regions[(*n_regions)++] = GSVector4i(new_.left, old.bottom, old.right, new_.bottom);
+	}
+
+	// Debugging
+	[[maybe_unused]] u32 total_area = old.rarea();
+	for (u32 i = 0; i < *n_regions; i++)
+	{
+		total_area += regions[i].rarea();
+	}
+	pxAssert(total_area == new_.rarea()); // Make sure no overlap or holes.
+
+	return new_;
+}
+
+void GSDevice::BeginDSAsRT(GSTexture* ds, const GSVector4i& drawarea_in)
+{
+	if (m_ds_as_rt_orig && m_ds_as_rt_orig != ds)
+		EndDSAsRT();
+
+	if (!m_ds_as_rt)
+	{
+		GL_INS("HW: Create new DS as RT");
+		m_ds_as_rt = g_gs_device->CreateFeedbackTarget(ds->GetSize(), GSTexture::Format::DepthColor, false, true);
+		m_ds_as_rt_orig = ds;
+		m_ds_as_rt_valid = GSVector4i::zero();
+	}
+
+	if (!m_ds_as_rt)
+	{
+		Console.Error("HW: Failed to create DS as RT texture");
+		return;
+	}
+
+	// Align to 64x64 tiles to reduce number of copies
+	GSVector4i drawarea = drawarea_in.ralign<Align_Outside>(GSVector2i(64, 64));
+
+	pxAssert(m_ds_as_rt && m_ds_as_rt_orig == ds);
+
+	if (ds->GetState() == GSTexture::State::Cleared)
+	{
+		GL_INS("HW: DS is cleared, transfer to cached DS as RT");
+		m_ds_as_rt->SetClearDepth(ds->GetClearDepth());
+		m_ds_as_rt_valid = ds->GetRect();
+		return;
+	}
+
+	std::array<GSVector4i, 4> regions;
+	u32 n_regions;
+	if (m_ds_as_rt_valid.rempty())
+	{
+		// Valid area is empty, so just copy the new draw area.
+		GL_INS("HW: Initialize new DS as RT.");
+		n_regions = 1;
+		m_ds_as_rt_valid = regions[0] = drawarea;
+	}
+	else
+	{
+		// Expand valid area to encompass the new draw area.
+		GL_INS("HW: Update cached DS as RT.");
+		m_ds_as_rt_valid = GetExpandRectRegions(m_ds_as_rt_valid, drawarea, regions.data(), &n_regions);
+		if (n_regions == 0)
+		{
+			GL_INS("HW: Draw area is already contained in valid area.");
+			return;
+		}
+	}
+
+	std::array<MultiStretchRect, 4> rects;
 	const int w = ds->GetWidth();
 	const int h = ds->GetHeight();
-	if ((m_ds_as_rt = g_gs_device->CreateFeedbackTarget(w, h, GSTexture::Format::DepthColor, false, true)))
+	for (u32 i = 0; i < n_regions; i++)
 	{
-		const GSVector4 dRect(drawarea);
+		const GSVector4 dRect(regions[i]);
 		const GSVector4 sRect(dRect.x / w, dRect.y / h, dRect.z / w, dRect.w / h);
-		StretchRectAuto(ds, sRect, m_ds_as_rt, dRect, Nearest);
+		rects[i].src_rect = sRect;
+		rects[i].dst_rect = dRect;
+		rects[i].src = ds;
+		rects[i].filter = Nearest;
+		rects[i].wmask = 0xF;
+	}
+	DrawMultiStretchRects(rects.data(), n_regions, m_ds_as_rt, ShaderConvert::DEPTH_COPY);
+}
+
+void GSDevice::InvalidateDSAsRT(GSTexture* ds)
+{
+	if (m_ds_as_rt_orig == ds)
+	{
+		GL_INS("HW: Invalidate current DS as RT.");
+		EndDSAsRT();
 	}
 }
 
@@ -1201,6 +1313,8 @@ void GSDevice::EndDSAsRT()
 {
 	Recycle(m_ds_as_rt);
 	m_ds_as_rt = nullptr;
+	m_ds_as_rt_orig = nullptr;
+	m_ds_as_rt_valid = GSVector4i::zero();
 }
 
 #if defined(__clang__)

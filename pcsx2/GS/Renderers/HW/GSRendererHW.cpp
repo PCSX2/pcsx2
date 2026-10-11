@@ -9675,7 +9675,8 @@ __ri void GSRendererHW::DrawPrims(GSTextureCache::Target* rt, GSTextureCache::Ta
 	else
 		m_last_rt = rt;
 
-	if (g_gs_device->IsDSInRTActive())
+	// Copyless DS as RT doesn't require caching the copy between draws.
+	if (g_gs_device->Features().copyless_ds_as_rt && g_gs_device->IsDSAsRTActive())
 		g_gs_device->EndDSAsRT();
 }
 
