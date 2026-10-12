@@ -1394,7 +1394,6 @@ namespace SaveStateSelectorUI
 	static constexpr std::time_t ONE_HOUR = 60 * 60; // 3600
 	static constexpr std::time_t TWENTY_FOUR_HOURS = ONE_HOUR * 24; // 86400
 
-	static std::shared_ptr<GSTexture> s_placeholder_texture;
 	static std::string s_load_legend;
 	static std::string s_save_legend;
 	static std::string s_prev_legend;
@@ -1428,10 +1427,6 @@ void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 
 	if (s_open)
 		return;
-
-
-	if (!s_placeholder_texture)
-		s_placeholder_texture = ImGuiFullscreen::LoadTexture("fullscreenui/no-save.png");
 
 	s_scroll_animated.Reset(0.0f);
 	s_background_animated.Reset(0.0f);
@@ -1495,8 +1490,6 @@ void SaveStateSelectorUI::DestroyTextures()
 		if (entry.preview_texture)
 			g_gs_device->Recycle(entry.preview_texture.release());
 	}
-
-	s_placeholder_texture.reset();
 }
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
@@ -1629,6 +1622,8 @@ void SaveStateSelectorUI::Draw()
 		{
 			const s32 current_slot = s_current_slot.load(std::memory_order_acquire);
 			const ImVec2 image_size = ImVec2(128.0f * scale, (128.0f / (4.0f / 3.0f)) * scale);
+			GSTexture* const placeholder_texture = ImGuiFullscreen::GetCachedSvgTexture("fullscreenui/no-save.svg", image_size,
+				ImGuiFullscreen::SvgScaling::Fit);
 			const float item_width = std::floor(width - (padding_and_rounding * 2.0f) - ImGui::GetStyle().ScrollbarSize);
 			const float item_height = std::floor(image_size.y + padding * 2.0f);
 			const float text_indent = image_size.x + padding + padding;
@@ -1675,7 +1670,7 @@ void SaveStateSelectorUI::Draw()
 						ImColor(0.22f, 0.30f, 0.34f, 0.9f), padding_and_rounding);
 				}
 
-				if (GSTexture* preview_texture = entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get())
+				if (GSTexture* preview_texture = entry.preview_texture ? entry.preview_texture.get() : placeholder_texture)
 				{
 					ImGui::SetCursorPosY(y_start + padding);
 					ImGui::SetCursorPosX(padding);
