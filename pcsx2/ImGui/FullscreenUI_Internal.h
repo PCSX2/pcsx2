@@ -85,6 +85,7 @@ using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
+using ImGuiFullscreen::LAYOUT_MENU_BACKGROUND_OPACITY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;

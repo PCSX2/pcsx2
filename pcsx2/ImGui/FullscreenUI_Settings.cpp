@@ -1860,7 +1860,7 @@ void FullscreenUI::DrawSettingsWindow()
 
 	const bool using_custom_bg = !VMManager::HasValidVM() && s_custom_background_enabled && s_custom_background_texture;
 	const float header_bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
-	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? 0.90f : 1.0f);
+	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? LAYOUT_MENU_BACKGROUND_OPACITY : 1.0f);
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);

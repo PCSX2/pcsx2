@@ -2528,6 +2528,8 @@ GSDevice::PresentResult GSDeviceVK::BeginPresent(bool frame_skip)
 	// Make sure they're ready now
 	if (!frame_skip && m_current)
 		static_cast<GSTextureVK*>(m_current)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
+	if (m_blur)
+		static_cast<GSTextureVK*>(m_blur)->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
 
 	GSVector4i render_area(0, 0, swap_chain_texture->GetWidth(), swap_chain_texture->GetHeight());
 
