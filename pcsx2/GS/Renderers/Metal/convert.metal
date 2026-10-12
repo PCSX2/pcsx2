@@ -69,6 +69,29 @@ fragment float4 ps_copy(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 	return res.sample(data.t);
 }
 
+static float4 gaussian_blur(ConvertPSRes res, float2 uv, float2 offset)
+{
+	// 9 tap Gaussian blur using 5 bilinear samples.
+	// Weights and offsets from https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+	const float3 weights = float3(0.2270270270f, 0.3162162162f, 0.0702702703f);
+	const float2 offsets = float2(1.3846153846f, 3.2307692308f);
+
+	float4 result = res.sample(uv) * weights.x;
+	result += (res.sample(uv + offset * offsets.x) + res.sample(uv - offset * offsets.x)) * weights.y;
+	result += (res.sample(uv + offset * offsets.y) + res.sample(uv - offset * offsets.y)) * weights.z;
+	return result;
+}
+
+fragment float4 ps_gaussian_blur_h(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	return gaussian_blur(res, data.t, float2(1.0f / float(res.texture.get_width()), 0.0f));
+}
+
+fragment float4 ps_gaussian_blur_v(ConvertShaderData data [[stage_in]], ConvertPSRes res)
+{
+	return gaussian_blur(res, data.t, float2(0.0f, 1.0f / float(res.texture.get_height())));
+}
+
 fragment ushort ps_convert_rgb5a1_16bits(ConvertShaderData data [[stage_in]], ConvertPSRes res)
 {
 	float4 c = res.sample(data.t);

@@ -151,6 +151,37 @@ void ps_copy()
 }
 #endif
 
+#if defined(ps_gaussian_blur_h) || defined(ps_gaussian_blur_v)
+vec4 gaussian_blur(vec2 uv, vec2 offset)
+{
+	// 9 tap Gaussian blur using 5 bilinear samples.
+	// Weights and offsets from https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+	const vec3 weights = vec3(0.2270270270f, 0.3162162162f, 0.0702702703f);
+	const vec2 offsets = vec2(1.3846153846f, 3.2307692308f);
+
+	vec4 result = texture(TextureSampler, uv) * weights.x;
+	result += (texture(TextureSampler, uv + offset * offsets.x) + texture(TextureSampler, uv - offset * offsets.x)) * weights.y;
+	result += (texture(TextureSampler, uv + offset * offsets.y) + texture(TextureSampler, uv - offset * offsets.y)) * weights.z;
+	return result;
+}
+#endif
+
+#ifdef ps_gaussian_blur_h
+void ps_gaussian_blur_h()
+{
+	ivec2 dims = textureSize(TextureSampler, 0);
+	OUTPUT = gaussian_blur(PSin_t, vec2(1.0f / float(dims.x), 0.0f));
+}
+#endif
+
+#ifdef ps_gaussian_blur_v
+void ps_gaussian_blur_v()
+{
+	ivec2 dims = textureSize(TextureSampler, 0);
+	OUTPUT = gaussian_blur(PSin_t, vec2(0.0f, 1.0f / float(dims.y)));
+}
+#endif
+
 #ifdef ps_depth_copy
 void ps_depth_copy()
 {

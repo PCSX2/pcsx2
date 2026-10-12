@@ -382,6 +382,21 @@ bool FullscreenUI::HasActiveWindow()
 	return s_initialized && (s_current_main_window != MainWindowType::None || AreAnyDialogsOpen());
 }
 
+float FullscreenUI::GetBackgroundBlurScale()
+{
+	const bool blur = s_initialized && VMManager::HasValidVM() &&
+	                  (s_current_main_window == MainWindowType::PauseMenu ||
+						  s_current_main_window == MainWindowType::Settings ||
+						  s_current_main_window == MainWindowType::Achievements ||
+						  s_current_main_window == MainWindowType::Leaderboards ||
+						  s_save_state_selector_open ||
+						  ImGuiFullscreen::IsFileSelectorOpen() ||
+						  ImGuiFullscreen::IsMessageBoxDialogOpen());
+
+	// Keep the blur size consistent with the menus.
+	return blur ? (0.5f / ImGuiFullscreen::g_layout_scale) : 0.0f;
+}
+
 bool FullscreenUI::AreAnyDialogsOpen()
 {
 	return (s_save_state_selector_open || s_about_window_open || s_cover_downloader_open ||
@@ -613,6 +628,10 @@ void FullscreenUI::Render()
 	s_cleanup_textures.clear();
 	ImGuiFullscreen::UploadAsyncTextures();
 
+	const bool in_game = VMManager::HasValidVM();
+	if (in_game)
+		ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, MulAlpha(UIBackgroundColor, LAYOUT_MENU_BACKGROUND_OPACITY));
+
 	ImGuiFullscreen::BeginLayout();
 
 	const bool should_draw_background = (s_current_main_window == MainWindowType::Landing ||
@@ -688,6 +707,9 @@ void FullscreenUI::Render()
 		DrawInputBindingWindow();
 
 	ImGuiFullscreen::EndLayout();
+
+	if (in_game)
+		ImGui::PopStyleColor();
 
 	if (s_settings_changed.load(std::memory_order_relaxed))
 	{
@@ -1592,8 +1614,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
 	const ImU32 text_color = IM_COL32(UIBackgroundTextColor.x * 255, UIBackgroundTextColor.y * 255, UIBackgroundTextColor.z * 255, 255);
-	dl->AddRectFilled(
-		ImVec2(0.0f, 0.0f), display_size, IM_COL32(UIBackgroundColor.x * 255, UIBackgroundColor.y * 255, UIBackgroundColor.z * 255, 200));
+	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, ImGui::GetColorU32(MulAlpha(UIBackgroundColor, LAYOUT_MENU_BACKGROUND_OPACITY)));
 
 	// title info
 	{
@@ -2078,7 +2099,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 	}
 
 	ImGui::PopStyleColor();
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, 0.9f));
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, VMManager::HasValidVM() ? 0.0f : 0.9f));
 	ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
 
 	bool close_handled = false;
