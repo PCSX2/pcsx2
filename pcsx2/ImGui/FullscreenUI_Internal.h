@@ -136,6 +136,7 @@ using ImGuiFullscreen::UISecondaryStrongColor;
 using ImGuiFullscreen::UISecondaryTextColor;
 using ImGuiFullscreen::UISecondaryWeakColor;
 using ImGuiFullscreen::UITextHighlightColor;
+using ImGuiFullscreen::UITextShadowColor;
 using ImGuiFullscreen::WantsToCloseMenu;
 
 namespace FullscreenUI
