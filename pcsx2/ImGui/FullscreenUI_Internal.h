@@ -224,10 +224,11 @@ namespace FullscreenUI
 	void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
-	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
+	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size, const ImVec4& color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
 	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
-	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max);
+	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max,
+		ImU32 color = IM_COL32_WHITE);
 
 	inline MainWindowType s_current_main_window = MainWindowType::None;
 	inline PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;

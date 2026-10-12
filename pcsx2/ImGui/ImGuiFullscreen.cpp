@@ -218,7 +218,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
 	s_focus_reset_queued = FocusResetType::WindowChanged;
 	s_close_button_state = 0;
 
-	s_placeholder_texture = LoadTexture(placeholder_image_path);
+	s_placeholder_texture = LoadSvgTexture(placeholder_image_path, LayoutScale(487.0f, 354.0f), SvgScaling::Fit);
 	if (!s_placeholder_texture)
 	{
 		Console.Error("Missing placeholder texture '%s', cannot continue", placeholder_image_path);
