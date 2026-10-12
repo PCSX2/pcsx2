@@ -31,6 +31,7 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_LARGE_FONT_SIZE = 22.0f;
 	static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 14.0f;
 	static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
+	static constexpr float LAYOUT_MENU_BACKGROUND_OPACITY = 0.5f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
