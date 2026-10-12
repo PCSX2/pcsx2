@@ -2447,9 +2447,10 @@ bool Achievements::DrawSubsetSidebar(float sidebar_width, bool& sidebar_has_focu
 
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::LayoutScale;
+	using ImGuiFullscreen::UIBackgroundColor;
 
 	static constexpr float alpha = 0.8f;
-	const ImVec4 sidebar_bg(0.10f, 0.10f, 0.10f, alpha);
+	const ImVec4 sidebar_bg(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, alpha);
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebar_bg);
 	ImGui::PushStyleColor(ImGuiCol_NavCursor, IM_COL32(0, 0, 0, 0));
 
@@ -2582,6 +2583,7 @@ void Achievements::DrawAchievementsWindow()
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
+	using ImGuiFullscreen::UIBackgroundColor;
 
 	if (!s_achievement_list)
 		return;
@@ -2601,10 +2603,12 @@ void Achievements::DrawAchievementsWindow()
 	static constexpr float heading_alpha = 0.95f;
 	static constexpr float heading_height_unscaled = 110.0f;
 
-	const ImVec4 background(0.13f, 0.13f, 0.13f, alpha);
-	const ImVec4 heading_background(0.13f, 0.13f, 0.13f, heading_alpha);
+	const ImVec4 background(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, alpha);
+	const ImVec4 heading_background(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, heading_alpha);
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
 	const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
+
+	ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::UIBackgroundTextColor);
 
 	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, heading_height), "achievements_heading",
 			heading_background, 0.0f, ImVec2(), ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollWithMouse))
@@ -2812,6 +2816,7 @@ void Achievements::DrawAchievementsWindow()
 		ImGui::PopStyleVar();
 	}
 	ImGuiFullscreen::EndFullscreenWindow();
+	ImGui::PopStyleColor();
 
 	if (has_multiple_subsets)
 		DrawSubsetSidebarFooter(sidebar_has_focus);
@@ -3080,6 +3085,7 @@ void Achievements::DrawLeaderboardsWindow()
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
+	using ImGuiFullscreen::UIBackgroundColor;
 
 	static constexpr float alpha = 0.8f;
 	static constexpr float heading_alpha = 0.95f;
@@ -3104,8 +3110,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 	ImRect bb;
 
-	const ImVec4 background(0.13f, 0.13f, 0.13f, alpha);
-	const ImVec4 heading_background(0.13f, 0.13f, 0.13f, heading_alpha);
+	const ImVec4 background(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, alpha);
+	const ImVec4 heading_background(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, heading_alpha);
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
 	const float padding = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
@@ -3131,6 +3137,8 @@ void Achievements::DrawLeaderboardsWindow()
 	const float time_column_width =
 		g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, "WWWWWWWWWWW").x;
 	const float column_spacing = spacing * 2.0f;
+
+	ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::UIBackgroundTextColor);
 
 	if (ImGuiFullscreen::BeginFullscreenWindow(ImVec2(), ImVec2(display_size.x, heading_height), "leaderboards_heading",
 			heading_background, 0.0f, ImVec2(),
@@ -3252,6 +3260,11 @@ void Achievements::DrawLeaderboardsWindow()
 				}
 
 				ImGuiFullscreen::BeginNavBar();
+				ImGui::PushStyleColor(ImGuiCol_Text, ImGuiFullscreen::UIBackgroundTextColor);
+				ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGuiFullscreen::MulAlpha(ImGuiFullscreen::UIBackgroundTextColor, 0.7f));
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGuiFullscreen::UIBackgroundColor);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGuiFullscreen::UIBackgroundHighlightColor);
+				ImGui::PushStyleColor(ImGuiCol_Border, ImGuiFullscreen::UIBackgroundLineColor);
 
 				for (const bool show_all : {false, true})
 				{
@@ -3263,6 +3276,7 @@ void Achievements::DrawLeaderboardsWindow()
 					}
 				}
 
+				ImGui::PopStyleColor(5);
 				ImGuiFullscreen::EndNavBar();
 
 				const ImVec2 bg_pos = ImVec2(0.0f, ImGui::GetCurrentWindow()->DC.CursorPos.y + LayoutScale(tab_height_unscaled));
@@ -3520,6 +3534,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 	if (close_leaderboard_on_exit)
 		CloseLeaderboard();
+
+	ImGui::PopStyleColor();
 }
 
 void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
