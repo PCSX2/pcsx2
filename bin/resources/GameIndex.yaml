@@ -14014,6 +14014,7 @@ SLED-52979:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLED-53066:
   name: "TimeSplitters - Future Perfect"
@@ -20885,6 +20886,7 @@ SLES-52588:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52589:
   name: "Mercenaries - Playground of Destruction"
@@ -20892,6 +20894,7 @@ SLES-52589:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52590:
   name: "Mercenaries - Playground of Destruction"
@@ -20899,6 +20902,7 @@ SLES-52590:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-52591:
   name: "Dynasty Warriors 4 - Empires"
@@ -22203,6 +22207,7 @@ SLES-53008:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLES-53009:
   name: "Dance Factory"
@@ -46764,6 +46769,7 @@ SLPM-65942:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-65943:
   name: "Angel's Feather −黒の残影−"
@@ -50115,6 +50121,7 @@ SLPM-66465:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLPM-66467:
   name: "ゲーセンUSA ミッドウェイアーケードトレジャーズ"
@@ -69209,6 +69216,7 @@ SLUS-20932:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-20933:
   name: "Smash Court Pro Tournament Tennis 2"
@@ -76012,6 +76020,7 @@ SLUS-29137:
   gsHWFixes:
     autoFlush: 2 # Fixes missing lighting.
     nativeScaling: 1 # Fixes post lighting.
+    textureInsideRT: 1 # Fixes binoculars.
     # halfPixelOffset: 1 # Fixes lighting misalignment. Do not enable this, it breaks a lot of graphics.
 SLUS-29138:
   name: "The Punisher [Demo]"
