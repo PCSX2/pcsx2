@@ -1,7 +1,4 @@
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000">
-<g id="SVGRepo_bgCarrier" stroke-width="0"/>
-<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
-<g id="SVGRepo_iconCarrier"> <title>Folder</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Folder"> <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24"> </rect> <path d="M3,7 L20,7 C20.5523,7 21,7.44772 21,8 L21,19 C21,19.5523 20.5523,20 20,20 L4,20 C3.44772,20 3,19.5523 3,19 L3,7 Z" id="Path" stroke="#ffffff" stroke-width="2" stroke-linecap="round"> </path> <path d="M3,4.5 C3,4.22386 3.22386,4 3.5,4 L9.79289,4 C9.9255,4 10.0527,4.05268 10.1464,4.14645 L13,7 L3,7 L3,4.5 Z" id="Path" stroke="#ffffff" stroke-width="2" stroke-linecap="round"> </path> </g> </g> </g>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <path d="M56.8,287.78l-26.58,79.51v-225.48c0-39.76,32.32-72.08,72.08-72.08h156.21c15.54,0,30.75,5.07,43.25,14.42l43.25,32.44c6.19,4.73,13.85,7.21,21.62,7.21h132.11c39.76,0,72.08,32.32,72.08,72.08v18.02H159.29c-46.51,0-87.85,29.73-102.6,73.88h.11ZM531.86,538.26H105.23c-36.94,0-62.96-36.15-51.25-71.18l54.06-162.18c7.32-22.07,28.04-36.94,51.25-36.94h426.63c36.94,0,62.96,36.15,51.25,71.18l-54.06,162.18c-7.32,22.07-28.04,36.94-51.25,36.94Z" fill="#fff"/>
+</svg>

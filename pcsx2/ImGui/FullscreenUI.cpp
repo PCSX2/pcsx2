@@ -273,18 +273,20 @@ void FullscreenUI::GameListFavoriteChanged()
 // When drawing an svg to a non-integer size, we get a padded texture.
 // This function crops off this padding by setting the image UV for the draw.
 // We currently only use integer sizes for images, but I wrote this before checking that.
-void FullscreenUI::DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size)
+void FullscreenUI::DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size, const ImVec4& color)
 {
 	if (padded_texture != GetPlaceholderTexture().get())
 	{
 		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
 		const ImVec2 uv1 = unpadded_size / padded_size;
-		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size, ImVec2(0.0f, 0.0f), uv1);
+		ImGui::ImageWithBg(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size, ImVec2(0.0f, 0.0f), uv1,
+			ImVec4(), color);
 	}
 	else
 	{
-		// Placeholder is a png file and should be scaled by ImGui
-		ImGui::Image(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size);
+		// The placeholder is rasterized at a fixed size, so use the full texture UVs.
+		ImGui::ImageWithBg(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), unpadded_size, ImVec2(0.0f, 0.0f),
+			ImVec2(1.0f, 1.0f), ImVec4(), UIBackgroundTextColor);
 	}
 }
 
@@ -299,19 +301,21 @@ void FullscreenUI::DrawCachedSvgTextureAsync(const std::string& path, ImVec2 siz
 }
 
 // p_unpadded_max should be equal to p_min + unpadded_size
-void FullscreenUI::DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max)
+void FullscreenUI::DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max,
+	ImU32 color)
 {
 	const ImVec2 unpadded_size = p_unpadded_max - p_min;
 	if (padded_texture != GetPlaceholderTexture().get())
 	{
 		const ImVec2 padded_size(padded_texture->GetWidth(), padded_texture->GetHeight());
 		const ImVec2 uv1 = unpadded_size / padded_size;
-		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max, ImVec2(0.0f, 0.0f), uv1);
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max, ImVec2(0.0f, 0.0f), uv1, color);
 	}
 	else
 	{
-		// Placeholder is a png file and should be scaled by ImGui
-		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max);
+		// The placeholder is rasterized at a fixed size, so use the full texture UVs.
+		drawList->AddImage(reinterpret_cast<ImTextureID>(padded_texture->GetNativeHandle()), p_min, p_unpadded_max, ImVec2(0.0f, 0.0f),
+			ImVec2(1.0f, 1.0f), ImGui::GetColorU32(UIBackgroundTextColor));
 	}
 }
 
@@ -333,7 +337,7 @@ bool FullscreenUI::Initialize()
 	ApplyLayoutSettings();
 	PreferEnglishGameListChanged();
 
-	if (!ImGuiFullscreen::Initialize("fullscreenui/placeholder.png") || !LoadResources())
+	if (!ImGuiFullscreen::Initialize("fullscreenui/placeholder.svg") || !LoadResources())
 	{
 		DestroyResources();
 		ImGuiFullscreen::Shutdown(true);
@@ -2265,7 +2269,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
 
 				ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(screenshot->GetNativeHandle()),
-					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+					entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
 
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
 				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font.second));
@@ -2384,9 +2389,8 @@ void FullscreenUI::DrawResumeStateSelector()
 		const ImVec2 pos(ImGui::GetCursorScreenPos() +
 						 ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
 		const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
-		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture->GetNativeHandle() :
-																								   GetPlaceholderTexture()->GetNativeHandle()),
-			image_bb.Min, image_bb.Max);
+		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(image->GetNativeHandle()), image_bb.Min, image_bb.Max,
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
 
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
 
@@ -3366,7 +3370,8 @@ GSTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry)
 		cover_it = s_cover_image_map.emplace(entry->path, std::move(cover_path)).first;
 	}
 
-	return (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
+	GSTexture* const cover_texture = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
+	return (cover_texture != GetPlaceholderTexture().get()) ? cover_texture : nullptr;
 }
 
 GSTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type, const ImVec2& size, SvgScaling mode)
@@ -3408,7 +3413,7 @@ void FullscreenUI::DrawGameCover(const GameList::Entry* entry, const ImVec2& siz
 		const ImRect image_rect(CenterImage(size, image_square));
 
 		ImGui::SetCursorPos(origin + image_rect.Min);
-		DrawSvgTexture(icon_texture, image_square);
+		DrawSvgTexture(icon_texture, image_square, UIBackgroundTextColor);
 	}
 	// Pretend the image we drew was the the size passed to us
 	ImGui::SetCursorPos(origin);
@@ -3436,7 +3441,7 @@ void FullscreenUI::DrawGameCover(const GameList::Entry* entry, ImDrawList* draw_
 		const ImRect image_rect(CenterImage(ImRect(min, max), image_square));
 
 		DrawListSvgTexture(draw_list, GetTextureForGameListEntryType(entry->type, image_square, SvgScaling::Fit),
-			image_rect.Min, image_rect.Max);
+			image_rect.Min, image_rect.Max, ImGui::GetColorU32(UIBackgroundTextColor));
 	}
 }
 
@@ -3452,7 +3457,7 @@ void FullscreenUI::DrawFallbackCover(const ImVec2& size)
 	const ImRect image_rect(CenterImage(size, image_square));
 
 	ImGui::SetCursorPos(origin + image_rect.Min);
-	DrawSvgTexture(icon_texture, image_square);
+	DrawSvgTexture(icon_texture, image_square, UIBackgroundTextColor);
 
 	// Pretend the image we drew was the the size passed to us
 	ImGui::SetCursorPos(origin);
@@ -3467,7 +3472,7 @@ void FullscreenUI::DrawFallbackCover(ImDrawList* draw_list, const ImVec2& min, c
 	const ImRect image_rect(CenterImage(ImRect(min, max), image_square));
 
 	DrawListSvgTexture(draw_list, GetTextureForGameListEntryType(GameList::EntryType::PS2Disc, image_square, SvgScaling::Fit),
-		image_rect.Min, image_rect.Max);
+		image_rect.Min, image_rect.Max, ImGui::GetColorU32(UIBackgroundTextColor));
 }
 
 //////////////////////////////////////////////////////////////////////////
