@@ -2687,6 +2687,8 @@ void ImGuiFullscreen::DrawInputDialog()
 	if (ImGui::BeginPopupModal(s_input_dialog_title.c_str(), &is_open,
 			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
 	{
+		ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+
 		ResetFocusHere();
 		ImGui::TextWrapped("%s", s_input_dialog_message.c_str());
 
@@ -2774,6 +2776,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
 		EndMenuButtons();
 
+		ImGui::PopStyleColor();
 		ImGui::EndPopup();
 	}
 	if (!is_open)
@@ -2895,6 +2898,8 @@ void ImGuiFullscreen::DrawMessageDialog()
 
 	if (ImGui::BeginPopupModal(win_id, &is_open, flags))
 	{
+		ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+
 		BeginMenuButtons();
 		ResetFocusHere();
 
@@ -2914,6 +2919,7 @@ void ImGuiFullscreen::DrawMessageDialog()
 
 		EndMenuButtons();
 
+		ImGui::PopStyleColor();
 		ImGui::EndPopup();
 	}
 
@@ -3049,7 +3055,7 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(LAYOUT_WINDOW_ROUNDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-		ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+		ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
 		ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
 		ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
 		ImGui::PushStyleColor(ImGuiCol_PopupBg, UIBackgroundColor);
@@ -3066,6 +3072,9 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 			ImGui::TextWrapped("%s", data.message.c_str());
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(20.0f));
 
+			ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, UIPrimaryDarkColor);
+
 			if (data.min != data.max)
 			{
 				const float progress = static_cast<float>(data.value - data.min) / static_cast<float>(data.max - data.min);
@@ -3076,6 +3085,8 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 				const float fraction = std::fmod(ImGui::GetTime(), 2.0f) * 0.5f;
 				ImGui::ProgressBar(fraction, ImVec2(-1.0f, LayoutScale(30.0f)));
 			}
+
+			ImGui::PopStyleColor(2);
 
 			EndMenuButtons();
 
