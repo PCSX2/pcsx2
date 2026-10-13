@@ -1885,7 +1885,7 @@ VS_OUTPUT vs_main_expand(uint vid : SV_VertexID)
 	uint vid_base = vid >> 2;
 	bool is_bottom = (vid & 2u) != 0u;
 	bool is_right = (vid & 1u) != 0u;
-	uint vid_other = is_bottom ? vid_base - 1 : vid_base + 1;
+	uint vid_other = is_bottom ? vid_base - 1u : vid_base + 1u;
 	VS_OUTPUT vtx = vs_main(load_vertex(vid_base));
 	VS_OUTPUT other = vs_main(load_vertex(vid_other));
 
