@@ -2631,9 +2631,13 @@ void Achievements::DrawAchievementsWindow()
 			const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
 			const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
 
-			if (!s_game_icon.empty())
+			std::string badge_path = GetSubsetBadgePath(s_open_subset);
+			if (badge_path.empty())
+				badge_path = s_game_icon;
+
+			if (!badge_path.empty())
 			{
-				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
+				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
 				if (badge)
 				{
 					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
@@ -3178,9 +3182,13 @@ void Achievements::DrawLeaderboardsWindow()
 			const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
 			const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
 
-			if (!s_game_icon.empty())
+			std::string badge_path = GetSubsetBadgePath(s_open_subset);
+			if (badge_path.empty())
+				badge_path = s_game_icon;
+
+			if (!badge_path.empty())
 			{
-				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
+				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
 				if (badge)
 				{
 					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
