@@ -1614,39 +1614,42 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 	ImDrawList* dl = ImGui::GetBackgroundDrawList();
 	const ImVec2 display_size(ImGui::GetIO().DisplaySize);
 	const ImU32 text_color = IM_COL32(UIBackgroundTextColor.x * 255, UIBackgroundTextColor.y * 255, UIBackgroundTextColor.z * 255, 255);
-	dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size, ImGui::GetColorU32(MulAlpha(UIBackgroundColor, LAYOUT_MENU_BACKGROUND_OPACITY)));
+	const float padding = LayoutScale(8.0f);
+	const float spacing = LayoutScale(2.0f);
+	const float title_height = GetLineHeight(g_large_font);
+	const float summary_height = GetLineHeight(g_medium_font);
+	const ImVec2 image_size(LayoutScale(48.0f, 72.0f));
+	float header_height = std::max(image_size.y, title_height + summary_height * 2.0f + spacing * 2.0f) + padding * 2.0f;
 
 	// title info
 	{
-		const float image_width = 60.0f;
-		const float image_height = 90.0f;
 		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
 
-		ImVec2 title_pos(LayoutScale(10.0f + image_width + 20.0f), LayoutScale(10.0f));
-		ImVec2 path_pos(LayoutScale(10.0f + image_width + 20.0f), title_pos.y + GetLineHeight(g_large_font) + LayoutScale(4.0f));
-		ImVec2 subtitle_pos(LayoutScale(10.0f + image_width + 20.0f),
-			(path_string.empty() ? title_pos.y + GetLineHeight(g_large_font) : path_pos.y + GetLineHeight(g_medium_font)) + LayoutScale(4.0f));
+		const ImVec2 title_pos(padding + image_size.x + LayoutScale(12.0f), padding);
+		const ImVec2 path_pos(title_pos.x, title_pos.y + title_height + spacing);
+		const ImVec2 subtitle_pos(title_pos.x,
+			(path_string.empty() ? title_pos.y + title_height : path_pos.y + summary_height) + spacing);
 
-		float rp_height = 0.0f;
+		std::string rich_presence;
 		{
 			const auto lock = Achievements::GetLock();
-			const std::string& rp = Achievements::IsActive() ? Achievements::GetRichPresenceString() : std::string();
-
-			if (!rp.empty())
-			{
-				const float wrap_width = LayoutScale(350.0f);
-				const ImVec2 rp_size = g_medium_font.first->CalcTextSizeA(
-					g_medium_font.second, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.length());
-
-				// Add a small extra gap if any Rich Presence is displayed
-				rp_height = rp_size.y - GetLineHeight(g_medium_font) + LayoutScale(2.0f);
-
-				const ImVec2 rp_pos(LayoutScale(10.0f + image_width + 20.0f),
-					subtitle_pos.y + GetLineHeight(g_medium_font) + LayoutScale(4.0f));
-
-				DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
-			}
+			if (Achievements::IsActive())
+				rich_presence = Achievements::GetRichPresenceString();
 		}
+
+		const float wrap_width = LayoutScale(350.0f);
+		const ImVec2 rp_pos(title_pos.x, subtitle_pos.y + summary_height + spacing);
+		if (!rich_presence.empty())
+		{
+			const ImVec2 rp_size = g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(),
+				wrap_width, rich_presence.data(), rich_presence.data() + rich_presence.length());
+			header_height = std::max(header_height, rp_pos.y + rp_size.y + padding);
+		}
+
+		dl->AddRectFilled(ImVec2(0.0f, header_height), display_size,
+			ImGui::GetColorU32(MulAlpha(UIBackgroundColor, LAYOUT_MENU_BACKGROUND_OPACITY)));
+		dl->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(display_size.x, header_height),
+			ImGui::GetColorU32(ModAlpha(UIBackgroundColor, 0.90f)));
 
 		DrawShadowedText(dl, g_large_font, title_pos, text_color, s_current_game_title.c_str());
 		if (!path_string.empty())
@@ -1654,9 +1657,14 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			DrawShadowedText(dl, g_medium_font, path_pos, text_color, path_string.data(), path_string.data() + path_string.length());
 		}
 		DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, s_current_game_subtitle.c_str());
+		if (!rich_presence.empty())
+		{
+			DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rich_presence.data(),
+				rich_presence.data() + rich_presence.length(), wrap_width);
+		}
 
-		const ImVec2 image_min(LayoutScale(10.0f), LayoutScale(10.0f));
-		const ImVec2 image_max(image_min.x + LayoutScale(image_width), image_min.y + LayoutScale(image_height) + rp_height);
+		const ImVec2 image_min(padding, padding);
+		const ImVec2 image_max(image_min + image_size);
 		{
 			auto lock = GameList::GetLock();
 
@@ -1681,7 +1689,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		std::strftime(buf, sizeof(buf), "%X", &ltime);
 
 		const ImVec2 time_size(g_large_font.first->CalcTextSizeA(g_large_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
-		const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
+		const ImVec2 time_pos(display_size.x - padding - time_size.x, padding);
 		DrawShadowedText(dl, g_large_font, time_pos, text_color, buf);
 
 		if (!s_current_disc_serial.empty())
@@ -1695,74 +1703,41 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			buf.format(FSUI_FSTR("This Session: {}"), session_time_str);
 			const ImVec2 session_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 session_pos(
-				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + time_size.y + LayoutScale(4.0f));
+				display_size.x - padding - session_size.x, time_pos.y + time_size.y + spacing);
 			DrawShadowedText(dl, g_medium_font, session_pos, text_color, buf);
 
 			buf.format(FSUI_FSTR("All Time: {}"), played_time_str);
 			const ImVec2 total_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 total_pos(
-				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + session_size.y + LayoutScale(4.0f));
+				display_size.x - padding - total_size.x, session_pos.y + session_size.y + spacing);
 			DrawShadowedText(dl, g_medium_font, total_pos, text_color, buf);
 		}
 	}
 
-	const ImVec2 window_size(LayoutScale(500.0f, LAYOUT_SCREEN_HEIGHT));
-	const ImVec2 window_pos(0.0f, display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - window_size.y);
+	const PauseSubMenu submenu = s_current_pause_submenu;
+	const ImVec2 window_size(LayoutScale(submenu == PauseSubMenu::None ? 350.0f : 500.0f),
+		std::max(1.0f, display_size.y - header_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)));
+	const ImVec2 window_pos(0.0f, header_height);
+	const bool is_capturing = GSCapture::IsCapturing();
+	const bool can_start_capture = GSConfig.EnableVideoCapture || GSConfig.EnableAudioCapture;
 
 	if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f,
 			ImVec2(10.0f, 10.0f), ImGuiWindowFlags_NoBackground))
 	{
 		static constexpr u32 submenu_item_count[] = {
-			12, // None
+			8, // None
 			4, // Exit
 			3, // Achievements
+			3, // Capture
+			4, // Emulation
+			3, // Settings
 		};
 
 		const bool just_focused = ResetFocusHere();
-		BeginMenuButtons(submenu_item_count[static_cast<u32>(s_current_pause_submenu)], 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+		BeginMenuButtons(submenu_item_count[static_cast<u32>(submenu)], 1.0f, ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
 			ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
-		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
-		{
-			const bool up_pressed = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadUp, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) ||
-									ImGui::IsKeyPressed(ImGuiKey_UpArrow, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
-			const bool down_pressed = ImGui::IsKeyPressed(ImGuiKey_GamepadDpadDown, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner) ||
-									  ImGui::IsKeyPressed(ImGuiKey_DownArrow, ImGuiInputFlags_Repeat, ImGuiKeyOwner_NoOwner);
-
-			if (up_pressed || down_pressed)
-			{
-				const ImGuiID current_focus_id = ImGui::GetFocusID();
-				ImGuiWindow* window = ImGui::GetCurrentWindow();
-				ImGuiID first_id = 0;
-				ImGuiID last_id = 0;
-
-				switch (s_current_pause_submenu)
-				{
-					case PauseSubMenu::None:
-						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"));
-						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"));
-						break;
-					case PauseSubMenu::Exit:
-						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
-						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"));
-						break;
-					case PauseSubMenu::Achievements:
-						first_id = ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"));
-						last_id = ImGui::GetID(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"));
-						break;
-				}
-
-				if (first_id != 0 && last_id != 0)
-				{
-					if (up_pressed && current_focus_id == first_id)
-						ImGui::SetFocusID(last_id, window);
-					else if (down_pressed && current_focus_id == last_id)
-						ImGui::SetFocusID(first_id, window);
-				}
-			}
-		}
-
-		switch (s_current_pause_submenu)
+		switch (submenu)
 		{
 			case PauseSubMenu::None:
 			{
@@ -1776,12 +1751,6 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false) || WantsToCloseMenu())
 					ClosePauseMenu();
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Toggle Frame Limit"), false))
-				{
-					ClosePauseMenu();
-					DoToggleFrameLimit();
-				}
-
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false, can_load_state))
 				{
 					if (OpenSaveStateSelector(true))
@@ -1794,12 +1763,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 						s_current_main_window = MainWindowType::None;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_save_state))
-				{
-					SwitchToGameSettings();
-				}
-
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false, Achievements::HasAchievementsOrLeaderboards()))
+				if (ActiveButtonWithRightText(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), Achievements::HasLeaderboards() ? ICON_FA_CHEVRON_RIGHT : nullptr,
+						false, Achievements::HasAchievementsOrLeaderboards()))
 				{
 					// skip second menu and go straight to cheevos if there's no lbs
 					if (!Achievements::HasLeaderboards())
@@ -1808,40 +1773,51 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 						OpenPauseSubMenu(PauseSubMenu::Achievements);
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
+				const IconStackString<256> capture_title(ICON_FA_PHOTO_FILM, FSUI_NSTR("Capture"));
+				if (ActiveButtonWithRightText(capture_title.c_str(), ICON_FA_CHEVRON_RIGHT, false))
+					OpenPauseSubMenu(PauseSubMenu::Capture);
+
+				if (is_capturing && ImGui::IsItemVisible())
 				{
-					GSQueueSnapshot(std::string());
-					ClosePauseMenu();
+					const ImRect text_bb(ImGui::GetItemRectMin() + ImGui::GetStyle().FramePadding,
+						ImGui::GetItemRectMax() - ImGui::GetStyle().FramePadding);
+					ImGui::PushFont(g_large_font.first, g_large_font.second);
+					const float gap = LayoutScale(10.0f);
+					const ImRect status_bb(
+						ImVec2(text_bb.Min.x + ImGui::CalcTextSize(capture_title.c_str()).x + gap, text_bb.Min.y),
+						ImVec2(text_bb.Max.x - ImGui::CalcTextSize(ICON_FA_CHEVRON_RIGHT).x - gap, text_bb.Max.y));
+					const char* status = FSUI_CSTR("Recording");
+					const float icon_width = ImGui::CalcTextSize(ICON_PF_CIRCLE).x;
+					const float icon_gap = LayoutScale(6.0f);
+					if (status_bb.GetWidth() >= icon_width)
+					{
+						const ImVec2 icon_pos(ImMax(status_bb.Min.x,
+												  status_bb.Max.x - ImGui::CalcTextSize(status).x - icon_gap - icon_width),
+							status_bb.Min.y);
+						const ImRect icon_bb(icon_pos, ImVec2(icon_pos.x + icon_width, status_bb.Max.y));
+						ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+						ImGuiFullscreen::RenderTextClippedWithShadow(icon_bb.Min, icon_bb.Max, ICON_PF_CIRCLE);
+						ImGui::PopStyleColor();
+
+						const ImRect label_bb(ImVec2(icon_bb.Max.x + icon_gap, status_bb.Min.y), status_bb.Max);
+						if (label_bb.GetWidth() > 0.0f)
+						{
+							ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.60f);
+							ImGuiFullscreen::RenderTextClippedWithShadow(label_bb.Min, label_bb.Max, status,
+								nullptr, nullptr, ImVec2(1.0f, 0.0f));
+							ImGui::PopStyleVar();
+						}
+					}
+					ImGui::PopFont();
 				}
 
-				const bool is_capturing = GSCapture::IsCapturing();
-				const bool can_start_capture = GSConfig.EnableVideoCapture || GSConfig.EnableAudioCapture;
-				if (ActiveButton(is_capturing ? FSUI_ICONSTR(ICON_FA_VIDEO_SLASH, "Stop Recording") :
-												FSUI_ICONSTR(ICON_FA_VIDEO, "Start Recording"),
-						false, is_capturing || can_start_capture))
-				{
-					GSToggleVideoCapture();
-					ClosePauseMenu();
-				}
+				if (ActiveButtonWithRightText(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Emulation"), ICON_FA_CHEVRON_RIGHT, false))
+					OpenPauseSubMenu(PauseSubMenu::Emulation);
 
-				if (ActiveButton(GSIsHardwareRenderer() ? (FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Switch To Software Renderer")) :
-														  (FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Switch To Hardware Renderer")),
-						false))
-				{
-					ClosePauseMenu();
-					DoToggleSoftwareRenderer();
-				}
+				if (ActiveButtonWithRightText(FSUI_ICONSTR(ICON_FA_SLIDERS, "Settings"), ICON_FA_CHEVRON_RIGHT, false))
+					OpenPauseSubMenu(PauseSubMenu::Settings);
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
-				{
-					s_current_main_window = MainWindowType::None;
-					RequestChangeDisc();
-				}
-
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Settings"), false))
-					SwitchToSettings();
-
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), false))
+				if (ActiveButtonWithRightText(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), can_save_state ? ICON_FA_CHEVRON_RIGHT : nullptr, false))
 				{
 					// skip submenu when we can't save anyway
 					if (!can_save_state)
@@ -1860,7 +1836,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 				}
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+				{
 					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_ARROWS_SPIN, "Reset System"), false))
 				{
@@ -1878,10 +1857,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::Achievements:
 			{
 				if (just_focused)
-					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu")), ImGui::GetCurrentWindow());
+					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements")), ImGui::GetCurrentWindow());
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+				{
 					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
 					OpenAchievementsWindow();
@@ -1890,17 +1872,102 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					OpenLeaderboardsWindow();
 			}
 			break;
+
+			case PauseSubMenu::Capture:
+			{
+				if (just_focused)
+					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot")), ImGui::GetCurrentWindow());
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+				{
+					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
+				{
+					GSQueueSnapshot(std::string());
+					ClosePauseMenu();
+				}
+
+				if (ActiveButton(is_capturing ? FSUI_ICONSTR(ICON_FA_VIDEO_SLASH, "Stop Recording") : FSUI_ICONSTR(ICON_FA_VIDEO, "Start Recording"),
+						false, is_capturing || can_start_capture))
+				{
+					GSToggleVideoCapture();
+					ClosePauseMenu();
+				}
+			}
+			break;
+
+			case PauseSubMenu::Emulation:
+			{
+				if (just_focused)
+					ImGui::SetFocusID(ImGui::GetID(FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Toggle Frame Limit")), ImGui::GetCurrentWindow());
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+				{
+					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Toggle Frame Limit"), false))
+				{
+					ClosePauseMenu();
+					DoToggleFrameLimit();
+				}
+
+				if (ActiveButton(GSIsHardwareRenderer() ? FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Switch To Software Renderer") :
+														  FSUI_ICONSTR(ICON_FA_PAINTBRUSH, "Switch To Hardware Renderer"),
+						false))
+				{
+					ClosePauseMenu();
+					DoToggleSoftwareRenderer();
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
+				{
+					s_current_main_window = MainWindowType::None;
+					RequestChangeDisc();
+				}
+			}
+			break;
+
+			case PauseSubMenu::Settings:
+			{
+				const bool can_change_game_settings = s_current_disc_crc != 0;
+				if (just_focused)
+					ImGui::SetFocusID(ImGui::GetID(can_change_game_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties") :
+																			  FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings")),
+						ImGui::GetCurrentWindow());
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+				{
+					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_change_game_settings))
+					SwitchToGameSettings();
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings"), false))
+					SwitchToSettings();
+			}
+			break;
 		}
 
 		EndMenuButtons();
 
+		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+			ImGui::NavMoveRequestTryWrapping(ImGui::GetCurrentWindow(), ImGuiNavMoveFlags_LoopY);
+
+		// Draw achievements before ending the window so they stay below the header.
+		if (Achievements::HasAchievementsOrLeaderboards())
+			Achievements::DrawPauseMenuOverlays();
+
 		EndFullscreenWindow();
 	}
 
-	// Primed achievements must come first, because we don't want the pause screen to be behind them.
-	if (Achievements::HasAchievementsOrLeaderboards())
-		Achievements::DrawPauseMenuOverlays();
-
+	const std::string_view back_text = (submenu == PauseSubMenu::None) ? FSUI_VSTR("Return To Game") : FSUI_VSTR("Back");
 	if (IsGamepadInputSource())
 	{
 		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
@@ -1908,7 +1975,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		SetFullscreenFooterText(std::array{
 			std::make_pair(glyphs.dpad_ud, FSUI_VSTR("Change Selection")),
 			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR("Select")),
-			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR("Return To Game")),
+			std::make_pair(glyphs.cancel(circleOK), back_text),
 		});
 	}
 	else
@@ -1916,7 +1983,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		SetFullscreenFooterText(std::array{
 			std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR("Change Selection")),
 			std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
-			std::make_pair(ICON_PF_ESC, FSUI_VSTR("Return To Game")),
+			std::make_pair(ICON_PF_ESC, back_text),
 		});
 	}
 }
