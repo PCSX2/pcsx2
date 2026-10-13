@@ -1311,7 +1311,7 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
 {
 	const ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
-		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 	*menu_pos = ImVec2(0.0f, heading_size.y);
 	*menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
@@ -1623,9 +1623,9 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 		const std::string_view path_string(Path::GetFileName(s_current_disc_path));
 
 		ImVec2 title_pos(LayoutScale(10.0f + image_width + 20.0f), LayoutScale(10.0f));
-		ImVec2 path_pos(LayoutScale(10.0f + image_width + 20.0f), title_pos.y + g_large_font.second + LayoutScale(4.0f));
+		ImVec2 path_pos(LayoutScale(10.0f + image_width + 20.0f), title_pos.y + GetLineHeight(g_large_font) + LayoutScale(4.0f));
 		ImVec2 subtitle_pos(LayoutScale(10.0f + image_width + 20.0f),
-			(path_string.empty() ? title_pos.y + g_large_font.second : path_pos.y + g_medium_font.second) + LayoutScale(4.0f));
+			(path_string.empty() ? title_pos.y + GetLineHeight(g_large_font) : path_pos.y + GetLineHeight(g_medium_font)) + LayoutScale(4.0f));
 
 		float rp_height = 0.0f;
 		{
@@ -1639,10 +1639,10 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					g_medium_font.second, std::numeric_limits<float>::max(), wrap_width, rp.data(), rp.data() + rp.length());
 
 				// Add a small extra gap if any Rich Presence is displayed
-				rp_height = rp_size.y - g_medium_font.second + LayoutScale(2.0f);
+				rp_height = rp_size.y - GetLineHeight(g_medium_font) + LayoutScale(2.0f);
 
 				const ImVec2 rp_pos(LayoutScale(10.0f + image_width + 20.0f),
-					subtitle_pos.y + g_medium_font.second + LayoutScale(4.0f));
+					subtitle_pos.y + GetLineHeight(g_medium_font) + LayoutScale(4.0f));
 
 				DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
 			}
@@ -1695,13 +1695,13 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			buf.format(FSUI_FSTR("This Session: {}"), session_time_str);
 			const ImVec2 session_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 session_pos(
-				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + g_large_font.second + LayoutScale(4.0f));
+				display_size.x - LayoutScale(10.0f) - session_size.x, time_pos.y + time_size.y + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, session_pos, text_color, buf);
 
 			buf.format(FSUI_FSTR("All Time: {}"), played_time_str);
 			const ImVec2 total_size(g_medium_font.first->CalcTextSizeA(g_medium_font.second, std::numeric_limits<float>::max(), -1.0f, buf));
 			const ImVec2 total_pos(
-				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + g_medium_font.second + LayoutScale(4.0f));
+				display_size.x - LayoutScale(10.0f) - total_size.x, session_pos.y + session_size.y + LayoutScale(4.0f));
 			DrawShadowedText(dl, g_medium_font, total_pos, text_color, buf);
 		}
 	}
@@ -2047,6 +2047,8 @@ void FullscreenUI::CloseSaveStateSelector()
 void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 {
 	ImGuiIO& io = ImGui::GetIO();
+	const float title_line_height = GetLineHeight(g_large_font);
+	const float summary_line_height = GetLineHeight(g_medium_font);
 
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	ImGui::SetNextWindowSize(io.DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT));
@@ -2079,7 +2081,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 	}
 
 	const ImVec2 heading_size =
-		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+		ImVec2(io.DisplaySize.x, title_line_height +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
 	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
@@ -2119,8 +2121,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 		const float image_width = item_width - (style.FramePadding.x * 2.0f);
 		const float image_height = image_width / 1.33f;
 		const ImVec2 image_size(image_width, image_height);
-		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_large_font.second + summary_spacing +
-								  g_medium_font.second;
+		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + title_line_height + summary_spacing +
+		                          summary_line_height;
 		const ImVec2 item_size(item_width, item_height);
 		const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
 		const float start_x =
@@ -2149,9 +2151,11 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 				const float width = LayoutScale(600.0f);
 				const float title_height =
-					g_large_font.second + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
-				const float height =
-					title_height + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) * 3.0f;
+					ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y * 2.0f;
+				// Use the same rounding and padding as the menu buttons.
+				const float button_height = LayoutScale(ImGuiFullscreen::LayoutUnscale(title_line_height)) +
+				                            LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f;
+				const float height = title_height + button_height * 3.0f;
 				ImGui::SetNextWindowSize(ImVec2(width, height));
 				ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 				ImGui::OpenPopup(entry.title.c_str());
@@ -2294,7 +2298,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 					entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
 
 				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
-				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font.second));
+				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + title_line_height));
 				ImGui::PushFont(g_large_font.first, g_large_font.second);
 				ImGuiFullscreen::RenderTextClippedWithShadow(
 					title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
@@ -2302,8 +2306,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
 				if (!entry.summary.empty())
 				{
-					const ImVec2 summary_pos(bb.Min.x, title_pos.y + g_large_font.second + summary_spacing);
-					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + g_medium_font.second));
+					const ImVec2 summary_pos(bb.Min.x, title_bb.Max.y + summary_spacing);
+					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + summary_line_height));
 					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
 					ImGuiFullscreen::RenderTextClippedWithShadow(
 						summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
@@ -2639,7 +2643,7 @@ void FullscreenUI::DrawGameListWindow()
 
 	ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
-		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
 	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
@@ -2754,7 +2758,7 @@ std::string_view FullscreenUI::TrimString(const std::pair<ImFont*, float>& font,
 	float full_width = font.first->CalcTextSizeA(font.second, INFINITY, 0, beg, end).x;
 	if (full_width <= available_space)
 		return str;
-	float ellipsis_width = ImGui::CalcTextSize(g_ellipsis).x;
+	float ellipsis_width = font.first->CalcTextSizeA(font.second, INFINITY, 0.0f, g_ellipsis).x;
 	const char* trimmed = end;
 	font.first->CalcTextSizeA(font.second, available_space - ellipsis_width, 0, beg, end, &trimmed);
 	return std::string_view(beg, trimmed);
@@ -2778,7 +2782,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 	if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries"))
 	{
+		const float title_height = GetLineHeight(g_large_font);
+		const float spacing = LayoutScale(4.0f);
 		const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT * 0.68f, LAYOUT_MENU_BUTTON_HEIGHT));
+		const float item_height = std::max(LAYOUT_MENU_BUTTON_HEIGHT,
+			ImGuiFullscreen::LayoutUnscale(title_height + spacing + GetLineHeight(g_medium_font)));
 
 		ResetFocusHere();
 
@@ -2791,7 +2799,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		{
 			ImRect bb;
 			bool visible, hovered;
-			bool pressed = MenuButtonFrame(entry->path.c_str(), true, LAYOUT_MENU_BUTTON_HEIGHT, &visible, &hovered, &bb.Min, &bb.Max);
+			bool pressed = MenuButtonFrame(entry->path.c_str(), true, item_height, &visible, &hovered, &bb.Min, &bb.Max);
 			if (!visible)
 				continue;
 
@@ -2806,7 +2814,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
 
-			const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
+			const float midpoint = bb.Min.y + title_height + spacing;
 			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
 			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
 			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
@@ -2814,7 +2822,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			const bool is_favorite = entry->is_favorite;
-			const float favorite_size = GetLineHeight(g_large_font) * 0.75f;
+			const float favorite_size = title_height * 0.75f;
 			const float favorite_margin = LayoutScale(8.0f);
 			ImRect visible_title_bb(title_bb);
 			if (is_favorite)
@@ -2824,7 +2832,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			if (is_favorite)
 			{
 				const ImVec2 star_pos(title_bb.Max.x - favorite_size - favorite_margin,
-					title_bb.Min.y + (GetLineHeight(g_large_font) - favorite_size) * 0.5f);
+					title_bb.Min.y + (title_height - favorite_size) * 0.5f);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
 					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
@@ -2865,23 +2873,41 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		const float text_spacing_y = LayoutScale(8.0f);
 		// Space between title/serial and details, is in addition to text_spacing_y
 		const float title_padding_below_y = LayoutScale(12.0f);
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const float work_width = window->WorkRect.GetWidth();
+		const float start_x = LayoutScale(50.0f);
+		const float wrap_pos = LayoutScale(490.0f);
+		const std::string_view full_title = selected_entry ? std::string_view(selected_entry->GetTitle(s_prefer_english_titles)) :
+		                                                     std::string_view(FSUI_CSTR("No Game Selected"));
+		const std::string_view trimmed_title = TrimString(g_large_font, full_title, work_width);
+		const SmallString title = SmallString::from_format("{}{}", trimmed_title, trimmed_title.size() == full_title.size() ? "" : g_ellipsis);
+		const ImVec2 title_size = g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, 0.0f, title.c_str());
+		// Measure wrapping from the title's centered position.
+		const float title_wrap_width = std::max(1.0f, wrap_pos - (work_width - title_size.x) * 0.5f);
+		const float title_height =
+			g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, title_wrap_width, title.c_str()).y;
+		// The filename can take more than one line.
+		const SmallString file_text = selected_entry ? SmallString::from_format(FSUI_FSTR("File: {}"), Path::GetFileName(selected_entry->path)) : SmallString();
+		const float file_wrap_width = std::max(1.0f, wrap_pos - start_x);
+		const float file_height =
+			g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, file_wrap_width, file_text.c_str()).y;
+		const float summary_line_height = GetLineHeight(g_medium_font);
 
-		// Estimate how much space is needed for text
-		// Do this even when nothing is selected, to ensure cover/icon is in a consistant size/position
+		// Leave room for the text below the cover.
 		const float title_detail_height =
-			LayoutScale(LAYOUT_LARGE_FONT_SIZE) + text_spacing_y + // Title
-			LayoutScale(LAYOUT_MEDIUM_FONT_SIZE) + text_spacing_y + // Serial
+			title_height + text_spacing_y + // Title
+			summary_line_height + text_spacing_y + // Serial
 			title_padding_below_y +
-			7.0f * (LayoutScale(LAYOUT_MEDIUM_FONT_SIZE) + text_spacing_y) + // File, CRC, Region, Compat, Time/Last Played, Size
+			file_height + text_spacing_y + // File
+			6.0f * (summary_line_height + text_spacing_y) + // CRC, Region, Compat, Time/Last Played, Size
 			LayoutScale(12.0f); // Extra padding
 
 		// Limit cover height to avoid pushing text off the screen
-		const ImGuiWindow* window = ImGui::GetCurrentWindow();
 		// Based on ImGui code for WorkRect, with scrolling logic removed
 		const float window_height = std::trunc(window->InnerRect.GetHeight() - 2.0f * std::max(window->WindowPadding.y, window->WindowBorderSize));
 
 		const float free_height = window_height - title_detail_height;
-		const float img_height = std::min(free_height - 2.0f * img_padding_y, LayoutScale(400.0f));
+		const float img_height = std::clamp(free_height - 2.0f * img_padding_y, 0.0f, LayoutScale(400.0f));
 
 		const ImVec2 image_size = ImVec2(LayoutScale(275.0f), img_height);
 		ImGui::SetCursorPos(ImVec2(LayoutScale(128.0f), img_padding_y));
@@ -2891,29 +2917,21 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		else
 			DrawFallbackCover(image_size);
 
-		const float work_width = window->WorkRect.GetWidth();
-		const float start_x = LayoutScale(50.0f);
 		const float text_y = img_height + 2.0f * img_padding_y;
 		float text_width;
 
 		PushPrimaryColor();
 		ImGui::SetCursorPos(ImVec2(start_x, text_y));
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, text_spacing_y));
-		ImGui::PushTextWrapPos(LayoutScale(490.0f));
+		ImGui::PushTextWrapPos(wrap_pos);
 		ImGui::BeginGroup();
 
 		if (selected_entry)
 		{
 			// title
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			const std::string_view full_title(selected_entry->GetTitle(s_prefer_english_titles));
-			std::string_view title = TrimString(g_large_font, full_title, work_width);
-			text_width = ImGui::CalcTextSize(title.data(), title.data() + title.length(), false, work_width).x;
-			if (title.length() != full_title.length())
-				text_width += ImGui::CalcTextSize(g_ellipsis).x;
-			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-			ImGui::TextWrapped(
-				"%.*s%s", static_cast<int>(title.size()), title.data(), (title.length() == full_title.length()) ? "" : g_ellipsis);
+			ImGui::SetCursorPosX((work_width - title_size.x) / 2.0f);
+			ImGui::TextWrapped("%s", title.c_str());
 			ImGui::PopFont();
 
 			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
@@ -2925,7 +2943,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + title_padding_below_y);
 
 			// file tile
-			ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("File: {}"), Path::GetFileName(selected_entry->path)).c_str());
+			ImGui::TextWrapped("%s", file_text.c_str());
 
 			// crc
 			ImGui::TextUnformatted(TinyString::from_format(FSUI_FSTR("CRC: {:08X}"), selected_entry->crc));
@@ -2965,11 +2983,9 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 		else
 		{
 			// title
-			const char* title = FSUI_CSTR("No Game Selected");
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			text_width = ImGui::CalcTextSize(title, nullptr, false, work_width).x;
-			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-			ImGui::TextWrapped("%s", title);
+			ImGui::SetCursorPosX((work_width - title_size.x) / 2.0f);
+			ImGui::TextWrapped("%s", title.c_str());
 			ImGui::PopFont();
 		}
 
@@ -3011,7 +3027,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 	const float image_width = item_width - (style.FramePadding.x * 2.0f);
 	const float image_height = image_width * 1.33f;
 	const ImVec2 image_size(image_width, image_height);
-	const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_medium_font.second;
+	const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + GetLineHeight(g_medium_font);
 	const ImVec2 item_size(item_width, item_height);
 	const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
 	const float start_x =
@@ -3190,7 +3206,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
-		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
 	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
