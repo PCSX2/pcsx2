@@ -44,6 +44,7 @@ public:
 #define FSUI_NSTR(str) str
 
 using ImGuiFullscreen::ActiveButton;
+using ImGuiFullscreen::ActiveButtonWithRightText;
 using ImGuiFullscreen::AddNotification;
 using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
@@ -161,6 +162,9 @@ namespace FullscreenUI
 		None,
 		Exit,
 		Achievements,
+		Capture,
+		Emulation,
+		Settings,
 	};
 
 	enum class SettingsPage
