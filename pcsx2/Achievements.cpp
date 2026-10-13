@@ -2333,7 +2333,6 @@ void Achievements::DrawGameOverlays()
 
 void Achievements::DrawPauseMenuOverlays()
 {
-	using ImGuiFullscreen::g_large_font;
 	using ImGuiFullscreen::g_medium_font;
 	using ImGuiFullscreen::GetLineHeight;
 	using ImGuiFullscreen::LayoutScale;
@@ -2351,7 +2350,7 @@ void Achievements::DrawPauseMenuOverlays()
 
 	const ImVec2 image_size(
 		LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY));
-	const float start_y = LayoutScale(10.0f + 4.0f + 4.0f) + GetLineHeight(g_large_font) + (GetLineHeight(g_medium_font) * 2.0f);
+	const float start_y = ImGui::GetWindowPos().y;
 	const float margin = LayoutScale(10.0f);
 	const float spacing = LayoutScale(10.0f);
 	const float padding = LayoutScale(10.0f);
