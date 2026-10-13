@@ -515,6 +515,7 @@ set(pcsx2GSSources
 	GS/Renderers/Common/GSRenderer.cpp
 	GS/Renderers/Common/GSTexture.cpp
 	GS/Renderers/Common/GSVertexTrace.cpp
+	GS/Renderers/Common/GSShaderCompilerAsync.cpp
 	GS/Renderers/Null/GSRendererNull.cpp
 	GS/Renderers/HW/GSHwHack.cpp
 	GS/Renderers/HW/GSRendererHW.cpp
@@ -558,6 +559,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/Common/GSTexture.h
 	GS/Renderers/Common/GSVertex.h
 	GS/Renderers/Common/GSVertexTrace.h
+	GS/Renderers/Common/GSShaderCompilerAsync.h
 	GS/Renderers/Null/GSRendererNull.h
 	GS/Renderers/HW/GSHwHack.h
 	GS/Renderers/HW/GSRendererHW.h
@@ -644,6 +646,8 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKBuilders.cpp
 		GS/Renderers/Vulkan/VKLoader.cpp
 		GS/Renderers/Vulkan/VKShaderCache.cpp
+		GS/Renderers/Vulkan/VKShaderCompilerAsync.cpp
+		GS/Renderers/Vulkan/VKShadercWrapper.cpp
 		GS/Renderers/Vulkan/VKStreamBuffer.cpp
 		GS/Renderers/Vulkan/VKSwapChain.cpp
 	)
@@ -655,6 +659,8 @@ if(USE_VULKAN)
 		GS/Renderers/Vulkan/VKEntryPoints.inl
 		GS/Renderers/Vulkan/VKLoader.h
 		GS/Renderers/Vulkan/VKShaderCache.h
+		GS/Renderers/Vulkan/VKShaderCompilerAsync.h
+		GS/Renderers/Vulkan/VKShadercWrapper.h
 		GS/Renderers/Vulkan/VKStreamBuffer.h
 		GS/Renderers/Vulkan/VKSwapChain.h
 	)
@@ -698,6 +704,7 @@ if(WIN32)
 		GS/Renderers/DX12/D3D12Builders.cpp
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.cpp
 		GS/Renderers/DX12/D3D12ShaderCache.cpp
+		GS/Renderers/DX12/D3D12ShaderCompilerAsync.cpp
 		GS/Renderers/DX12/D3D12StreamBuffer.cpp
 		GS/Renderers/DX12/GSDevice12.cpp
 		GS/Renderers/DX12/GSTexture12.cpp
@@ -710,6 +717,7 @@ if(WIN32)
 		GS/Renderers/DX12/D3D12Builders.h
 		GS/Renderers/DX12/D3D12DescriptorHeapManager.h
 		GS/Renderers/DX12/D3D12ShaderCache.h
+		GS/Renderers/DX12/D3D12ShaderCompilerAsync.h
 		GS/Renderers/DX12/D3D12StreamBuffer.h
 		GS/Renderers/DX12/GSDevice12.h
 		GS/Renderers/DX12/GSTexture12.h

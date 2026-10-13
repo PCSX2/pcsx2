@@ -57,13 +57,16 @@ namespace D3D12
 
 		GraphicsPipelineBuilder();
 
+		GraphicsPipelineBuilder(const GraphicsPipelineBuilder& other);
+		GraphicsPipelineBuilder& operator=(const GraphicsPipelineBuilder& other);
+
 		~GraphicsPipelineBuilder() = default;
 
 		void Clear();
 
 		wil::com_ptr_nothrow<ID3D12PipelineState> Create(ID3D12Device* device, bool clear = true);
 		wil::com_ptr_nothrow<ID3D12PipelineState> Create(
-			ID3D12Device* device, D3D12ShaderCache& cache, bool clear = true);
+			ID3D12Device* device, D3D12ShaderCache& cache, bool uber, bool clear = true);
 
 		void SetRootSignature(ID3D12RootSignature* rs);
 
@@ -74,6 +77,10 @@ namespace D3D12
 		void SetVertexShader(const ID3DBlob* blob);
 		void SetGeometryShader(const ID3DBlob* blob);
 		void SetPixelShader(const ID3DBlob* blob);
+
+		bool HasVertexShader() const;
+		bool HasGeometryShader() const;
+		bool HasPixelShader() const;
 
 		void AddVertexAttribute(
 			const char* semantic_name, u32 semantic_index, DXGI_FORMAT format, u32 buffer, u32 offset);
@@ -108,6 +115,7 @@ namespace D3D12
 
 		void SetDepthStencilFormat(DXGI_FORMAT format);
 
+		const D3D12_GRAPHICS_PIPELINE_STATE_DESC& GetDesc() { return m_desc; }
 	private:
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC m_desc;
 		std::array<D3D12_INPUT_ELEMENT_DESC, MAX_VERTEX_ATTRIBUTES> m_input_elements;

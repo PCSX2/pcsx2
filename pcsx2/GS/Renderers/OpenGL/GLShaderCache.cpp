@@ -77,7 +77,7 @@ bool GLShaderCache::Open()
 		return true;
 	}
 
-	if (!GSConfig.DisableShaderCache)
+	if (GSConfig.ShaderCacheType != GSShaderCacheType::Disabled)
 	{
 		const std::string index_filename = GetIndexFileName();
 		const std::string blob_filename = GetBlobFileName();
