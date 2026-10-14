@@ -702,13 +702,13 @@ bool ImGuiManager::AddEmojiFont()
 		// See https://github.com/ocornut/imgui/issues/8240
 		static ImFontLoader filter_loader;
 		filter_loader.Name = "Emoji Preprocessor";
-		filter_loader.FontSrcContainsGlyph = [](ImFontAtlas* atlas, ImFontConfig* src, ImWchar codepoint) {
+		filter_loader.FontSrcGetGlyphIndexFromCodepoint = [](ImFontAtlas* atlas, ImFontConfig* src, ImWchar codepoint) -> int {
 			if (codepoint == 0xfe0e || codepoint == 0xfe0f)
-				return true;
-			return false;
+				return static_cast<int>(codepoint);
+			return 0;
 		};
-		filter_loader.FontBakedLoadGlyph = [](ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void*, ImWchar codepoint, ImFontGlyph* out_glyph, float* out_advance_x) {
-			if (codepoint != 0xfe0e && codepoint != 0xfe0f)
+		filter_loader.FontBakedLoadGlyph = [](ImFontAtlas* atlas, ImFontConfig* src, ImFontBaked* baked, void*, int glyph_index, ImFontGlyph* out_glyph, float* out_advance_x) {
+			if (glyph_index != 0xfe0e && glyph_index != 0xfe0f)
 				return false;
 
 			// Metrics only mode
@@ -718,7 +718,6 @@ bool ImGuiManager::AddEmojiFont()
 				return true;
 			}
 
-			out_glyph->Codepoint = codepoint;
 			out_glyph->AdvanceX = 0.0f;
 			out_glyph->Visible = false;
 

@@ -719,7 +719,7 @@ __ri void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, f
 						const float grid_y = plot_br.y - frac * graph_size.y;
 						const float ly = grid_y - font_size * 0.5f;
 
-						dl->AddLine(ImVec2(plot_tl.x, grid_y), ImVec2(plot_br.x, grid_y), IM_COL32(255, 255, 255, 40), 1.0f);
+						dl->AddLineH(plot_tl.x, plot_br.x, grid_y, IM_COL32(255, 255, 255, 40), 1.0f);
 
 						s.format("{:.1f}", min_val + (max_val - min_val) * frac);
 						const float left_text_w = osd_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, s.c_str(), s.c_str() + s.length()).x;
