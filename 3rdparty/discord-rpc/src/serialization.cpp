@@ -155,6 +155,11 @@ size_t JsonWriteRichPresenceObj(char* dest,
 
                 writer.Key("instance");
                 writer.Bool(presence->instance != 0);
+
+                if (presence->status_display_type != DiscordStatusDisplayType_Name) {
+                    WriteKey(writer, "status_display_type");
+                    writer.Int(presence->status_display_type);
+                }
             }
         }
     }
