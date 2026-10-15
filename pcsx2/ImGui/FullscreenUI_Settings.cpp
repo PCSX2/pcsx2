@@ -2223,7 +2223,10 @@ void FullscreenUI::DrawSummarySettingsPage()
 
 					auto lock = Host::GetSettingsLock();
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					bsi->SetStringValue("EmuCore", "InputProfileName", names[index].c_str());
+					if (IsEditingGameSettings(bsi) && index == 0)
+						bsi->DeleteValue("EmuCore", "InputProfileName");
+					else
+						bsi->SetStringValue("EmuCore", "InputProfileName", names[index].c_str());
 					SetSettingsChanged(bsi);
 					CloseChoiceDialog();
 				});
