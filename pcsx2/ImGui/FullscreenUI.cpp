@@ -698,6 +698,13 @@ void FullscreenUI::Render()
 			Error error;
 			s_game_settings_interface->RemoveEmptySections();
 
+			if (!s_game_settings_interface->Save(&error))
+			{
+				ImGuiFullscreen::OpenInfoMessageDialog(
+					FSUI_STR("Error"),
+					fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
+			}
+
 			if (s_game_settings_interface->IsEmpty())
 			{
 				if (FileSystem::FileExists(s_game_settings_interface->GetFileName().c_str()) &&
@@ -706,15 +713,6 @@ void FullscreenUI::Render()
 					ImGuiFullscreen::OpenInfoMessageDialog(
 						FSUI_STR("Error"), fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
 											   error.GetDescription()));
-				}
-			}
-			else
-			{
-				if (!s_game_settings_interface->Save(&error))
-				{
-					ImGuiFullscreen::OpenInfoMessageDialog(
-						FSUI_STR("Error"),
-						fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
 				}
 			}
 
