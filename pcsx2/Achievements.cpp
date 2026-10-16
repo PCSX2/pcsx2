@@ -3317,9 +3317,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 				const float line_thickness = LayoutScale(1.0f);
 				const float line_padding = LayoutScale(5.0f);
-				const ImVec2 line_start(bb.Min.x, bb.Min.y + GetLineHeight(g_large_font) + line_padding);
-				const ImVec2 line_end(bb.Max.x, line_start.y);
-				ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
+				const float line_y = bb.Min.y + GetLineHeight(g_large_font) + line_padding;
+				ImGui::GetWindowDrawList()->AddLineH(bb.Min.x, bb.Max.x, line_y, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 			}
 		}
 	}

@@ -1205,11 +1205,10 @@ void ImGuiFullscreen::DrawWindowTitle(const char* title)
 	RenderTextClippedWithShadow(rect.Min, rect.Max, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), &rect);
 	ImGui::PopFont();
 
-	const ImVec2 line_start(pos.x, pos.y + g_large_font.second + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
-	const ImVec2 line_end(pos.x + size.x, line_start.y);
+	const float line_y = pos.y + g_large_font.second + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING);
 	const float line_thickness = LayoutScale(1.0f);
 	ImDrawList* dl = ImGui::GetWindowDrawList();
-	dl->AddLine(line_start, line_end, IM_COL32(255, 255, 255, 255), line_thickness);
+	dl->AddLineH(pos.x, pos.x + size.x, line_y, IM_COL32(255, 255, 255, 255), line_thickness);
 }
 
 void ImGuiFullscreen::GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size)
@@ -1363,9 +1362,8 @@ void ImGuiFullscreen::MenuHeading(const char* title, bool draw_line /*= true*/)
 
 	if (draw_line)
 	{
-		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font.second + line_padding);
-		const ImVec2 line_end(bb.Max.x, line_start.y);
-		ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
+		const float line_y = bb.Min.y + g_large_font.second + line_padding;
+		ImGui::GetWindowDrawList()->AddLineH(bb.Min.x, bb.Max.x, line_y, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 	}
 }
 
@@ -1399,9 +1397,8 @@ bool ImGuiFullscreen::MenuHeadingButton(
 
 	if (draw_line)
 	{
-		const ImVec2 line_start(bb.Min.x, bb.Min.y + g_large_font.second + line_padding);
-		const ImVec2 line_end(bb.Max.x, line_start.y);
-		ImGui::GetWindowDrawList()->AddLine(line_start, line_end, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
+		const float line_y = bb.Min.y + g_large_font.second + line_padding;
+		ImGui::GetWindowDrawList()->AddLineH(bb.Min.x, bb.Max.x, line_y, ImGui::GetColorU32(ImGuiCol_TextDisabled), line_thickness);
 	}
 
 	return pressed;
@@ -3239,9 +3236,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 		ImDrawList* dl = ImGui::GetForegroundDrawList();
 		dl->AddRectFilled(ImVec2(box_min.x + shadow_size, box_min.y + shadow_size),
 			ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
-			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundCornersAll);
-		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
-		dl->AddRect(box_min, box_max, border_color, rounding, ImGuiFullscreen::LayoutScale(1.0f), ImDrawFlags_RoundCornersAll);
+			IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundAll);
+		dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundAll);
+		dl->AddRect(box_min, box_max, border_color, rounding, ImGuiFullscreen::LayoutScale(1.0f), ImDrawFlags_RoundAll);
 
 		if (has_badge)
 		{

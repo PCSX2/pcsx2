@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9b
+// dear imgui, v1.93.0
 // (tables and columns code)
 
 /*
@@ -375,7 +375,6 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
     const int previous_frame_active = table->LastFrameActive;
     const int instance_no = (previous_frame_active != g.FrameCount) ? 0 : table->InstanceCurrent + 1;
     const ImGuiTableFlags previous_flags = table->Flags;
-    const bool is_new_table = (previous_frame_active == -1);
     table->ID = id;
     table->Flags = flags;
     table->LastFrameActive = g.FrameCount;
@@ -384,6 +383,7 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
     table->IsLayoutLocked = false;
     table->InnerWidth = inner_width;
     table->NavLayer = (ImS8)outer_window->DC.NavLayerCurrent;
+    table->IsNewTable = (previous_frame_active == -1);
     temp_data->UserOuterSize = outer_size;
 
     // Instance data (for instance 0, TableID == TableInstanceID)
@@ -428,11 +428,8 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
                 SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
         // Create scrolling region (without border and zero window padding)
-        ImGuiChildFlags child_child_flags = (g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasChildFlags) ? g.NextWindowData.ChildFlags : ImGuiChildFlags_None;
-        ImGuiWindowFlags child_window_flags = (g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasWindowFlags) ? g.NextWindowData.WindowFlags : ImGuiWindowFlags_None;
-        if (flags & ImGuiTableFlags_ScrollX)
-            child_window_flags |= ImGuiWindowFlags_HorizontalScrollbar;
-        BeginChildEx(name, instance_id, outer_rect.GetSize(), child_child_flags, child_window_flags);
+        ImGuiWindowFlags child_window_flags = (flags & ImGuiTableFlags_ScrollX) ? ImGuiWindowFlags_HorizontalScrollbar : ImGuiWindowFlags_None;
+        BeginChildEx(name, instance_id, outer_rect.GetSize(), ImGuiChildFlags_None, child_window_flags);
         table->InnerWindow = g.CurrentWindow;
         table->WorkRect = table->InnerWindow->WorkRect;
         table->OuterRect = table->InnerWindow->Rect();
@@ -588,7 +585,7 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
     if (table->IsInitializing)
     {
         // Initialize
-        if (is_new_table)
+        if (table->IsNewTable)
         {
             table->SettingsOffset = -1;
             table->IsSettingsRequestLoad = true;
@@ -634,7 +631,7 @@ bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImG
     // At this point the ->NameOffset field of each column will be invalid until TableUpdateLayout() or the first call to TableSetupColumn()
     if (table->ColumnsNames.Buf.Size > 0)
         table->ColumnsNames.Buf.resize(0);
-    
+
     return true;
 }
 
@@ -1759,7 +1756,7 @@ void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, flo
     ImGuiTableColumn* column = &table->Columns[column_idx];
 
     // If topology change goes into reconcile mode
-    if (table->IsReconcileMode == false && column->ID != column_id)
+    if (table->IsReconcileMode == false && column->ID != column_id && !table->IsNewTable)
     {
         table->IsReconcileMode = true;
         table->TempData->ReconcileColumnsRequests.reserve(table->ColumnsCount - column_idx);
@@ -2964,7 +2961,7 @@ void ImGui::TableDrawBorders(ImGuiTable* table)
     // Draw inner border and resizing feedback
     ImGuiTableInstanceData* table_instance = TableGetInstanceData(table, table->InstanceCurrent);
     const float border_size = TABLE_BORDER_SIZE;
-    const float draw_y1 = ImMax(table->InnerRect.Min.y, (table->FreezeRowsCount >= 1 ? table->InnerRect.Min.y : table->WorkRect.Min.y) + table->AngledHeadersHeight) + ((table->Flags & ImGuiTableFlags_BordersOuterH) ? 1.0f : 0.0f);
+    const float draw_y1 = ImMax(table->InnerRect.Min.y, (table->FreezeRowsCount >= 1 ? table->InnerRect.Min.y : table->WorkRect.Min.y) + table->AngledHeadersHeight) + ((table->Flags & ImGuiTableFlags_BordersOuterH) ? border_size : 0.0f);
     const float draw_y2_body = table->InnerRect.Max.y;
     const float draw_y2_head = table->IsUsingHeaders ? ImMin(table->InnerRect.Max.y, (table->FreezeRowsCount >= 1 ? table->InnerRect.Min.y : table->WorkRect.Min.y) + table_instance->LastTopHeadersRowHeight) : draw_y1;
     if (table->Flags & ImGuiTableFlags_BordersInnerV)
@@ -3021,7 +3018,7 @@ void ImGui::TableDrawBorders(ImGuiTable* table)
         else if (table->Flags & ImGuiTableFlags_BordersOuterV)
         {
             inner_drawlist->AddLineV(outer_border.Min.x, outer_border.Min.y, outer_border.Max.y, outer_col, border_size);
-            inner_drawlist->AddLineV(outer_border.Max.x, outer_border.Min.y, outer_border.Max.y, outer_col, border_size);
+            inner_drawlist->AddLineV(outer_border.Max.x - border_size, outer_border.Min.y, outer_border.Max.y, outer_col, border_size);
         }
         else if (table->Flags & ImGuiTableFlags_BordersOuterH)
         {
@@ -3032,9 +3029,10 @@ void ImGui::TableDrawBorders(ImGuiTable* table)
     if ((table->Flags & ImGuiTableFlags_BordersInnerH) && table->RowPosY2 < table->OuterRect.Max.y)
     {
         // Draw bottom-most row border between it is above outer border.
+        const float h_inset = (table->Flags & ImGuiTableFlags_BordersOuterV) ? border_size : 0.0f;
         const float border_y = table->RowPosY2;
         if (border_y >= table->BgClipRect.Min.y && border_y < table->BgClipRect.Max.y)
-            inner_drawlist->AddLineH(table->BorderX1, table->BorderX2, border_y, table->BorderColorLight, border_size);
+            inner_drawlist->AddLineH(table->BorderX1 + h_inset, table->BorderX2 - h_inset, border_y, table->BorderColorLight, border_size);
     }
 
     inner_drawlist->PopClipRect();
@@ -3627,7 +3625,8 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
             if (pass == 1)
             {
                 // Draw border
-                draw_list->AddLine(bg_shape[0] - ImVec2(TABLE_BORDER_SIZE * 0.5f, 0.0f), bg_shape[3] - ImVec2(TABLE_BORDER_SIZE * 0.5f, 0.0f), TableGetColumnBorderCol(table, order_n, column_n), TABLE_BORDER_SIZE);
+                const float border_size = TABLE_BORDER_SIZE;
+                draw_list->AddLine(bg_shape[0] + ImVec2(border_size * 0.5f, 0.0f), bg_shape[3] + ImVec2(border_size * 0.5f, 0.0f), TableGetColumnBorderCol(table, order_n, column_n), border_size);
             }
         }
     PopClipRect();
@@ -3973,7 +3972,7 @@ void ImGui::TableSaveSettings(ImGuiTable* table)
         if (column->DisplayOrder != n)
             settings->SaveFlags |= ImGuiTableFlags_Reorderable;
         if (column->SortOrder != -1)
-            settings->SaveFlags |= ImGuiTableFlags_Sortable;
+            settings->SaveFlags |= ImGuiTableFlags_Sortable | ImGuiTableFlags_Reorderable; // Because SortOrder saving itself is gated, make sure every column is saved (#9519)
         if (column->IsUserEnabled != ((column->Flags & ImGuiTableColumnFlags_DefaultHide) == 0))
             settings->SaveFlags |= ImGuiTableFlags_Hideable;
     }
@@ -4110,6 +4109,12 @@ static int IMGUI_CDECL TableFixDisplayOrderComparer(const void* lhs, const void*
 // Fix invalid display order data: compact values (0,1,3 -> 0,1,2); preserve relative order (0,3,1 -> 0,2,1); deduplicate (0,4,1,1 -> 0,3,1,2)
 void ImGui::TableFixDisplayOrder(ImGuiTable* table)
 {
+    if ((table->Flags & ImGuiTableFlags_Reorderable) == 0)
+    {
+        for (int n = 0; n < table->ColumnsCount; n++)
+            table->DisplayOrderToIndex[n] = table->Columns[n].DisplayOrder = (ImGuiTableColumnIdx)n;
+        return;
+    }
     ImGuiContext& g = *GImGui;
     g.TempBuffer.reserve((int)(sizeof(ImGuiTableFixDisplayOrderColumnData) * table->ColumnsCount)); // FIXME: Maybe wrap those two lines as a helper.
     ImGuiTableFixDisplayOrderColumnData* fdo_columns = (ImGuiTableFixDisplayOrderColumnData*)(void*)g.TempBuffer.Data;
