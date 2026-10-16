@@ -39,7 +39,14 @@ typedef struct DiscordRichPresence {
     const char* joinSecret;     /* max 128 bytes */
     const char* spectateSecret; /* max 128 bytes */
     int8_t instance;
+    int8_t status_display_type;
 } DiscordRichPresence;
+
+typedef enum DiscordStatusDisplayType {
+    DiscordStatusDisplayType_Name = 0,
+    DiscordStatusDisplayType_State = 1,
+    DiscordStatusDisplayType_Details = 2
+} DiscordStatusDisplayType;
 
 typedef struct DiscordUser {
     const char* userId;
