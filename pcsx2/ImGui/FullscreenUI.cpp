@@ -498,9 +498,9 @@ void FullscreenUI::UpdateGameDetails(std::string path, std::string serial, std::
 
 void FullscreenUI::PauseForMenuOpen(bool set_pause_menu_open)
 {
-	s_was_paused_on_quick_menu_open = (VMManager::GetState() == VMState::Paused);
+	s_was_paused_on_quick_menu_open = VMManager::IsPaused();
 	if (Host::GetBoolSettingValue("UI", "PauseOnMenu", true) && !s_was_paused_on_quick_menu_open)
-		Host::RunOnCPUThread([]() { VMManager::SetPaused(true); });
+		Host::RunOnCPUThread([]() { VMManager::Pause(); });
 
 	s_pause_menu_was_open |= set_pause_menu_open;
 }
@@ -533,8 +533,8 @@ void FullscreenUI::ClosePauseMenu()
 	if (!IsInitialized() || !VMManager::HasValidVM())
 		return;
 
-	if (VMManager::GetState() == VMState::Paused && !s_was_paused_on_quick_menu_open)
-		Host::RunOnCPUThread([]() { VMManager::SetPaused(false); });
+	if (VMManager::IsPaused() && !s_was_paused_on_quick_menu_open)
+		Host::RunOnCPUThread([]() { VMManager::Resume(); });
 
 	s_current_main_window = MainWindowType::None;
 	s_current_pause_submenu = PauseSubMenu::None;
@@ -4047,11 +4047,11 @@ void FullscreenUI::ReportStateLoadError(const std::string& message, std::optiona
 		}
 
 		ImGuiFullscreen::InfoMessageDialogCallback callback;
-		if (VMManager::GetState() == VMState::Running)
+		if (VMManager::IsRunning())
 		{
-			Host::RunOnCPUThread([]() { VMManager::SetPaused(true); });
+			Host::RunOnCPUThread([]() { VMManager::Pause(); });
 			callback = []() {
-				Host::RunOnCPUThread([]() { VMManager::SetPaused(false); });
+				Host::RunOnCPUThread([]() { VMManager::Resume(); });
 			};
 		}
 
@@ -4078,11 +4078,11 @@ void FullscreenUI::ReportStateSaveError(const std::string& message, std::optiona
 			title = FSUI_STR("Failed to Save State");
 
 		ImGuiFullscreen::InfoMessageDialogCallback callback;
-		if (VMManager::GetState() == VMState::Running)
+		if (VMManager::IsRunning())
 		{
-			Host::RunOnCPUThread([]() { VMManager::SetPaused(true); });
+			Host::RunOnCPUThread([]() { VMManager::Pause(); });
 			callback = []() {
-				Host::RunOnCPUThread([]() { VMManager::SetPaused(false); });
+				Host::RunOnCPUThread([]() { VMManager::Resume(); });
 			};
 		}
 
