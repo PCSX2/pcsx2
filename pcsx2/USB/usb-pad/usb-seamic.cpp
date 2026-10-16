@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include "usb-seamic.h"
 #include "Host.h"
 #include "IconsPromptFont.h"
-#include "USB/usb-pad/usb-pad.h"
 #include "USB/qemu-usb/desc.h"
 #include "USB/usb-mic/usb-mic.h"
 #include "USB/USB.h"
@@ -12,7 +12,6 @@
 
 namespace usb_pad
 {
-
 	static const USBDescStrings desc_strings = {
 		"",
 		"ASCII CORPORATION",
@@ -223,60 +222,52 @@ namespace usb_pad
 
 		// 134 bytes
 	};
-
-	struct SeamicState : public PadState
+	
+	SeamicState::SeamicState(u32 port_)
+		: port(port_)
 	{
-		explicit SeamicState(u32 port);
-
-		USBDevice* mic;
-	};
-
-	SeamicState::SeamicState(u32 port) : PadState(port, WT_SEGA_SEAMIC) {}
-
-	static void pad_handle_data(USBDevice* dev, USBPacket* p)
-	{
-		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
-		uint8_t data[64];
-
-		uint8_t devep = p->ep->nr;
-
-		switch (p->pid)
-		{
-			case USB_TOKEN_IN:
-				if (devep == 1)
-				{
-					s->mic->klass.handle_data(s->mic, p);
-				}
-				else if (devep == 2)
-				{
-					const int ret = s->TokenIn(data, p->buffer_size);
-					if (ret > 0)
-						usb_packet_copy(p, data, std::min((size_t)ret, sizeof(data)));
-					else
-						p->status = ret;
-				}
-				else
-				{
-					goto fail;
-				}
-				break;
-			case USB_TOKEN_OUT:
-				usb_packet_copy(p, data, p->buffer_size);
-				s->TokenOut(data, p->buffer_size);
-				break;
-			default:
-			fail:
-				p->status = USB_RET_STALL;
-				break;
-		}
 	}
 
-	static void pad_handle_reset(USBDevice* dev)
+	SeamicState::~SeamicState() = default;
+	
+	void SeamicState::UpdateStick() noexcept
 	{
-		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
-		s->Reset();
-		s->mic->klass.handle_reset(s->mic);
-		return;
+		if (stick_l > 0)
+			data.stick_x = static_cast<u8>(std::max<int>(0x7f - stick_l, 0));
+		else if (stick_r > 0)
+			data.stick_x = static_cast<u8>(std::min<int>(0x7f + stick_r, 0xff));
+		else
+			data.stick_x = 0x7f;
+
+		if (stick_u > 0)
+			data.stick_y = static_cast<u8>(std::max<int>(0x7f - stick_u, 0));
+		else if (stick_d> 0)
+			data.stick_y = static_cast<u8>(std::min<int>(0x7f + stick_d, 0xff));
+		else
+			data.stick_y = 0x7f;
+	}
+
+	// TODO: de-duplicate these methods
+	u8 SeamicState::UpdateHatSwitch() noexcept
+	{
+		if (hat_up && hat_right)
+			return 1;
+		else if (hat_right && hat_down)
+			return 3;
+		else if (hat_down && hat_left)
+			return 5;
+		else if (hat_left && hat_up)
+			return 7;
+		else if (hat_up)
+			return 0;
+		else if (hat_right)
+			return 2;
+		else if (hat_down)
+			return 4;
+		else if (hat_left)
+			return 6;
+		else
+			return 8;
 	}
 
 	static void pad_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
@@ -290,7 +281,6 @@ namespace usb_pad
 				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 				if (ret < 0)
 					goto fail;
-
 				break;
 			case InterfaceRequest | USB_REQ_GET_DESCRIPTOR:
 				switch (value >> 8)
@@ -325,7 +315,44 @@ namespace usb_pad
 		}
 	}
 
-	static void pad_handle_destroy(USBDevice* dev)
+	static void pad_handle_data(USBDevice* dev, USBPacket* p)
+	{
+		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
+		uint8_t devep = p->ep->nr;
+
+		switch (p->pid)
+		{
+			case USB_TOKEN_IN:
+				if (devep == 1)
+				{
+					s->mic->klass.handle_data(s->mic, p);
+				}
+				else if (devep == 2)
+				{
+					s->data.dpad = s->UpdateHatSwitch();
+					usb_packet_copy(p, &s->data, sizeof(s->data));
+				}
+				else
+				{
+					goto fail;
+				}
+				break;
+			case USB_TOKEN_OUT:
+				break;
+			default:
+			fail:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	static void pad_handle_reset(USBDevice* dev)
+	{
+		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
+		s->mic->klass.handle_reset(s->mic);
+	}
+
+	static void pad_unrealize(USBDevice* dev)
 	{
 		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
 		s->mic->klass.unrealize(s->mic);
@@ -345,51 +372,6 @@ namespace usb_pad
 	const char* SeamicDevice::IconName() const
 	{
 		return ICON_PF_SEGA_SEAMIC;
-	}
-
-	std::span<const char*> SeamicDevice::SubTypes() const
-	{
-		return {};
-	}
-
-	std::span<const InputBindingInfo> SeamicDevice::Bindings(u32 subtype) const
-	{
-		// TODO: This is likely wrong. Someone who cares can fix it.
-		static constexpr const InputBindingInfo bindings[] = {
-			{"StickLeft", TRANSLATE_NOOP("USB", "Stick Left"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_L, GenericInputBinding::LeftStickLeft},
-			{"StickRight", TRANSLATE_NOOP("USB", "Stick Right"), nullptr, InputBindingInfo::Type::HalfAxis, CID_STEERING_R, GenericInputBinding::LeftStickRight},
-			{"StickUp", TRANSLATE_NOOP("USB", "Stick Up"), nullptr, InputBindingInfo::Type::HalfAxis, CID_THROTTLE, GenericInputBinding::LeftStickUp},
-			{"StickDown", TRANSLATE_NOOP("USB", "Stick Down"), nullptr, InputBindingInfo::Type::HalfAxis, CID_BRAKE, GenericInputBinding::LeftStickDown},
-			{"A", TRANSLATE_NOOP("USB", "A"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON0, GenericInputBinding::Cross},
-			{"B", TRANSLATE_NOOP("USB", "B"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON1, GenericInputBinding::Circle},
-			{"C", TRANSLATE_NOOP("USB", "C"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON2, GenericInputBinding::R2},
-			{"X", TRANSLATE_NOOP("USB", "X"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON3, GenericInputBinding::Square},
-			{"Y", TRANSLATE_NOOP("USB", "Y"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON4, GenericInputBinding::Triangle},
-			{"Z", TRANSLATE_NOOP("USB", "Z"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON5, GenericInputBinding::L2},
-			{"L", TRANSLATE_NOOP("USB", "L"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON6, GenericInputBinding::L1},
-			{"R", TRANSLATE_NOOP("USB", "R"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON7, GenericInputBinding::R1},
-			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON8, GenericInputBinding::Select},
-			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, CID_BUTTON9, GenericInputBinding::Start},
-			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_UP, GenericInputBinding::DPadUp},
-			{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_DOWN, GenericInputBinding::DPadDown},
-			{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_LEFT, GenericInputBinding::DPadLeft},
-			{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, CID_DPAD_RIGHT, GenericInputBinding::DPadRight},
-		};
-
-		return bindings;
-	}
-
-	std::span<const SettingInfo> SeamicDevice::Settings(u32 subtype) const
-	{
-		static constexpr const SettingInfo info[] = {
-			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
-				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
-				nullptr, &AudioDevice::GetInputDeviceList},
-			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
-				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
-				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
-		};
-		return info;
 	}
 
 	USBDevice* SeamicDevice::CreateDevice(SettingsInterface& si, u32 port, u32 subtype) const
@@ -419,42 +401,127 @@ namespace usb_pad
 		s->dev.klass.handle_reset = pad_handle_reset;
 		s->dev.klass.handle_control = pad_handle_control;
 		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
+		s->dev.klass.unrealize = pad_unrealize;
 		s->dev.klass.usb_desc = &s->desc;
 		s->dev.klass.product_desc = s->desc.str[2]; //not really used
-		s->port = port;
 
 		usb_desc_init(&s->dev);
 		usb_ep_init(&s->dev);
 		pad_handle_reset(&s->dev);
-
 		return &s->dev;
 
 	fail:
-		pad_handle_destroy(&s->dev);
+		pad_unrealize(&s->dev);
 		return nullptr;
+	}
+
+	std::span<const InputBindingInfo> SeamicDevice::Bindings(u32 subtype) const
+	{
+		static constexpr const InputBindingInfo bindings[] = {
+			{"StickLeft", TRANSLATE_NOOP("USB", "Stick Left"), nullptr, InputBindingInfo::Type::HalfAxis, STICK_LEFT, GenericInputBinding::LeftStickLeft},
+			{"StickRight", TRANSLATE_NOOP("USB", "Stick Right"), nullptr, InputBindingInfo::Type::HalfAxis, STICK_RIGHT, GenericInputBinding::LeftStickRight},
+			{"StickUp", TRANSLATE_NOOP("USB", "Stick Up"), nullptr, InputBindingInfo::Type::HalfAxis, STICK_UP, GenericInputBinding::LeftStickUp},
+			{"StickDown", TRANSLATE_NOOP("USB", "Stick Down"), nullptr, InputBindingInfo::Type::HalfAxis, STICK_DOWN, GenericInputBinding::LeftStickDown},
+			{"A", TRANSLATE_NOOP("USB", "A"), nullptr, InputBindingInfo::Type::Button, BTN_A, GenericInputBinding::Cross},
+			{"B", TRANSLATE_NOOP("USB", "B"), nullptr, InputBindingInfo::Type::Button, BTN_B, GenericInputBinding::Circle},
+			{"C", TRANSLATE_NOOP("USB", "C"), nullptr, InputBindingInfo::Type::Button, BTN_C, GenericInputBinding::R2},
+			{"X", TRANSLATE_NOOP("USB", "X"), nullptr, InputBindingInfo::Type::Button, BTN_X, GenericInputBinding::Square},
+			{"Y", TRANSLATE_NOOP("USB", "Y"), nullptr, InputBindingInfo::Type::Button, BTN_Y, GenericInputBinding::Triangle},
+			{"Z", TRANSLATE_NOOP("USB", "Z"), nullptr, InputBindingInfo::Type::Button, BTN_Z, GenericInputBinding::L2},
+			{"L", TRANSLATE_NOOP("USB", "L"), nullptr, InputBindingInfo::Type::Button, BTN_L, GenericInputBinding::L1},
+			{"R", TRANSLATE_NOOP("USB", "R"), nullptr, InputBindingInfo::Type::Button, BTN_R, GenericInputBinding::R1},
+			{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, SELECT, GenericInputBinding::Select},
+			{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, START, GenericInputBinding::Start},
+			{"DPadUp", TRANSLATE_NOOP("USB", "D-Pad Up"), nullptr, InputBindingInfo::Type::Button, DPAD_UP, GenericInputBinding::DPadUp},
+			{"DPadDown", TRANSLATE_NOOP("USB", "D-Pad Down"), nullptr, InputBindingInfo::Type::Button, DPAD_DOWN, GenericInputBinding::DPadDown},
+			{"DPadLeft", TRANSLATE_NOOP("USB", "D-Pad Left"), nullptr, InputBindingInfo::Type::Button, DPAD_LEFT, GenericInputBinding::DPadLeft},
+			{"DPadRight", TRANSLATE_NOOP("USB", "D-Pad Right"), nullptr, InputBindingInfo::Type::Button, DPAD_RIGHT, GenericInputBinding::DPadRight},
+		};
+		return bindings;
+	}
+
+	std::span<const SettingInfo> SeamicDevice::Settings(u32 subtype) const
+	{
+		static constexpr const SettingInfo info[] = {
+			{SettingInfo::Type::StringList, "input_device_name", TRANSLATE_NOOP("USB", "Input Device"),
+				TRANSLATE_NOOP("USB", "Selects the device to read audio from."), "", nullptr, nullptr, nullptr, nullptr,
+				nullptr, &AudioDevice::GetInputDeviceList},
+			{SettingInfo::Type::Integer, "input_latency", TRANSLATE_NOOP("USB", "Input Latency"),
+				TRANSLATE_NOOP("USB", "Specifies the latency to the host input device."),
+				AudioDevice::DEFAULT_LATENCY_STR, "1", "1000", "1", TRANSLATE_NOOP("USB", "%dms"), nullptr, nullptr, 1.0f},
+		};
+		return info;
+	}
+	
+	float SeamicDevice::GetBindingValue(const USBDevice* dev, u32 bind_index) const
+	{
+		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
+		switch (bind_index)
+		{
+			case STICK_UP:    return (static_cast<float>(s->stick_u) / 255.0f);
+			case STICK_DOWN:  return (static_cast<float>(s->stick_d) / 255.0f);
+			case STICK_LEFT:  return (static_cast<float>(s->stick_l) / 255.0f);
+			case STICK_RIGHT: return (static_cast<float>(s->stick_r) / 255.0f);
+			case BTN_A: return s->data.btn_a;
+			case BTN_B: return s->data.btn_b;
+			case BTN_C: return s->data.btn_c;
+			case BTN_X: return s->data.btn_x;
+			case BTN_Y: return s->data.btn_y;
+			case BTN_Z: return s->data.btn_z;
+			case BTN_L: return s->data.btn_l;
+			case BTN_R: return s->data.btn_r;
+			case SELECT: return s->data.select;
+			case START:  return s->data.start;
+			case DPAD_UP:    return s->hat_up;
+			case DPAD_DOWN:  return s->hat_down;
+			case DPAD_LEFT:  return s->hat_left;
+			case DPAD_RIGHT: return s->hat_right;
+			default:
+				return 0.0f;
+		}
+	}
+
+	void SeamicDevice::SetBindingValue(USBDevice* dev, u32 bind_index, float value) const
+	{
+		SeamicState* s = USB_CONTAINER_OF(dev, SeamicState, dev);
+		switch (bind_index)
+		{
+			case STICK_UP:
+				s->stick_u = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				s->UpdateStick();
+				break;
+			case STICK_DOWN:
+				s->stick_d = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				s->UpdateStick();
+				break;
+			case STICK_LEFT:
+				s->stick_l = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				s->UpdateStick();
+				break;
+			case STICK_RIGHT:
+				s->stick_r = static_cast<u8>(std::clamp<long>(std::lroundf(value * 255.0f), 0, 255));
+				s->UpdateStick();
+				break;
+			case BTN_A: s->data.btn_a = (value >= 0.5f); break;
+			case BTN_B: s->data.btn_b = (value >= 0.5f); break;
+			case BTN_C: s->data.btn_c = (value >= 0.5f); break;
+			case BTN_X: s->data.btn_x = (value >= 0.5f); break;
+			case BTN_Y: s->data.btn_y = (value >= 0.5f); break;
+			case BTN_Z: s->data.btn_z = (value >= 0.5f); break;
+			case BTN_L: s->data.btn_l = (value >= 0.5f); break;
+			case BTN_R: s->data.btn_r = (value >= 0.5f); break;
+			case SELECT: s->data.select = (value >= 0.5f); break;
+			case START:  s->data.start = (value >= 0.5f); break;
+			case DPAD_UP:    s->hat_up    = (value >= 0.5f); break;
+			case DPAD_DOWN:  s->hat_down  = (value >= 0.5f); break;
+			case DPAD_LEFT:  s->hat_left  = (value >= 0.5f); break;
+			case DPAD_RIGHT: s->hat_right = (value >= 0.5f); break;
+		}
 	}
 
 	bool SeamicDevice::Freeze(USBDevice* dev, StateWrapper& sw) const
 	{
 		Console.Warning("Not implemented!");
 		return true;
-		//  SeamicState *s = (SeamicState *)dev;
-		// 	switch (mode)
-		// 	{
-		// 		case FREEZE_LOAD:
-		// 			if (!s) return -1;
-		// 			s->f = *(SeamicState::freeze *)data;
-		// 			return sizeof(SeamicState::freeze);
-		// 		case FREEZE_SAVE:
-		// 			if (!s) return -1;
-		// 			return sizeof(SeamicState::freeze);
-		// 		case FREEZE_SIZE:
-		// 			return sizeof(SeamicState::freeze);
-		// 		default:
-		// 		break;
-		// 	}
-		// 	return -1;
 	}
-
 } // namespace usb_pad
