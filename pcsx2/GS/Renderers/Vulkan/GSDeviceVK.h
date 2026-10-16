@@ -638,13 +638,14 @@ public:
 	void SetVSPushConstants(u32 base_vertex, u32 base_index = 0, bool force_update = false);
 	bool BindDrawPipeline(const PipelineSelector& p);
 
+	void ExternalFeedbackBarrier(GSTextureVK* tex);
 	void RenderHW(GSHWDrawConfig& config) override;
 	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
 	VkImageLayout GetFeedbackLoopLayout() const;
-	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
+	VkDependencyFlags GetFeedbackBarrierDependencyFlags(bool by_region) const;
 	VkAccessFlags2 GetFeedbackLoopInputAccessFlags() const;
-	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
+	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds, bool by_region);
 	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
 		bool one_barrier, bool full_barrier);
 
