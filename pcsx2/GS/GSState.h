@@ -185,6 +185,7 @@ protected:
 	void UpdateVertexKick();
 
 	void GrowVertexBuffer();
+	bool DeindexVertices();
 	bool IsAutoFlushDraw(u32 prim, int& tex_layer);
 	template<u32 prim> void HandleAutoFlush();
 	bool EarlyDetectShuffle(u32 prim);
@@ -547,6 +548,40 @@ public:
 	template <u32 primclass>
 	void RewriteVerticesIfLargeSTImpl(const GSVector4& large_val, bool check_clamp_mode);
 	void RewriteVerticesIfLargeST(const GSVector4& large_val, bool check_clamp_mode);
+
+	struct VertexUVRoundingInfo
+	{
+		bool one_to_one_XU_YV;
+		bool half_offset_XU;
+		bool half_offset_YV;
+		bool same_dir_XU;
+		bool same_dir_YV;
+		bool reverse_dir_XU;
+		bool reverse_dir_YV;
+		bool anchor_XU0;
+		bool anchor_XU1;
+		bool anchor_YV0;
+		bool anchor_YV1;
+
+		VertexUVRoundingInfo()
+			: one_to_one_XU_YV(true)
+			, half_offset_XU(true)
+			, half_offset_YV(true)
+			, same_dir_XU(true)
+			, same_dir_YV(true)
+			, reverse_dir_XU(true)
+			, reverse_dir_YV(true)
+			, anchor_XU0(true)
+			, anchor_XU1(true)
+			, anchor_YV0(true)
+			, anchor_YV1(true)
+		{
+		}
+	};
+
+	template<u32 primclass, bool tme, bool fst>
+	bool GetVertexUVRoundingInfoImpl(const bool upscaling, VertexUVRoundingInfo* info);
+	bool GetVertexUVRoundingInfo(const bool tex, const bool upscaling = false, VertexUVRoundingInfo* info = nullptr);
 };
 
 // We put this in the header because of Multi-ISA.

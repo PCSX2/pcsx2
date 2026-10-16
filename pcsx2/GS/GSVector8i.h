@@ -652,6 +652,11 @@ public:
 		return GSVector8i(_mm256_srli_epi64(m, i));
 	}
 
+	__forceinline GSVector8i abs32() const
+	{
+		return GSVector8i(_mm256_abs_epi32(m));
+	}
+
 	__forceinline GSVector8i add8(const GSVector8i& v) const
 	{
 		return GSVector8i(_mm256_add_epi8(m, v.m));
