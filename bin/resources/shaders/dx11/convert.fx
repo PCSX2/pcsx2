@@ -181,6 +181,39 @@ OUTPUT_TYPE ps_copy(PS_INPUT input) : OUTPUT_SV
 }
 #endif
 
+#if defined(__ps_gaussian_blur_h__) || defined(__ps_gaussian_blur_v__)
+float4 gaussian_blur(float2 uv, float2 offset)
+{
+	// 9 tap Gaussian blur using 5 bilinear samples.
+	// Weights and offsets from https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+	const float3 weights = float3(0.2270270270f, 0.3162162162f, 0.0702702703f);
+	const float2 offsets = float2(1.3846153846f, 3.2307692308f);
+
+	float4 result = sample_c(uv) * weights.x;
+	result += (sample_c(uv + offset * offsets.x) + sample_c(uv - offset * offsets.x)) * weights.y;
+	result += (sample_c(uv + offset * offsets.y) + sample_c(uv - offset * offsets.y)) * weights.z;
+	return result;
+}
+#endif
+
+#if defined(__ps_gaussian_blur_h__)
+OUTPUT_TYPE ps_gaussian_blur_h(PS_INPUT input) : OUTPUT_SV
+{
+	uint width, height;
+	Texture.GetDimensions(width, height);
+	return gaussian_blur(input.t, float2(1.0f / width, 0.0f));
+}
+#endif
+
+#if defined(__ps_gaussian_blur_v__)
+OUTPUT_TYPE ps_gaussian_blur_v(PS_INPUT input) : OUTPUT_SV
+{
+	uint width, height;
+	Texture.GetDimensions(width, height);
+	return gaussian_blur(input.t, float2(0.0f, 1.0f / height));
+}
+#endif
+
 #if defined(__ps_depth_copy__)
 OUTPUT_TYPE ps_depth_copy(PS_INPUT input) : OUTPUT_SV
 {

@@ -44,6 +44,7 @@ public:
 #define FSUI_NSTR(str) str
 
 using ImGuiFullscreen::ActiveButton;
+using ImGuiFullscreen::ActiveButtonWithRightText;
 using ImGuiFullscreen::AddNotification;
 using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
@@ -85,6 +86,7 @@ using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
+using ImGuiFullscreen::LAYOUT_MENU_BACKGROUND_OPACITY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
@@ -136,6 +138,7 @@ using ImGuiFullscreen::UISecondaryStrongColor;
 using ImGuiFullscreen::UISecondaryTextColor;
 using ImGuiFullscreen::UISecondaryWeakColor;
 using ImGuiFullscreen::UITextHighlightColor;
+using ImGuiFullscreen::UITextShadowColor;
 using ImGuiFullscreen::WantsToCloseMenu;
 
 namespace FullscreenUI
@@ -159,6 +162,9 @@ namespace FullscreenUI
 		None,
 		Exit,
 		Achievements,
+		Capture,
+		Emulation,
+		Settings,
 	};
 
 	enum class SettingsPage
@@ -224,10 +230,11 @@ namespace FullscreenUI
 	void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 	void ApplyLayoutSettings(const SettingsInterface* bsi = nullptr);
 
-	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size);
+	void DrawSvgTexture(GSTexture* padded_texture, ImVec2 unpadded_size, const ImVec4& color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 	void DrawCachedSvgTexture(const std::string& path, ImVec2 size, SvgScaling mode);
 	void DrawCachedSvgTextureAsync(const std::string& path, ImVec2 size, SvgScaling mode);
-	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max);
+	void DrawListSvgTexture(ImDrawList* drawList, GSTexture* padded_texture, const ImVec2& p_min, const ImVec2& p_unpadded_max,
+		ImU32 color = IM_COL32_WHITE);
 
 	inline MainWindowType s_current_main_window = MainWindowType::None;
 	inline PauseSubMenu s_current_pause_submenu = PauseSubMenu::None;

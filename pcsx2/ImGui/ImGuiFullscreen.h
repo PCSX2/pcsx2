@@ -31,6 +31,7 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_LARGE_FONT_SIZE = 22.0f;
 	static constexpr float LAYOUT_MEDIUM_FONT_SIZE = 14.0f;
 	static constexpr float LAYOUT_SMALL_FONT_SIZE = 10.0f;
+	static constexpr float LAYOUT_MENU_BACKGROUND_OPACITY = 0.5f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT = 50.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY = 26.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
@@ -64,6 +65,7 @@ namespace ImGuiFullscreen
 	extern ImVec4 UIPrimaryLightColor;
 	extern ImVec4 UIPrimaryDarkColor;
 	extern ImVec4 UIPrimaryTextColor;
+	extern ImVec4 UITextShadowColor;
 	extern ImVec4 UITextHighlightColor;
 	extern ImVec4 UIPrimaryLineColor;
 	extern ImVec4 UISecondaryColor;
@@ -194,7 +196,7 @@ namespace ImGuiFullscreen
 	void PrerenderMenuButtonBorder();
 	void AddTextWithShadow(ImDrawList* dl, std::pair<ImFont*, float> font, const ImVec2& pos, ImU32 col, const char* text,
 		const char* text_end = nullptr, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = nullptr,
-		ImU32 shadow_col = IM_COL32(0, 0, 0, 64), bool strip_id_suffix = false);
+		ImU32 shadow_col = ImGui::GetColorU32(UITextShadowColor), bool strip_id_suffix = false);
 	void RenderTextClippedWithShadow(const ImVec2& pos_min, const ImVec2& pos_max, const char* text, const char* text_end = nullptr,
 		const ImVec2* text_size_if_known = nullptr, const ImVec2& align = ImVec2(0.0f, 0.0f), const ImRect* clip_rect = nullptr);
 	void BeginMenuButtons(u32 num_items = 0, float y_align = 0.0f, float x_padding = LAYOUT_MENU_BUTTON_X_PADDING,

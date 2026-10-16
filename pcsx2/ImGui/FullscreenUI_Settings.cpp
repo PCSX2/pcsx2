@@ -262,13 +262,15 @@ void FullscreenUI::DrawInputBindingButton(
 
 	SmallString value = bsi->GetSmallStringValue(section, name);
 	const bool oneline = (value.count('&') <= 1);
+	const float title_height = GetLineHeight(g_large_font);
+	const float spacing = LayoutScale(4.0f);
+	const float content_height = title_height + (oneline ? 0.0f : spacing + GetLineHeight(g_medium_font));
+	const float height = std::max(oneline ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY : ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+		ImGuiFullscreen::LayoutUnscale(content_height));
 
 	ImRect bb;
 	bool visible, hovered, clicked;
-	clicked = MenuButtonFrame(title, true,
-		oneline ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY :
-				  ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-		&visible, &hovered, &bb.Min, &bb.Max);
+	clicked = MenuButtonFrame(title, true, height, &visible, &hovered, &bb.Min, &bb.Max);
 	if (!visible)
 		return;
 
@@ -307,7 +309,7 @@ void FullscreenUI::DrawInputBindingButton(
 		}
 	}
 
-	const float midpoint = bb.Min.y + GetLineHeight(g_large_font) + LayoutScale(4.0f);
+	const float midpoint = bb.Min.y + title_height + spacing;
 
 	if (oneline)
 	{
@@ -725,8 +727,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 			ImVec2 button_pos(ImGui::GetCursorPos());
 
 			// Align value text in middle.
-			ImGui::SetCursorPosY(
-				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
+			ImGui::SetCursorPosY(button_pos.y + padding.y);
 			ImGui::TextUnformatted(str_value);
 
 			s32 step = 0;
@@ -758,7 +759,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 				dlg_value_changed = true;
 			}
 
-			ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+			ImGui::SetCursorPosY(button_pos.y + GetLineHeight(g_large_font) + padding.y * 2.0f + LayoutScale(10.0f));
 		}
 
 		if (dlg_value_changed)
@@ -933,8 +934,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 			ImVec2 button_pos(ImGui::GetCursorPos());
 
 			// Align value text in middle.
-			ImGui::SetCursorPosY(
-				button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
+			ImGui::SetCursorPosY(button_pos.y + padding.y);
 			ImGui::TextUnformatted(str_value);
 
 			float step = 0;
@@ -966,7 +966,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 				dlg_value_changed = true;
 			}
 
-			ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+			ImGui::SetCursorPosY(button_pos.y + GetLineHeight(g_large_font) + padding.y * 2.0f + LayoutScale(10.0f));
 		}
 
 		if (dlg_value_changed)
@@ -1078,8 +1078,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 			ImVec2 button_pos(ImGui::GetCursorPos());
 
 			// Align value text in middle.
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
-								 ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font.second) * 0.5f);
+			ImGui::SetCursorPosY(button_pos.y + padding.y);
 			ImGui::TextUnformatted(Host::TranslateToCString(TR_CONTEXT, labels[i]));
 			ImGui::SameLine(midpoint);
 			ImGui::SetNextItemWidth(end);
@@ -1144,7 +1143,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 					dlg_value_changed = true;
 				}
 
-				ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+				ImGui::SetCursorPosY(button_pos.y + GetLineHeight(g_large_font) + padding.y * 2.0f + LayoutScale(10.0f));
 			}
 
 			if (dlg_value_changed)
@@ -1855,12 +1854,12 @@ void FullscreenUI::DrawSettingsWindow()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
-		ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
 									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
 	const bool using_custom_bg = !VMManager::HasValidVM() && s_custom_background_enabled && s_custom_background_texture;
 	const float header_bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
-	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? 0.90f : 1.0f);
+	const float content_bg_alpha = using_custom_bg ? 0.0f : (VMManager::HasValidVM() ? LAYOUT_MENU_BACKGROUND_OPACITY : 1.0f);
 	SettingsInterface* bsi = GetEditingSettingsInterface();
 	const bool game_settings = IsEditingGameSettings(bsi);
 	const bool show_advanced_settings = ShouldShowAdvancedSettings(bsi);
