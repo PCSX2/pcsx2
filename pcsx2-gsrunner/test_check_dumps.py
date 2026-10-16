@@ -146,7 +146,7 @@ def check_regression_test(baselinedir, testdir, name):
             imguri1 = Path(path1).as_uri()
             imguri2 = Path(path2).as_uri()
             html.append("<tr><td colspan=\"2\">Frame %d</td></tr>" % (framenum))
-            html.append("<tr><td><img class=\"before\" src=\"%s\" /></td><td><img class=\"after\" src=\"%s\" /></td></tr>" % (imguri1, imguri2))
+            html.append("<tr><td><img class=\"before\" loading=\"lazy\" decoding=\"async\" src=\"%s\" /></td><td><img class=\"after\" loading=\"lazy\" decoding=\"async\" src=\"%s\" /></td></tr>" % (imguri1, imguri2))
 
             if len(diff_frames) == MAX_DIFF_FRAMES:
                 break
