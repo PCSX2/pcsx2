@@ -4,12 +4,18 @@
    https://css-tricks.com/prevent-page-scrolling-when-a-modal-is-open/
 */
 
-function openModal() {
+function openModal(index, frameIndex) {
+  // Freeze the page in place without changing its layout: keep the body at full
+  // width and keep the scrollbar track, otherwise every image on the page gets
+  // re-laid out, rescaled and re-decoded (they blank out for a few seconds).
+  document.documentElement.style.overflowY = 'scroll';
+  document.body.style.width = '100%';
   document.body.style.position = 'fixed';
   document.body.style.top = `-${window.scrollY}px`;
   document.getElementById("myModal").style.display = "block";
   document.getElementById("myModal").focus();
-  setImageIndex(0);
+  // Fall back to the first image if no (or an invalid) position was given
+  setImageIndex(index >= 0 ? index : 0, frameIndex >= 0 ? frameIndex : 0);
 }
 
 function closeModal() {
@@ -17,6 +23,8 @@ function closeModal() {
     const scrollY = document.body.style.top;
     document.body.style.position = '';
     document.body.style.top = '';
+    document.body.style.width = '';
+    document.documentElement.style.overflowY = '';
     window.scrollTo(0, parseInt(scrollY || '0') * -1);
 }
 
@@ -164,8 +172,9 @@ document.querySelector("#myModal .next").addEventListener("click", function() {
     setImageIndex(currentImage + 1);
 });
 document.querySelectorAll(".item img").forEach(elem => elem.addEventListener("click", function() {
-    if (!isModalOpen())
-        openModal();
     const [i, f] = getImageIndexForUri(this.getAttribute("src"));
-    setImageIndex(i, f);
+    if (!isModalOpen())
+        openModal(i, f);
+    else
+        setImageIndex(i, f);
 }));
