@@ -449,6 +449,7 @@ set(pcsx2USBHeaders
 set(pcsx2PADSources
 	SIO/Pad/Pad.cpp
 	SIO/Pad/PadBase.cpp
+	SIO/Pad/PadDualshock1.cpp
 	SIO/Pad/PadDualshock2.cpp
 	SIO/Pad/PadGuitar.cpp
 	SIO/Pad/PadJogcon.cpp
@@ -459,6 +460,7 @@ set(pcsx2PADSources
 set(pcsx2PADHeaders
 	SIO/Pad/Pad.h
 	SIO/Pad/PadBase.h
+	SIO/Pad/PadDualshock1.h
 	SIO/Pad/PadDualshock2.h
 	SIO/Pad/PadGuitar.h
 	SIO/Pad/PadJogcon.h
