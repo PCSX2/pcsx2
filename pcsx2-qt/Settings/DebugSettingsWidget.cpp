@@ -113,6 +113,7 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveDrawStats, "EmuCore/GS", "SaveDrawStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveFrameStats, "EmuCore/GS", "SaveFrameStats", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveHWConfig, "EmuCore/GS", "SaveHWConfig", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_gs.saveTextureCache, "EmuCore/GS", "SaveTextureCache", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveDrawStart, "EmuCore/GS", "SaveDrawStart", 0);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveDrawCount, "EmuCore/GS", "SaveDrawCount", 5000);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_gs.saveFrameStart, "EmuCore/GS", "SaveFrameStart", 0);
@@ -147,6 +148,8 @@ DebugSettingsWidget::DebugSettingsWidget(SettingsWindow* settings_dialog, QWidge
 		tr("Saves performance metrics and statistics per frame when GS dumping is active."));
 	dialog()->registerWidgetHelp(m_gs.saveHWConfig, tr("Save Hardware Config"), tr("Unchecked"),
 		tr("Records the host graphics hardware configuration and renderer settings in the GS dump."));
+	dialog()->registerWidgetHelp(m_gs.saveTextureCache, tr("Save Texture Cache"), tr("Unchecked"),
+		tr("Save a summary of the texture cache each draw when GS dumping is active."));
 	dialog()->registerWidgetHelp(m_gs.saveDrawStart, tr("Save Draw Range Start"), tr("N/A"),
 		tr("Starting draw call index within each frame to dump."));
 	dialog()->registerWidgetHelp(m_gs.saveDrawCount, tr("Save Draw Range Count"), tr("N/A"),
@@ -266,6 +269,7 @@ void DebugSettingsWidget::onDrawDumpingChanged()
 	m_gs.saveDrawStats->setEnabled(enabled);
 	m_gs.saveFrameStats->setEnabled(enabled);
 	m_gs.saveHWConfig->setEnabled(enabled);
+	m_gs.saveTextureCache->setEnabled(enabled);
 	m_gs.saveDrawStart->setEnabled(enabled);
 	m_gs.saveDrawCount->setEnabled(enabled);
 	m_gs.saveFrameStart->setEnabled(enabled);
