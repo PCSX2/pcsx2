@@ -91,7 +91,7 @@ private:
 	u32 GetConstantDirectWriteMemClearColor() const;
 	u32 GetConstantDirectWriteMemClearDepth() const;
 	bool IsReallyDithered() const;
-	bool AreAnyPixelsDiscarded() const;
+	bool AreAnyPixelsDiscarded();
 	bool IsDiscardingDstColor();
 	bool IsDiscardingDstRGB();
 	bool IsDiscardingDstAlpha() const;
