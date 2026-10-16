@@ -411,6 +411,9 @@ Login token generated at:</string>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="5" column="0">
        <widget class="QLineEdit" name="lbSoundPath">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Default Sound Effect</string>
         </property>
@@ -418,6 +421,9 @@ Login token generated at:</string>
       </item>
       <item row="1" column="0">
        <widget class="QLineEdit" name="notificationSoundPath">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Default Sound Effect</string>
         </property>
@@ -453,6 +459,9 @@ Login token generated at:</string>
       </item>
       <item row="3" column="0">
        <widget class="QLineEdit" name="unlockSoundPath">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Default Sound Effect</string>
         </property>
