@@ -1891,11 +1891,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 
 						GSVector4i new_rect = (GSLocalMemory::m_psm[color_psm].bpp != GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && (psm & 0x7) != PSMCT16) ? block_boundary_rect : rect;
 
-						// If the sizing is completely wrong on the frame vs the source when reading from alpha then it's likely the target has 2 different sizes for rgb and alpha.
-						// This is just changing the target width for the rect translation, it has no bearing on the actual source read or the target itself.
-						// Hitman Blood Money is an example of this in the theatre.
-						rt_tbw = (possible_shuffle || bw == 1 || GSUtil::GetChannelMask(psm) != 0x8 || frame.FBW <= bw || frame.FBW == t->m_TEX0.TBW || bw == t->m_TEX0.TBW) ? t->m_TEX0.TBW : frame.FBW;
-
 						const bool can_translate = CanTranslate(adj_bp, bw, src_psm, new_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, rt_tbw);
 						if (can_translate)
 						{
@@ -4015,11 +4010,9 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 			}
 			dst = t;
 			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: (0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
+
 			if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-			{
 				t->RearrangeTarget(TEX0.TBW);
-				t->m_TEX0.TBW = TEX0.TBW;
-			}
 
 			if (size.x > 0 || size.y > 0)
 				ScaleTargetForDisplay(dst, TEX0, size.x, size.y);
@@ -4061,10 +4054,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_TEX0.TBP0, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
 
 				if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-				{
 					t->RearrangeTarget(TEX0.TBW);
-					t->m_TEX0.TBW = TEX0.TBW;
-				}
 
 				if (size.x > 0 || size.y > 0)
 					ScaleTargetForDisplay(dst, TEX0, size.x, size.y);
@@ -4096,10 +4086,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				}
 
 				if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-				{
 					t->RearrangeTarget(TEX0.TBW);
-					t->m_TEX0.TBW = TEX0.TBW;
-				}
 
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: (0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
@@ -5422,10 +5409,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 
 	if (GSConfig.UserHacks_TargetPageRearranging && DBW > 1 && dst->m_TEX0.TBW != DBW)
-	{
 		dst->RearrangeTarget(DBW);
-		dst->m_TEX0.TBW = DBW;
-	}
+
 	// If we have an offset, adjust the base positions
 	if (src->m_TEX0.TBP0 != SBP)
 	{
@@ -7983,6 +7968,7 @@ void GSTextureCache::Target::RearrangeTarget(u32 new_bw, bool recycle)
 		alloca(sizeof(GSDevice::MultiStretchRect) * static_cast<u32>(page_count)));
 	u32 ndrects = 0;
 	GSVector4i new_valid = GSVector4i::zero();
+	GSVector4i new_drawn = GSVector4i::zero();
 
 	Update(false);
 
@@ -8002,10 +7988,20 @@ void GSTextureCache::Target::RearrangeTarget(u32 new_bw, bool recycle)
 		drect.filter = Nearest;
 		drect.wmask = 0xF;
 
-		if (page == 0)
-			new_valid = write_page;
-		else
-			new_valid = new_valid.runion(write_page);
+		if (!m_valid.rintersect(read_page).rempty())
+		{
+			if (page == 0)
+				new_valid = write_page;
+			else
+				new_valid = new_valid.runion(write_page);
+		}
+		if (!m_drawn_since_read.rintersect(read_page).rempty())
+		{
+			if (page == 0)
+				new_drawn = write_page;
+			else
+				new_drawn = new_drawn.runion(write_page);
+		}
 	}
 
 	if (ndrects > 0)
@@ -8032,7 +8028,9 @@ void GSTextureCache::Target::RearrangeTarget(u32 new_bw, bool recycle)
 		m_texture = tex;
 		m_unscaled_size = GSVector2i(new_x_size, new_y_size);
 		m_valid = new_valid;
+		m_drawn_since_read = new_drawn;
 		tex = nullptr;
+		m_TEX0.TBW = new_bw;
 	}
 
 }
