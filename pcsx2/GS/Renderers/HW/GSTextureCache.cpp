@@ -369,14 +369,14 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 
 	if (src_pgw != dst_pgw)
 	{
-		const int horizontal_dst_page_offset = page_offset % clamped_tbw;
-		const bool single_row = ((src_pgw + horizontal_dst_page_offset) <= clamped_tbw) && (in_rect.height() <= dst_page_size.y);
 		const bool single_page = (in_rect.width() <= t_psm.pgs.x) && (in_rect.height() <= t_psm.pgs.y);
 		const int vertical_offset = in_rect.y / t_psm.pgs.y;
 		const int horizontal_offset = in_rect.x / t_psm.pgs.x;
 		const int rect_offset = horizontal_offset + (vertical_offset * src_pgw);
 		const int rect_pages = std::max(((in_rect.width() / t_psm.pgs.x) % src_pgw) + ((in_rect.height() / t_psm.pgs.y) * src_pgw), 1);
 		page_offset += rect_offset;
+		const int horizontal_dst_page_offset = page_offset % clamped_tbw;
+		const bool single_row = ((src_pgw + horizontal_dst_page_offset) <= clamped_tbw) && (in_rect.height() <= dst_page_size.y);
 		in_rect -= GSVector4i(horizontal_offset * t_psm.pgs.x, vertical_offset * t_psm.pgs.y).xyxy();
 
 		if (sbw == 0) // Intentionally check this separately
@@ -1379,6 +1379,18 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 	// we want to create a temporary source and load the data from memory.
 	bool target_bp_hit_outside_valid_area = false;
 
+	GSVector4i req_rect = r;
+
+	// The read area might be offset but the start of the texture is at the beginning of the space.
+	req_rect.x = region.HasX() ? region.GetMinX() : req_rect.x;
+	req_rect.y = region.HasY() ? region.GetMinY() : req_rect.y;
+
+	GSVector4i block_boundary_rect = req_rect;
+	block_boundary_rect.x = block_boundary_rect.x & ~(psm_s.bs.x - 1);
+	block_boundary_rect.y = block_boundary_rect.y & ~(psm_s.bs.y - 1);
+	// Round up to the nearst block boundary for lookup to avoid problems due to bilinear and inclusive rects.
+	block_boundary_rect.z = std::max(req_rect.x + 1, (block_boundary_rect.z + (psm_s.bs.x / 2)) & ~(psm_s.bs.x - 1));
+	block_boundary_rect.w = std::max(req_rect.y + 1, (block_boundary_rect.w + (psm_s.bs.y / 2)) & ~(psm_s.bs.y - 1));
 #ifdef DISABLE_HW_TEXTURE_CACHE
 	if (0)
 #else
@@ -1389,18 +1401,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		const u32 psm = TEX0.PSM;
 		const u32 bw = TEX0.TBW;
 
-		GSVector4i req_rect = r;
-
-		// The read area might be offset but the start of the texture is at the beginning of the space.
-		req_rect.x = region.HasX() ? region.GetMinX() : 0;
-		req_rect.y = region.HasY() ? region.GetMinY() : 0;
-
-		GSVector4i block_boundary_rect = req_rect;
-		block_boundary_rect.x = block_boundary_rect.x & ~(psm_s.bs.x - 1);
-		block_boundary_rect.y = block_boundary_rect.y & ~(psm_s.bs.y - 1);
-		// Round up to the nearst block boundary for lookup to avoid problems due to bilinear and inclusive rects.
-		block_boundary_rect.z = std::max(req_rect.x + 1, (block_boundary_rect.z + (psm_s.bs.x / 2)) & ~(psm_s.bs.x - 1));
-		block_boundary_rect.w = std::max(req_rect.y + 1, (block_boundary_rect.w + (psm_s.bs.y / 2)) & ~(psm_s.bs.y - 1));
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -1424,7 +1424,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				// it's probable that's more correct than being inside (Tomb Raider Legends + Project Snowblind)
 				// Vakyrie Profile 2 also has some in draws which get done on a different target due to a slight offset, so we need to make sure we have the newer one.
 				if (!overlaps || (found_t && (GSState::s_n - dst->m_last_draw) < (GSState::s_n - t->m_last_draw)))
+				{
+					if (!overlaps && bp == t->m_TEX0.TBP0)
+						target_bp_hit_outside_valid_area |= t->HasValidBitsForFormat(psm, req_color, req_alpha, t->m_TEX0.TBW == TEX0.TBW);
+
 					continue;
+				}
 
 				// If the BP is offset in to a page and the format does not match, trying to match up the correct position is very difficult since we don't swizzle.
 				// Tomb Raider Legends does a block level BP in PSMT8 over a C16 target, which is just a nightmare to get right.
@@ -1813,10 +1818,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				{
 					const u32 end_block = GSLocalMemory::GetEndBlockAddress(bp, TEX0.TBW, TEX0.PSM, r);
 					const u32 adj_bp = (end_block < t->m_TEX0.TBP0 && t->UnwrappedEndBlock() > GS_MAX_BLOCKS) ? (bp + GS_MAX_BLOCKS) : bp;
+					const GSVector2i& page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
 					u32 horz_page_offset = ((adj_bp - t->m_TEX0.TBP0) >> 5) % rt_tbw;
+					// when checking if there's page boundary crossing, we need to check from any offset in to the page, not just the raw height, which could be less than a page.
+					const u32 height_from_offset = block_boundary_rect.w - (block_boundary_rect.y & ~(page_size.y - 1));
 
-					if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && bw != rt_tbw && block_boundary_rect.height() > GSLocalMemory::m_psm[psm].pgs.y)
+					if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && bw != rt_tbw && height_from_offset > GSLocalMemory::m_psm[psm].pgs.y)
 						continue;
 
 					// Reading 16bit as 32bit, or vice versa (when there isn't a shuffle) isn't really possible and no conversion is done.
@@ -1900,15 +1908,22 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						if (can_translate)
 						{
 							const bool swizzle_match = GSLocalMemory::m_psm[src_psm].depth == GSLocalMemory::m_psm[t->m_TEX0.PSM].depth;
-							const GSVector2i& page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 							const GSVector4i page_mask(GSVector4i((page_size.x - 1), (page_size.y - 1)).xyxy());
-							rect = new_rect & ~page_mask;
+							// Round it up so we don't end up with a completely empty rect.
+							new_rect.z = new_rect.z + (page_size.x - 1);
+							new_rect.w = new_rect.w + (page_size.y - 1);
 
+							rect = new_rect & ~page_mask;
+							/*if (region.HasEither())
+							{
+								rect.x -= region.GetMinX() & ~(page_size.x - 1);
+								rect.y -= region.GetMinY() & ~(page_size.y - 1);
+							}*/
 							if (swizzle_match)
 							{
-								rect = TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, rt_tbw, t->m_TEX0.PSM, t->m_valid, adj_bp, src_psm, bw, new_rect);
-								rect.x -= new_rect.x;
-								rect.y -= new_rect.y;
+								rect = TranslateAlignedRectByPage(t->m_TEX0.TBP0, t->m_end_block, rt_tbw, t->m_TEX0.PSM, t->m_valid, adj_bp, src_psm, bw, rect);
+								rect.x -= new_rect.x & ~(page_size.x - 1);
+								rect.y -= new_rect.y & ~(page_size.y - 1);
 							}
 							else
 							{
@@ -1941,6 +1956,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								const GSVector4i dirty_rect = t->m_dirty.GetTotalRect(t->m_TEX0, GSVector2i(rect.z, rect.w)).rintersect(rect);
 								if (dirty_rect.eq(rect))
 									continue;
+								if (!dirty_rect.rempty())
+									t->Update();
 							}
 
 							if (!t->HasValidBitsForFormat(psm, req_color, req_alpha, rt_tbw == TEX0.TBW) && !(possible_shuffle && GSLocalMemory::m_psm[psm].bpp == 16 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 32))
@@ -2073,8 +2090,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 							region = SourceRegion::Create(TEX0, fake_CLAMP);
 
 							const GSVector4i custom_offset_rect = TranslateAlignedRectByPage(t, bp, psm, bw, block_boundary_rect);
-							x_offset = custom_offset_rect.x;
-							y_offset = custom_offset_rect.y;
+							x_offset = custom_offset_rect.x - block_boundary_rect.x;
+							y_offset = custom_offset_rect.y - block_boundary_rect.y;
 							dst = t;
 							tex_merge_rt = false;
 							found_t = true;
@@ -2295,7 +2312,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				}
 				else if (src->m_TEX0.TBP0 > src->m_from_target->m_TEX0.TBP0)
 				{
-					GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, GSVector4i(0, 0, 1, 1), false);
+					GSVector4i dst_offset = TranslateAlignedRectByPage(src->m_from_target, src->m_TEX0.TBP0, src->m_TEX0.PSM, src->m_TEX0.TBW, block_boundary_rect, false);
+					if (dst_offset.x >= block_boundary_rect.x && dst_offset.y >= block_boundary_rect.y)
+					{
+						dst_offset.x -= block_boundary_rect.x;
+						dst_offset.y -= block_boundary_rect.y;
+					}
 					src->m_region.bits = 0;
 					src->m_region.SetX(dst_offset.x, dst_offset.x + (region.HasX() ? std::min(region.GetMaxX(), (1 << TEX0.TW)) : (1 << TEX0.TW)));
 					src->m_region.SetY(dst_offset.y, dst_offset.y + (region.HasY() ? std::min(region.GetMaxY(), (1 << TEX0.TH)) : (1 << TEX0.TH)));
@@ -6244,7 +6266,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_unscaled_size = dst->m_unscaled_size;
 			src->m_shared_texture = true;
 
-			if (channel_shuffle)
+			if (channel_shuffle || y_offset < 0 || x_offset < 0)
 				m_temporary_source = src;
 		}
 
