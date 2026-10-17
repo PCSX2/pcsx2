@@ -233,7 +233,7 @@ std::pair<u32,u32> ElfObject::GetTextRange() const
 
 bool ElfObject::CheckElfSize(s64 size, Error* error)
 {
-	if (size > 0xfffffff)
+	if (size > 0x7fffffff)
 		Error::SetString(error, "Illegal ELF file size over 2GB!");
 	else if (size == -1)
 		Error::SetString(error, "ELF file does not exist!");
