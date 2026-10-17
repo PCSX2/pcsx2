@@ -970,12 +970,7 @@ struct Pcsx2Config
 
 	struct SPU2Options
 	{
-		enum class SPU2SyncMode : u8
-		{
-			Disabled,
-			TimeStretch,
-			Count
-		};
+		using SPU2SyncMode = AudioSynchronizationMode;
 
 		static constexpr s32 MAX_VOLUME = 200;
 		static constexpr AudioBackend DEFAULT_BACKEND = AudioBackend::Cubeb;
@@ -1017,8 +1012,6 @@ struct Pcsx2Config
 		SPU2Options();
 
 		void LoadSave(SettingsWrapper& wrap);
-
-		bool IsTimeStretchEnabled() const { return (SyncMode == SPU2SyncMode::TimeStretch); }
 
 		bool operator==(const SPU2Options& right) const;
 		bool operator!=(const SPU2Options& right) const;
