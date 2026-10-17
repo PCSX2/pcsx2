@@ -22316,6 +22316,7 @@ SLES-53028:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLES-53029:
   name: "Hitman - Blood Money"
   region: "PAL-F"
@@ -22326,6 +22327,7 @@ SLES-53029:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLES-53030:
   name: "Hitman - Blood Money"
   region: "PAL-G"
@@ -22336,6 +22338,7 @@ SLES-53030:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLES-53031:
   name: "Hitman - Blood Money"
   region: "PAL-I"
@@ -22346,6 +22349,7 @@ SLES-53031:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLES-53032:
   name: "Hitman - Blood Money"
   region: "PAL-S"
@@ -22356,6 +22360,7 @@ SLES-53032:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLES-53035:
   name: "Masters of the Universe - He-Man - Defender of Greyskull"
   region: "PAL-E"
@@ -70343,6 +70348,7 @@ SLUS-21108:
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing.
     autoFlush: 1 # Fixes sun intensity.
     textureInsideRT: 1 # Fixes post-processing.
+    targetPageRearranging: 1 # Fixes some post effects.
 SLUS-21109:
   name: "Drive to Survive"
   region: "NTSC-U"
@@ -76300,6 +76306,7 @@ SLUS-29191:
     textureInsideRT: 1 # Fixes post-processing.
     autoFlush: 1 # Fixes sun intensity in Hitman.
     halfPixelOffset: 5 # Fixes alignment of shuffles and post-processing in Hitman.
+    targetPageRearranging: 1 # Fixes some post effects in Hitman.
 SLUS-29192:
   name: "Test Drive Unlimited [Public Beta Vol.1.0]"
   region: "NTSC-U"
