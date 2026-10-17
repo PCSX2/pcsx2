@@ -1554,6 +1554,8 @@ GSVector2i GSRendererHW::GetValidSize(const GSTextureCache::Source* tex, const b
 			src_width >>= 1;
 			src_height >>= 1;
 		}
+		else if (m_cached_ctx.FRAME.FBW != 1 && src_width > static_cast<int>(m_cached_ctx.FRAME.FBW * 64))
+			src_width = (m_cached_ctx.FRAME.FBW * 64);
 
 		width = (std::max(src_width, width) + page_x) & ~page_x;
 		height = (std::max(src_height, height) + page_y) & ~page_y;
@@ -10133,7 +10135,7 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 		int half_point_pages = 0;
 		half_point_pages = (half_point->m_valid.z + (zbuf_psm.pgs.x - 1)) / zbuf_psm.pgs.x;
 		half_point_pages *= (half_point->m_valid.w + (zbuf_psm.pgs.y - 1)) / zbuf_psm.pgs.y;
-		half_point = (half_point && half_point->m_valid_rgb && half_point->HasValidAlpha() == req_valid_alpha && half_point_pages >= written_pages) ? half_point : nullptr;
+		half_point = (half_point && half_point->m_valid_rgb && half_point->HasValidAlpha() == req_valid_alpha && half_point_pages >= static_cast<int>(written_pages)) ? half_point : nullptr;
 	}
 	if (half_point && half_point->m_age <= 1)
 		return false;
