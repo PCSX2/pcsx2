@@ -4010,11 +4010,9 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 			}
 			dst = t;
 			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: (0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
+
 			if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-			{
 				t->RearrangeTarget(TEX0.TBW);
-				t->m_TEX0.TBW = TEX0.TBW;
-			}
 
 			if (size.x > 0 || size.y > 0)
 				ScaleTargetForDisplay(dst, TEX0, size.x, size.y);
@@ -4056,10 +4054,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: (0x%x, took 0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_TEX0.TBP0, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
 
 				if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-				{
 					t->RearrangeTarget(TEX0.TBW);
-					t->m_TEX0.TBW = TEX0.TBW;
-				}
 
 				if (size.x > 0 || size.y > 0)
 					ScaleTargetForDisplay(dst, TEX0, size.x, size.y);
@@ -4091,10 +4086,7 @@ GSTextureCache::Target* GSTextureCache::LookupDisplayTarget(GIFRegTEX0 TEX0, con
 				}
 
 				if (GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
-				{
 					t->RearrangeTarget(TEX0.TBW);
-					t->m_TEX0.TBW = TEX0.TBW;
-				}
 
 				dst = t;
 				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: (0x%x -> 0x%x %s)", size.x, size.y, bp, t->m_end_block, GSUtil::GetPSMName(TEX0.PSM));
@@ -5417,10 +5409,8 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		return false;
 
 	if (GSConfig.UserHacks_TargetPageRearranging && DBW > 1 && dst->m_TEX0.TBW != DBW)
-	{
 		dst->RearrangeTarget(DBW);
-		dst->m_TEX0.TBW = DBW;
-	}
+
 	// If we have an offset, adjust the base positions
 	if (src->m_TEX0.TBP0 != SBP)
 	{
