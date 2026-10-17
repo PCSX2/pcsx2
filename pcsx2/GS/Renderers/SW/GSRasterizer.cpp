@@ -13,6 +13,8 @@
 #include "common/Console.h"
 #include "common/StringUtil.h"
 
+#include <cmath>
+
 #define ENABLE_DRAW_STATS 0
 
 MULTI_ISA_UNSHARED_IMPL;
