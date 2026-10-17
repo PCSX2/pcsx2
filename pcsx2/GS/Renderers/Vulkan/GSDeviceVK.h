@@ -48,6 +48,8 @@ public:
 		bool vk_khr_synchronization2 : 1;
 		bool vk_ext_attachment_feedback_loop_layout : 1;
 		bool vk_ext_fragment_shader_interlock : 1;
+		bool vk_ext_extended_dynamic_state : 1;
+		bool vk_ext_extended_dynamic_state3 : 1;
 	};
 
 	// Global state accessors
@@ -64,6 +66,12 @@ public:
 	__fi bool UseFeedbackLoopLayout() const
 	{
 		return m_optional_extensions.vk_ext_attachment_feedback_loop_layout && !m_features.framebuffer_fetch;
+	}
+
+	__fi bool UseExtendedDynamicState() const
+	{
+		return m_optional_extensions.vk_ext_extended_dynamic_state &&
+			m_optional_extensions.vk_ext_extended_dynamic_state3;
 	}
 
 	// Helpers for getting constants
@@ -445,15 +453,8 @@ private:
 	VkPipeline m_fxaa_pipeline = {};
 	VkPipeline m_shadeboost_pipeline = {};
 
-	VkPipeline GetConvertPipeline(ShaderConvertSelector shader) const
-	{
-		return m_convert[shader.Index()];
-	}
-
-	VkPipeline GetConvertPipeline(ShaderConvert shader) const
-	{
-		return m_convert[ShaderConvertSelector(shader).Index()];
-	}
+	VkPipeline GetConvertPipeline(ShaderConvertSelector shader);
+	VkPipeline GetConvertPipeline(ShaderConvert shader);
 
 	std::unordered_map<u32, VkShaderModule> m_tfx_vertex_shaders;
 	std::unordered_map<GSHWDrawConfig::PSSelector, VkShaderModule, GSHWDrawConfig::PSSelectorHash>
@@ -591,8 +592,8 @@ public:
 	void DrawIndexedPrimitiveVSExpand(int offset, int count, bool vs_indexing, int vs_indexing_expansion);
 
 	// Main GS primitive draws.
-	void Draw(const GSHWDrawConfig& config);
-	void Draw(const GSHWDrawConfig& config, int offset, int count);
+	void Draw(const DrawPassConfig& config);
+	void Draw(const DrawPassConfig& config, int offset, int count);
 
 	std::unique_ptr<GSDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GSTexture::Format format) override;
 
@@ -638,15 +639,35 @@ public:
 	void SetVSPushConstants(u32 base_vertex, u32 base_index = 0, bool force_update = false);
 	bool BindDrawPipeline(const PipelineSelector& p);
 
+	enum class DATEInitMethod
+	{
+		None,
+		PrimID,
+		Stencil,
+	};
+
+	struct ExtendedDynamicState
+	{
+		GSHWDrawConfig::DepthStencilSelector dss;
+		GSHWDrawConfig::BlendState bs;
+		GSHWDrawConfig::ColorMaskSelector cms;
+		DATEInitMethod date_init;
+	} m_extended_dynamic_state = {};
+
+	void SetExtendedDynamicState(
+		const GSHWDrawConfig::DepthStencilSelector& dss, const GSHWDrawConfig::BlendState& bs,
+		const GSHWDrawConfig::ColorMaskSelector& cms, DATEInitMethod date_init = DATEInitMethod::None);
+	void SetUtilityExtendedDynamicState(const GSHWDrawConfig::ColorMaskSelector& cms, bool write_depth,
+		bool date_stencil_init = false);
+
 	void RenderHW(GSHWDrawConfig& config) override;
-	void UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelector& pipe);
+	void UpdateHWPipelineSelector(const DrawPassConfig& config, PipelineSelector& pipe);
 	void UploadHWDrawVerticesAndIndices(GSHWDrawConfig& config);
 	VkImageLayout GetFeedbackLoopLayout() const;
 	VkDependencyFlags GetFeedbackBarrierDependencyFlags() const;
 	VkAccessFlags2 GetFeedbackLoopInputAccessFlags() const;
 	void FeedbackBarrier(GSTextureVK* rt, GSTextureVK* ds);
-	void SendHWDraw(const GSHWDrawConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds,
-		bool one_barrier, bool full_barrier);
+	void SendHWDraw(const DrawPassConfig& config, GSTextureVK* draw_rt, GSTextureVK* draw_ds);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Vulkan State
@@ -684,6 +705,7 @@ public:
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
 	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
+	void BeginTFXRenderPass(const DrawPassConfig& config, GSTextureVK* rt, GSTextureVK* ds, const GSVector2i& rtsize);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, float depth, u8 stencil);
@@ -711,6 +733,13 @@ private:
 		DIRTY_FLAG_PS_CONSTANT_BUFFER = (1 << 16),
 		DIRTY_FLAG_VS_PUSH_CONSTANTS = (1 << 17),
 
+		DIRTY_FLAG_EDS_COLOR_BLEND = (1 << 18),
+		DIRTY_FLAG_EDS_COLOR_MASK = (1 << 19),
+		DIRTY_FLAG_EDS_DEPTH = (1 << 20),
+		DIRTY_FLAG_EDS_STENCIL = (1 << 21),
+		DIRTY_EDS_STATE = DIRTY_FLAG_EDS_COLOR_BLEND | DIRTY_FLAG_EDS_COLOR_MASK |
+		                  DIRTY_FLAG_EDS_DEPTH | DIRTY_FLAG_EDS_STENCIL,
+
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
@@ -726,7 +755,7 @@ private:
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
-		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES,
+		DIRTY_TFX_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_TFX_TEXTURES | DIRTY_EDS_STATE,
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER | DIRTY_FLAG_VS_PUSH_CONSTANTS,
 		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,

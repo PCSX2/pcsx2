@@ -244,6 +244,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.edsVK, "EmuCore/GS", "ExtendedDynamicStateVK", false);
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
 

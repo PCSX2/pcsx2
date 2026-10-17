@@ -799,6 +799,7 @@ struct Pcsx2Config
 					HWROV : 1,
 					HWROVLogging : 1,
 					HWROVBarriersVK : 1,
+					ExtendedDynamicStateVK : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
