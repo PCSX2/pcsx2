@@ -11344,7 +11344,11 @@ void GSRendererHW::SetupSpriteRoundClampAlign(GSTextureCache::Target* rt, GSText
 			// Hack: Detect cases where it appears that the game is blurring the image
 			// by using bilinear and shifting the UV's by half a pixel compared to XY.
 			// To avoid an overly blurred look, unshift U/V to remove the blurring.
-			if (linear && tex_scale > 1.0f)
+			// Only do this when there is a single sprite to avoid false positives.
+			const bool single_sprite =
+				(m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail == 2) ||
+				(m_vt.m_primclass == GS_TRIANGLE_CLASS && m_index->tail <= 6);
+			if (linear && tex_scale > 1.0f && single_sprite)
 				SpriteAlignRemoveBilinearBlur(info, tex_scale);
 
 			m_conf.ps.round_uv = rounding ?
