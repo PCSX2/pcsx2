@@ -11264,7 +11264,8 @@ void GSRendererHW::SpriteAlignRemoveBilinearBlur(const VertexUVRoundingInfo& inf
 		const float pos_start = pos_rect.v[i];
 		const float tex_start = tex_rect.v[i];
 
-		// Only allow corrects when the X and U (or Y and V) ranges are similar and the
+		// Only allow corrections when the X and U (or Y and V) ranges are similar and increase
+		// in the same direction.
 		if (half_offset && anchor_left && same_dir)
 		{
 			float shift_dir = 0.0f;
