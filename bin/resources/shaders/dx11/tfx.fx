@@ -678,7 +678,7 @@ float4 round_and_clamp_uv(PS_INPUT input)
 	// Extract flags for whether to round U, V.
 	int2 round_per_pixel = int2(input.rounduv.zw) & ROUND_UV_PER_PIXEL;
 	int2 round_flags = int2(input.rounduv.zw) & (ROUND_UV_UP | ROUND_UV_DOWN);
-	round_flags = bool2(round_per_pixel) ? round_flags : 0;
+	round_flags = select(bool2(round_per_pixel), round_flags, 0);
 
 	// Being on the top or left pixels converts round down to round up.
 	int2 round_down = int2(bool2(round_flags & ROUND_UV_DOWN)) & ~topleft;
@@ -711,18 +711,18 @@ float4 round_and_clamp_uv(PS_INPUT input)
 
 #if PS_ROUND_UV == PS_ROUND_UV_LINEAR
 	// Bilinear: round to 1/16 texel.
-	uv = bool2(round_down) ? uv - ROUND_UV_THRESHOLD : uv;
-	uv = bool2(round_up) ? uv + ROUND_UV_THRESHOLD : uv;
+	uv = select(bool2(round_down), uv - ROUND_UV_THRESHOLD, uv);
+	uv = select(bool2(round_up), uv + ROUND_UV_THRESHOLD, uv);
 	uv = floor(uv);
 #elif PS_ROUND_UV == PS_ROUND_UV_NEAREST
 	// Nearest: get the center of the texel we would sample from at native.
-	uv = bool2(round_down) ? uvi - 8.0f : uv;
-	uv = bool2(round_up) ? uvi + 8.0f : uv;
-	uv = bool2(1 & ~(round_down | round_up)) ? floor(uv / 16.0f) * 16.0f + 8.0f : uv;
+	uv = select(bool2(round_down), uvi - 8.0f, uv);
+	uv = select(bool2(round_up), uvi + 8.0f, uv);
+	uv = select(bool2(1 & ~(round_down | round_up)), floor(uv / 16.0f) * 16.0f + 8.0f, uv);
 
 	// Then offset UV based on the XY offset from native texel center.
 	uv += 16.0f * sign(input.scaleuv.xy) * upscale_offset;
-	uv = bool2(round_down_tl) ? uvi + 8.0f / ScaleTex : uv;
+	uv = select(bool2(round_down_tl), uvi + 8.0f / ScaleTex, uv);
 #endif
 
 #if PS_ROUND_UV
@@ -734,7 +734,7 @@ float4 round_and_clamp_uv(PS_INPUT input)
 #endif
 
 #if PS_ROUND_UV || PS_CLAMP_UV || PS_ALIGN_UV
-	uv = bool2(input.rounduv.zw & ROUND_UV_SWAP) ? uv.yx : uv;
+	uv = select(bool2(input.rounduv.zw & ROUND_UV_SWAP), uv.yx, uv);
 #endif
 
 	return float4(uv / 16.0f / WH.xy, uv); // Return normalized and unnormalized coords.
@@ -1952,8 +1952,8 @@ float4 sprite_clamp_uv_range(float4 pos, float4 tex, uint4 round_info)
 	uint4 round_down = uint4(round_flags == ROUND_UV_DOWN) &  ~topleft;
 	uint4 round_up = uint4(round_flags == ROUND_UV_UP) |
 	                 (uint4(round_flags == ROUND_UV_DOWN) & topleft);
-	tex = bool4(round_down) ? tex - 1 / 32.0f : tex;
-	tex = bool4(round_up) ? tex + 1 / 32.0f : tex;
+	tex = select(bool4(round_down), tex - 1 / 32.0f, tex);
+	tex = select(bool4(round_up), tex + 1 / 32.0f, tex);
 
 	tex = float4(min(tex.xy, tex.zw), max(tex.xy, tex.zw));
 
