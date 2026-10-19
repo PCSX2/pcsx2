@@ -2886,6 +2886,7 @@ SCED-50133:
 SCED-50140:
   name: "Official PlayStation 2 Magazine Demo 5"
   region: "PAL-M5"
+  gsHWFixes: *gran-turismo-3-gs-fixes
 SCED-50141:
   name: "Official PlayStation 2 Magazine Demo 6"
   region: "PAL-M5"
