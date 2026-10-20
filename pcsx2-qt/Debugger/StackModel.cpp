@@ -107,14 +107,21 @@ void StackModel::refreshData()
 	// Hopefully in the near future we can get a stack frame for
 	// each thread
 	beginResetModel();
-	for (const auto& thread : m_cpu.GetThreadList())
+
+	std::unique_ptr<BiosThread> found_thread = nullptr;
+
+	for (auto& thread : m_cpu.GetThreadList())
 	{
 		if (thread->Status() == ThreadStatus::THS_RUN)
 		{
-			m_stackFrames = m_cpu.StackTrace(*thread);
+			found_thread = std::move(thread);
 			break;
 		}
 	}
+
+	// Will do best effort with current context if found_thread is nullptr.
+	m_stackFrames = m_cpu.StackTrace(found_thread.get());
+
 	endResetModel();
 }
 
