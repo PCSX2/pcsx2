@@ -8061,7 +8061,7 @@ void GSTextureCache::Target::RearrangeTarget(u32 new_bw, bool recycle)
 			return;
 		}
 
-		ShaderConvertSelector shader = GetConvertShader(m_texture->IsDepthStencil() ? GSTexture::Format::DepthStencil : GSTexture::Format::Color, m_texture->GetFormat(), t_psm.bpp, t_psm.bpp, 0xF, drects[0].filter);
+		ShaderConvertSelector shader = GetConvertShader(m_texture->GetFormat(), tex->GetFormat(), t_psm.bpp, t_psm.bpp, 0xF, drects[0].filter);
 
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, tex, shader);
 		g_texture_cache->m_target_memory_usage = recycle ? (g_texture_cache->m_target_memory_usage - m_texture->GetMemUsage()) + tex->GetMemUsage() : g_texture_cache->m_target_memory_usage + tex->GetMemUsage();
