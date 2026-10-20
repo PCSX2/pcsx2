@@ -677,21 +677,26 @@ std::vector<std::unique_ptr<BiosThread>> R5900DebugInterface::GetThreadList() co
 	return getEEThreads();
 }
 
-std::vector<MipsStackWalk::StackFrame> R5900DebugInterface::StackTrace(const BiosThread& thread)
+std::vector<MipsStackWalk::StackFrame> R5900DebugInterface::StackTrace(const BiosThread* thread)
 {
-	if (thread.Status() == ThreadStatus::THS_RUN)
+	if (!thread)
 	{
-		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
-			thread.EntryPoint());
+		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29), 0);
 	}
 
-	EEInternalCtx* ctx = static_cast<EEInternalCtx*>(PSM(thread.RegCtx()));
-	u32 pc = thread.PC();
+	if (thread->Status() == ThreadStatus::THS_RUN)
+	{
+		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
+			thread->EntryPoint());
+	}
+
+	EEInternalCtx* ctx = static_cast<EEInternalCtx*>(PSM(thread->RegCtx()));
+	u32 pc = thread->PC();
 	// $zero is not in the array so subtract 1
 	u32 ra = ctx->gpr[31 - 1]._u32[0];
 	u32 sp = ctx->gpr[29 - 1]._u32[0];
 
-	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint());
+	return MipsStackWalk::Walk(this, pc, ra, sp, thread->EntryPoint());
 }
 
 std::vector<IopMod> R5900DebugInterface::GetModuleList() const
@@ -1035,20 +1040,25 @@ std::vector<std::unique_ptr<BiosThread>> R3000DebugInterface::GetThreadList() co
 	return getIOPThreads();
 }
 
-std::vector<MipsStackWalk::StackFrame> R3000DebugInterface::StackTrace(const BiosThread& thread)
+std::vector<MipsStackWalk::StackFrame> R3000DebugInterface::StackTrace(const BiosThread* thread)
 {
-	if (thread.Status() == ThreadStatus::THS_RUN)
+	if (!thread)
 	{
-		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
-			thread.EntryPoint());
+		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29), 0);
 	}
 
-	u32 p = thread.RegCtx();
+	if (thread->Status() == ThreadStatus::THS_RUN)
+	{
+		return MipsStackWalk::Walk(this, getPC(), getRegister(0, 31), getRegister(0, 29),
+			thread->EntryPoint());
+	}
+
+	u32 p = thread->RegCtx();
 	u32 pc = Read32(p + 0x8c);
 	u32 ra = Read32(p + 0x7c);
 	u32 sp = Read32(p + 0x74);
 
-	return MipsStackWalk::Walk(this, pc, ra, sp, thread.EntryPoint());
+	return MipsStackWalk::Walk(this, pc, ra, sp, thread->EntryPoint());
 }
 
 std::vector<IopMod> R3000DebugInterface::GetModuleList() const
