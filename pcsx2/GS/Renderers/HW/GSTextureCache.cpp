@@ -2888,6 +2888,9 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 
 			bool half_width = false;
 
+			if (GSConfig.UserHacks_TargetPageRearranging && dst_match->m_TEX0.TBW != TEX0.TBW)
+				dst_match->RearrangeTarget(TEX0.TBW);
+
 			if (GSLocalMemory::m_psm[TEX0.PSM].bpp == 32 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16)
 				if (dst_match->m_valid.z == ((TEX0.TBW * 64) * 2))
 					half_width = true;
