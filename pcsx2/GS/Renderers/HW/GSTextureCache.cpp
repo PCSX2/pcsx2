@@ -430,7 +430,7 @@ GSVector4i GSTextureCache::TranslateAlignedRectByPage(u32 tbp, u32 tebp, u32 tbw
 				// The width is mismatched to the page.
 				if (!is_invalidation && GSConfig.UserHacks_TextureInsideRt < GSTextureInRtMode::MergeTargets)
 				{
-					DevCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSState::s_n);
+					DbgCon.Warning("Uneven pages mess up sbp %x dbp %x spgw %d dpgw %d src fmt %d dst fmt %d src_rect %d, %d, %d, %d draw %lld", sbp, tbp, src_pgw, dst_pgw, spsm, tpsm, in_rect.x, in_rect.y, in_rect.z, in_rect.w, GSState::s_n);
 					return GSVector4i::zero();
 				}
 
@@ -1791,7 +1791,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								x_offset = 0;
 								y_offset = 0;
 
-								const bool req_rearrange = GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].bpp != 8 && bw > 1 && psm == t->m_TEX0.PSM && bw != t->m_TEX0.TBW && 
+								const bool req_rearrange = GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].trbpp > 8 && bw > 1 && bw != t->m_TEX0.TBW && 
 														   (r.z > static_cast<int>(t->m_TEX0.TBW * 64) || ((r.w + (GSLocalMemory::m_psm[psm].pgs.y - 1)) / GSLocalMemory::m_psm[psm].pgs.y) > 1);
 
 								if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && GSLocalMemory::GetUnwrappedEndBlockAddress(bp, bw, psm, req_rect) > dst->m_end_block)
@@ -1799,7 +1799,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								else
 								{
 									if (req_rearrange)
-										dst->RearrangeTarget(TEX0.TBW);
+									{
+										InvalidateSourcesFromTarget(t);
+										t->RearrangeTarget(TEX0.TBW);
+									}
 									break;
 								}
 							}
@@ -1813,13 +1816,17 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				         t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
 
-					if (GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].bpp != 8)
-						t->RearrangeTarget(bw);
-
 					const u32 end_block = GSLocalMemory::GetEndBlockAddress(bp, TEX0.TBW, TEX0.PSM, r);
 					const u32 adj_bp = (end_block < t->m_TEX0.TBP0 && t->UnwrappedEndBlock() > GS_MAX_BLOCKS) ? (bp + GS_MAX_BLOCKS) : bp;
+					u32 horz_page_offset = ((adj_bp - t->m_TEX0.TBP0) >> 5) % std::max(1U, t->m_TEX0.TBW);
+					if (GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].bpp != 8 && (((horz_page_offset * 64) + r.width()) > (t->m_TEX0.TBW * 64) || (r.w / psm_s.pgs.y) > 1))
+					{
+						InvalidateSourcesFromTarget(t);
+						t->RearrangeTarget(bw);
+					}
+
 					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
-					u32 horz_page_offset = ((adj_bp - t->m_TEX0.TBP0) >> 5) % rt_tbw;
+					horz_page_offset = ((adj_bp - t->m_TEX0.TBP0) >> 5) % rt_tbw;
 
 					if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && bw != rt_tbw && block_boundary_rect.height() > GSLocalMemory::m_psm[psm].pgs.y)
 						continue;
@@ -2233,6 +2240,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 		src = CreateSource(src_TEX0, TEXA, CLAMP, dst, x_offset, y_offset, lod, &rect, gpu_clut, region, target_bp_hit_outside_valid_area && TEX0.PSM != PSMT8);
 		if (!src) [[unlikely]]
 			return nullptr;
+		if (dst)
+			src->m_was_target = true;
 	}
 	else
 	{
@@ -2563,14 +2572,15 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 						dirtied_area = false;
 				}
 
-				if (can_use && ((!is_shuffle && dirtied_area) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && TEX0.TBW != t->m_TEX0.TBW)
+				if (can_use && ((!is_shuffle && dirtied_area) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp == 16)) && ((preserve_alpha && preserve_rgb) || (draw_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y && !possible_clear)) && !GSConfig.UserHacks_TargetPageRearranging && TEX0.TBW != t->m_TEX0.TBW)
 				{
 					can_use = false;
 				}
 
 				if (can_use)
 				{
-					if (GSConfig.UserHacks_TargetPageRearranging && !(is_shuffle && GSLocalMemory::m_psm[TEX0.PSM].bpp != 16))
+					if (GSConfig.UserHacks_TargetPageRearranging && !(is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].trbpp == 8) && 
+						(min_rect.z > static_cast<int>(t->m_TEX0.TBW * 64) || min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y))
 					{
 						const bool can_recycle = TEX0.TBW == t->m_TEX0.TBW || (!src || !src->m_from_target || src->m_from_target != t || !(src->m_from_target == t && src->m_target_direct));
 						
@@ -2581,7 +2591,11 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 							src->m_texture = t->m_texture;
 							src->m_target_direct = false;
 							src->m_shared_texture = false;
-							m_temporary_source = src;
+							if (m_temporary_source != src)
+							{
+								m_src.RemoveAt(src, false);
+								m_temporary_source = src;
+							}
 						}
 						t->RearrangeTarget(TEX0.TBW, can_recycle);
 					}
@@ -2628,7 +2642,8 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, s_psm.pgs.y - (min_rect.w & (s_psm.pgs.y - 1)))));
 				const bool source_match = src && src->m_TEX0.TBP0 <= bp && src->m_end_block > bp && src->m_TEX0.TBW == TEX0.TBW && src->m_from_target && src->m_from_target == t && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect);
 
-				if (GSConfig.UserHacks_TargetPageRearranging && overlaps && !(is_shuffle && GSLocalMemory::m_psm[TEX0.PSM].bpp != 16))
+				if (GSConfig.UserHacks_TargetPageRearranging && overlaps && !(is_shuffle && GSLocalMemory::m_psm[TEX0.PSM].bpp != 16) &&
+					(min_rect.z > static_cast<int>(t->m_TEX0.TBW * 64) || min_rect.w > GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y))
 				{
 					const bool can_recycle = TEX0.TBW == t->m_TEX0.TBW || (!src || !src->m_from_target || src->m_from_target != t || !(src->m_from_target == t && src->m_target_direct));
 
@@ -2639,7 +2654,11 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 						src->m_texture = t->m_texture;
 						src->m_target_direct = false;
 						src->m_shared_texture = false;
-						m_temporary_source = src;
+						if (m_temporary_source != src)
+						{
+							m_src.RemoveAt(src, false);
+							m_temporary_source = src;
+						}
 					}
 					t->RearrangeTarget(TEX0.TBW, can_recycle);
 				}
@@ -3578,7 +3597,6 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					const GSVector4i save_rect = preserve_target ? newrect : eerect;
 
 					GL_INS("TC: Preloading the RT DATA from updated GS Memory");
-
 					AddDirtyRectTarget(dst, save_rect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
@@ -5454,7 +5472,17 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 	if (!src || !dst || src->m_scale != dst->m_scale)
 		return false;
 
-	if (GSConfig.UserHacks_TargetPageRearranging && DBW > 1 && dst->m_TEX0.TBW != DBW)
+	// We don't want to copy "old" data that the game has overwritten with writes,
+	// so flush any overlapping dirty area.
+	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));
+
+	// The main point of HW moves is so GPU data can get used as sources. If we don't flush all writes,
+	// we're not going to be able to use it as a source.
+	dst->Update();
+
+	if (src)
+		src->RearrangeTarget(SBW);
+	if (dst)
 		dst->RearrangeTarget(DBW);
 
 	// If we have an offset, adjust the base positions
@@ -5493,14 +5521,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(dx + w, 64), dx + h);
 		dst->ResizeTexture(std::max(dst->m_unscaled_size.x, target_size.x), std::max(dst->m_unscaled_size.y, target_size.y));
 	}
-	// We don't want to copy "old" data that the game has overwritten with writes,
-	// so flush any overlapping dirty area.
-	src->UpdateIfDirtyIntersects(GSVector4i(sx, sy, sx + w, sy + h));
-
-	// The main point of HW moves is so GPU data can get used as sources. If we don't flush all writes,
-	// we're not going to be able to use it as a source.
-	dst->Update();
-
+	
 	// Invalidate any opposite targets.
 	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil - dst->m_type, dst->m_TEX0.TBP0);
 
@@ -5513,7 +5534,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			return false;
 
 		// Align height to page size, that way we don't do too many small resizes (Dark Cloud).
-		new_height = Common::AlignUpPow2(new_height, static_cast<unsigned>(GSLocalMemory::m_psm[DPSM].bs.y));
+		new_height = Common::AlignUpPow2(new_height, static_cast<unsigned>(GSLocalMemory::m_psm[DPSM].pgs.y));
 
 		// We don't recycle the old texture here, because the height cache will track the new size,
 		// so the old size won't get created again.
@@ -5525,6 +5546,16 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			// Resize failed, probably ran out of VRAM, better luck next time. Fall back to CPU.
 			// We injected the new height into the cache, so hopefully won't happen again.
 			return false;
+		}
+		if (GSConfig.PreloadFrameWithGSData && new_height > dst->m_valid.w)
+		{
+			RGBAMask mask;
+			mask._u32 = GSUtil::GetChannelMask(dst->m_TEX0.PSM);
+			const GSVector4i dirty_rect = GSVector4i(std::min(dst->m_valid.x, dx), dst->m_valid.w, std::max(dst->m_valid.z, dx + w), new_height);
+			g_texture_cache->AddDirtyRectTarget(dst, dirty_rect, dst->m_TEX0.PSM, dst->m_TEX0.TBW, mask, false);
+			// Neeed to update this early so we can load in any dirty data before the copy happens.
+			dst->UpdateValidity(GSVector4i(dx, dy, dx + w, new_height));
+			dst->Update();
 		}
 	}
 
@@ -5629,6 +5660,12 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		dst->m_alpha_range |= src->m_alpha_range;
 	}
 
+	// If we're overwriting the whole thing, we're basically taking on the same format (Shinkon Gattai Godannar).
+	if (dst->m_valid.rintersect(src->m_valid).eq(dst->m_valid) && GSUtil::GetChannelMask(DPSM) == 0xF)
+	{
+		dst->m_TEX0.PSM = src->m_TEX0.PSM;
+	}
+
 	u32 page_mask = GSLocalMemory::IsPageAlignedMasked(src->m_TEX0.PSM, GSVector4i(sx, sy, sx + w, sy + h));
 	if (((page_mask & 0x0f0f) == 0x0f0f || (page_mask & 0xf0f0) == 0xf0f0) && (w == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.x || h == GSLocalMemory::m_psm[src->m_TEX0.PSM].pgs.y))
 	{
@@ -5665,6 +5702,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 			m_remembered_dst_bp = -1;
 		}
 	}
+
 	dst->UpdateValidity(GSVector4i(dx, dy, dx + w, dy + h));
 	dst->UpdateDrawn(GSVector4i(dx, dy, dx + w, dy + h));
 
@@ -5873,7 +5911,7 @@ GSTextureCache::Target* GSTextureCache::GetExactTarget(u32 BP, u32 BW, int type,
 	{
 		Target* t = *it;
 		const u32 tgt_bw = std::max(t->m_TEX0.TBW, 1U);
-		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && !(BP & 0x1f) && (((BP - t->m_TEX0.TBP0) >> 5) % tgt_bw) == 0)) && tgt_bw == BW && t->UnwrappedEndBlock() >= end_bp)
+		if ((t->m_TEX0.TBP0 == BP || (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets && t->m_TEX0.TBP0 < BP && !(BP & 0x1f) && (((BP - t->m_TEX0.TBP0) >> 5) % tgt_bw) == 0)) && (GSConfig.UserHacks_TargetPageRearranging || tgt_bw == BW) && t->UnwrappedEndBlock() >= end_bp)
 		{
 			rts.MoveFront(it.Index());
 			return t;
@@ -8530,7 +8568,7 @@ void GSTextureCache::SourceMap::RemoveAll()
 	}
 }
 
-void GSTextureCache::SourceMap::RemoveAt(Source* s)
+void GSTextureCache::SourceMap::RemoveAt(Source* s, bool delete_source)
 {
 	m_surfaces.erase(s);
 
@@ -8548,7 +8586,8 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 			s->m_from_hash_cache->age = 0;
 	}
 
-	delete s;
+	if (delete_source)
+		delete s;
 }
 
 void GSTextureCache::AttachPaletteToSource(Source* s, u16 pal, bool need_gs_texture, bool update_alpha_minmax)
@@ -8772,11 +8811,7 @@ void GSTextureCache::InvalidateTemporarySource()
 	if (!m_temporary_source)
 		return;
 
-	// Make sure it didn't get made temporary later and end up in the source map.
-	if (m_temporary_source->m_from_target && !m_temporary_source->m_target_direct)
-		InvalidateSourcesFromTarget(m_temporary_source->m_from_target);
-	else
-		delete m_temporary_source;
+	delete m_temporary_source;
 	m_temporary_source = nullptr;
 }
 

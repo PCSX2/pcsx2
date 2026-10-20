@@ -317,6 +317,7 @@ public:
 		bool m_target = false;
 		bool m_target_direct = false;
 		bool m_repeating = false;
+		bool m_was_target = false;
 		bool m_valid_alpha_minmax = false;
 		std::pair<u8, u8> m_alpha_minmax = {0u, 255u};
 		std::vector<GSVector2i>* m_p2t = nullptr;
@@ -382,7 +383,7 @@ public:
 		void Add(Source* s, const GIFRegTEX0& TEX0);
 		void SwapTexture(GSTexture* old_tex, GSTexture* new_tex);
 		void RemoveAll();
-		void RemoveAt(Source* s);
+		void RemoveAt(Source* s, bool delete_source = true);
 	};
 
 	struct TargetHeightElem

@@ -4960,6 +4960,15 @@ void GSRendererHW::Draw()
 			if ((new_w > rt->m_unscaled_size.x || new_h > rt->m_unscaled_size.y || !m_r.rintersect(rt->m_valid).eq(m_r)) && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 				merge_targets = true;
 
+			if (GSConfig.PreloadFrameWithGSData && m_r.w > rt->m_valid.w)
+			{
+				RGBAMask mask;
+				mask._u32 = GSUtil::GetChannelMask(rt->m_TEX0.PSM);
+				GSVector4i dirty_rect = GSVector4i(std::min(rt->m_valid.x, m_r.x), rt->m_valid.w, std::max(rt->m_valid.z, m_r.z), m_r.w);
+				if (!(dirty_rect.rintersect(m_r).eq(dirty_rect) || !preserve_rt_color))
+					g_texture_cache->AddDirtyRectTarget(rt, dirty_rect, rt->m_TEX0.PSM, rt->m_TEX0.TBW, mask, false);
+			}
+
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -4975,6 +4984,7 @@ void GSRendererHW::Draw()
 					g_texture_cache->GetTargetSize(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, 0, new_h);
 				}
 				const bool rt_cover = full_cover_clear && (m_r.height() + frame_psm.pgs.y) >= rt->m_valid.height();
+				
 				rt->ResizeValidity(rt_cover ? update_rect : rt->m_valid.rintersect(rt->GetUnscaledRect()));
 				rt->ResizeDrawn(rt_cover ? update_rect : rt->m_drawn_since_read.rintersect(rt->GetUnscaledRect()));
 			}
@@ -5031,6 +5041,15 @@ void GSRendererHW::Draw()
 			pxAssert(ds->GetScale() == target_scale);
 			if (ds->GetUnscaledWidth() != new_w || ds->GetUnscaledHeight() != new_h)
 				GL_INS("HW: Resize DS from %dx%d to %dx%d", ds->GetUnscaledWidth(), ds->GetUnscaledHeight(), new_w, new_h);
+
+			if (GSConfig.PreloadFrameWithGSData && m_r.w > ds->m_valid.w)
+			{
+				RGBAMask mask;
+				mask._u32 = GSUtil::GetChannelMask(ds->m_TEX0.PSM);
+				GSVector4i dirty_rect = GSVector4i(std::min(ds->m_valid.x, m_r.x), ds->m_valid.w, std::max(ds->m_valid.z, m_r.z), m_r.w);
+				if (!dirty_rect.rintersect(m_r).eq(dirty_rect))
+					g_texture_cache->AddDirtyRectTarget(ds, dirty_rect, ds->m_TEX0.PSM, ds->m_TEX0.TBW, mask, false);
+			}
 
 			ds->ResizeTexture(new_w, new_h);
 
