@@ -385,6 +385,12 @@ void DisassemblyView::contextShowInstructionBytes()
 	update();
 }
 
+void DisassemblyView::contextShowModuleOffset()
+{
+	m_showModuleOffset = !m_showModuleOffset;
+	update();
+}
+
 QString DisassemblyView::GetLineDisasm(u32 address)
 {
 	DisassemblyLineInfo lineInfo;
@@ -754,6 +760,9 @@ void DisassemblyView::keyPressEvent(QKeyEvent* event)
 		case Qt::Key_I:
 			m_showInstructionBytes = !m_showInstructionBytes;
 			break;
+		case Qt::Key_O:
+			m_showModuleOffset = !m_showModuleOffset;
+			break;
 	}
 
 	update();
@@ -870,6 +879,12 @@ void DisassemblyView::openContextMenu(QPoint pos)
 	show_instruction_bytes_action->setChecked(m_showInstructionBytes);
 	connect(show_instruction_bytes_action, &QAction::triggered, this, &DisassemblyView::contextShowInstructionBytes);
 
+	QAction* show_module_offset_action = menu->addAction(tr("Show Module &Offset"));
+	show_module_offset_action->setShortcut(QKeySequence(Qt::Key_O));
+	show_module_offset_action->setCheckable(true);
+	show_module_offset_action->setChecked(m_showModuleOffset);
+	connect(show_module_offset_action, &QAction::triggered, this, &DisassemblyView::contextShowModuleOffset);
+
 	menu->popup(this->mapToGlobal(pos));
 }
 
@@ -934,6 +949,19 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 	FunctionInfo function = cpu().GetSymbolGuardian().FunctionStartingAtAddress(address);
 	SymbolInfo symbol = cpu().GetSymbolGuardian().SymbolStartingAtAddress(address);
 	const bool showOpcode = m_showInstructionBytes && cpu().isAlive();
+	std::optional<IopMod> module = std::nullopt;
+
+	if (m_showModuleOffset)
+	{
+		std::vector<IopMod> modules = cpu().GetModuleList();
+		for (auto& m : modules)
+		{
+			if (address >= m.text_addr && address <= m.text_addr + m.text_size)
+			{
+				module = std::move(m);
+			}
+		}
+	}
 
 	QString lineString;
 	if (showOpcode)
@@ -955,7 +983,12 @@ inline QString DisassemblyView::DisassemblyStringFromAddress(u32 address, QFont 
 	}
 
 	if (symbol.name.empty())
-		lineString = lineString.arg(address, 8, 16, QChar('0')).toUpper();
+	{
+		if (module.has_value())
+			lineString = lineString.arg(QString("[%1]+%2").arg(module.value().name)).arg(address - module.value().text_addr, 0, 16);
+		else
+			lineString = lineString.arg(address, 8, 16, QChar('0')).toUpper();
+	}
 	else
 	{
 		QFontMetrics metric(font);
