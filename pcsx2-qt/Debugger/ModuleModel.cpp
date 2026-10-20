@@ -14,7 +14,7 @@ ModuleModel::ModuleModel(DebugInterface& cpu, QObject* parent)
 
 int ModuleModel::rowCount(const QModelIndex&) const
 {
-	return m_cpu.GetModuleList().size();
+	return m_modules.size();
 }
 
 int ModuleModel::columnCount(const QModelIndex&) const
