@@ -1791,14 +1791,15 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 								x_offset = 0;
 								y_offset = 0;
 
-								const bool req_rearrange = GSConfig.UserHacks_TargetPageRearranging && !possible_shuffle && bw > 1 && psm == t->m_TEX0.PSM && bw != t->m_TEX0.TBW && 
+								const bool req_rearrange = GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].bpp != 8 && bw > 1 && psm == t->m_TEX0.PSM && bw != t->m_TEX0.TBW && 
 														   (r.z > static_cast<int>(t->m_TEX0.TBW * 64) || ((r.w + (GSLocalMemory::m_psm[psm].pgs.y - 1)) / GSLocalMemory::m_psm[psm].pgs.y) > 1);
 
 								if (GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::MergeTargets && GSLocalMemory::GetUnwrappedEndBlockAddress(bp, bw, psm, req_rect) > dst->m_end_block)
 									continue;
 								else
 								{
-									tex_merge_rt = req_rearrange;
+									if (req_rearrange)
+										dst->RearrangeTarget(TEX0.TBW);
 									break;
 								}
 							}
@@ -1811,6 +1812,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 				         (GSLocalMemory::m_psm[color_psm].bpp >= 16 || (/*possible_shuffle &&*/ GSLocalMemory::m_psm[color_psm].bpp == 8 && GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp >= 16)) && // Channel shuffles or non indexed lookups.
 				         t->m_age <= 1 && (!found_t || t->m_last_draw > dst->m_last_draw) /*&& CanTranslate(bp, bw, psm, block_boundary_rect, t->m_TEX0.TBP0, t->m_TEX0.PSM, t->m_TEX0.TBW)*/)
 				{
+
+					if (GSConfig.UserHacks_TargetPageRearranging && GSLocalMemory::m_psm[color_psm].bpp != 8)
+						t->RearrangeTarget(bw);
+
 					const u32 end_block = GSLocalMemory::GetEndBlockAddress(bp, TEX0.TBW, TEX0.PSM, r);
 					const u32 adj_bp = (end_block < t->m_TEX0.TBP0 && t->UnwrappedEndBlock() > GS_MAX_BLOCKS) ? (bp + GS_MAX_BLOCKS) : bp;
 					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
@@ -2565,6 +2570,22 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 
 				if (can_use)
 				{
+					if (GSConfig.UserHacks_TargetPageRearranging && !(is_shuffle && GSLocalMemory::m_psm[TEX0.PSM].bpp != 16))
+					{
+						const bool can_recycle = TEX0.TBW == t->m_TEX0.TBW || (!src || !src->m_from_target || src->m_from_target != t || !(src->m_from_target == t && src->m_target_direct));
+						
+						if (!can_recycle)
+						{
+							//if (src->m_texture != t->m_texture)
+							//	delete src->m_texture;
+							src->m_texture = t->m_texture;
+							src->m_target_direct = false;
+							src->m_shared_texture = false;
+							m_temporary_source = src;
+						}
+						t->RearrangeTarget(TEX0.TBW, can_recycle);
+					}
+
 					if (used)
 						list->MoveFront(i.Index());
 
@@ -2604,17 +2625,35 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 				}
 
 				const GSLocalMemory::psm_t& s_psm = GSLocalMemory::m_psm[TEX0.PSM];
+				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, s_psm.pgs.y - (min_rect.w & (s_psm.pgs.y - 1)))));
+				const bool source_match = src && src->m_TEX0.TBP0 <= bp && src->m_end_block > bp && src->m_TEX0.TBW == TEX0.TBW && src->m_from_target && src->m_from_target == t && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect);
+
+				if (GSConfig.UserHacks_TargetPageRearranging && overlaps && !(is_shuffle && GSLocalMemory::m_psm[TEX0.PSM].bpp != 16))
+				{
+					const bool can_recycle = TEX0.TBW == t->m_TEX0.TBW || (!src || !src->m_from_target || src->m_from_target != t || !(src->m_from_target == t && src->m_target_direct));
+
+					if (!can_recycle)
+					{
+						//if (src->m_texture != t->m_texture)
+						//	delete src->m_texture;
+						src->m_texture = t->m_texture;
+						src->m_target_direct = false;
+						src->m_shared_texture = false;
+						m_temporary_source = src;
+					}
+					t->RearrangeTarget(TEX0.TBW, can_recycle);
+				}
 				const u32 widthpage_offset = (std::abs(static_cast<int>(bp - t->m_TEX0.TBP0)) >> 5) % std::max(t->m_TEX0.TBW, 1U);
 				const bool is_aligned_ok = widthpage_offset == 0 || ((min_rect.width() <= static_cast<int>((t->m_TEX0.TBW - widthpage_offset) * 64) && (t->m_TEX0.TBW == TEX0.TBW || TEX0.TBW == 1)) && bp >= t->m_TEX0.TBP0);
 				const bool no_target_or_newer = (!new_dst || ((GSState::s_n - new_dst->m_last_draw) < (GSState::s_n - t->m_last_draw)));
 				const bool width_match = (t->m_TEX0.TBW == TEX0.TBW || (TEX0.TBW == 1 && draw_rect.w <= GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs.y));
 				const bool ds_offset = !ds || offset != 0;
 				const bool is_double_buffer = TEX0.TBP0 == ((((t->m_end_block + 1) - t->m_TEX0.TBP0) / 2) + t->m_TEX0.TBP0);
-				const bool source_match = src && src->m_TEX0.TBP0 <= bp && src->m_end_block > bp && src->m_TEX0.TBW == TEX0.TBW && src->m_from_target && src->m_from_target == t && t->Inside(bp, TEX0.TBW, TEX0.PSM, min_rect);
+				
 				const bool was_used_last_draw = t->m_last_draw == (GSState::s_n - 1);
 				// if it's a shuffle, some games tend to offset back by a page, such as Tomb Raider, for no disernable reason, but it then causes problems.
 				// This can also happen horizontally (Catwoman moves everything one page left with shuffles), but this is too messy to deal with right now.
-				const bool overlaps = t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect) || (is_shuffle && src && GSLocalMemory::m_psm[src->m_TEX0.PSM].bpp == 8 && t->Overlaps(bp, TEX0.TBW, TEX0.PSM, min_rect + GSVector4i(0, 0, 0, s_psm.pgs.y - (min_rect.w & (s_psm.pgs.y - 1)))));
+				
 				if (source_match || (no_target_or_newer && is_aligned_ok && width_match && overlaps && (is_shuffle || ds_offset || is_double_buffer || was_used_last_draw)))
 				{
 					// If it overlaps but the target is huge and the Z isn't offset, we need to split the buffer, so let's shrink this one down.
@@ -2872,6 +2911,10 @@ GSTextureCache::Target* GSTextureCache::LookupDrawTarget(GIFRegTEX0 TEX0, const 
 			dst->m_valid_alpha_high = dst_match->m_valid_alpha_high; //&& psm_s.trbpp != 24;
 			dst->m_valid_rgb = dst_match->m_valid_rgb && (dst->m_TEX0.TBW == TEX0.TBW || min_rect.w <= GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].pgs.y);
 			dst->m_was_dst_matched = !dst_match->m_was_dst_matched;
+			if (dst_match->m_type == DepthStencil)
+				dst->m_from_depth = true;
+			else
+				dst_match->m_from_depth = true;
 			dst_match->m_valid_rgb = preserve_rgb;
 
 			if (GSLocalMemory::m_psm[dst->m_TEX0.PSM].bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp > 16)
@@ -4640,7 +4683,7 @@ void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 wr
 				t->m_valid_alpha_low &= preserve_alpha && compatible_channel_swizzle;
 				t->m_valid_alpha_high &= preserve_alpha && compatible_channel_swizzle;
 				t->m_valid_rgb &= (fb_mask & 0x00FFFFFF) != 0 && compatible_channel_swizzle;
-				t->m_was_dst_matched = false;
+				t->m_was_dst_matched = (start_bp == t->m_TEX0.TBP0 && t->m_type != GSLocalMemory::m_psm[write_psm].depth) ? true : false;
 			}
 
 			// Don't keep partial depth buffers around.
@@ -8021,7 +8064,7 @@ void GSTextureCache::Target::RearrangeTarget(u32 new_bw, bool recycle)
 		ShaderConvertSelector shader = GetConvertShader(m_texture->IsDepthStencil() ? GSTexture::Format::DepthStencil : GSTexture::Format::Color, m_texture->GetFormat(), t_psm.bpp, t_psm.bpp, 0xF, drects[0].filter);
 
 		g_gs_device->DrawMultiStretchRects(drects, ndrects, tex, shader);
-
+		g_texture_cache->m_target_memory_usage = recycle ? (g_texture_cache->m_target_memory_usage - m_texture->GetMemUsage()) + tex->GetMemUsage() : g_texture_cache->m_target_memory_usage + tex->GetMemUsage();
 		if (recycle)
 			g_gs_device->Recycle(m_texture);
 
@@ -8726,7 +8769,11 @@ void GSTextureCache::InvalidateTemporarySource()
 	if (!m_temporary_source)
 		return;
 
-	delete m_temporary_source;
+	// Make sure it didn't get made temporary later and end up in the source map.
+	if (m_temporary_source->m_from_target && !m_temporary_source->m_target_direct)
+		InvalidateSourcesFromTarget(m_temporary_source->m_from_target);
+	else
+		delete m_temporary_source;
 	m_temporary_source = nullptr;
 }
 

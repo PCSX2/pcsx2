@@ -154,6 +154,7 @@ public:
 		u32 m_end_block = MAX_BP; // Hint of the surface area.
 		bool m_32_bits_fmt = false; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_was_dst_matched = false;
+		bool m_from_depth = false;
 		bool m_shared_texture = false;
 
 		__fi GSTexture* GetTexture() const { return m_texture; }
