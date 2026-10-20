@@ -65,6 +65,7 @@ public slots:
 	void contextStubFunction();
 	void contextRestoreFunction();
 	void contextShowInstructionBytes();
+	void contextShowModuleOffset();
 
 	void gotoAddressAndSetFocus(u32 address);
 	void gotoProgramCounterOnPause();
@@ -85,6 +86,7 @@ private:
 	std::map<u32, std::tuple<u32, u32>> m_stubbedFunctions;
 
 	bool m_showInstructionBytes = true;
+	bool m_showModuleOffset = true;
 	bool m_goToProgramCounterOnPause = true;
 	DisassemblyManager m_disassemblyManager;
 
