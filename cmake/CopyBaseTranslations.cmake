@@ -43,7 +43,7 @@ function(copy_base_translations target)
       set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/translations)
     elseif(WIN32)
       # TODO: Set the correct binary instead of relying on make install on Windows...
-      install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/bin/translations")
+      install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}/translations")
     else()
       add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/translations")

@@ -3,7 +3,7 @@ add_executable(pcsx2-gsrunner)
 if (PACKAGE_MODE)
 	install(TARGETS pcsx2-gsrunner DESTINATION ${CMAKE_INSTALL_BINDIR})
 else()
-	install(TARGETS pcsx2-gsrunner DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+	install(TARGETS pcsx2-gsrunner DESTINATION ${CMAKE_SOURCE_DIR}/${BIN_DIR})
 endif()
 
 target_sources(pcsx2-gsrunner PRIVATE
