@@ -30082,9 +30082,10 @@ SLES-55444:
   patches:
     default:
       content: |-
-        // port from SLPS-25819
         comment=Fixes music unexpected cut out during "Dual Talk" scenes.
         author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
         patch=0,EE,0097FA74,word,00000021
 SLES-55448:
   name: "Indiana Jones and the Staff of Kings"
@@ -64256,9 +64257,10 @@ SLPS-73263:
   patches:
     default:
       content: |-
-        // port from SLPS-25819
         comment=Fixes music unexpected cut out during "Dual Talk" scenes.
         author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
         patch=0,EE,009890EC,word,00000020
 SLPS-73264:
   name: "涼宮ハルヒの戸惑 [PlayStation2 the Best]"
@@ -74536,9 +74538,10 @@ SLUS-21788:
   patches:
     default:
       content: |-
-        // port from SLPS-25819
         comment=Fixes music unexpected cut out during "Dual Talk" scenes.
         author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
         patch=0,EE,0097EB94,word,00000020
 SLUS-21789:
   name: "Cabela's Legendary Adventures"
