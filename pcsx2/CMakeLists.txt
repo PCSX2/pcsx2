@@ -1232,8 +1232,34 @@ function(pcsx2_resource target path basedir)
 		add_custom_command(TARGET ${target} POST_BUILD
 			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/resources/${subdir}"
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/resources/${subdir}")
+		install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/bin/resources/${subdir}")
 	endif()
 	source_group(Resources/${subdir} FILES ${path})
+endfunction()
+
+function(pcsx2_docs target path basedir)
+	# Add docs to resources for not-Windows, since they don't use the bin directory.
+	get_filename_component(dir ${path} DIRECTORY)
+	file(RELATIVE_PATH subdir ${basedir} ${dir})
+	if(APPLE)
+		target_sources(${target} PRIVATE ${path})
+		set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/docs/${subdir})
+	else()
+		if (WIN32)
+			set(doc_subdir "docs/")
+		else()
+			set(doc_subdir "resources/docs/")
+		endif()
+		add_custom_command(TARGET ${target} POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/${doc_subdir}/${subdir}"
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/${doc_subdir}/${subdir}")
+		install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/bin/${doc_subdir}/${subdir}")
+	endif()
+	if(WIN32)
+		source_group(Resources/docs/${subdir} FILES ${path})
+	else()
+		source_group(Docs/${subdir} FILES ${path})
+	endif()
 endfunction()
 
 if (NOT APPLE)
@@ -1269,7 +1295,7 @@ set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(GLOBAL PROPERTY PCSX2_METAL_SHADERS ${pcsx2GSMetalShaders})
 
 function(setup_main_executable target)
-	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/bin/resources/*)
+	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/resources/*)
 	foreach(path IN LISTS RESOURCE_FILES)
 		get_filename_component(file ${path} NAME)
 		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
@@ -1281,19 +1307,20 @@ function(setup_main_executable target)
 		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/Twemoji")
 			continue()
 		endif()
-		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
+		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/resources/)
 	endforeach()
 
-	# Add docs to resources for not-Windows, since they don't use the bin directory.
-	if(NOT WIN32)
-		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)
-		foreach(path IN LISTS DOCS_FILES)
-			get_filename_component(file ${path} NAME)
-			if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
-				continue()
-			endif()
-			pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/)
-		endforeach()
+	file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/pcsx2/Docs/*.pdf ${CMAKE_SOURCE_DIR}/pcsx2/Docs/*.html)
+	foreach(path IN LISTS DOCS_FILES)
+		get_filename_component(file ${path} NAME)
+		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+			continue()
+		endif()
+		pcsx2_docs(${target} ${path} ${CMAKE_SOURCE_DIR}/pcsx2/Docs/)
+	endforeach()
+
+	if(WIN32)
+		install(FILES "${CMAKE_SOURCE_DIR}/tools/bulk_compression.py" DESTINATION "${CMAKE_SOURCE_DIR}/bin/utils")
 	endif()
 
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)

@@ -125,7 +125,7 @@ jobs:
 
       - name: Download patches
         run: |
-          cd bin/resources
+          cd resources
           aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Generate CMake

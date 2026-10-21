@@ -100,7 +100,7 @@ done
 
 echo "Copying desktop file..."
 cp "$PCSX2DIR/.github/workflows/scripts/linux/pcsx2-qt.desktop" "net.pcsx2.PCSX2.desktop"
-cp "$PCSX2DIR/bin/resources/icons/AppIconLarge.png" "PCSX2.png"
+cp "$PCSX2DIR/resources/icons/AppIconLarge.png" "PCSX2.png"
 
 echo "Running linuxdeploy to create AppDir..."
 # The wayland platform plugin requires the plugins deployed for the waylandcompositor module
