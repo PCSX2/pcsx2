@@ -30085,6 +30085,14 @@ SLES-55444:
   gsHWFixes:
     roundSprite: 2 # Fixes textboxes and character portraits.
     beforeDraw: "OI_ArTonelico2"
+  patches:
+    default:
+      content: |-
+        comment=Fixes music unexpected cut out during "Dual Talk" scenes.
+        author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
+        patch=0,EE,0097FA74,word,00000021
 SLES-55448:
   name: "Indiana Jones and the Staff of Kings"
   region: "PAL-M5"
@@ -62477,6 +62485,14 @@ SLPS-25819:
   gsHWFixes:
     roundSprite: 2 # Fixes textboxes and character portraits.
     beforeDraw: "OI_ArTonelico2"
+  patches:
+    default:
+      content: |-
+        comment=Fixes music unexpected cut out during "Dual Talk" scenes.
+        author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
+        patch=0,EE,00988A9C,word,00000020
 SLPS-25820:
   name: "家庭教師ヒットマンREBORN！ Let's暗殺！? 狙われた10代目！"
   name-sort: "かてきょーひっとまんりぼーん！ れっつあんさつ！? ねらわれた10だいめ！"
@@ -64244,6 +64260,14 @@ SLPS-73263:
   gsHWFixes:
     roundSprite: 2 # Fixes textboxes and character portraits.
     beforeDraw: "OI_ArTonelico2"
+  patches:
+    default:
+      content: |-
+        comment=Fixes music unexpected cut out during "Dual Talk" scenes.
+        author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
+        patch=0,EE,009890EC,word,00000020
 SLPS-73264:
   name: "涼宮ハルヒの戸惑 [PlayStation2 the Best]"
   name-sort: "すずみやはるひのとまどい [PlayStation2 the Best]"
@@ -74518,6 +74542,14 @@ SLUS-21788:
   gsHWFixes:
     roundSprite: 2 # Fixes textboxes and character portraits.
     beforeDraw: "OI_ArTonelico2"
+  patches:
+    default:
+      content: |-
+        comment=Fixes music unexpected cut out during "Dual Talk" scenes.
+        author=Xiyan, Nebulas Astra
+        // In "Nearest" EE round mode, BGM fade need longer time to complete.
+        // So must extended hardcoded waiting time to keep state machine align.
+        patch=0,EE,0097EB94,word,00000020
 SLUS-21789:
   name: "Cabela's Legendary Adventures"
   region: "NTSC-U"
