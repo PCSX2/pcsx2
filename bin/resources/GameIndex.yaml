@@ -14716,6 +14716,8 @@ SLES-50114:
 SLES-50115:
   name: "Tokyo Xtreme Racer"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLES-50118:
   name: "Tiger Woods PGA Tour 2001"
   region: "PAL-E"
@@ -37065,6 +37067,8 @@ SLPM-61144:
   name-sort: "にんきょうでん とせいにんいちだいき [たいけんばん]"
   name-en: "Ninkyouden Toseinin Ichidaiki [Trial]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-61146:
   name: "電撃PS2 / 電撃PlayStation D90"
   name-sort: "でんげき PS2 でんげきPlayStation D90"
@@ -48935,6 +48939,8 @@ SLPM-66274:
   name-sort: "にんきょうでん とせいにんいちだいき"
   name-en: "Ninkyouden Toseinin Ichidaiki"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-66275:
   name: "新 鬼武者 DAWN OF DREAMS [ディスク1/2]"
   name-sort: "しん おにむしゃ DAWN OF DREAMS [でぃすく1/2]"
