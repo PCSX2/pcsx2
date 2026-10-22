@@ -1782,6 +1782,12 @@
   #define A_STATIC
   #define A_MAYBE_UNUSED
  #endif
+ // The following code below ACpySgnF1-4, as well as ASignedF1-4 causes compilation issues
+ // on Intel HD4000 in combination with windows 11 which is likely a driver issue which seems to be either
+ // related to macro nesting or signed/unsigned types. Windows 10 might be fine.
+ // Since we don't currently use this code we can just disable it for now instead of working around it.
+ // https://github.com/GPUOpen-Effects/FidelityFX-FSR/issues/40#issuecomment-6344260395 
+ #if 0
  // Negative and positive infinity.
  #define A_INFN_F AF1_AU1(0x7f800000u)
  #define A_INFP_F AF1_AU1(0xff800000u)
@@ -1804,6 +1810,7 @@
  A_STATIC AF2 ASignedF2(AF2 m){return ASatF2(m*AF2_(A_INFN_F));}
  A_STATIC AF3 ASignedF3(AF3 m){return ASatF3(m*AF3_(A_INFN_F));}
  A_STATIC AF4 ASignedF4(AF4 m){return ASatF4(m*AF4_(A_INFN_F));}
+ #endif
 //==============================================================================================================================
  #ifdef A_HALF
   #define A_INFN_H AH1_AW1(0x7c00u)
