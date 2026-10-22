@@ -368,46 +368,46 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="415"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="422"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="457"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="418"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="428"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="466"/>
         <source>Default Sound Effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="429"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="450"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="464"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="435"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="456"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="473"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="436"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="499"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="506"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="442"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="508"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="515"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="443"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="449"/>
         <source>Achievement Unlock Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="471"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="478"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="492"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="480"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="487"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="501"/>
         <source>Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="485"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="494"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="62"/>
         <source>Notification Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="513"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="522"/>
         <source>Leaderboard Submit Sound</source>
         <translation type="unfinished"></translation>
     </message>
@@ -826,31 +826,31 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3375"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3374"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3376"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3375"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3378"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3377"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3506"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3514"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3505"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3513"/>
         <source>Switch Rankings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Achievements.cpp" line="2552"/>
         <location filename="../../pcsx2/Achievements.cpp" line="2571"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3507"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3515"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3506"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3514"/>
         <source>Change Selection</source>
         <translation type="unfinished"></translation>
     </message>
@@ -859,14 +859,14 @@ Login token generated on %2.</source>
         <location filename="../../pcsx2/Achievements.cpp" line="2554"/>
         <location filename="../../pcsx2/Achievements.cpp" line="2565"/>
         <location filename="../../pcsx2/Achievements.cpp" line="2573"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3508"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3516"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3507"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3515"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3685"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3705"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3684"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3704"/>
         <source>Leaderboard Download Failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -914,7 +914,7 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../../pcsx2/Achievements.cpp" line="2765"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3374"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3373"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
@@ -930,7 +930,7 @@ Leaderboard Position: {1} of {2}</source>
     </message>
     <message>
         <location filename="../../pcsx2/Achievements.cpp" line="2768"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3377"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3376"/>
         <source>Unsupported</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1059,13 +1059,13 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3461"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3460"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3480"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3489"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3479"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3488"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
