@@ -24,6 +24,8 @@ namespace GLState
 	u8 bf;
 	u8 wrgba;
 
+	bool ds_as_rt_mask;
+
 	bool depth;
 	GLenum depth_func;
 	bool depth_mask;
@@ -45,6 +47,7 @@ namespace GLState
 	u32 draw_buffers;
 
 	GLuint tex_unit[8];
+	GLuint image_unit[8];
 
 	u32 UpdateDrawBuffers()
 	{
@@ -68,6 +71,8 @@ namespace GLState
 		bf = 0;
 		wrgba = 0xF;
 
+		ds_as_rt_mask = false;
+
 		depth = false;
 		depth_func = GL_LESS;
 		depth_mask = false;
@@ -89,5 +94,6 @@ namespace GLState
 		draw_buffers = 0;
 
 		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+		std::fill(std::begin(image_unit), std::end(image_unit), 0);
 	}
 } // namespace GLState
