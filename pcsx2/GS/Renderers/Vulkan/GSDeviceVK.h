@@ -39,6 +39,7 @@ public:
 		bool vk_ext_memory_budget : 1;
 		bool vk_ext_calibrated_timestamps : 1;
 		bool vk_ext_rasterization_order_attachment_access : 1;
+		bool vk_ext_rasterization_order_attachment_access_depth : 1;
 		bool vk_ext_full_screen_exclusive : 1;
 		bool vk_ext_line_rasterization : 1;
 		bool vk_swapchain_maintenance1 : 1;
@@ -83,9 +84,12 @@ public:
 	__fi bool IsDeviceAMD() const { return (m_device_properties.vendorID == 0x1002); }
 
 	// Creates a simple render pass.
-	VkRenderPass GetRenderPass(VkFormat color_format, VkFormat depth_format,
+	VkRenderPass GetRenderPass(
+		VkFormat color_format, VkFormat depth_as_color_format, VkFormat depth_format,
 		VkAttachmentLoadOp color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
+		VkAttachmentLoadOp depth_as_color_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
+		VkAttachmentStoreOp depth_as_color_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp depth_load_op = VK_ATTACHMENT_LOAD_OP_LOAD,
 		VkAttachmentStoreOp depth_store_op = VK_ATTACHMENT_STORE_OP_STORE,
 		VkAttachmentLoadOp stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -167,19 +171,22 @@ private:
 	{
 		struct
 		{
-			u32 color_format : 8;
-			u32 depth_format : 8;
-			u32 color_load_op : 2;
-			u32 color_store_op : 1;
-			u32 depth_load_op : 2;
-			u32 depth_store_op : 1;
-			u32 stencil_load_op : 2;
-			u32 stencil_store_op : 1;
-			u32 color_feedback_loop : 1;
-			u32 depth_feedback_loop : 1;
+			u64 color_format : 8;
+			u64 depth_as_color_format : 8;
+			u64 depth_format : 8;
+			u64 color_load_op : 2;
+			u64 color_store_op : 1;
+			u64 depth_as_color_load_op : 2;
+			u64 depth_as_color_store_op : 1;
+			u64 depth_load_op : 2;
+			u64 depth_store_op : 1;
+			u64 stencil_load_op : 2;
+			u64 stencil_store_op : 1;
+			u64 color_feedback_loop : 1;
+			u64 depth_feedback_loop : 1;
 		};
 
-		u32 key;
+		u64 key;
 	};
 
 	using ExtensionList = std::vector<const char*>;
@@ -297,7 +304,7 @@ private:
 
 	bool m_last_submit_failed = false;
 
-	std::map<u32, VkRenderPass> m_render_pass_cache;
+	std::map<u64, VkRenderPass> m_render_pass_cache;
 
 	VkDebugUtilsMessengerEXT m_debug_messenger_callback = VK_NULL_HANDLE;
 
@@ -309,14 +316,6 @@ private:
 	u32 m_max_framebuffer_width = 0;
 	u32 m_max_framebuffer_height = 0;
 public:
-	enum FeedbackLoopFlag : u8
-	{
-		FeedbackLoopFlag_None = 0,
-		FeedbackLoopFlag_ReadAndWriteRT = 1,
-		FeedbackLoopFlag_ReadDepth = 2,
-		FeedbackLoopFlag_ReadAndWriteDepth = 4,
-	};
-
 	enum class ResourceType
 	{
 		SRV, // Shader resource view (read only)
@@ -336,6 +335,9 @@ public:
 		}
 	}
 
+	using FramebufferInfo = GSTextureVK::FramebufferInfo;
+	using FeedbackLoopFlags = FeedbackLoopFlagsVK;
+
 	struct alignas(8) PipelineSelector
 	{
 		GSHWDrawConfig::PSSelector ps;
@@ -346,8 +348,9 @@ public:
 			{
 				u32 topology : 2;
 				u32 rt : 1;
+				u32 ds_as_rt : 1;
 				u32 ds : 1;
-				u32 feedback_loop_flags : 3;
+				FeedbackLoopFlags feedback_loop_flags : 3;
 			};
 
 			u32 key;
@@ -364,9 +367,9 @@ public:
 
 		__fi PipelineSelector() { std::memset(this, 0, sizeof(*this)); }
 
-		__fi bool IsRTFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteRT) != 0); }
-		__fi bool IsDepthFeedbackLoop() const { return ((feedback_loop_flags & FeedbackLoopFlag_ReadAndWriteDepth) != 0); }
-		__fi bool IsTestingAndSamplingDepth() const { return ((feedback_loop_flags & (FeedbackLoopFlag_ReadDepth | FeedbackLoopFlag_ReadAndWriteDepth)) != 0); }
+		__fi bool IsRTFeedbackLoop() const { return ::IsRTFeedbackLoop(feedback_loop_flags); }
+		__fi bool IsDepthFeedbackLoop() const { return ::IsDepthFeedbackLoop(feedback_loop_flags); }
+		__fi bool IsTestingAndSamplingDepth() const { return ::IsTestingAndSamplingDepth(feedback_loop_flags); }
 	};
 	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
@@ -545,11 +548,10 @@ public:
 	/// Returns true if Vulkan is suitable as a default for the devices in the system.
 	static bool IsSuitableDefaultRenderer();
 
-	__fi VkRenderPass GetTFXRenderPass(bool rt, bool ds, bool colclip, bool stencil,
-		bool rt_feedback, bool depth_feedback, VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_op) const
-	{
-		return m_tfx_render_pass[rt][ds][colclip][stencil][rt_feedback][depth_feedback][rt_op][ds_op];
-	}
+	__fi VkRenderPass GetTFXRenderPass(
+		bool rt, bool ds_as_rt, bool ds, bool colclip, bool stencil, bool rt_feedback, bool depth_feedback,
+		VkAttachmentLoadOp rt_op, VkAttachmentLoadOp ds_as_rt_op, VkAttachmentLoadOp ds_op);
+
 	__fi VkSampler GetPointSampler() const { return m_point_sampler; }
 	__fi VkSampler GetLinearSampler() const { return m_linear_sampler; }
 
@@ -631,8 +633,9 @@ public:
 	void PSSetSampler(GSHWDrawConfig::SamplerSelector sel);
 
 	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i& scissor,
-		FeedbackLoopFlag feedback_loop = FeedbackLoopFlag_None, const GSVector2i& viewport_size = {});
-
+		const GSVector2i& viewport_size = {});
+	void OMSetRenderTargets(FramebufferInfo info, const GSVector4i& scissor,
+		const GSVector2i& viewport_size = {});
 	void SetVSConstantBuffer(const GSHWDrawConfig::VSConstantBuffer& cb);
 	void SetPSConstantBuffer(const GSHWDrawConfig::PSConstantBuffer& cb);
 	void SetVSPushConstants(u32 base_vertex, u32 base_index = 0, bool force_update = false);
@@ -655,7 +658,7 @@ public:
 public:
 	VkFormat LookupNativeFormat(GSTexture::Format format) const;
 
-	__fi VkFramebuffer GetCurrentFramebuffer() const { return m_current_framebuffer; }
+	__fi VkFramebuffer GetCurrentFramebuffer() const { return m_current_framebuffer.framebuffer; }
 
 	/// Ends any render pass, executes the command buffer, and invalidates cached state.
 	void ExecuteCommandBuffer(bool wait_for_completion);
@@ -747,14 +750,11 @@ private:
 
 	// Which bindings/state has to be updated before the next draw.
 	u32 m_dirty_flags = 0;
-	FeedbackLoopFlag m_current_framebuffer_feedback_loop = FeedbackLoopFlag_None;
 	bool m_warned_slow_spin = false;
 
 	VkBuffer m_index_buffer = VK_NULL_HANDLE;
 
-	GSTextureVK* m_current_render_target = nullptr;
-	GSTextureVK* m_current_depth_target = nullptr;
-	VkFramebuffer m_current_framebuffer = VK_NULL_HANDLE;
+	FramebufferInfo m_current_framebuffer;
 	VkRenderPass m_current_render_pass = VK_NULL_HANDLE;
 	GSVector4i m_current_render_pass_area = GSVector4i::zero();
 
