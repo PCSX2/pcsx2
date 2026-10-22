@@ -255,6 +255,7 @@ public:
 		GSVector4i m_drawn_since_read{};
 		int readbacks_since_draw = 0;
 
+		std::optional<GIFRegTEX0> m_last_rgb_draw_TEX0;
 	public:
 		Target(GIFRegTEX0 TEX0, int type, const GSVector2i& unscaled_size, float scale, GSTexture* texture);
 		~Target();
