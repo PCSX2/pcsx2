@@ -1,0 +1,384 @@
+// SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
+// SPDX-License-Identifier: GPL-3.0+
+
+#if defined(PCSX2_DX12) == defined(PCSX2_DX11)
+	ERROR: Exactly one of PCSX2_DX12 or PCSX2_DX11 should be defined.
+#endif
+
+/// Start helper macros for shared shader code.
+
+#define PCSX2_HLSL
+
+// Types
+#define ushort uint
+#define ushort2 uint2
+#define ushort3 uint3
+#define ushort4 uint4
+#define short int
+#define short2 int2
+#define short3 int3
+#define short4 int4
+
+// Builtin keywords/functions
+#define equal(X, Y) ((X) == (Y))
+#define greaterThanEqual(X, Y) ((X) >= (Y))
+#define lessThanEqual(X, Y) ((X) <= (Y))
+#define greaterThan(X, Y) ((X) > (Y))
+#define lessThan(X, Y) ((X) < (Y))
+#define notEqual(X, Y) ((X) != (Y))
+#define rsqrt(X) rsqrt(X)
+#define splat2(X) (X).xx
+#define splat3(X) (X).xxx
+#define splat4(X) (X).xxxx
+// Warning: X, Y opposite order of GLSL and MSL!
+#define MAT_MUL(X, Y) mul((Y), (X))
+// Warning: X, Y opposite order of GLSL and MSL!
+#define MAT_GET(MAT, X, Y) MAT[X][Y]
+#define IN_PARAM(TYPE, NAME) TYPE NAME
+#define IN_OUT_PARAM(TYPE, NAME) inout TYPE NAME
+// FXC (<=SM5.1) may optimise away isnan and isinf.
+// DXC (>=SM6.0) will preserve them.
+#ifdef __hlsl_dx_compiler
+	#define IS_NAN_OR_INF_4(X) (isinf(X) | isnan(X))
+#else
+	#define IS_NAN_OR_INF_4(X) ((asuint(X) & 0x7f800000) == 0x7f800000)
+#endif
+#define UNROLL [unroll]
+
+// Constants
+#define PRIMID_MAX 0x7FFFFFFF
+#define VS_Y_FLIP -1.0f
+#define EXP2_NEG_32 exp2(-32.0f)
+#define EXP2_POS_32 exp2(32.0f)
+
+// Vertex shader helpers
+#define VS_SCALE_RAW_Z(Z) (float(Z) * EXP2_NEG_32)
+#define VS_LOAD_VERTEX(IDX) (VertexBuffer.Load(IDX))
+#define VS_LOAD_INDEX(IDX) (IndexBuffer.Load(IDX))
+#define VS_NEEDS_EXPAND (VS_EXPAND_TYPE != VS_EXPAND_NONE)
+// Unused in DX
+#define VS_POINT_SIZE 0
+#define BROKEN_SHADER_DEPTH 0
+
+// Pixel shader helpers
+#define PS_STATIC static
+
+/// End helper macros for shared shader code.
+
+#include "tfx_defs.inc"
+#include "tfx_uniforms.inc"
+
+#ifdef VERTEX_SHADER
+
+// VS input layout
+struct VSInput
+{
+	float2 st : TEXCOORD0;
+	uint4 c : COLOR0;
+	float q : TEXCOORD1;
+	uint2 p : POSITION0;
+	uint z : POSITION1;
+	uint2 uv : TEXCOORD2;
+	float4 f : COLOR1;
+};
+
+// VS Constant Buffer
+cbuffer cb0 : register(b0)
+{
+	VSUniform cb;
+};
+
+// VS constants for determining base vertex/index in expand shader.
+#if PCSX2_DX12
+cbuffer cb2 : register(b2)
+#elif PCSX2_DX11
+cbuffer cb2 : register(b1)
+#endif
+{
+	#define X(TYPE, NAME) TYPE NAME;
+		VS_PUSH_CONSTANTS(X)
+	#undef X
+};
+
+#if VS_EXPAND_TYPE != VS_EXPAND_NONE
+// Vertex buffer for expand shaders (sprites, upscaled lines, AA1 edges, etc.)
+StructuredBuffer<VSRawVertex> VertexBuffer : register(t0);
+
+// Index buffer for rearranging vertices in AA1 expand shader
+StructuredBuffer<uint> IndexBuffer : register(t5);
+#endif // VS_EXPAND_TYPE
+
+// Note: constant/vertex/index buffers must be defined before common code is included.
+#include "tfx_vs.inc"
+
+struct VSOutput
+{
+	float4 p : SV_Position;
+	float4 t : TEXCOORD0;
+	float4 ti : TEXCOORD2;
+
+#if VS_IIP != 0
+	float4 c : COLOR0;
+#else
+	nointerpolation float4 c : COLOR0;
+#endif
+
+	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
+	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
+};
+
+// Convert VS outputs from generic outputs to real outputs.
+VSOutput GetVSOutput(VSOutputGeneric vout_gen)
+{
+	VSOutput vout;
+	vout.p = vout_gen.p;
+	vout.t = vout_gen.t;
+	vout.ti = vout_gen.ti;
+	vout.c = vout_gen.c;
+	vout.inv_cov = vout_gen.inv_cov;
+	vout.interior = vout_gen.interior;
+	return vout;
+}
+
+#if VS_EXPAND_TYPE == VS_EXPAND_NONE
+
+VSOutput vs_main(VSInput vin)
+{
+	VSOutputGeneric vout_gen = vs_main_impl(vin);
+	return GetVSOutput(vout_gen);
+}
+
+#else // VS_EXPAND_TYPE
+
+VSOutput vs_main_expand(uint vid : SV_VertexID)
+{
+	VSOutputGeneric vout_gen = vs_expand_impl(vid);
+	return GetVSOutput(vout_gen);
+}
+
+#endif // VS_EXPAND_TYPE
+
+#endif // VERTEX_SHADER
+
+#ifdef PIXEL_SHADER
+
+// Pixel shader input
+struct PS_INPUT
+{
+	noperspective centroid float4 p : SV_Position;
+	float4 t : TEXCOORD0;
+	float4 ti : TEXCOORD2;
+#if PS_IIP != 0
+	float4 c : COLOR0;
+#else
+	nointerpolation float4 c : COLOR0;
+#endif
+	float inv_cov : COLOR1; // We use the inverse to make it simpler to interpolate.
+	nointerpolation uint interior : COLOR2; // 1 for triangle interior; 0 for edge;
+#if NEED_PRIMID
+	uint prim_id : SV_PrimitiveID;
+#endif
+};
+
+// Pixel shader output
+struct PS_OUTPUT
+{
+#if PS_RETURN_COLOR
+	float4 c0 : SV_Target0;
+	#if !PS_NO_COLOR1
+		float4 c1 : SV_Target1;
+	#endif
+#endif
+
+#if PS_RETURN_DEPTH
+	// In DX12 we do depth feedback loops with a color copy.
+	#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+		#if PS_RETURN_COLOR
+			float depth_color : SV_Target1;
+		#else
+			float depth_color : SV_Target0;
+		#endif
+	#endif
+	#if PS_HAS_CONSERVATIVE_DEPTH && !SW_DEPTH
+		float depth : SV_DepthLessEqual;
+	#else
+		float depth : SV_Depth;
+	#endif
+#endif
+};
+
+// Pixel shader resources
+Texture2D<float4> Texture : register(t0);
+SamplerState TextureSampler : register(s0);
+Texture2D<float4> Palette : register(t1);
+Texture2D<float> PrimMinTexture : register(t3);
+#if PS_ROV_COLOR
+	RasterizerOrderedTexture2D<unorm float4> RtTextureRov : register(u0);
+#else
+	Texture2D<float4> RtTexture : register(t2);
+#endif
+#if PS_ROV_DEPTH
+	RasterizerOrderedTexture2D<float> DepthTextureRov : register(u1);
+#else
+	Texture2D<float> DepthTexture : register(t4);
+#endif
+
+// Pixel shader constant buffer.
+#if PCSX2_DX12
+ConstantBuffer<PSUniform> cb : register(b1);
+#elif PCSX2_DX11
+cbuffer cb1 : register(b0) { PSUniform cb; };
+#endif
+
+static float4 sample_tex(float2 uv)
+{
+	return Texture.Sample(TextureSampler, uv);
+}
+
+static float4 sample_tex_lod(float2 uv, float lod)
+{
+	return Texture.SampleLevel(TextureSampler, uv, lod);
+}
+
+static float4 read_tex(uint2 pos)
+{
+	return Texture.Load(int3(int2(pos), 0));
+}
+
+static uint2 get_tex_dims()
+{
+	uint2 dims;
+	Texture.GetDimensions(dims.x, dims.y);
+	return dims;
+}
+
+static float read_primid(uint2 pos)
+{
+	return PrimMinTexture.Load(int3(int2(pos), 0)).r;
+}
+
+static float4 sample_p(uint idx)
+{
+	return Palette.Load(int3(idx, 0, 0));
+}
+
+// Get pixel shader input for passing to shared code.
+PSInputGeneric GetPSInput(PS_INPUT ps_in)
+{
+	PSInputGeneric psin_gen;
+	psin_gen.p = ps_in.p;
+	psin_gen.t = ps_in.t;
+	psin_gen.ti = ps_in.ti;
+	psin_gen.c = ps_in.c;
+	psin_gen.inv_cov = ps_in.inv_cov;
+	psin_gen.interior = ps_in.interior;
+	return psin_gen;
+}
+
+float4 RtLoad(int2 xy)
+{
+#if PS_ROV_COLOR
+	return RtTextureRov[xy];
+#elif NEEDS_RT
+	return RtTexture.Load(int3(int2(xy), 0));
+#else
+	return splat4(0.0f);
+#endif
+}
+
+float DepthLoad(int2 xy)
+{
+#if PS_ROV_DEPTH
+	return DepthTextureRov[xy];
+#elif SW_DEPTH
+	return DepthTexture.Load(int3(int2(xy), 0));
+#else
+	return 0.0f;
+#endif
+}
+
+void RtWrite(int2 xy, float4 c)
+{
+#if PS_ROV_COLOR
+	RtTextureRov[xy] = c;
+#endif
+}
+
+void DepthWrite(int2 xy, float d)
+{
+#if PS_ROV_DEPTH
+	DepthTextureRov[xy] = d;
+#endif
+}
+
+// Pixel shader global state
+static PSInputGeneric ps_in;
+static float4 current_color;
+static float current_depth;
+static uint prim_id;
+static bool color_discarded;
+static bool depth_discarded;
+
+// Include the common PS implementation code
+#include "tfx_ps.inc"
+
+#if PS_ROV_EARLYDEPTHSTENCIL
+[earlydepthstencil]
+#endif
+
+#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+PS_OUTPUT ps_main(PS_INPUT input)
+#else
+void ps_main(PS_INPUT input)
+#endif
+{
+	ps_in = GetPSInput(input);
+	#if NEED_PRIMID
+		prim_id = input.prim_id;
+	#else
+		prim_id = 0;
+	#endif
+	color_discarded = false;
+	depth_discarded = false;
+
+	int2 coord = int2(ps_in.p.xy);
+
+	current_depth = DepthLoad(coord);
+
+	current_color = RtLoad(coord);
+
+	#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+		PS_OUTPUT psout;
+	#endif
+
+	PSOutputGeneric psout_gen = ps_main_impl();
+
+	// Color write back
+	#if PS_RETURN_COLOR
+		psout.c0 = psout_gen.c0;
+		#if !PS_NO_COLOR1
+			psout.c1 = psout_gen.c1;
+		#endif
+	#elif PS_RETURN_COLOR_ROV
+		if (!color_discarded)
+			RtWrite(coord, psout_gen.c0);
+	#endif
+
+	// Depth write back
+	#if PS_RETURN_DEPTH
+		psout.depth = psout_gen.depth;
+		#if SW_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+			// Output color clone for feedback.
+			psout.depth_color = psout_gen.depth;
+		#endif
+	#elif PS_RETURN_DEPTH_ROV
+		if (!depth_discarded)
+			DepthWrite(coord, psout_gen.depth);
+	#endif
+
+	#if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
+		return psout;
+	#endif
+}
+
+#endif // PIXEL_SHADER
