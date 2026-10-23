@@ -1593,6 +1593,11 @@ if (bad)
 		DISCARD_DEPTH; // No depth update for triangle edges.
 #endif
 
+	// SW depth masking
+#if SW_DEPTH && PS_ZMASK
+	DISCARD_DEPTH;
+#endif
+
 #if (PS_RETURN_COLOR || PS_RETURN_DEPTH)
 	PS_OUTPUT output;
 #endif
