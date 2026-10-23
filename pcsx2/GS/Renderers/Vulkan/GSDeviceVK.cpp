@@ -29,6 +29,11 @@
 #include <mutex>
 #include <sstream>
 
+// X11/X.h defines Always
+#ifdef Always
+#undef Always
+#endif
+
 // Tweakables
 enum : u32
 {
