@@ -122,7 +122,7 @@ static bool CanPause()
 	static constexpr const float PAUSE_INTERVAL = 3.0f;
 	static Common::Timer::Value s_last_pause_time = 0;
 
-	if (!Achievements::IsHardcoreModeActive() || VMManager::GetState() == VMState::Paused)
+	if (!Achievements::IsHardcoreModeActive() || VMManager::IsPaused())
 		return true;
 
 	const Common::Timer::Value time = Common::Timer::GetCurrentValue();

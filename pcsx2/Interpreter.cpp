@@ -83,7 +83,7 @@ void intBreakpoint(bool memcheck)
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_EE);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	Cpu->ExitExecution();
 }
 
@@ -682,6 +682,8 @@ R5900cpu intCpu =
 	intExecute,
 
 	intSafeExitExecution,
+	intCancelInstruction,
+
 	intCancelInstruction,
 
 	intClear
