@@ -1014,6 +1014,10 @@ struct alignas(16) GSHWDrawConfig
 		{
 			DepthStencilSelector out;
 			out.ztst = ZTST_ALWAYS;
+			out.zwe = false;
+			out.date = false;
+			out.date_one = false;
+			out._free = 0;
 			return out;
 		}
 	};

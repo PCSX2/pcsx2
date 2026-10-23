@@ -477,6 +477,19 @@ enum class GSDepthFeedbackMode : u8
 	DepthAsRT = 3,
 };
 
+enum class GSExtendedDynamicStateModeVK : u8
+{
+	Off    = 0,
+	Always = 1,
+};
+
+enum class GSExtendedDynamicStateFullModeVK : u8
+{
+	Off    = 0,
+	Auto   = 1,
+	Always = 2,
+};
+
 enum class AchievementOverlayPosition : u8
 {
 	TopLeft,
@@ -799,7 +812,6 @@ struct Pcsx2Config
 					HWROV : 1,
 					HWROVLogging : 1,
 					HWROVBarriersVK : 1,
-					ExtendedDynamicStateVK : 1,
 					ManualUserHacks : 1,
 					UserHacks_AlignSpriteX : 1,
 					UserHacks_CPUFBConversion : 1,
@@ -900,6 +912,8 @@ struct Pcsx2Config
 		TriFiltering TriFilter = DEFAULT_TRILINEAR_FILTERING_MODE;
 		s8 OverrideTextureBarriers = -1;
 		GSDepthFeedbackMode DepthFeedbackMode = GSDepthFeedbackMode::Auto;
+		GSExtendedDynamicStateModeVK ExtendedDynamicStateVK = GSExtendedDynamicStateModeVK::Off;
+		GSExtendedDynamicStateFullModeVK ExtendedDynamicStateFullVK = GSExtendedDynamicStateFullModeVK::Off;
 
 		u8 CAS_Sharpness = 50;
 		u8 ShadeBoost_Brightness = DEFAULT_SHADEBOOST_BRIGHTNESS;
