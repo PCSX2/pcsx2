@@ -724,6 +724,13 @@ void FullscreenUI::Render()
 			Error error;
 			s_game_settings_interface->RemoveEmptySections();
 
+			if (!s_game_settings_interface->Save(&error))
+			{
+				ImGuiFullscreen::OpenInfoMessageDialog(
+					FSUI_STR("Error"),
+					fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
+			}
+
 			if (s_game_settings_interface->IsEmpty())
 			{
 				if (FileSystem::FileExists(s_game_settings_interface->GetFileName().c_str()) &&
@@ -734,19 +741,11 @@ void FullscreenUI::Render()
 											   error.GetDescription()));
 				}
 			}
-			else
-			{
-				if (!s_game_settings_interface->Save(&error))
-				{
-					ImGuiFullscreen::OpenInfoMessageDialog(
-						FSUI_STR("Error"),
-						fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
-				}
-			}
 
 			if (VMManager::HasValidVM())
 				Host::RunOnCPUThread([]() { VMManager::ReloadGameSettings(); });
 		}
+		GameList::SetCustomSettingsForPath(s_game_settings_entry->path, !s_game_settings_interface->IsEmpty());
 		s_game_settings_changed.store(false, std::memory_order_release);
 	}
 
@@ -1946,7 +1945,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					break;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_change_game_settings))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (New)"), false, can_change_game_settings) ||
+					ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (Edit)"), false, can_change_game_settings))
 					SwitchToGameSettings();
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings"), false))
@@ -2889,21 +2889,31 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
 			const bool is_favorite = entry->is_favorite;
-			const float favorite_size = title_height * 0.75f;
-			const float favorite_margin = LayoutScale(8.0f);
+			const bool has_custom_settings = entry->has_custom_settings;
+			const float icon_size = GetLineHeight(g_large_font) * 0.75f;
+			const float icon_margin = LayoutScale(8.0f);
 			ImRect visible_title_bb(title_bb);
-			if (is_favorite)
-				visible_title_bb.Max.x -= favorite_size + (favorite_margin * 2.0f);
+			if (is_favorite || has_custom_settings)
+				visible_title_bb.Max.x -= icon_size * 2.0f + icon_margin * 3.0f;
 			ImGui::RenderTextClipped(visible_title_bb.Min, visible_title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
 				ImVec2(0.0f, 0.0f), &visible_title_bb);
 			if (is_favorite)
 			{
-				const ImVec2 star_pos(title_bb.Max.x - favorite_size - favorite_margin,
-					title_bb.Min.y + (title_height - favorite_size) * 0.5f);
-				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
+				const ImVec2 star_pos(title_bb.Max.x - icon_size - icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
-				ImGui::GetWindowDrawList()->AddText(g_large_font.first, favorite_size,
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
+			}
+			if (has_custom_settings)
+			{
+				const ImVec2 gear_pos(title_bb.Max.x - 2.0f * icon_size - 2.0f * icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					gear_pos, IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
 			}
 			ImGui::PopFont();
 
@@ -3155,6 +3165,16 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size, star_pos,
 					IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
 			}
+			if (entry->has_custom_settings)
+			{
+				const float gear_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
+				const ImVec2 gear_pos(bb.Min.x + LayoutScale(6.0f), bb.Min.y + LayoutScale(6.0f));
+				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, gear_size,
+					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)),
+					IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
+				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, gear_size, gear_pos,
+					IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
+			}
 
 			const bool show_titles = Host::GetBaseBoolSettingValue("UI", "FullscreenUIShowGameGridTitles", true);
 
@@ -3199,8 +3219,9 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
 	const bool is_favorite = entry->is_favorite;
+	const bool has_custom_settings = VMManager::AreGameSettingsPresent(entry->serial, entry->crc);
 	ImGuiFullscreen::ChoiceDialogOptions options = {
-		{FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+		{has_custom_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (Edit)") : FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (New)"), false},
 		{is_favorite ? FSUI_ICONSTR(ICON_PF_STAR, "Remove from Favorites") : FSUI_ICONSTR(ICON_PF_STAR, "Add to Favorites"), false},
 		{FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
 		{FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false},
@@ -4334,7 +4355,8 @@ TRANSLATE_NOOP("FullscreenUI", "Back To Pause Menu");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Frame Limit");
-TRANSLATE_NOOP("FullscreenUI", "Game Properties");
+TRANSLATE_NOOP("FullscreenUI", "Game Properties (New)");
+TRANSLATE_NOOP("FullscreenUI", "Game Properties (Edit)");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Stop Recording");
