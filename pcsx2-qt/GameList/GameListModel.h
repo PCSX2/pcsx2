@@ -21,6 +21,7 @@ class GameListModel final : public QAbstractTableModel
 
 public:
 	static constexpr int FavoriteRole = Qt::UserRole + 1;
+	static constexpr int CustomSettingsRole = Qt::UserRole + 2;
 	enum Column : int
 	{
 		Column_Type,
@@ -55,7 +56,7 @@ public:
 	__fi const QString& getColumnDisplayName(int column) { return m_column_display_names[column]; }
 
 	void refresh();
-	void refreshFavorite(const std::string& path);
+	void refreshDecorations(const std::string& path);
 	void reloadThemeSpecificImages();
 
 	bool titlesLessThan(int left_row, int right_row) const;
@@ -103,6 +104,7 @@ private:
 	QPixmap m_placeholder_pixmap;
 	QPixmap m_loading_pixmap;
 	QPixmap m_favorite_pixmap;
+	QPixmap m_custom_settings_pixmap;
 	qreal m_dpr;
 
 	std::array<QPixmap, static_cast<int>(GameList::CompatibilityRatingCount)> m_compatibility_pixmaps;
