@@ -1388,6 +1388,9 @@
     <ClCompile Include="SIO\Pad\PadBase.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="SIO\Pad\PadDualshock1.cpp">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClCompile>
     <ClCompile Include="SIO\Pad\PadDualshock2.cpp">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClCompile>
@@ -2311,6 +2314,9 @@
       <Filter>System\Ps2\Iop\SIO\Memcard</Filter>
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadBase.h">
+      <Filter>System\Ps2\Iop\SIO\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="SIO\Pad\PadDualshock1.h">
       <Filter>System\Ps2\Iop\SIO\PAD</Filter>
     </ClInclude>
     <ClInclude Include="SIO\Pad\PadDualshock2.h">
