@@ -94,6 +94,59 @@
         </item>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="edsVKLabel">
+        <property name="text">
+         <string>Extended Dynamic State VK:</string>
+        </property>
+        <property name="buddy">
+         <cstring>edsVK</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="edsVK">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Always</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="edsVKFullLabel">
+        <property name="text">
+         <string>Extended Dynamic State VK (Full):</string>
+        </property>
+        <property name="buddy">
+         <cstring>edsFullVK</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="edsFullVK">
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Auto</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Always</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item row="10" column="0" colspan="2">
        <layout class="QGridLayout" name="advancedLayout">
         <item row="2" column="1">
@@ -138,16 +191,9 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="edsVK">
-          <property name="text">
-           <string>Extended Dynamic State VK</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
-      <item row="6" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="exclussiveFSLabel">
         <property name="text">
          <string>Allow Exclusive Fullscreen:</string>
@@ -157,7 +203,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="3" column="1">
        <widget class="QComboBox" name="exclusiveFullscreenControl">
         <item>
          <property name="text">
@@ -176,7 +222,7 @@
         </item>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="2" column="1">
        <widget class="QComboBox" name="texturePreloading">
         <item>
          <property name="text">
@@ -195,7 +241,7 @@
         </item>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Texture Preloading:</string>
