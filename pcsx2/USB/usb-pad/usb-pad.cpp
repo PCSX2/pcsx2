@@ -350,8 +350,8 @@ namespace usb_pad
 				UpdateHatSwitch();
 
 				buf[0] = data.steering & 0xFF;
-				buf[1] = data.throttle & 0xFF;
-				buf[2] = data.brake & 0xFF;
+				buf[1] = 0x80 + ((data.throttle - data.brake) >> 1);
+				buf[2] = data.brake & 0xFF; // what goes here?
 				buf[3] = data.hatswitch & 0x0F; // 4bits?
 				buf[3] |= (data.buttons & 0x0F) << 4; // 4 bits // TODO Or does it start at buf[4]?
 				buf[4] = (data.buttons >> 4) & 0x3F; // 10 - 4 = 6 bits
