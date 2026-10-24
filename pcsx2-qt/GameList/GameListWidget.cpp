@@ -245,7 +245,7 @@ namespace
 		}
 	};
 
-	class FavoriteCoverDelegate final : public QStyledItemDelegate
+	class CoverDecorationsDelegate final : public QStyledItemDelegate
 	{
 	public:
 		using QStyledItemDelegate::QStyledItemDelegate;
@@ -253,7 +253,9 @@ namespace
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 		{
 			QStyledItemDelegate::paint(painter, option, index);
-			if (!index.data(GameListModel::FavoriteRole).toBool())
+			const bool favorite = index.data(GameListModel::FavoriteRole).toBool();
+			const bool custom_settings = index.data(GameListModel::CustomSettingsRole).toBool();
+			if (!favorite && !custom_settings)
 				return;
 
 			QStyleOptionViewItem view_option(option);
@@ -266,13 +268,23 @@ namespace
 
 			const QRect cover_rect = QStyle::alignedRect(option.direction, option.decorationAlignment,
 				cover.deviceIndependentSize().toSize(), decoration_rect);
-			const int star_size = std::clamp(qRound(static_cast<qreal>(cover_rect.width()) * 0.12), 9, 42);
-			const int margin = std::max(3, star_size / 3);
+			const int icon_size = std::clamp(qRound(static_cast<qreal>(cover_rect.width()) * 0.12), 9, 42);
+			const int margin = std::max(3, icon_size / 3);
 			painter->save();
-			const QRect star_rect(cover_rect.right() - star_size - margin, cover_rect.top() + margin, star_size, star_size);
-			static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
-			const QPixmap star_pixmap = star_icon.pixmap(QSize(star_size, star_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-			painter->drawPixmap(star_rect.topLeft(), star_pixmap);
+			if (favorite)
+			{
+				const QRect star_rect(cover_rect.right() - icon_size - margin, cover_rect.top() + margin, icon_size, icon_size);
+				static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
+				const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+				painter->drawPixmap(star_rect.topLeft(), star_pixmap);
+			}
+			if (custom_settings)
+			{
+				const QRect gear_rect(cover_rect.left() + margin, cover_rect.top() + margin, icon_size, icon_size);
+				static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
+				const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+				painter->drawPixmap(gear_rect.topLeft(), gear_pixmap);
+			}
 			painter->restore();
 		}
 	};
@@ -409,7 +421,7 @@ void GameListWidget::initialize()
 	m_list_view = new GameListGridListView(m_ui.stack);
 	m_list_view->setModel(m_sort_model);
 	m_list_view->setModelColumn(GameListModel::Column_Cover);
-	m_list_view->setItemDelegate(new FavoriteCoverDelegate(m_list_view));
+	m_list_view->setItemDelegate(new CoverDecorationsDelegate(m_list_view));
 	m_list_view->setSelectionMode(QAbstractItemView::SingleSelection);
 	m_list_view->setViewMode(QListView::IconMode);
 	m_list_view->setResizeMode(QListView::Adjust);

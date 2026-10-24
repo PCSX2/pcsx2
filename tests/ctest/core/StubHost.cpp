@@ -177,6 +177,10 @@ void Host::OnGameListFavoriteChanged(const std::string& path)
 {
 }
 
+void Host::OnGameSettingsChanged(const std::string& path)
+{
+}
+
 bool Host::IsFullscreen()
 {
 	return false;
