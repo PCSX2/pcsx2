@@ -52,6 +52,7 @@ public:
 
 	static void openGamePropertiesDialog(const GameList::Entry* game, const std::string_view title, std::string serial, u32 disc_crc, bool is_elf, const char* category);
 	static void closeGamePropertiesDialogs();
+	static std::string getActiveGameSettingsEntryPath();
 
 	SettingsInterface* getSettingsInterface() const;
 	__fi bool isPerGameSettings() const { return static_cast<bool>(m_sif); }

@@ -698,4 +698,12 @@ void SettingsWindow::closeGamePropertiesDialogs()
 	}
 }
 
+std::string SettingsWindow::getActiveGameSettingsEntryPath()
+{
+	for (SettingsWindow* dialog : s_open_game_properties_dialogs)
+		if (dialog->isActiveWindow())
+			return dialog->m_game_list_filename;
+	return std::string();
+}
+
 #include "moc_SettingsWindow.cpp"
