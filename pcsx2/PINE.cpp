@@ -18,6 +18,7 @@
 #include "SIO/Pad/Pad.h"
 #include "SIO/Pad/PadBase.h"
 #include "SIO/Pad/PadDualshock2.h"
+#include "SPU2/spu2.h"
 #include "DEV9/net.h"
 #include "DEV9/NetCapture.h"
 #include "GSStreamServer.h"
@@ -234,6 +235,8 @@ namespace PINEServer
 		MsgGSStreamPing        = 0x42, /**< Reserved: lightweight liveness probe for the GS stream channel. */
 		MsgReadMemBatch        = 0x43, /**< Read fixed-size memory slices from multiple addresses. */
 		MsgWriteMemBatch       = 0x44, /**< Write fixed-size memory slices to multiple addresses. */
+		MsgSetAudioMuted       = 0x45, /**< Mute or unmute audio output (same as the Toggle Mute hotkey). */
+		MsgGetAudioState       = 0x46, /**< Query audio output mute state and volume. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -655,6 +658,16 @@ void PINEServer::Deinitialize()
 		s_thread.join();
 }
 
+/* Forward declaration for IOP memory read used by the PINE IPC handlers.
+   Some build configurations may not include the header that declares this symbol
+   in this translation unit. Declaring it here resolves the compile-time lookup.
+*/
+u8 iopMemRead8(u32 addr);
+// Insert a forward declaration for IOP memory write used by the PINE IPC handlers.
+// Some build configurations may not include the header that declares this symbol
+// in this translation unit. Declaring it here resolves the compile-time lookup.
+void iopMemWrite8(u32 addr, u8 byte);
+
 PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8>& ret_buffer, u32 buf_size)
 {
 	// Buffer-size constants for new opcodes
@@ -1074,16 +1087,16 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!VMManager::HasValidVM())
 					goto error;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size)) [[unlikely]]
-					goto error;
+				goto error;
 
 				bool stepped = false;
 				u32 new_pc = 0;
 				Host::RunOnCPUThread([&]() {
 					if (VMManager::GetState() != VMState::Paused)
 						return;
-					intCpu.Step();
-					new_pc = NormalizePcKseg0(cpuRegs.pc);
-					stepped = true;
+				 intCpu.Step();
+				 new_pc = NormalizePcKseg0(cpuRegs.pc);
+				 stepped = true;
 				}, true);
 
 				if (!stepped)
@@ -1483,6 +1496,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				Host::RunOnCPUThread([&ok, path = std::move(path)]() {
 					Error err;
 					ok = VMManager::LoadState(path.c_str(), &err);
+					if (!ok)
+						Console.WriteLn(Color_Red, "PINE: LoadStateFile '%s' failed: %s", path.c_str(), err.GetDescription().c_str());
 				}, true);
 				if (!ok)
 					goto error;
@@ -2362,6 +2377,38 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				// Reply OK: (empty) — used by the bridge to confirm the GS stream control plane is wired up.
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
+				break;
+			}
+			case MsgSetAudioMuted:
+			case MsgGetAudioState:
+			{
+				// Request (0x45): muted (u8, 0 = unmute, 1 = mute)
+				// Request (0x46): (none)
+				// Reply OK: muted (u8) + muted_in_settings (u8)
+				//   muted is the effective state; muted_in_settings means the user's
+				//   "Mute All Sound" setting is on, which blocks unmuting from here
+				//   just like it blocks the hotkey.
+				const bool set = (buf[buf_cnt - 1] == MsgSetAudioMuted);
+				if (!VMManager::HasValidVM())
+					goto error;
+				if (!SafetyChecks(buf_cnt, set ? 1 : 0, ret_cnt, 2, buf_size)) [[unlikely]]
+					goto error;
+
+				const u8 want = set ? FromSpan<u8>(buf, buf_cnt) : 0;
+				if (set)
+					buf_cnt += 1;
+
+				u8 muted = 0;
+				u8 muted_in_settings = 0;
+				Host::RunOnCPUThread([&]() {
+					if (set)
+						SPU2::SetOutputMuted(want != 0);
+					muted_in_settings = EmuConfig.SPU2.OutputMuted ? 1 : 0;
+					muted = (SPU2::IsOutputMuted() || muted_in_settings) ? 1 : 0;
+				}, true);
+
+				ret_buffer[ret_cnt++] = muted;
+				ret_buffer[ret_cnt++] = muted_in_settings;
 				break;
 			}
 			default:

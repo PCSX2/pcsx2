@@ -2,13 +2,14 @@
 
 ## Summary
 
-This proposal extends the PINE IPC protocol with opcodes 0x10–0x32 that expose the
-complete PCSX2 GUI debugger interface to external tools. The additions allow a remote
-client to control execution, manage save states by name, inspect all registers across
-both CPUs, enumerate threads, modules, and call stacks, list and look up EE function
-symbols and global variables, retrieve local variables and function parameters,
-disassemble instruction ranges, and save game screenshots — all through the existing
-PINE socket.
+This proposal extends the PINE IPC protocol with opcodes 0x10–0x3F that expose the
+complete PCSX2 GUI debugger interface, controller input, and DEV9 network bridge to
+external tools. The additions allow a remote client to control execution, manage save
+states by name, inspect all registers across both CPUs, enumerate threads, modules,
+and call stacks, list and look up EE function symbols and global variables, retrieve
+local variables and function parameters, disassemble instruction ranges, save game
+screenshots, read and override pad input, and capture, inject, and inspect PS2
+network traffic — all through the existing PINE socket.
 
 All new opcodes are numbered above 0x0F, so no existing opcode values change and
 clients that do not use the new opcodes are completely unaffected.
@@ -130,6 +131,13 @@ opcodes makes PINE a self-contained debugger transport.
 | 0x3E  | `MsgNetSetFilter`   | Set the capture filter (protocol, port, or IP)                  |
 | 0x3F  | `MsgNetGetStats`    | Return TX/RX counters and capture queue statistics              |
 
+### Audio output (0x45–0x46)
+
+| Value | Name               | Purpose                                                    |
+|-------|--------------------|------------------------------------------------------------|
+| 0x45  | `MsgSetAudioMuted` | Mute or unmute audio output (same as the Toggle Mute hotkey) |
+| 0x46  | `MsgGetAudioState` | Query the audio output mute state                          |
+
 ---
 
 ## Packet Formats
@@ -233,7 +241,7 @@ Generic single-register write. Only valid when emulation is paused.
 
 ### MsgGetEEThreads (0x1A)
 
-- **Request:** 5 bytes — opcode only.
+- **Request:** 5 bytes — opcode only. Emulation must be paused.
 - **Reply (OK):** variable — `IPC_OK`, `count` (u32LE), then for each thread:
 
   ```
@@ -247,15 +255,17 @@ Generic single-register write. Only valid when emulation is paused.
   ```
 
   22 bytes per thread; up to 256 threads.
-- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active.
+- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active or emulation is
+  not paused.
 
 ### MsgGetIOPThreads (0x1B)
 
 Same layout as `MsgGetEEThreads`; returns IOP (R3000) threads. Up to 1000 threads.
+Emulation must be paused.
 
 ### MsgGetModules (0x1C)
 
-- **Request:** 5 bytes — opcode only.
+- **Request:** 5 bytes — opcode only. Emulation must be paused.
 - **Reply (OK):** variable — `IPC_OK`, `count` (u32LE), then for each module:
 
   ```
@@ -270,11 +280,12 @@ Same layout as `MsgGetEEThreads`; returns IOP (R3000) threads. Up to 1000 thread
   ```
 
   58 bytes per module; up to 1000 modules.
-- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active.
+- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active or emulation is
+  not paused.
 
 ### MsgGetStack (0x1D)
 
-Walks the EE call stack for the currently running thread.
+Walks the EE call stack for the currently running thread. Emulation must be paused.
 
 - **Request:** 5 bytes — opcode only.
 - **Reply (OK):** variable — `IPC_OK`, `count` (u32LE), then for each frame:
@@ -287,7 +298,8 @@ Walks the EE call stack for the currently running thread.
   ```
 
   16 bytes per frame; up to 1024 frames.
-- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active.
+- **Reply (fail):** 5 bytes — `IPC_FAIL` when no valid VM is active or emulation is
+  not paused.
 
 ### MsgStepInto (0x1E)
 
@@ -302,6 +314,7 @@ Branch and delay-slot handling mirrors the GUI debugger:
 - Unconditional branch → breakpoint at branch target.
 - Conditional branch taken → breakpoint at branch target.
 - Conditional branch not taken → breakpoint at `PC + 8` (skip delay slot).
+- SYSCALL → breakpoint at the syscall handler target.
 - Default → breakpoint at `PC + 4`.
 
 ### MsgStepOver (0x1F)
@@ -536,7 +549,7 @@ Returns all active memory watchpoints, optionally filtered by CPU.
   end    : u32LE  — first byte past the watched range (exclusive)
   cond   : u8     — condition bitmask (0x01=read, 0x02=write, 0x03=read+write)
   result : u8     — action bitmask (0x01=log, 0x02=break, 0x03=both)
-  cpu    : u8     — 0=EE, 1=IOP
+  cpu    : u8     — 0x01=EE, 0x02=IOP (BreakPointCpu enum values)
   ```
 
 - **Reply (fail):** 5 bytes — `IPC_FAIL`.
@@ -827,7 +840,23 @@ are reset by `TermNet()` (when the adapter is torn down).
 
 ---
 
-All opcodes 0x10–0x32 are **single-command only** — they must not appear inside a
+### MsgSetAudioMuted (0x45) / MsgGetAudioState (0x46)
+
+Mute, unmute, or query PCSX2's audio output. Muting goes through
+`SPU2::SetOutputMuted`, the same path as the Toggle Mute hotkey, so the saved
+volume comes back on unmute.
+
+- **Request (0x45):** 6 bytes — opcode + `muted` (u8, 0 = unmute, 1 = mute).
+- **Request (0x46):** 5 bytes — opcode only.
+- **Reply (OK):** 7 bytes — `IPC_OK` + `muted` (u8) + `muted_in_settings` (u8).
+  `muted` is the effective state after the request. `muted_in_settings` is set
+  when the user's "Mute All Sound" setting is on; that setting wins, so an
+  unmute request leaves `muted = 1`.
+- **Reply (fail):** 5 bytes — `IPC_FAIL` if no valid VM.
+
+---
+
+All opcodes 0x10–0x3F are **single-command only** — they must not appear inside a
 multi-command batch request. If any of them is encountered after another command
 has already been processed in the same request buffer, the server returns `IPC_FAIL`
 for the entire batch. This restriction exists because these opcodes mutate or observe
@@ -889,7 +918,7 @@ current PC.
 - [ ] `MsgListGlobals` returns global variable names, addresses, and sizes
 - [ ] `MsgGetLocals` returns parameters and locals for a function with DWARF debug info
 - [ ] `MsgGetLocals` returns `IPC_FAIL` for an address outside any function
-- [ ] All opcodes 0x10–0x2D return `IPC_FAIL` gracefully when called inside a batch
+- [ ] All opcodes return `IPC_FAIL` gracefully for invalid arguments
 - [ ] `MsgAddWatch(0, start, end, 0x02)` adds a write watchpoint on EE; writing to the range pauses the emulator
 - [ ] `MsgAddWatch(0, start, end, 0x01)` adds a read watchpoint; reading the range pauses the emulator
 - [ ] `MsgAddWatch` returns `IPC_FAIL` for invalid `cond` (0 or bits outside 0x03)
@@ -901,7 +930,7 @@ current PC.
 - [ ] `MsgClearAllWatches` removes all watchpoints; `MsgListWatches` returns count=0
 - [ ] `MsgSaveSnapshot` queues a screenshot; a file appears in the snapshots directory
 - [ ] `MsgSaveSnapshot` returns `IPC_FAIL` when no game is running
-- [ ] All opcodes 0x10–0x32 return `IPC_FAIL` gracefully when called inside a batch
+- [ ] All opcodes 0x10–0x3F return `IPC_FAIL` gracefully when called inside a batch
 - [ ] `MsgPadGetState(0)` returns buttons, analogs, and pressures for pad 0
 - [ ] `MsgPadGetState` returns `IPC_FAIL` for an out-of-range slot or disconnected pad
 - [ ] `MsgPadSetButton(0, 6, 1.0)` presses Cross on pad 0; the game sees the button held
