@@ -33,7 +33,7 @@ void _psxFlushAllDirty();
 
 void _psxOnWriteReg(int reg);
 
-void _psxMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
+void _psxMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr, bool allow_preload = true);
 void _psxMoveGPRtoM(uptr to, int fromgpr);
 
 extern u32 psxpc; // recompiler pc

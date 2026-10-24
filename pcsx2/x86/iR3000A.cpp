@@ -360,7 +360,7 @@ void _psxDeleteReg(int reg, int flush)
 	_deletePSXtoX86reg(reg, flush ? DELETE_REG_FREE : DELETE_REG_FREE_NO_WRITEBACK);
 }
 
-void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
+void _psxMoveGPRtoR(const xRegister32& to, int fromgpr, bool allow_preload)
 {
 	if (PSX_IS_CONST1(fromgpr))
 	{
@@ -368,7 +368,16 @@ void _psxMoveGPRtoR(const xRegister32& to, int fromgpr)
 	}
 	else
 	{
-		const int reg = EEINST_USEDTEST(fromgpr) ? _allocX86reg(X86TYPE_PSX, fromgpr, MODE_READ) : _checkX86reg(X86TYPE_PSX, fromgpr, MODE_READ);
+		int reg = _checkX86reg(X86TYPE_PSX, fromgpr, MODE_READ);
+
+		if (allow_preload && reg < 0)
+		{
+			if (EEINST_USEDTEST(fromgpr))
+			{
+				reg = _allocX86reg(X86TYPE_PSX, fromgpr, MODE_READ);
+			}
+		}
+
 		if (reg >= 0)
 			xMOV(to, xRegister32(reg));
 		else
@@ -1397,7 +1406,7 @@ static void psxRecMemcheck(u32 op, u32 bits, bool store)
 	_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
 
 	// compute accessed address
-	_psxMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+	_psxMoveGPRtoR(ecx, (op >> 21) & 0x1F, false);
 	if ((s16)op != 0)
 		xADD(ecx, (s16)op);
 
