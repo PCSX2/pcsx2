@@ -199,8 +199,6 @@ namespace
 		Threading::SetNameOfCurrentThread("GS Stream Encoder");
 
 		std::vector<u32> local_pixels;
-		std::vector<u8>  local_jpeg;
-		local_jpeg.reserve(128 * 1024);
 
 		for (;;)
 		{
@@ -373,6 +371,15 @@ void GSStreamServer::Deinitialize()
 		s_encoder_thread.join();
 
 	{
+		std::lock_guard<std::mutex> lock(s_pending_mutex);
+		s_pending_has_frame = false;
+		s_pending_width = 0;
+		s_pending_height = 0;
+		s_pending_pixels.clear();
+		s_pending_pixels.shrink_to_fit();
+	}
+
+	{
 		std::lock_guard<std::mutex> lock(s_subscribers_mutex);
 		for (socket_t s : s_subscribers)
 			gs_close(s);
@@ -381,6 +388,7 @@ void GSStreamServer::Deinitialize()
 	}
 
 	gs_close(s_listen_sock);
+	s_encode_image = RGBA8Image();
 	s_bound_port.store(-1, std::memory_order_release);
 	s_initialized.store(false, std::memory_order_release);
 }
