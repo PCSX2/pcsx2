@@ -19,7 +19,7 @@ namespace
 
 		void SetPaused(bool paused) override;
 
-		bool OpenDevice(bool stretch_enabled, Error* error);
+		bool OpenDevice(AudioSynchronizationMode sync_mode, Error* error);
 		void CloseDevice();
 
 	protected:
@@ -65,19 +65,19 @@ SDLAudioStream::~SDLAudioStream()
 }
 
 std::unique_ptr<AudioStream> AudioStream::CreateSDLAudioStream(u32 sample_rate, const AudioStreamParameters& parameters,
-	bool stretch_enabled, Error* error)
+	AudioSynchronizationMode sync_mode, Error* error)
 {
 	if (!InitializeSDLAudio(error))
 		return {};
 
 	std::unique_ptr<SDLAudioStream> stream = std::make_unique<SDLAudioStream>(sample_rate, parameters);
-	if (!stream->OpenDevice(stretch_enabled, error))
+	if (!stream->OpenDevice(sync_mode, error))
 		stream.reset();
 
 	return stream;
 }
 
-bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
+bool SDLAudioStream::OpenDevice(AudioSynchronizationMode sync_mode, Error* error)
 {
 	pxAssert(!IsOpen());
 
@@ -102,8 +102,7 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 			READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
 	}};
 
-	uint samples = GetBufferSizeForMS(
-		m_sample_rate, (m_parameters.minimal_output_latency) ? m_parameters.buffer_ms : m_parameters.output_latency_ms);
+	uint samples = GetFrameCountForMS(m_sample_rate, m_parameters.output_latency_ms);
 
 	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, fmt::format("{}", samples).c_str());
 
@@ -118,7 +117,7 @@ bool SDLAudioStream::OpenDevice(bool stretch_enabled, Error* error)
 	else
 		DEV_LOG("SDL_GetAudioDeviceFormat() failed {}", SDL_GetError());
 
-	BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)], stretch_enabled);
+	BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)], sync_mode);
 	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_stream));
 
 	return true;
@@ -130,11 +129,15 @@ void SDLAudioStream::SetPaused(bool paused)
 		return;
 
 	if (paused)
+	{
 		SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(m_stream));
+		AudioStream::SetPaused(true);
+	}
 	else
+	{
+		AudioStream::SetPaused(false);
 		SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(m_stream));
-
-	m_paused = paused;
+	}
 }
 
 void SDLAudioStream::CloseDevice()
