@@ -461,6 +461,12 @@ protected:
 	std::unique_ptr<GSDownloadTexture> m_uint16_download_texture;
 	std::unique_ptr<GSDownloadTexture> m_uint32_download_texture;
 
+	// For dumping changes to the TC for debugging.
+	u32 m_debug_num_additions = 0;
+	u32 m_debug_num_deletions = 0;
+	std::string m_debug_additions; // String representation of sources/targets removed
+	std::string m_debug_deletions; // String representation of sources/targets added
+
 	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GIFRegCLAMP& CLAMP, Target* t, int x_offset, int y_offset, const GSVector2i* lod, const GSVector4i* src_range, GSTexture* gpu_clut, SourceRegion region, bool force_temporary = false);
 
 	bool PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, bool is_frame,
@@ -539,7 +545,8 @@ private:
 		bool used, u32 fbmask, bool is_frame, bool preload, bool preserve_rgb = true, bool preserve_alpha = true,
 		const GSVector4i draw_rc = GSVector4i::zero(), bool is_shuffle = false, bool possible_clear = false,
 		bool preserve_scale = false, GSTextureCache::Source* src = nullptr, GSTextureCache::Target* ds = nullptr, int offset = -1);
-
+		
+		void DumpChange(GSTextureCache::Surface* s, bool addition, bool source);
 public:
 	Target* CreateTarget(GIFRegTEX0 TEX0, const GSVector2i& size, const GSVector2i& valid_size, float scale, int type, bool used = true,
 		u32 fbmask = 0, bool is_frame = false, bool preload = GSConfig.PreloadFrameWithGSData, bool preserve_target = true,
@@ -615,6 +622,15 @@ public:
 
 	/// Injects a texture into the hash cache, by using GSTexture::Swap(), transitively applying to all sources. Ownership of tex is transferred.
 	void InjectHashCacheTexture(const HashCacheKey& key, GSTexture* tex, const std::pair<u8, u8>& alpha_minmax);
+
+	/// Dump string representation of TC contents for debugging.
+	void DumpSummary(const std::string& filename);
+
+	// Dump string representation of additions/removals to the TC.
+	// First two functions queue the changes, last function dumps to file.
+	void DumpChange(Source* s, bool addition);
+	void DumpChange(Target* t, bool addition);
+	void DumpChangesToFile(const std::string& filename_base);
 };
 
 extern std::unique_ptr<GSTextureCache> g_texture_cache;

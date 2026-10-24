@@ -549,6 +549,7 @@ set(pcsx2GSHeaders
 	GS/GSVector.h
 	GS/GSXXH.h
 	GS/MultiISA.h
+	GS/GSDebugWriter.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h

@@ -738,6 +738,7 @@
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="GameList.h" />
+    <ClInclude Include="GS\GSDebugWriter.h" />
     <ClInclude Include="GS\GSVector4i_arm64.h" />
     <ClInclude Include="GS\GSVector4_arm64.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D11ShaderCache.h" />
