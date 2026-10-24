@@ -19,13 +19,6 @@ set(TOP_CMAKE_WAS_SOURCED TRUE)
 # set module path
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-# Write binaries to the bin directory under the build directory.
-# This makes it simple to run development builds directly out of the build directory.
-if (UNIX AND NOT APPLE)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-endif()
-
 # include some generic functions to ensure correctness of the env
 include(Pcsx2Utils)
 
@@ -37,6 +30,13 @@ detect_compiler()
 # Include specific module
 include(BuildParameters)
 include(SearchForStuff)
+
+# Write binaries to the bin directory under the build directory.
+# This makes it simple to run development builds directly out of the build directory.
+if (UNIX AND NOT APPLE)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${BIN_DIR}")
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${BIN_DIR}")
+endif()
 
 # Must be done after SearchForStuff
 get_git_version_info()

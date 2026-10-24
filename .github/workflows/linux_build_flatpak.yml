@@ -84,7 +84,7 @@ jobs:
 
       - name: Download patches
         run: |
-          cd bin/resources
+          cd resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
 
       - name: Validate manifest
