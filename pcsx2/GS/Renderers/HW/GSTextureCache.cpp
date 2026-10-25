@@ -3504,6 +3504,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 				auto& transfers = GSRendererHW::GetInstance()->m_draw_transfers;
 				const int last_draw = transfers.back().draw;
 				GSVector4i eerect = GSVector4i::zero();
+				u8 channels = 0;
 
 				for (auto iter = transfers.rbegin(); iter != transfers.rend(); ++iter)
 				{
@@ -3568,6 +3569,8 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 						else
 							eerect = eerect.runion(targetr);
 
+						channels |= GSUtil::GetChannelMask(iter->blit.DPSM);
+
 						const bool transfer_is_clear = iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear;
 						// Later writes might be partial over a previously cleared area. We want to upload in these cases.
 						hw_clear = hw_clear.has_value() ? (hw_clear.value() && transfer_is_clear) : transfer_is_clear;
@@ -3599,6 +3602,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 					const GSVector4i save_rect = preserve_target ? newrect : eerect;
 
 					GL_INS("TC: Preloading the RT DATA from updated GS Memory");
+					rgba._u32 = channels;
 					AddDirtyRectTarget(dst, save_rect, TEX0.PSM, TEX0.TBW, rgba, GSLocalMemory::m_psm[TEX0.PSM].trbpp >= 16);
 				}
 			}
@@ -3616,7 +3620,7 @@ bool GSTextureCache::PreloadTarget(GIFRegTEX0 TEX0, const GSVector2i& size, cons
 
 					if (iter->transfer_type == GSRendererHW::GetInstance()->EEGS_TransferType::Clear && iter->blit.DBP == TEX0.TBP0 && iter->blit.DBW == TEX0.TBW)
 					{
-						hw_clear = true;
+						hw_clear = GSLocalMemory::m_psm[iter->blit.DPSM].trbpp == GSLocalMemory::m_psm[TEX0.PSM].trbpp;
 						transfers.erase(std::next(iter).base());
 						break;
 					}
@@ -5523,7 +5527,7 @@ bool GSTextureCache::Move(u32 SBP, u32 SBW, u32 SPSM, int sx, int sy, u32 DBP, u
 		const GSVector2i target_size = GetTargetSize(DBP, DBW, DPSM, Common::AlignUpPow2(dx + w, 64), dx + h);
 		dst->ResizeTexture(std::max(dst->m_unscaled_size.x, target_size.x), std::max(dst->m_unscaled_size.y, target_size.y));
 	}
-	
+
 	// Invalidate any opposite targets.
 	g_texture_cache->InvalidateVideoMemType(GSTextureCache::DepthStencil - dst->m_type, dst->m_TEX0.TBP0);
 
