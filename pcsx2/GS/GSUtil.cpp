@@ -180,7 +180,7 @@ const char* GSUtil::GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw)
 {
 	if (hw)
 	{
-		static constexpr const char* names_hw[GSPerfMon::CounterLastHW] = {
+		static constexpr const char* names_hw[] = {
 			"Prim",
 			"Draw",
 			"DrawCalls",
@@ -190,13 +190,17 @@ const char* GSUtil::GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw)
 			"TextureCopies",
 			"TextureUploads",
 			"Barriers",
-			"RenderPasses"
+			"RenderPasses",
+			"TextureCopiesROV",
+			"DrawCallsROV",
+			"BarriersROV",
 		};
+		static_assert(std::size(names_hw) == static_cast<std::size_t>(GSPerfMon::CounterLastHW));
 		return counter < std::size(names_hw) ? names_hw[counter] : "";
 	}
 	else
 	{
-		static constexpr const char* names_sw[GSPerfMon::CounterLastSW] = {
+		static constexpr const char* names_sw[] = {
 			"Prim",
 			"Draw",
 			"DrawCalls",
@@ -206,6 +210,7 @@ const char* GSUtil::GetPerfMonCounterName(GSPerfMon::counter_t counter, bool hw)
 			"Fillrate",
 			"SyncPoint"
 		};
+		static_assert(std::size(names_sw) == static_cast<std::size_t>(GSPerfMon::CounterLastSW));
 		return counter < std::size(names_sw) ? names_sw[counter] : "";
 	}
 }
