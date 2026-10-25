@@ -6309,6 +6309,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the current system CPU and GPU information
 TRANSLATE_NOOP("FullscreenUI", "Shows statistics about the emulated GS such as primitives and draw calls.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU utilization based on threads.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU utilization.");
+TRANSLATE_NOOP("FullscreenUI", "Displays shader compilation statistics in the on-screen display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows icon indicators for emulation states such as Pausing, Turbo, Fast-Forward, and Slow-Motion.");
 TRANSLATE_NOOP("FullscreenUI", "Shows debug information about the renderer.");
 TRANSLATE_NOOP("FullscreenUI", "Shows GPU vertex shader and pixels shader invocations.");
@@ -6930,6 +6931,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show Hardware Info");
 TRANSLATE_NOOP("FullscreenUI", "Show GS Statistics");
 TRANSLATE_NOOP("FullscreenUI", "Show CPU Usage");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Usage");
+TRANSLATE_NOOP("FullscreenUI", "Show Shader Compilation");
 TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Debug Info");
 TRANSLATE_NOOP("FullscreenUI", "Show GPU Pipeline Statistics");
