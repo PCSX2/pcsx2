@@ -830,6 +830,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, static_cast<int>(count) * 4, ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 
+				// The status + count header is patched in once the items are known.
+				const u32 header_pos = ret_cnt;
 				u8 batch_status = BatchSuccess;
 				u16 returned_count = 0;
 				ret_buffer[ret_cnt++] = batch_status;
@@ -861,8 +863,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					returned_count++;
 				}
 
-				ToResultVector(ret_buffer, batch_status, ret_cnt - (1 + 2));
-				ToResultVector(ret_buffer, returned_count, ret_cnt - 2);
+				ret_buffer[header_pos] = batch_status;
+				ToResultVector(ret_buffer, returned_count, header_pos + 1);
 				break;
 			}
 			case MsgWriteMemBatch:
@@ -884,6 +886,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 				if (!SafetyChecks(buf_cnt, (static_cast<int>(count) * 4) + (static_cast<int>(count) * item_size), ret_cnt, 0, buf_size)) [[unlikely]]
 					goto error;
 
+				// The status + count header is patched in once the items are known.
+				const u32 header_pos = ret_cnt;
 				u8 batch_status = BatchSuccess;
 				u16 returned_count = 0;
 				ret_buffer[ret_cnt++] = batch_status;
@@ -918,8 +922,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(std::span<u8> buf, std::vector<u8
 					returned_count++;
 				}
 
-				ToResultVector(ret_buffer, batch_status, ret_cnt - (1 + 2));
-				ToResultVector(ret_buffer, returned_count, ret_cnt - 2);
+				ret_buffer[header_pos] = batch_status;
+				ToResultVector(ret_buffer, returned_count, header_pos + 1);
 				break;
 			}
 			case MsgVersion:
