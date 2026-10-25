@@ -10103,6 +10103,43 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if (m_cached_ctx.TEST.ZTST != ZTST_ALWAYS || m_cached_ctx.ZBUF.ZMSK)
 		return false;
 
+	const u32 write_color = GetConstantDirectWriteMemClearColor();
+	const u32 write_depth = GetConstantDirectWriteMemClearDepth();
+
+	if (write_color != write_depth)
+		return false;
+
+	if (m_cached_ctx.FRAME.PSM == 0)
+	{
+		if ((m_cached_ctx.ZBUF.PSM & 0xF) == 1 && (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == (0xFF000000 & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk))
+		{
+			m_cached_ctx.FRAME.PSM |= 1;
+			m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+		}
+		// Common with Guitar Hero/Tony Hawk engine games.
+		else if (write_color == 0 && ((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000) == 0x7F000000)
+		{
+			GSTextureCache::Target* frame = g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::RenderTarget, m_cached_ctx.FRAME.Block());
+
+			if (frame)
+			{
+				// If there is no information in the top bit but that's the only one not masked, treat it as masked.
+				if (frame->m_alpha_max < 128)
+				{
+					m_cached_ctx.FRAME.PSM |= 1;
+					m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+				}
+
+				frame = nullptr;
+			}
+			else
+			{
+				m_cached_ctx.FRAME.PSM |= 1;
+				m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+			}
+		}
+	}
+
 	// Block when any bits are masked. Too many false positives if we don't.
 	// Siren does a C32+Z24 clear with A masked, GTA:LCS does C32+Z24 but doesn't set FBMSK, leaving half
 	// of the alpha channel untouched (no effect because it uses Z24 elsewhere).
@@ -10129,11 +10166,6 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 	// Z and color must be constant and the same and both are enabled.
 	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || (no_ds != no_rt))
-		return false;
-
-	const u32 write_color = GetConstantDirectWriteMemClearColor();
-	const u32 write_depth = GetConstantDirectWriteMemClearDepth();
-	if (write_color != write_depth)
 		return false;
 
 	// Frame and depth pointer can be inverted
