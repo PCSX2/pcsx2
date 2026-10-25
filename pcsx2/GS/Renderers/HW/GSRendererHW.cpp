@@ -3027,7 +3027,11 @@ void GSRendererHW::Draw()
 	const bool all_depth_tests_pass = IsDepthAlwaysPassing();
 	bool no_ds = (zm != 0 && all_depth_tests_pass) ||
 	             // No color or Z being written.
-	             (no_rt && zm != 0);
+	             (no_rt && zm != 0) ||
+	             // Writing to Z and RT RGB channel positions at the same memory is unsupported.
+	             (!no_rt && zm == 0 && m_cached_ctx.ZBUF.ZBP == m_cached_ctx.FRAME.FBP &&
+	                 (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].trbpp != 24 ||
+	                 ((m_cached_ctx.FRAME.FBMSK & 0xFFFFFF) & fm_mask) != (fm_mask & 0xFFFFFF)));
 
 	// No Z test if no z buffer.
 	if (no_ds || all_depth_tests_pass)
