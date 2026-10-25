@@ -2243,6 +2243,8 @@ void GSRendererHW::HandleManualDeswizzle()
 	GSIndexBuff& idx_buff = *m_index;
 	// Check for page quadrant and compare it to the quadrant from the verts, if it does match then we need to do correction.
 	const GSVector2i page_quadrant = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs / 2;
+	const GSVector2i page_mask = GSVector2i(GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x - 1, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y - 1);
+	const GSVector2i ofxy = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 
 	if (PRIM->FST)
 	{
@@ -2253,6 +2255,10 @@ void GSRendererHW::HandleManualDeswizzle()
 
 			if ((abs((v[index_last].U) - (v[index_first].U)) >> 4) != page_quadrant.x || (abs((v[index_last].V) - (v[index_first].V)) >> 4) != page_quadrant.y)
 				return;
+
+			if ((abs(((v[index_first].U >> 4) & page_mask.x) - (((v[index_first].XYZ.X - ofxy.x) >> 4) & page_mask.x)) < (page_quadrant.x >> 1)) ||
+				(abs(((v[index_first].V >> 4) & page_mask.y) - (((v[index_first].XYZ.Y - ofxy.y) >> 4) & page_mask.y)) < (page_quadrant.y >> 1)))
+				return;
 		}
 	}
 	else
@@ -2261,10 +2267,16 @@ void GSRendererHW::HandleManualDeswizzle()
 		{
 			const u32 index_first = idx_buff.buff[i];
 			const u32 index_last = idx_buff.buff[i + 1];
-			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
-			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
+			const float first_x = ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW));
+			const float first_y = ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH));
+			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - first_x);
+			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - first_y);
 
 			if (x != static_cast<u32>(page_quadrant.x) || y != static_cast<u32>(page_quadrant.y))
+				return;
+
+			if ((abs(((v[index_first].U >> 4) & page_mask.x) - (static_cast<int>(first_x) & page_mask.x)) < (page_quadrant.x >> 1)) ||
+				(abs(((v[index_first].V >> 4) & page_mask.y) - (static_cast<int>(first_y) & page_mask.y)) < (page_quadrant.y >> 1)))
 				return;
 		}
 	}
