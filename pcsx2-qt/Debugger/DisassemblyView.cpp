@@ -461,9 +461,23 @@ void DisassemblyView::paintEvent(QPaintEvent* event)
 	// Format and draw title line on first row
 	const QString titleLineString = GetDisassemblyTitleLine();
 	const QColor titleLineColor = GetDisassemblyTitleLineColor();
-	const QColor pcHighlight = QColor().fromRgbF(0.0, 0.0, 0.3);
-	const QColor bpEnHighlight = QColor().fromRgbF(0.3, 0.0, 0.0);
-	const QColor bpDisHighlight = QColor().fromRgbF(0.0, 0.3, 0.0);
+
+	QColor pcHighlight;
+	QColor bpEnHighlight;
+	QColor bpDisHighlight;
+
+	if (QtHost::IsDarkApplicationTheme())
+	{
+		pcHighlight = QColor().fromRgbF(0.0, 0.0, 0.4);
+		bpEnHighlight = QColor().fromRgbF(0.4, 0.0, 0.0);
+		bpDisHighlight = QColor().fromRgbF(0.0, 0.4, 0.0);
+	}
+	else
+	{
+		pcHighlight = QColor().fromRgbF(0.4, 0.4, 0.8);
+		bpEnHighlight = QColor().fromRgbF(0.8, 0.2, 0.2);
+		bpDisHighlight = QColor().fromRgbF(0.2, 0.8, 0.2);
+	}
 	painter.fillRect(0, 0 * m_rowHeight, w, m_rowHeight, titleLineColor);
 	painter.drawText(2, 0 * m_rowHeight, w, m_rowHeight, Qt::AlignLeft, titleLineString);
 
