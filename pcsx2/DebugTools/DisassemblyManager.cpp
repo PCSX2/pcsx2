@@ -462,7 +462,7 @@ void DisassemblyFunction::generateBranchLines()
 		{
 			BranchLine line;
 			line.laneIndex = 0;
-			if (opInfo.branchTarget < funcPos)
+			if (opInfo.branchTarget <= funcPos)
 			{
 				line.first = opInfo.branchTarget;
 				line.second = funcPos;
@@ -748,7 +748,7 @@ void DisassemblyOpcode::getBranchLines(u32 start, u32 size, std::vector<BranchLi
 			BranchLine line;
 			line.laneIndex = lane++;
 
-			if (info.branchTarget < pos)
+			if (info.branchTarget <= pos)
 			{
 				line.first = info.branchTarget;
 				line.second = pos;
