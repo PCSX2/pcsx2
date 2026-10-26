@@ -4298,8 +4298,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enter one or more cover image URL templates belo
 TRANSLATE_NOOP("FullscreenUI", "URLs:");
 TRANSLATE_NOOP("FullscreenUI", "Saves covers using the game's title instead of serial number.");
 TRANSLATE_NOOP("FullscreenUI", "Downloading covers...");
-TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
+TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
 TRANSLATE_NOOP("FullscreenUI", "This Session: {}");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
@@ -4369,14 +4369,2201 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Frame Limit");
 TRANSLATE_NOOP("FullscreenUI", "Switch To Software Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Switch To Hardware Renderer");
 TRANSLATE_NOOP("FullscreenUI", "Change Disc");
-TRANSLATE_NOOP("FullscreenUI", "Game Properties");
+TRANSLATE_NOOP("FullscreenUI", "ICON_FA_WRENCH, game_properties_string.c_str()) :
+																			  FSUI_ICONSTR(ICON_FA_SLIDERS, )),
+						ImGui::GetCurrentWindow());
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, ), false) || WantsToCloseMenu())
+				{
+					OpenPauseSubMenu(PauseSubMenu::None);
+					break;
+				}
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, game_properties_string.c_str()), false, can_change_game_settings))
+					SwitchToGameSettings();
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, ), false))
+					SwitchToSettings();
+			}
+			break;
+		}
+
+		EndMenuButtons();
+
+		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+			ImGui::NavMoveRequestTryWrapping(ImGui::GetCurrentWindow(), ImGuiNavMoveFlags_LoopY);
+
+		// Draw achievements before ending the window so they stay below the header.
+		if (Achievements::HasAchievementsOrLeaderboards())
+			Achievements::DrawPauseMenuOverlays();
+
+		EndFullscreenWindow();
+	}
+
+	const std::string_view back_text = (submenu == PauseSubMenu::None) ? FSUI_VSTR() : FSUI_VSTR();
+	if (IsGamepadInputSource())
+	{
+		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
+		SetFullscreenFooterText(std::array{
+			std::make_pair(glyphs.dpad_ud, FSUI_VSTR()),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+			std::make_pair(glyphs.cancel(circleOK), back_text),
+		});
+	}
+	else
+	{
+		SetFullscreenFooterText(std::array{
+			std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ESC, back_text),
+		});
+	}
+}
+
+void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot)
+{
+	li->title = fmt::format(, TinyString::from_format(FSUI_FSTR(), slot), slot);
+	li->summary = FSUI_STR();
+	li->path = {};
+	li->timestamp = 0;
+	li->slot = slot;
+	li->preview_texture = {};
+}
+
+bool FullscreenUI::InitializeSaveStateListEntry(
+	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup)
+{
+	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot, backup));
+	FILESYSTEM_STAT_DATA sd;
+	if (filename.empty() || !FileSystem::StatFile(filename.c_str(), &sd))
+	{
+		InitializePlaceholderSaveStateListEntry(li, slot);
+		return false;
+	}
+
+	li->title = fmt::format(, TinyString::from_format(FSUI_FSTR(), backup ?  : , slot), slot);
+	li->summary = fmt::format(FSUI_FSTR(), TimeToPrintableString(sd.ModificationTime));
+	li->slot = slot;
+	li->timestamp = sd.ModificationTime;
+	li->path = std::move(filename);
+
+	li->preview_texture.reset();
+
+	u32 screenshot_width, screenshot_height;
+	std::vector<u32> screenshot_pixels;
+	if (SaveState_ReadScreenshot(li->path, &screenshot_width, &screenshot_height, &screenshot_pixels))
+	{
+		li->preview_texture =
+			std::unique_ptr<GSTexture>(g_gs_device->CreateTexture(screenshot_width, screenshot_height, 1, GSTexture::Format::Color));
+		if (!li->preview_texture || !li->preview_texture->Update(GSVector4i(0, 0, screenshot_width, screenshot_height),
+										screenshot_pixels.data(), sizeof(u32) * screenshot_width))
+		{
+			Console.Error();
+			if (li->preview_texture)
+				g_gs_device->Recycle(li->preview_texture.release());
+		}
+	}
+
+	return true;
+}
+
+void FullscreenUI::ClearSaveStateEntryList()
+{
+	for (SaveStateListEntry& entry : s_save_state_selector_slots)
+	{
+		if (entry.preview_texture)
+			s_cleanup_textures.push_back(std::move(entry.preview_texture));
+	}
+	s_save_state_selector_slots.clear();
+}
+
+u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const std::string& serial, u32 crc)
+{
+	ClearSaveStateEntryList();
+
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
+	{
+		SaveStateListEntry li;
+		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
+			s_save_state_selector_slots.push_back(std::move(li));
+
+		if (s_save_state_selector_loading)
+		{
+			SaveStateListEntry bli;
+			if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true))
+				s_save_state_selector_slots.push_back(std::move(bli));
+		}
+	}
+
+	return static_cast<u32>(s_save_state_selector_slots.size());
+}
+
+bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
+{
+	auto lock = GameList::GetLock();
+	const GameList::Entry* entry = GameList::GetEntryForPath(game_path.c_str());
+	if (entry)
+	{
+		s_save_state_selector_loading = true;
+		if (PopulateSaveStateListEntries(entry->title.c_str(), entry->serial.c_str(), entry->crc) > 0)
+		{
+			s_save_state_selector_open = true;
+			s_save_state_selector_resuming = false;
+			s_save_state_selector_game_path = game_path;
+			return true;
+		}
+	}
+
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR(), 5.0f);
+	return false;
+}
+
+bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
+{
+	s_save_state_selector_game_path = {};
+	s_save_state_selector_loading = is_loading;
+	s_save_state_selector_resuming = false;
+	if (PopulateSaveStateListEntries(s_current_game_title.c_str(), s_current_disc_serial.c_str(), s_current_disc_crc) > 0)
+	{
+		s_save_state_selector_open = true;
+		return true;
+	}
+
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR(), 5.0f);
+	return false;
+}
+
+void FullscreenUI::CloseSaveStateSelector()
+{
+	ClearSaveStateEntryList();
+	s_save_state_selector_open = false;
+	s_save_state_selector_submenu_index = -1;
+	s_save_state_selector_loading = false;
+	s_save_state_selector_resuming = false;
+	s_save_state_selector_game_path = {};
+}
+
+void FullscreenUI::DrawSaveStateSelector(bool is_loading)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	const float title_line_height = GetLineHeight(g_large_font);
+	const float summary_line_height = GetLineHeight(g_medium_font);
+
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	ImGui::SetNextWindowSize(io.DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT));
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
+
+	const char* window_title = is_loading ? FSUI_CSTR() : FSUI_CSTR();
+	ImGui::OpenPopup(window_title);
+
+	bool is_open = true;
+	const bool valid = ImGui::BeginPopupModal(window_title, &is_open,
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoBackground);
+	if (!valid || !is_open)
+	{
+		if (valid)
+			ImGui::EndPopup();
+
+		ImGui::PopStyleVar(5);
+		if (!is_open)
+		{
+			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
+		return;
+	}
+
+	const ImVec2 heading_size =
+		ImVec2(io.DisplaySize.x, title_line_height +
+									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
+
+	if (ImGui::BeginChild(, heading_size, ImGuiChildFlags_NavFlattened, 0))
+	{
+		BeginNavBar();
+		if (NavButton(ICON_PF_BACKWARD, true, true))
+		{
+			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
+
+		NavTitle(is_loading ? FSUI_CSTR() : FSUI_CSTR());
+		EndNavBar();
+		ImGui::EndChild();
+	}
+
+	ImGui::PopStyleColor();
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, VMManager::HasValidVM() ? 0.0f : 0.9f));
+	ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
+
+	bool close_handled = false;
+	if (s_save_state_selector_open &&
+		ImGui::BeginChild(, ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - heading_size.y),
+			ImGuiChildFlags_NavFlattened, 0))
+	{
+		BeginMenuButtons();
+
+		const ImGuiStyle& style = ImGui::GetStyle();
+
+		const float title_spacing = LayoutScale(10.0f);
+		const float summary_spacing = LayoutScale(4.0f);
+		const float item_spacing = LayoutScale(20.0f);
+		const float item_width_with_spacing = std::floor(LayoutScale(LAYOUT_SCREEN_WIDTH / 4.0f));
+		const float item_width = item_width_with_spacing - item_spacing;
+		const float image_width = item_width - (style.FramePadding.x * 2.0f);
+		const float image_height = image_width / 1.33f;
+		const ImVec2 image_size(image_width, image_height);
+		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + title_line_height + summary_spacing +
+		                          summary_line_height;
+		const ImVec2 item_size(item_width, item_height);
+		const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
+		const float start_x =
+			(static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
+
+		u32 grid_x = 0;
+		for (u32 i = 0; i < s_save_state_selector_slots.size();)
+		{
+			if (i == 0)
+				ResetFocusHere();
+
+			if (static_cast<s32>(i) == s_save_state_selector_submenu_index)
+			{
+				SaveStateListEntry& entry = s_save_state_selector_slots[i];
+
+				// can't use a choice dialog here, because we're already in a modal...
+				ImGuiFullscreen::PushResetLayout();
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+				ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+				ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
+				ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+				ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
+
+				const float width = LayoutScale(600.0f);
+				const float title_height =
+					ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y * 2.0f;
+				// Use the same rounding and padding as the menu buttons.
+				const float button_height = LayoutScale(ImGuiFullscreen::LayoutUnscale(title_line_height)) +
+				                            LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f;
+				const float height = title_height + button_height * 3.0f;
+				ImGui::SetNextWindowSize(ImVec2(width, height));
+				ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+				ImGui::OpenPopup(entry.title.c_str());
+
+				// don't let the back button flow through to the main window
+				bool submenu_open = !WantsToCloseMenu();
+				close_handled ^= submenu_open;
+
+				bool closed = false;
+				if (ImGui::BeginPopupModal(
+						entry.title.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+
+					BeginMenuButtons();
+
+					if (ActiveButton(
+							is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, ) : FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, ),
+							false, is_loading ? !Achievements::IsHardcoreModeActive() : true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						if (is_loading)
+							DoLoadState(std::move(entry.path), entry.slot, false);
+						else
+							DoSaveState(entry.slot);
+
+						CloseSaveStateSelector();
+						ReturnToMainWindow();
+						closed = true;
+					}
+
+					if (ActiveButton(FSUI_ICONSTR(ICON_FA_TRASH, ), false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						if (!FileSystem::FileExists(entry.path.c_str()))
+						{
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							is_open = true;
+						}
+						else if (FileSystem::DeleteFilePath(entry.path.c_str()))
+						{
+							ShowToast(ICON_FA_TRASH, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							if (s_save_state_selector_loading)
+								s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
+							else
+								InitializePlaceholderSaveStateListEntry(&entry, entry.slot);
+
+							// Close if this was the last state.
+							if (s_save_state_selector_slots.empty())
+							{
+								CloseSaveStateSelector();
+								ReturnToMainWindow();
+								closed = true;
+							}
+							else
+							{
+								is_open = false;
+							}
+						}
+						else
+						{
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							is_open = false;
+						}
+					}
+
+					if (ActiveButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, ), false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						is_open = false;
+					}
+
+					EndMenuButtons();
+
+					ImGui::PopStyleColor();
+					ImGui::EndPopup();
+				}
+				if (!is_open)
+				{
+					s_save_state_selector_submenu_index = -1;
+					if (!closed)
+						QueueResetFocus(FocusResetType::WindowChanged);
+				}
+
+				ImGui::PopStyleColor(4);
+				ImGui::PopStyleVar(3);
+				ImGui::PopFont();
+				ImGuiFullscreen::PopResetLayout();
+
+				if (closed || i >= s_save_state_selector_slots.size())
+					break;
+			}
+
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			if (window->SkipItems)
+			{
+				i++;
+				continue;
+			}
+
+			if (grid_x == grid_count_x)
+			{
+				grid_x = 0;
+				ImGui::SetCursorPosX(start_x);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
+			}
+			else
+			{
+				ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
+			}
+
+			const SaveStateListEntry& entry = s_save_state_selector_slots[i];
+			const ImGuiID id = window->GetID(static_cast<int>(i));
+			const ImVec2 pos(window->DC.CursorPos);
+			ImRect bb(pos, pos + item_size);
+			ImGui::ItemSize(item_size);
+			if (ImGui::ItemAdd(bb, id))
+			{
+				bool held;
+				bool hovered;
+				bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+				if (hovered)
+				{
+					const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
+
+					const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
+					ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
+
+					ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+
+					ImGui::PopStyleColor();
+				}
+
+				bb.Min += style.FramePadding;
+				bb.Max -= style.FramePadding;
+
+				const GSTexture* const screenshot = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+				const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
+					ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
+
+				ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(screenshot->GetNativeHandle()),
+					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+					entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
+
+				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
+				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + title_line_height));
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
+				ImGuiFullscreen::RenderTextClippedWithShadow(
+					title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+				ImGui::PopFont();
+
+				if (!entry.summary.empty())
+				{
+					const ImVec2 summary_pos(bb.Min.x, title_bb.Max.y + summary_spacing);
+					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + summary_line_height));
+					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+					ImGuiFullscreen::RenderTextClippedWithShadow(
+						summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+					ImGui::PopFont();
+				}
+
+				if (pressed)
+				{
+					if (is_loading)
+						DoLoadState(entry.path, entry.slot, false);
+					else
+						DoSaveState(entry.slot);
+
+					CloseSaveStateSelector();
+					ReturnToMainWindow();
+					break;
+				}
+				else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+										ImGui::Shortcut(ImGuiKey_F1)))
+				{
+					s_save_state_selector_submenu_index = static_cast<s32>(i);
+				}
+			}
+
+			grid_x++;
+			i++;
+		}
+
+		EndMenuButtons();
+		ImGui::EndChild();
+	}
+
+	ImGui::PopStyleColor();
+
+	ImGui::EndPopup();
+	ImGui::PopStyleVar(5);
+
+	if (!close_handled && WantsToCloseMenu())
+	{
+		CloseSaveStateSelector();
+		ReturnToPreviousWindow();
+	}
+	else
+	{
+		if (IsGamepadInputSource())
+		{
+			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+			const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+			const auto glyphs = GetGamepadGlyphs();
+			SetFullscreenFooterText(std::array{
+				std::make_pair(glyphs.dpad, FSUI_VSTR()),
+				std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR()),
+				std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+				std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR()),
+			});
+		}
+		else
+		{
+			SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR()),
+				std::make_pair(ICON_PF_F1, FSUI_VSTR()),
+				std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+				std::make_pair(ICON_PF_ESC, FSUI_VSTR()),
+			});
+		}
+	}
+}
+
+bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
+{
+	SaveStateListEntry slentry;
+	if (!InitializeSaveStateListEntry(&slentry, entry->title, entry->serial, entry->crc, -1))
+		return false;
+
+	CloseSaveStateSelector();
+	s_save_state_selector_slots.push_back(std::move(slentry));
+	s_save_state_selector_game_path = entry->path;
+	s_save_state_selector_loading = true;
+	s_save_state_selector_open = true;
+	s_save_state_selector_resuming = true;
+	return true;
+}
+
+void FullscreenUI::DrawResumeStateSelector()
+{
+	ImGui::SetNextWindowSize(LayoutScale(800.0f, 600.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::OpenPopup(FSUI_CSTR());
+
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+	bool is_open = true;
+	if (ImGui::BeginPopupModal(FSUI_CSTR(), &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar))
+	{
+		const SaveStateListEntry& entry = s_save_state_selector_slots.front();
+		ImGui::TextWrapped(FSUI_CSTR(),
+			TimeToPrintableString(entry.timestamp).c_str());
+
+		const GSTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+		const float image_height = LayoutScale(250.0f);
+		const float image_width = image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+		const ImVec2 pos(ImGui::GetCursorScreenPos() +
+						 ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
+		const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
+		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(image->GetNativeHandle()), image_bb.Min, image_bb.Max,
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
+
+		BeginMenuButtons();
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, ), false))
+		{
+			DoStartPath(s_save_state_selector_game_path, -1);
+			is_open = false;
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, ), false))
+		{
+			DoStartPath(s_save_state_selector_game_path);
+			is_open = false;
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_TRASH, ), false))
+		{
+			if (FileSystem::DeleteFilePath(entry.path.c_str()))
+			{
+				DoStartPath(s_save_state_selector_game_path);
+				is_open = false;
+			}
+			else
+			{
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR());
+			}
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, ), false) || WantsToCloseMenu())
+		{
+			ImGui::CloseCurrentPopup();
+			is_open = false;
+		}
+		EndMenuButtons();
+
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleVar(2);
+	ImGui::PopFont();
+
+	if (!is_open)
+	{
+		ClearSaveStateEntryList();
+		s_save_state_selector_open = false;
+		s_save_state_selector_loading = false;
+		s_save_state_selector_resuming = false;
+		s_save_state_selector_game_path = {};
+	}
+	else
+	{
+		SetStandardSelectionFooterText(false);
+	}
+}
+
+void FullscreenUI::DoLoadState(std::string path, std::optional<s32> slot, bool backup)
+{
+	std::string boot_path = s_save_state_selector_game_path;
+	Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path), slot, backup]() {
+		if (VMManager::HasValidVM())
+		{
+			Error error;
+			if (!VMManager::LoadState(path.c_str(), &error))
+			{
+				ReportStateLoadError(error.GetDescription(), slot, backup);
+				return;
+			}
+
+			if (!boot_path.empty() && VMManager::GetDiscPath() != boot_path)
+				VMManager::ChangeDisc(CDVD_SourceType::Iso, std::move(boot_path));
+		}
+		else
+		{
+			VMBootParameters params;
+			params.filename = std::move(boot_path);
+			params.save_state = std::move(path);
+			DoVMInitialize(params, false);
+		}
+	});
+}
+
+void FullscreenUI::DoSaveState(s32 slot)
+{
+	Host::RunOnCPUThread([slot]() {
+		VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+			ReportStateSaveError(error, slot);
+		});
+	});
+}
+
+void FullscreenUI::PopulateGameListEntryList()
+{
+	const int sort = Host::GetBaseIntSettingValue(, , 0);
+	const bool reverse = Host::GetBaseBoolSettingValue(, , false);
+	const bool favorites_only = Host::GetBaseBoolSettingValue(, , false);
+	static int s_last_sort = -1;
+	static bool s_last_reverse = false;
+	static bool s_last_prefer_eng = false;
+	static bool s_last_favorites_only = false;
+
+	// Sort can be expensive, try to avoid when possible
+	const u32 count = GameList::GetEntryCount();
+	bool needs_update = s_game_list_needs_sort || sort != s_last_sort || reverse != s_last_reverse ||
+	                    s_last_prefer_eng != s_prefer_english_titles || favorites_only != s_last_favorites_only;
+	needs_update |= count != s_last_unsorted_entries.size();
+	if (!needs_update)
+	{
+		for (u32 i = 0; i < count; i++)
+		{
+			if (GameList::GetEntryByIndex(i) != s_last_unsorted_entries[i])
+			{
+				needs_update = true;
+				break;
+			}
+		}
+	}
+
+	if (!needs_update)
+		return;
+	s_game_list_needs_sort = false;
+
+	s_last_sort = sort;
+	s_last_reverse = reverse;
+	s_last_prefer_eng = s_prefer_english_titles;
+	s_last_favorites_only = favorites_only;
+
+	s_game_list_sorted_entries.resize(count);
+	s_last_unsorted_entries.resize(count);
+	for (u32 i = 0; i < count; i++)
+	{
+		s_game_list_sorted_entries[i] = GameList::GetEntryByIndex(i);
+		s_last_unsorted_entries[i] = s_game_list_sorted_entries[i];
+	}
+	if (favorites_only)
+	{
+		s_game_list_sorted_entries.erase(
+			std::remove_if(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
+				[](const GameList::Entry* entry) { return !entry->is_favorite; }),
+			s_game_list_sorted_entries.end());
+	}
+
+	std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
+		[sort, reverse](const GameList::Entry* lhs, const GameList::Entry* rhs) {
+			if (lhs->is_favorite != rhs->is_favorite)
+				return lhs->is_favorite;
+
+			switch (sort)
+			{
+				case 0: // Type
+				{
+					if (lhs->type != rhs->type)
+						return reverse ? (lhs->type > rhs->type) : (lhs->type < rhs->type);
+				}
+				break;
+
+				case 1: // Serial
+				{
+					if (lhs->serial != rhs->serial)
+						return reverse ? (lhs->serial > rhs->serial) : (lhs->serial < rhs->serial);
+				}
+				break;
+
+				case 2: // Title
+					break;
+
+				case 3: // File Title
+				{
+					const std::string_view lhs_title(Path::GetFileTitle(lhs->path));
+					const std::string_view rhs_title(Path::GetFileTitle(rhs->path));
+					const int res =
+						StringUtil::Strncasecmp(lhs_title.data(), rhs_title.data(), std::min(lhs_title.size(), rhs_title.size()));
+					if (res != 0)
+						return reverse ? (res > 0) : (res < 0);
+				}
+				break;
+
+				case 4: // CRC
+				{
+					if (lhs->crc != rhs->crc)
+						return reverse ? (lhs->crc > rhs->crc) : (lhs->crc < rhs->crc);
+				}
+				break;
+
+				case 5: // Time Played
+				{
+					if (lhs->total_played_time != rhs->total_played_time)
+					{
+						return reverse ? (lhs->total_played_time > rhs->total_played_time) :
+										 (lhs->total_played_time < rhs->total_played_time);
+					}
+				}
+				break;
+
+				case 6: // Last Played (reversed by default)
+				{
+					if (lhs->last_played_time != rhs->last_played_time)
+					{
+						return reverse ? (lhs->last_played_time < rhs->last_played_time) : (lhs->last_played_time > rhs->last_played_time);
+					}
+				}
+				break;
+
+				case 7: // Size
+				{
+					if (lhs->total_size != rhs->total_size)
+					{
+						return reverse ? (lhs->total_size > rhs->total_size) : (lhs->total_size < rhs->total_size);
+					}
+				}
+				break;
+			}
+
+			// fallback to title when all else is equal
+			const int res = Host::LocaleSensitiveCompare(lhs->GetTitleSort(s_prefer_english_titles), rhs->GetTitleSort(s_prefer_english_titles));
+			return reverse ? (res > 0) : (res < 0);
+		});
+}
+
+void FullscreenUI::DrawGameListWindow()
+{
+	auto game_list_lock = GameList::GetLock();
+	PopulateGameListEntryList();
+
+	ImGuiIO& io = ImGui::GetIO();
+	const ImVec2 heading_size =
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
+									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+
+	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+
+	if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, , MulAlpha(UIPrimaryColor, bg_alpha)))
+	{
+		static constexpr float ITEM_WIDTH = 25.0f;
+		static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST};
+		static constexpr const char* titles[] = {FSUI_NSTR(), FSUI_NSTR()};
+		static constexpr u32 count = std::size(titles);
+
+		BeginNavBar();
+
+		if (NavButton(ICON_PF_BACKWARD, true, true))
+			SwitchToLanding();
+
+		NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_game_list_view)]));
+		RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+		for (u32 i = 0; i < count; i++)
+		{
+			if (NavButton(icons[i], static_cast<GameListView>(i) == s_game_list_view, true, ITEM_WIDTH,
+					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+			{
+				s_game_list_view = static_cast<GameListView>(i);
+			}
+		}
+
+		EndNavBar();
+	}
+
+	EndFullscreenWindow();
+
+	if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+	{
+		s_game_list_view = (s_game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F2))
+	{
+		s_current_main_window = MainWindowType::GameListSettings;
+		QueueResetFocus(FocusResetType::WindowChanged);
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+	{
+		OpenCoverDownloaderWindow();
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false) || ImGui::IsKeyPressed(ImGuiKey_F5, false))
+	{
+		ShowToast(std::string(), FSUI_STR(), 4.0f);
+		Host::RefreshGameListAsync(false);
+	}
+
+	switch (s_game_list_view)
+	{
+		case GameListView::Grid:
+			DrawGameGrid(heading_size);
+			break;
+		case GameListView::List:
+			DrawGameList(heading_size);
+			break;
+		default:
+			break;
+	}
+
+	if (VMManager::GetState() != VMState::Shutdown)
+	{
+		// Dummy window to prevent interacting with the game list while loading.
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowBgAlpha(0.25f);
+		ImGui::Begin(, nullptr, ImGuiWindowFlags_NoDecoration);
+		ImGui::End();
+		ImGui::PopStyleColor();
+	}
+
+	if (IsGamepadInputSource())
+	{
+		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
+		SetFullscreenFooterText(std::array{
+			std::make_pair(glyphs.dpad, FSUI_VSTR()),
+			std::make_pair(glyphs.select, FSUI_VSTR()),
+			std::make_pair(glyphs.start, FSUI_VSTR()),
+			std::make_pair(ICON_PF_LEFT_TRIGGER_L2, FSUI_VSTR()),
+			std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR()),
+			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR()),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR()),
+		});
+	}
+	else
+	{
+		SetFullscreenFooterText(std::array{
+			std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F1, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F2, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F3, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F4, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F5, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ESC, FSUI_VSTR()),
+		});
+	}
+}
+
+std::string_view FullscreenUI::TrimString(const std::pair<ImFont*, float>& font, std::string_view str, float available_space)
+{
+	const char* beg = str.data();
+	const char* end = beg + str.size();
+	float full_width = font.first->CalcTextSizeA(font.second, INFINITY, 0, beg, end).x;
+	if (full_width <= available_space)
+		return str;
+	float ellipsis_width = font.first->CalcTextSizeA(font.second, INFINITY, 0.0f, g_ellipsis).x;
+	const char* trimmed = end;
+	font.first->CalcTextSizeA(font.second, available_space - ellipsis_width, 0, beg, end, &trimmed);
+	return std::string_view(beg, trimmed);
+}
+
+void FullscreenUI::DrawGameList(const ImVec2& heading_size)
+{
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIBackgroundColor);
+
+	if (!BeginFullscreenColumns(nullptr, heading_size.y, true, true))
+	{
+		EndFullscreenColumns();
+		ImGui::PopStyleColor();
+		return;
+	}
+
+	if (!AreAnyDialogsOpen() && WantsToCloseMenu())
+		SwitchToLanding();
+
+	const GameList::Entry* selected_entry = nullptr;
+
+	if (BeginFullscreenColumnWindow(0.0f, -530.0f, ))
+	{
+		const float title_height = GetLineHeight(g_large_font);
+		const float spacing = LayoutScale(4.0f);
+		const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT * 0.68f, LAYOUT_MENU_BUTTON_HEIGHT));
+		const float item_height = std::max(LAYOUT_MENU_BUTTON_HEIGHT,
+			ImGuiFullscreen::LayoutUnscale(title_height + spacing + GetLineHeight(g_medium_font)));
+
+		ResetFocusHere();
+
+		BeginMenuButtons();
+
+		// TODO: replace with something not heap allocating
+		std::string summary;
+
+		for (const GameList::Entry* entry : s_game_list_sorted_entries)
+		{
+			ImRect bb;
+			bool visible, hovered;
+			bool pressed = MenuButtonFrame(entry->path.c_str(), true, item_height, &visible, &hovered, &bb.Min, &bb.Max);
+			if (!visible)
+				continue;
+
+			summary.clear();
+			if (entry->serial.empty())
+				fmt::format_to(std::back_inserter(summary), , GameList::RegionToString(entry->region, true));
+			else
+				fmt::format_to(std::back_inserter(summary), , entry->serial, GameList::RegionToString(entry->region, true));
+
+			const std::string_view filename(Path::GetFileName(entry->path));
+			summary.append(filename);
+
+			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
+
+			const float midpoint = bb.Min.y + title_height + spacing;
+			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
+			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+			const std::string& title = entry->GetTitle(s_prefer_english_titles);
+
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
+			const bool is_favorite = entry->is_favorite;
+			const bool has_custom_settings = entry->has_custom_settings;
+			const float icon_size = GetLineHeight(g_large_font) * 0.75f;
+			const float icon_margin = LayoutScale(8.0f);
+			ImRect visible_title_bb(title_bb);
+			if (is_favorite || has_custom_settings)
+				visible_title_bb.Max.x -= icon_size * 2.0f + icon_margin * 3.0f;
+			ImGui::RenderTextClipped(visible_title_bb.Min, visible_title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
+				ImVec2(0.0f, 0.0f), &visible_title_bb);
+			if (is_favorite)
+			{
+				const ImVec2 star_pos(title_bb.Max.x - icon_size - icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
+			}
+			if (has_custom_settings)
+			{
+				const ImVec2 gear_pos(title_bb.Max.x - 2.0f * icon_size - 2.0f * icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					gear_pos, IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
+			}
+			ImGui::PopFont();
+
+			if (!summary.empty())
+			{
+				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+				ImGui::RenderTextClipped(
+					summary_bb.Min, summary_bb.Max, summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+				ImGui::PopFont();
+			}
+
+			if (pressed)
+				HandleGameListActivate(entry);
+
+			if (hovered)
+				selected_entry = entry;
+
+			if (selected_entry &&
+				(ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+					ImGui::Shortcut(ImGuiKey_F3)))
+			{
+				HandleGameListOptions(selected_entry);
+			}
+		}
+
+		EndMenuButtons();
+	}
+	EndFullscreenColumnWindow();
+
+	if (BeginFullscreenColumnWindow(-530.0f, 0.0f, , UIPrimaryDarkColor))
+	{
+		const float img_padding_y = LayoutScale(20.0f);
+		// Spacing between each text item
+		const float text_spacing_y = LayoutScale(8.0f);
+		// Space between title/serial and details, is in addition to text_spacing_y
+		const float title_padding_below_y = LayoutScale(12.0f);
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const float work_width = window->WorkRect.GetWidth();
+		const float start_x = LayoutScale(50.0f);
+		const float wrap_pos = LayoutScale(490.0f);
+		const std::string_view full_title = selected_entry ? std::string_view(selected_entry->GetTitle(s_prefer_english_titles)) :
+		                                                     std::string_view(FSUI_CSTR());
+		const std::string_view trimmed_title = TrimString(g_large_font, full_title, work_width);
+		const SmallString title = SmallString::from_format(, trimmed_title, trimmed_title.size() == full_title.size() ?  : g_ellipsis);
+		const ImVec2 title_size = g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, 0.0f, title.c_str());
+		// Measure wrapping from the title's centered position.
+		const float title_wrap_width = std::max(1.0f, wrap_pos - (work_width - title_size.x) * 0.5f);
+		const float title_height =
+			g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, title_wrap_width, title.c_str()).y;
+		// The filename can take more than one line.
+		const SmallString file_text = selected_entry ? SmallString::from_format(FSUI_FSTR(), Path::GetFileName(selected_entry->path)) : SmallString();
+		const float file_wrap_width = std::max(1.0f, wrap_pos - start_x);
+		const float file_height =
+			g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, file_wrap_width, file_text.c_str()).y;
+		const float summary_line_height = GetLineHeight(g_medium_font);
+
+		// Leave room for the text below the cover.
+		const float title_detail_height =
+			title_height + text_spacing_y + // Title
+			summary_line_height + text_spacing_y + // Serial
+			title_padding_below_y +
+			file_height + text_spacing_y + // File
+			6.0f * (summary_line_height + text_spacing_y) + // CRC, Region, Compat, Time/Last Played, Size
+			LayoutScale(12.0f); // Extra padding
+
+		// Limit cover height to avoid pushing text off the screen
+		// Based on ImGui code for WorkRect, with scrolling logic removed
+		const float window_height = std::trunc(window->InnerRect.GetHeight() - 2.0f * std::max(window->WindowPadding.y, window->WindowBorderSize));
+
+		const float free_height = window_height - title_detail_height;
+		const float img_height = std::clamp(free_height - 2.0f * img_padding_y, 0.0f, LayoutScale(400.0f));
+
+		const ImVec2 image_size = ImVec2(LayoutScale(275.0f), img_height);
+		ImGui::SetCursorPos(ImVec2(LayoutScale(128.0f), img_padding_y));
+
+		if (selected_entry)
+			DrawGameCover(selected_entry, image_size);
+		else
+			DrawFallbackCover(image_size);
+
+		const float text_y = img_height + 2.0f * img_padding_y;
+		float text_width;
+
+		PushPrimaryColor();
+		ImGui::SetCursorPos(ImVec2(start_x, text_y));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, text_spacing_y));
+		ImGui::PushTextWrapPos(wrap_pos);
+		ImGui::BeginGroup();
+
+		if (selected_entry)
+		{
+			// title
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
+			ImGui::SetCursorPosX((work_width - title_size.x) / 2.0f);
+			ImGui::TextWrapped(, title.c_str());
+			ImGui::PopFont();
+
+			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+
+			// code
+			text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
+			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+			ImGui::TextWrapped(, selected_entry->serial.c_str());
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + title_padding_below_y);
+
+			// file tile
+			ImGui::TextWrapped(, file_text.c_str());
+
+			// crc
+			ImGui::TextUnformatted(TinyString::from_format(FSUI_FSTR(), selected_entry->crc));
+
+			// region
+			{
+				std::string flag_texture(fmt::format(, GameList::RegionToFlagFilename(selected_entry->region)));
+				ImGui::TextUnformatted(FSUI_CSTR());
+				ImGui::SameLine();
+				DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
+				ImGui::SameLine();
+				ImGui::Text(");
 TRANSLATE_NOOP("FullscreenUI", "Global Settings");
+TRANSLATE_NOOP("FullscreenUI", "ICON_FA_WRENCH, game_properties_string.c_str()), false, can_change_game_settings))
+					SwitchToGameSettings();
+
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, ), false))
+					SwitchToSettings();
+			}
+			break;
+		}
+
+		EndMenuButtons();
+
+		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
+			ImGui::NavMoveRequestTryWrapping(ImGui::GetCurrentWindow(), ImGuiNavMoveFlags_LoopY);
+
+		// Draw achievements before ending the window so they stay below the header.
+		if (Achievements::HasAchievementsOrLeaderboards())
+			Achievements::DrawPauseMenuOverlays();
+
+		EndFullscreenWindow();
+	}
+
+	const std::string_view back_text = (submenu == PauseSubMenu::None) ? FSUI_VSTR() : FSUI_VSTR();
+	if (IsGamepadInputSource())
+	{
+		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const auto glyphs = GetGamepadGlyphs();
+		SetFullscreenFooterText(std::array{
+			std::make_pair(glyphs.dpad_ud, FSUI_VSTR()),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+			std::make_pair(glyphs.cancel(circleOK), back_text),
+		});
+	}
+	else
+	{
+		SetFullscreenFooterText(std::array{
+			std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ESC, back_text),
+		});
+	}
+}
+
+void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot)
+{
+	li->title = fmt::format(, TinyString::from_format(FSUI_FSTR(), slot), slot);
+	li->summary = FSUI_STR();
+	li->path = {};
+	li->timestamp = 0;
+	li->slot = slot;
+	li->preview_texture = {};
+}
+
+bool FullscreenUI::InitializeSaveStateListEntry(
+	SaveStateListEntry* li, const std::string& title, const std::string& serial, u32 crc, s32 slot, bool backup)
+{
+	std::string filename(VMManager::GetSaveStateFileName(serial.c_str(), crc, slot, backup));
+	FILESYSTEM_STAT_DATA sd;
+	if (filename.empty() || !FileSystem::StatFile(filename.c_str(), &sd))
+	{
+		InitializePlaceholderSaveStateListEntry(li, slot);
+		return false;
+	}
+
+	li->title = fmt::format(, TinyString::from_format(FSUI_FSTR(), backup ?  : , slot), slot);
+	li->summary = fmt::format(FSUI_FSTR(), TimeToPrintableString(sd.ModificationTime));
+	li->slot = slot;
+	li->timestamp = sd.ModificationTime;
+	li->path = std::move(filename);
+
+	li->preview_texture.reset();
+
+	u32 screenshot_width, screenshot_height;
+	std::vector<u32> screenshot_pixels;
+	if (SaveState_ReadScreenshot(li->path, &screenshot_width, &screenshot_height, &screenshot_pixels))
+	{
+		li->preview_texture =
+			std::unique_ptr<GSTexture>(g_gs_device->CreateTexture(screenshot_width, screenshot_height, 1, GSTexture::Format::Color));
+		if (!li->preview_texture || !li->preview_texture->Update(GSVector4i(0, 0, screenshot_width, screenshot_height),
+										screenshot_pixels.data(), sizeof(u32) * screenshot_width))
+		{
+			Console.Error();
+			if (li->preview_texture)
+				g_gs_device->Recycle(li->preview_texture.release());
+		}
+	}
+
+	return true;
+}
+
+void FullscreenUI::ClearSaveStateEntryList()
+{
+	for (SaveStateListEntry& entry : s_save_state_selector_slots)
+	{
+		if (entry.preview_texture)
+			s_cleanup_textures.push_back(std::move(entry.preview_texture));
+	}
+	s_save_state_selector_slots.clear();
+}
+
+u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const std::string& serial, u32 crc)
+{
+	ClearSaveStateEntryList();
+
+	for (s32 i = 1; i <= VMManager::NUM_SAVE_STATE_SLOTS; i++)
+	{
+		SaveStateListEntry li;
+		if (InitializeSaveStateListEntry(&li, title, serial, crc, i) || !s_save_state_selector_loading)
+			s_save_state_selector_slots.push_back(std::move(li));
+
+		if (s_save_state_selector_loading)
+		{
+			SaveStateListEntry bli;
+			if (InitializeSaveStateListEntry(&bli, title, serial, crc, i, true))
+				s_save_state_selector_slots.push_back(std::move(bli));
+		}
+	}
+
+	return static_cast<u32>(s_save_state_selector_slots.size());
+}
+
+bool FullscreenUI::OpenLoadStateSelectorForGame(const std::string& game_path)
+{
+	auto lock = GameList::GetLock();
+	const GameList::Entry* entry = GameList::GetEntryForPath(game_path.c_str());
+	if (entry)
+	{
+		s_save_state_selector_loading = true;
+		if (PopulateSaveStateListEntries(entry->title.c_str(), entry->serial.c_str(), entry->crc) > 0)
+		{
+			s_save_state_selector_open = true;
+			s_save_state_selector_resuming = false;
+			s_save_state_selector_game_path = game_path;
+			return true;
+		}
+	}
+
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR(), 5.0f);
+	return false;
+}
+
+bool FullscreenUI::OpenSaveStateSelector(bool is_loading)
+{
+	s_save_state_selector_game_path = {};
+	s_save_state_selector_loading = is_loading;
+	s_save_state_selector_resuming = false;
+	if (PopulateSaveStateListEntries(s_current_game_title.c_str(), s_current_disc_serial.c_str(), s_current_disc_crc) > 0)
+	{
+		s_save_state_selector_open = true;
+		return true;
+	}
+
+	ShowToast(ICON_FA_FLOPPY_DISK, FSUI_STR(), 5.0f);
+	return false;
+}
+
+void FullscreenUI::CloseSaveStateSelector()
+{
+	ClearSaveStateEntryList();
+	s_save_state_selector_open = false;
+	s_save_state_selector_submenu_index = -1;
+	s_save_state_selector_loading = false;
+	s_save_state_selector_resuming = false;
+	s_save_state_selector_game_path = {};
+}
+
+void FullscreenUI::DrawSaveStateSelector(bool is_loading)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	const float title_line_height = GetLineHeight(g_large_font);
+	const float summary_line_height = GetLineHeight(g_medium_font);
+
+	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	ImGui::SetNextWindowSize(io.DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT));
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
+
+	const char* window_title = is_loading ? FSUI_CSTR() : FSUI_CSTR();
+	ImGui::OpenPopup(window_title);
+
+	bool is_open = true;
+	const bool valid = ImGui::BeginPopupModal(window_title, &is_open,
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_NoBackground);
+	if (!valid || !is_open)
+	{
+		if (valid)
+			ImGui::EndPopup();
+
+		ImGui::PopStyleVar(5);
+		if (!is_open)
+		{
+			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
+		return;
+	}
+
+	const ImVec2 heading_size =
+		ImVec2(io.DisplaySize.x, title_line_height +
+									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
+
+	if (ImGui::BeginChild(, heading_size, ImGuiChildFlags_NavFlattened, 0))
+	{
+		BeginNavBar();
+		if (NavButton(ICON_PF_BACKWARD, true, true))
+		{
+			CloseSaveStateSelector();
+			ReturnToPreviousWindow();
+		}
+
+		NavTitle(is_loading ? FSUI_CSTR() : FSUI_CSTR());
+		EndNavBar();
+		ImGui::EndChild();
+	}
+
+	ImGui::PopStyleColor();
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, VMManager::HasValidVM() ? 0.0f : 0.9f));
+	ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
+
+	bool close_handled = false;
+	if (s_save_state_selector_open &&
+		ImGui::BeginChild(, ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - heading_size.y),
+			ImGuiChildFlags_NavFlattened, 0))
+	{
+		BeginMenuButtons();
+
+		const ImGuiStyle& style = ImGui::GetStyle();
+
+		const float title_spacing = LayoutScale(10.0f);
+		const float summary_spacing = LayoutScale(4.0f);
+		const float item_spacing = LayoutScale(20.0f);
+		const float item_width_with_spacing = std::floor(LayoutScale(LAYOUT_SCREEN_WIDTH / 4.0f));
+		const float item_width = item_width_with_spacing - item_spacing;
+		const float image_width = item_width - (style.FramePadding.x * 2.0f);
+		const float image_height = image_width / 1.33f;
+		const ImVec2 image_size(image_width, image_height);
+		const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + title_line_height + summary_spacing +
+		                          summary_line_height;
+		const ImVec2 item_size(item_width, item_height);
+		const u32 grid_count_x = std::floor(ImGui::GetWindowWidth() / item_width_with_spacing);
+		const float start_x =
+			(static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
+
+		u32 grid_x = 0;
+		for (u32 i = 0; i < s_save_state_selector_slots.size();)
+		{
+			if (i == 0)
+				ResetFocusHere();
+
+			if (static_cast<s32>(i) == s_save_state_selector_submenu_index)
+			{
+				SaveStateListEntry& entry = s_save_state_selector_slots[i];
+
+				// can't use a choice dialog here, because we're already in a modal...
+				ImGuiFullscreen::PushResetLayout();
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+				ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+				ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
+				ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+				ImGui::PushStyleColor(ImGuiCol_PopupBg, UIPopupBackgroundColor);
+
+				const float width = LayoutScale(600.0f);
+				const float title_height =
+					ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y * 2.0f;
+				// Use the same rounding and padding as the menu buttons.
+				const float button_height = LayoutScale(ImGuiFullscreen::LayoutUnscale(title_line_height)) +
+				                            LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f;
+				const float height = title_height + button_height * 3.0f;
+				ImGui::SetNextWindowSize(ImVec2(width, height));
+				ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+				ImGui::OpenPopup(entry.title.c_str());
+
+				// don't let the back button flow through to the main window
+				bool submenu_open = !WantsToCloseMenu();
+				close_handled ^= submenu_open;
+
+				bool closed = false;
+				if (ImGui::BeginPopupModal(
+						entry.title.c_str(), &is_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+
+					BeginMenuButtons();
+
+					if (ActiveButton(
+							is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, ) : FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, ),
+							false, is_loading ? !Achievements::IsHardcoreModeActive() : true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						if (is_loading)
+							DoLoadState(std::move(entry.path), entry.slot, false);
+						else
+							DoSaveState(entry.slot);
+
+						CloseSaveStateSelector();
+						ReturnToMainWindow();
+						closed = true;
+					}
+
+					if (ActiveButton(FSUI_ICONSTR(ICON_FA_TRASH, ), false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						if (!FileSystem::FileExists(entry.path.c_str()))
+						{
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							is_open = true;
+						}
+						else if (FileSystem::DeleteFilePath(entry.path.c_str()))
+						{
+							ShowToast(ICON_FA_TRASH, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							if (s_save_state_selector_loading)
+								s_save_state_selector_slots.erase(s_save_state_selector_slots.begin() + i);
+							else
+								InitializePlaceholderSaveStateListEntry(&entry, entry.slot);
+
+							// Close if this was the last state.
+							if (s_save_state_selector_slots.empty())
+							{
+								CloseSaveStateSelector();
+								ReturnToMainWindow();
+								closed = true;
+							}
+							else
+							{
+								is_open = false;
+							}
+						}
+						else
+						{
+							ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, fmt::format(FSUI_FSTR(), ImGuiFullscreen::RemoveHash(entry.title)));
+							is_open = false;
+						}
+					}
+
+					if (ActiveButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, ), false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+					{
+						is_open = false;
+					}
+
+					EndMenuButtons();
+
+					ImGui::PopStyleColor();
+					ImGui::EndPopup();
+				}
+				if (!is_open)
+				{
+					s_save_state_selector_submenu_index = -1;
+					if (!closed)
+						QueueResetFocus(FocusResetType::WindowChanged);
+				}
+
+				ImGui::PopStyleColor(4);
+				ImGui::PopStyleVar(3);
+				ImGui::PopFont();
+				ImGuiFullscreen::PopResetLayout();
+
+				if (closed || i >= s_save_state_selector_slots.size())
+					break;
+			}
+
+			ImGuiWindow* window = ImGui::GetCurrentWindow();
+			if (window->SkipItems)
+			{
+				i++;
+				continue;
+			}
+
+			if (grid_x == grid_count_x)
+			{
+				grid_x = 0;
+				ImGui::SetCursorPosX(start_x);
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_spacing);
+			}
+			else
+			{
+				ImGui::SameLine(start_x + static_cast<float>(grid_x) * (item_width + item_spacing));
+			}
+
+			const SaveStateListEntry& entry = s_save_state_selector_slots[i];
+			const ImGuiID id = window->GetID(static_cast<int>(i));
+			const ImVec2 pos(window->DC.CursorPos);
+			ImRect bb(pos, pos + item_size);
+			ImGui::ItemSize(item_size);
+			if (ImGui::ItemAdd(bb, id))
+			{
+				bool held;
+				bool hovered;
+				bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+				if (hovered)
+				{
+					const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 0.7f);
+
+					const float t = std::min<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0f);
+					ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
+
+					ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+
+					ImGui::PopStyleColor();
+				}
+
+				bb.Min += style.FramePadding;
+				bb.Max -= style.FramePadding;
+
+				const GSTexture* const screenshot = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+				const ImRect image_rect(CenterImage(ImRect(bb.Min, bb.Min + image_size),
+					ImVec2(static_cast<float>(screenshot->GetWidth()), static_cast<float>(screenshot->GetHeight()))));
+
+				ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(screenshot->GetNativeHandle()),
+					image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+					entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
+
+				const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
+				const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + title_line_height));
+				ImGui::PushFont(g_large_font.first, g_large_font.second);
+				ImGuiFullscreen::RenderTextClippedWithShadow(
+					title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &title_bb);
+				ImGui::PopFont();
+
+				if (!entry.summary.empty())
+				{
+					const ImVec2 summary_pos(bb.Min.x, title_bb.Max.y + summary_spacing);
+					const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + summary_line_height));
+					ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+					ImGuiFullscreen::RenderTextClippedWithShadow(
+						summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+					ImGui::PopFont();
+				}
+
+				if (pressed)
+				{
+					if (is_loading)
+						DoLoadState(entry.path, entry.slot, false);
+					else
+						DoSaveState(entry.slot);
+
+					CloseSaveStateSelector();
+					ReturnToMainWindow();
+					break;
+				}
+				else if (hovered && (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+										ImGui::Shortcut(ImGuiKey_F1)))
+				{
+					s_save_state_selector_submenu_index = static_cast<s32>(i);
+				}
+			}
+
+			grid_x++;
+			i++;
+		}
+
+		EndMenuButtons();
+		ImGui::EndChild();
+	}
+
+	ImGui::PopStyleColor();
+
+	ImGui::EndPopup();
+	ImGui::PopStyleVar(5);
+
+	if (!close_handled && WantsToCloseMenu())
+	{
+		CloseSaveStateSelector();
+		ReturnToPreviousWindow();
+	}
+	else
+	{
+		if (IsGamepadInputSource())
+		{
+			const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+			const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+			const auto glyphs = GetGamepadGlyphs();
+			SetFullscreenFooterText(std::array{
+				std::make_pair(glyphs.dpad, FSUI_VSTR()),
+				std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR()),
+				std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+				std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR()),
+			});
+		}
+		else
+		{
+			SetFullscreenFooterText(std::array{
+				std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR()),
+				std::make_pair(ICON_PF_F1, FSUI_VSTR()),
+				std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+				std::make_pair(ICON_PF_ESC, FSUI_VSTR()),
+			});
+		}
+	}
+}
+
+bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* entry)
+{
+	SaveStateListEntry slentry;
+	if (!InitializeSaveStateListEntry(&slentry, entry->title, entry->serial, entry->crc, -1))
+		return false;
+
+	CloseSaveStateSelector();
+	s_save_state_selector_slots.push_back(std::move(slentry));
+	s_save_state_selector_game_path = entry->path;
+	s_save_state_selector_loading = true;
+	s_save_state_selector_open = true;
+	s_save_state_selector_resuming = true;
+	return true;
+}
+
+void FullscreenUI::DrawResumeStateSelector()
+{
+	ImGui::SetNextWindowSize(LayoutScale(800.0f, 600.0f));
+	ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+	ImGui::OpenPopup(FSUI_CSTR());
+
+	ImGui::PushFont(g_large_font.first, g_large_font.second);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+	bool is_open = true;
+	if (ImGui::BeginPopupModal(FSUI_CSTR(), &is_open, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar))
+	{
+		const SaveStateListEntry& entry = s_save_state_selector_slots.front();
+		ImGui::TextWrapped(FSUI_CSTR(),
+			TimeToPrintableString(entry.timestamp).c_str());
+
+		const GSTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+		const float image_height = LayoutScale(250.0f);
+		const float image_width = image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+		const ImVec2 pos(ImGui::GetCursorScreenPos() +
+						 ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
+		const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
+		ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(image->GetNativeHandle()), image_bb.Min, image_bb.Max,
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), entry.preview_texture ? IM_COL32_WHITE : ImGui::GetColorU32(UIBackgroundTextColor));
+
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
+
+		BeginMenuButtons();
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, ), false))
+		{
+			DoStartPath(s_save_state_selector_game_path, -1);
+			is_open = false;
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, ), false))
+		{
+			DoStartPath(s_save_state_selector_game_path);
+			is_open = false;
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_TRASH, ), false))
+		{
+			if (FileSystem::DeleteFilePath(entry.path.c_str()))
+			{
+				DoStartPath(s_save_state_selector_game_path);
+				is_open = false;
+			}
+			else
+			{
+				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR());
+			}
+		}
+
+		if (ActiveButton(FSUI_ICONSTR(ICON_FA_SQUARE_XMARK, ), false) || WantsToCloseMenu())
+		{
+			ImGui::CloseCurrentPopup();
+			is_open = false;
+		}
+		EndMenuButtons();
+
+		ImGui::EndPopup();
+	}
+
+	ImGui::PopStyleVar(2);
+	ImGui::PopFont();
+
+	if (!is_open)
+	{
+		ClearSaveStateEntryList();
+		s_save_state_selector_open = false;
+		s_save_state_selector_loading = false;
+		s_save_state_selector_resuming = false;
+		s_save_state_selector_game_path = {};
+	}
+	else
+	{
+		SetStandardSelectionFooterText(false);
+	}
+}
+
+void FullscreenUI::DoLoadState(std::string path, std::optional<s32> slot, bool backup)
+{
+	std::string boot_path = s_save_state_selector_game_path;
+	Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path), slot, backup]() {
+		if (VMManager::HasValidVM())
+		{
+			Error error;
+			if (!VMManager::LoadState(path.c_str(), &error))
+			{
+				ReportStateLoadError(error.GetDescription(), slot, backup);
+				return;
+			}
+
+			if (!boot_path.empty() && VMManager::GetDiscPath() != boot_path)
+				VMManager::ChangeDisc(CDVD_SourceType::Iso, std::move(boot_path));
+		}
+		else
+		{
+			VMBootParameters params;
+			params.filename = std::move(boot_path);
+			params.save_state = std::move(path);
+			DoVMInitialize(params, false);
+		}
+	});
+}
+
+void FullscreenUI::DoSaveState(s32 slot)
+{
+	Host::RunOnCPUThread([slot]() {
+		VMManager::SaveStateToSlot(slot, true, [slot](const std::string& error) {
+			ReportStateSaveError(error, slot);
+		});
+	});
+}
+
+void FullscreenUI::PopulateGameListEntryList()
+{
+	const int sort = Host::GetBaseIntSettingValue(, , 0);
+	const bool reverse = Host::GetBaseBoolSettingValue(, , false);
+	const bool favorites_only = Host::GetBaseBoolSettingValue(, , false);
+	static int s_last_sort = -1;
+	static bool s_last_reverse = false;
+	static bool s_last_prefer_eng = false;
+	static bool s_last_favorites_only = false;
+
+	// Sort can be expensive, try to avoid when possible
+	const u32 count = GameList::GetEntryCount();
+	bool needs_update = s_game_list_needs_sort || sort != s_last_sort || reverse != s_last_reverse ||
+	                    s_last_prefer_eng != s_prefer_english_titles || favorites_only != s_last_favorites_only;
+	needs_update |= count != s_last_unsorted_entries.size();
+	if (!needs_update)
+	{
+		for (u32 i = 0; i < count; i++)
+		{
+			if (GameList::GetEntryByIndex(i) != s_last_unsorted_entries[i])
+			{
+				needs_update = true;
+				break;
+			}
+		}
+	}
+
+	if (!needs_update)
+		return;
+	s_game_list_needs_sort = false;
+
+	s_last_sort = sort;
+	s_last_reverse = reverse;
+	s_last_prefer_eng = s_prefer_english_titles;
+	s_last_favorites_only = favorites_only;
+
+	s_game_list_sorted_entries.resize(count);
+	s_last_unsorted_entries.resize(count);
+	for (u32 i = 0; i < count; i++)
+	{
+		s_game_list_sorted_entries[i] = GameList::GetEntryByIndex(i);
+		s_last_unsorted_entries[i] = s_game_list_sorted_entries[i];
+	}
+	if (favorites_only)
+	{
+		s_game_list_sorted_entries.erase(
+			std::remove_if(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
+				[](const GameList::Entry* entry) { return !entry->is_favorite; }),
+			s_game_list_sorted_entries.end());
+	}
+
+	std::sort(s_game_list_sorted_entries.begin(), s_game_list_sorted_entries.end(),
+		[sort, reverse](const GameList::Entry* lhs, const GameList::Entry* rhs) {
+			if (lhs->is_favorite != rhs->is_favorite)
+				return lhs->is_favorite;
+
+			switch (sort)
+			{
+				case 0: // Type
+				{
+					if (lhs->type != rhs->type)
+						return reverse ? (lhs->type > rhs->type) : (lhs->type < rhs->type);
+				}
+				break;
+
+				case 1: // Serial
+				{
+					if (lhs->serial != rhs->serial)
+						return reverse ? (lhs->serial > rhs->serial) : (lhs->serial < rhs->serial);
+				}
+				break;
+
+				case 2: // Title
+					break;
+
+				case 3: // File Title
+				{
+					const std::string_view lhs_title(Path::GetFileTitle(lhs->path));
+					const std::string_view rhs_title(Path::GetFileTitle(rhs->path));
+					const int res =
+						StringUtil::Strncasecmp(lhs_title.data(), rhs_title.data(), std::min(lhs_title.size(), rhs_title.size()));
+					if (res != 0)
+						return reverse ? (res > 0) : (res < 0);
+				}
+				break;
+
+				case 4: // CRC
+				{
+					if (lhs->crc != rhs->crc)
+						return reverse ? (lhs->crc > rhs->crc) : (lhs->crc < rhs->crc);
+				}
+				break;
+
+				case 5: // Time Played
+				{
+					if (lhs->total_played_time != rhs->total_played_time)
+					{
+						return reverse ? (lhs->total_played_time > rhs->total_played_time) :
+										 (lhs->total_played_time < rhs->total_played_time);
+					}
+				}
+				break;
+
+				case 6: // Last Played (reversed by default)
+				{
+					if (lhs->last_played_time != rhs->last_played_time)
+					{
+						return reverse ? (lhs->last_played_time < rhs->last_played_time) : (lhs->last_played_time > rhs->last_played_time);
+					}
+				}
+				break;
+
+				case 7: // Size
+				{
+					if (lhs->total_size != rhs->total_size)
+					{
+						return reverse ? (lhs->total_size > rhs->total_size) : (lhs->total_size < rhs->total_size);
+					}
+				}
+				break;
+			}
+
+			// fallback to title when all else is equal
+			const int res = Host::LocaleSensitiveCompare(lhs->GetTitleSort(s_prefer_english_titles), rhs->GetTitleSort(s_prefer_english_titles));
+			return reverse ? (res > 0) : (res < 0);
+		});
+}
+
+void FullscreenUI::DrawGameListWindow()
+{
+	auto game_list_lock = GameList::GetLock();
+	PopulateGameListEntryList();
+
+	ImGuiIO& io = ImGui::GetIO();
+	const ImVec2 heading_size =
+		ImVec2(io.DisplaySize.x, GetLineHeight(g_large_font) +
+									 (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
+
+	const float bg_alpha = VMManager::HasValidVM() ? 0.90f : 1.0f;
+
+	if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, , MulAlpha(UIPrimaryColor, bg_alpha)))
+	{
+		static constexpr float ITEM_WIDTH = 25.0f;
+		static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST};
+		static constexpr const char* titles[] = {FSUI_NSTR(), FSUI_NSTR()};
+		static constexpr u32 count = std::size(titles);
+
+		BeginNavBar();
+
+		if (NavButton(ICON_PF_BACKWARD, true, true))
+			SwitchToLanding();
+
+		NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_game_list_view)]));
+		RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+		for (u32 i = 0; i < count; i++)
+		{
+			if (NavButton(icons[i], static_cast<GameListView>(i) == s_game_list_view, true, ITEM_WIDTH,
+					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+			{
+				s_game_list_view = static_cast<GameListView>(i);
+			}
+		}
+
+		EndNavBar();
+	}
+
+	EndFullscreenWindow();
+
+	if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadContextMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+	{
+		s_game_list_view = (s_game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F2))
+	{
+		s_current_main_window = MainWindowType::GameListSettings;
+		QueueResetFocus(FocusResetType::WindowChanged);
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+	{
+		OpenCoverDownloaderWindow();
+	}
+	else if (ImGui::IsKeyPressed(ImGuiKey_GamepadL2, false) || ImGui::IsKeyPressed(ImGuiKey_F5, false))
+	{
+		ShowToast(std::string(), FSUI_STR(), 4.0f);
+		Host::RefreshGameListAsync(false);
+	}
+
+	switch (s_game_list_view)
+	{
+		case GameListView::Grid:
+			DrawGameGrid(heading_size);
+			break;
+		case GameListView::List:
+			DrawGameList(heading_size);
+			break;
+		default:
+			break;
+	}
+
+	if (VMManager::GetState() != VMState::Shutdown)
+	{
+		// Dummy window to prevent interacting with the game list while loading.
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowBgAlpha(0.25f);
+		ImGui::Begin(, nullptr, ImGuiWindowFlags_NoDecoration);
+		ImGui::End();
+		ImGui::PopStyleColor();
+	}
+
+	if (IsGamepadInputSource())
+	{
+		const bool circleOK = ImGui::GetIO().ConfigNavSwapGamepadButtons;
+		const bool swapNorthWest = ImGuiManager::IsGamepadNorthWestSwapped();
+		const auto glyphs = GetGamepadGlyphs();
+		SetFullscreenFooterText(std::array{
+			std::make_pair(glyphs.dpad, FSUI_VSTR()),
+			std::make_pair(glyphs.select, FSUI_VSTR()),
+			std::make_pair(glyphs.start, FSUI_VSTR()),
+			std::make_pair(ICON_PF_LEFT_TRIGGER_L2, FSUI_VSTR()),
+			std::make_pair(swapNorthWest ? glyphs.west : glyphs.north, FSUI_VSTR()),
+			std::make_pair(swapNorthWest ? glyphs.north : glyphs.west, FSUI_VSTR()),
+			std::make_pair(glyphs.confirm(circleOK), FSUI_VSTR()),
+			std::make_pair(glyphs.cancel(circleOK), FSUI_VSTR()),
+		});
+	}
+	else
+	{
+		SetFullscreenFooterText(std::array{
+			std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F1, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F2, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F3, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F4, FSUI_VSTR()),
+			std::make_pair(ICON_PF_F5, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ENTER, FSUI_VSTR()),
+			std::make_pair(ICON_PF_ESC, FSUI_VSTR()),
+		});
+	}
+}
+
+std::string_view FullscreenUI::TrimString(const std::pair<ImFont*, float>& font, std::string_view str, float available_space)
+{
+	const char* beg = str.data();
+	const char* end = beg + str.size();
+	float full_width = font.first->CalcTextSizeA(font.second, INFINITY, 0, beg, end).x;
+	if (full_width <= available_space)
+		return str;
+	float ellipsis_width = font.first->CalcTextSizeA(font.second, INFINITY, 0.0f, g_ellipsis).x;
+	const char* trimmed = end;
+	font.first->CalcTextSizeA(font.second, available_space - ellipsis_width, 0, beg, end, &trimmed);
+	return std::string_view(beg, trimmed);
+}
+
+void FullscreenUI::DrawGameList(const ImVec2& heading_size)
+{
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, UIBackgroundColor);
+
+	if (!BeginFullscreenColumns(nullptr, heading_size.y, true, true))
+	{
+		EndFullscreenColumns();
+		ImGui::PopStyleColor();
+		return;
+	}
+
+	if (!AreAnyDialogsOpen() && WantsToCloseMenu())
+		SwitchToLanding();
+
+	const GameList::Entry* selected_entry = nullptr;
+
+	if (BeginFullscreenColumnWindow(0.0f, -530.0f, ))
+	{
+		const float title_height = GetLineHeight(g_large_font);
+		const float spacing = LayoutScale(4.0f);
+		const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT * 0.68f, LAYOUT_MENU_BUTTON_HEIGHT));
+		const float item_height = std::max(LAYOUT_MENU_BUTTON_HEIGHT,
+			ImGuiFullscreen::LayoutUnscale(title_height + spacing + GetLineHeight(g_medium_font)));
+
+		ResetFocusHere();
+
+		BeginMenuButtons();
+
+		// TODO: replace with something not heap allocating
+		std::string summary;
+
+		for (const GameList::Entry* entry : s_game_list_sorted_entries)
+		{
+			ImRect bb;
+			bool visible, hovered;
+			bool pressed = MenuButtonFrame(entry->path.c_str(), true, item_height, &visible, &hovered, &bb.Min, &bb.Max);
+			if (!visible)
+				continue;
+
+			summary.clear();
+			if (entry->serial.empty())
+				fmt::format_to(std::back_inserter(summary), , GameList::RegionToString(entry->region, true));
+			else
+				fmt::format_to(std::back_inserter(summary), , entry->serial, GameList::RegionToString(entry->region, true));
+
+			const std::string_view filename(Path::GetFileName(entry->path));
+			summary.append(filename);
+
+			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
+
+			const float midpoint = bb.Min.y + title_height + spacing;
+			const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
+			const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
+			const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
+			const std::string& title = entry->GetTitle(s_prefer_english_titles);
+
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
+			const bool is_favorite = entry->is_favorite;
+			const bool has_custom_settings = entry->has_custom_settings;
+			const float icon_size = GetLineHeight(g_large_font) * 0.75f;
+			const float icon_margin = LayoutScale(8.0f);
+			ImRect visible_title_bb(title_bb);
+			if (is_favorite || has_custom_settings)
+				visible_title_bb.Max.x -= icon_size * 2.0f + icon_margin * 3.0f;
+			ImGui::RenderTextClipped(visible_title_bb.Min, visible_title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
+				ImVec2(0.0f, 0.0f), &visible_title_bb);
+			if (is_favorite)
+			{
+				const ImVec2 star_pos(title_bb.Max.x - icon_size - icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
+			}
+			if (has_custom_settings)
+			{
+				const ImVec2 gear_pos(title_bb.Max.x - 2.0f * icon_size - 2.0f * icon_margin,
+					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
+				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
+					gear_pos, IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
+			}
+			ImGui::PopFont();
+
+			if (!summary.empty())
+			{
+				ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+				ImGui::RenderTextClipped(
+					summary_bb.Min, summary_bb.Max, summary.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
+				ImGui::PopFont();
+			}
+
+			if (pressed)
+				HandleGameListActivate(entry);
+
+			if (hovered)
+				selected_entry = entry;
+
+			if (selected_entry &&
+				(ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::Shortcut(ImGuiKey_NavGamepadMenu) ||
+					ImGui::Shortcut(ImGuiKey_F3)))
+			{
+				HandleGameListOptions(selected_entry);
+			}
+		}
+
+		EndMenuButtons();
+	}
+	EndFullscreenColumnWindow();
+
+	if (BeginFullscreenColumnWindow(-530.0f, 0.0f, , UIPrimaryDarkColor))
+	{
+		const float img_padding_y = LayoutScale(20.0f);
+		// Spacing between each text item
+		const float text_spacing_y = LayoutScale(8.0f);
+		// Space between title/serial and details, is in addition to text_spacing_y
+		const float title_padding_below_y = LayoutScale(12.0f);
+		const ImGuiWindow* window = ImGui::GetCurrentWindow();
+		const float work_width = window->WorkRect.GetWidth();
+		const float start_x = LayoutScale(50.0f);
+		const float wrap_pos = LayoutScale(490.0f);
+		const std::string_view full_title = selected_entry ? std::string_view(selected_entry->GetTitle(s_prefer_english_titles)) :
+		                                                     std::string_view(FSUI_CSTR());
+		const std::string_view trimmed_title = TrimString(g_large_font, full_title, work_width);
+		const SmallString title = SmallString::from_format(, trimmed_title, trimmed_title.size() == full_title.size() ?  : g_ellipsis);
+		const ImVec2 title_size = g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, 0.0f, title.c_str());
+		// Measure wrapping from the title's centered position.
+		const float title_wrap_width = std::max(1.0f, wrap_pos - (work_width - title_size.x) * 0.5f);
+		const float title_height =
+			g_large_font.first->CalcTextSizeA(g_large_font.second, FLT_MAX, title_wrap_width, title.c_str()).y;
+		// The filename can take more than one line.
+		const SmallString file_text = selected_entry ? SmallString::from_format(FSUI_FSTR(), Path::GetFileName(selected_entry->path)) : SmallString();
+		const float file_wrap_width = std::max(1.0f, wrap_pos - start_x);
+		const float file_height =
+			g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, file_wrap_width, file_text.c_str()).y;
+		const float summary_line_height = GetLineHeight(g_medium_font);
+
+		// Leave room for the text below the cover.
+		const float title_detail_height =
+			title_height + text_spacing_y + // Title
+			summary_line_height + text_spacing_y + // Serial
+			title_padding_below_y +
+			file_height + text_spacing_y + // File
+			6.0f * (summary_line_height + text_spacing_y) + // CRC, Region, Compat, Time/Last Played, Size
+			LayoutScale(12.0f); // Extra padding
+
+		// Limit cover height to avoid pushing text off the screen
+		// Based on ImGui code for WorkRect, with scrolling logic removed
+		const float window_height = std::trunc(window->InnerRect.GetHeight() - 2.0f * std::max(window->WindowPadding.y, window->WindowBorderSize));
+
+		const float free_height = window_height - title_detail_height;
+		const float img_height = std::clamp(free_height - 2.0f * img_padding_y, 0.0f, LayoutScale(400.0f));
+
+		const ImVec2 image_size = ImVec2(LayoutScale(275.0f), img_height);
+		ImGui::SetCursorPos(ImVec2(LayoutScale(128.0f), img_padding_y));
+
+		if (selected_entry)
+			DrawGameCover(selected_entry, image_size);
+		else
+			DrawFallbackCover(image_size);
+
+		const float text_y = img_height + 2.0f * img_padding_y;
+		float text_width;
+
+		PushPrimaryColor();
+		ImGui::SetCursorPos(ImVec2(start_x, text_y));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, text_spacing_y));
+		ImGui::PushTextWrapPos(wrap_pos);
+		ImGui::BeginGroup();
+
+		if (selected_entry)
+		{
+			// title
+			ImGui::PushFont(g_large_font.first, g_large_font.second);
+			ImGui::SetCursorPosX((work_width - title_size.x) / 2.0f);
+			ImGui::TextWrapped(, title.c_str());
+			ImGui::PopFont();
+
+			ImGui::PushFont(g_medium_font.first, g_medium_font.second);
+
+			// code
+			text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
+			ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+			ImGui::TextWrapped(, selected_entry->serial.c_str());
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + title_padding_below_y);
+
+			// file tile
+			ImGui::TextWrapped(, file_text.c_str());
+
+			// crc
+			ImGui::TextUnformatted(TinyString::from_format(FSUI_FSTR(), selected_entry->crc));
+
+			// region
+			{
+				std::string flag_texture(fmt::format(, GameList::RegionToFlagFilename(selected_entry->region)));
+				ImGui::TextUnformatted(FSUI_CSTR());
+				ImGui::SameLine();
+				DrawCachedSvgTextureAsync(flag_texture, LayoutScale(23.0f, 16.0f), SvgScaling::Fit);
+				ImGui::SameLine();
+				ImGui::Text(");
 TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
 TRANSLATE_NOOP("FullscreenUI", "Delete State");
+TRANSLATE_NOOP("FullscreenUI", "Game Properties (Edit)");
+TRANSLATE_NOOP("FullscreenUI", "Game Properties (New)");
 TRANSLATE_NOOP("FullscreenUI", "Remove from Favorites");
 TRANSLATE_NOOP("FullscreenUI", "Add to Favorites");
+TRANSLATE_NOOP("FullscreenUI", "Default Boot (Custom settings)");
+TRANSLATE_NOOP("FullscreenUI", "Default Boot (Global settings)");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Full Boot");
 TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
