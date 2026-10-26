@@ -1007,12 +1007,15 @@ inline std::pair<QString, int> DisassemblyView::DisassemblyStringFromAddress(u32
 	return {disasmLine, line.totalSize};
 }
 
-std::vector<DisassemblyView::DisasmLine> DisassemblyView::GetLines(u32 address, u32 count)
+std::vector<DisassemblyView::DisasmLine> DisassemblyView::GetLines(u32 _address, u32 count)
 {
 	using namespace Qt::StringLiterals;
 
 	std::vector<DisassemblyView::DisasmLine> lines;
-	u32 end = address + count * 4;
+	// Work around the fact that the debugger underflows the m_visibleStart
+	// variable when putting 0 in the goto dialog
+	s64 address = (int)_address;
+	s64 end = address + count * 4;
 
 	while (address < end)
 	{
