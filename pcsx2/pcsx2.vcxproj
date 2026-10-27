@@ -70,116 +70,116 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\cas.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\cas.glsl">
       <VarName>vulkan_cas</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\convert.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\convert.glsl">
       <VarName>vulkan_convert</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\imgui.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\imgui.glsl">
       <VarName>vulkan_imgui</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\interlace.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\interlace.glsl">
       <VarName>vulkan_interlace</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\merge.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\merge.glsl">
       <VarName>vulkan_merge</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\present.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\present.glsl">
       <VarName>vulkan_present</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\shadeboost.glsl">
       <VarName>vulkan_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\vulkan\tfx.glsl">
+    <ShaderToCpp Include="..\resources\shaders\vulkan\tfx.glsl">
       <VarName>vulkan_tfx</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\cas.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\cas.glsl">
       <VarName>opengl_cas</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\convert.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\convert.glsl">
       <VarName>opengl_convert</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\imgui.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\imgui.glsl">
       <VarName>opengl_imgui</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\interlace.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\interlace.glsl">
       <VarName>opengl_interlace</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\merge.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\merge.glsl">
       <VarName>opengl_merge</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\shadeboost.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\shadeboost.glsl">
       <VarName>opengl_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\tfx_fs.glsl">
       <VarName>opengl_tfx_fs</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\tfx_vgs.glsl">
       <VarName>opengl_tfx_vgs</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\present.glsl">
+    <ShaderToCpp Include="..\resources\shaders\opengl\present.glsl">
       <VarName>opengl_present</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\cas.hlsl">
+    <ShaderToCpp Include="..\resources\shaders\dx11\cas.hlsl">
       <VarName>dx11_cas</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\convert.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\convert.fx">
       <VarName>dx11_convert</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\interlace.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\interlace.fx">
       <VarName>dx11_interlace</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\merge.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\merge.fx">
       <VarName>dx11_merge</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\shadeboost.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\shadeboost.fx">
       <VarName>dx11_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\tfx.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\tfx.fx">
       <VarName>dx11_tfx</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\imgui.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\imgui.fx">
       <VarName>dx11_imgui</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\dx11\present.fx">
+    <ShaderToCpp Include="..\resources\shaders\dx11\present.fx">
       <VarName>dx11_present</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\common\fxaa.fx">
+    <ShaderToCpp Include="..\resources\shaders\common\fxaa.fx">
       <VarName>common_fxaa</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\common\ffx_a.h">
+    <ShaderToCpp Include="..\resources\shaders\common\ffx_a.h">
       <VarName>common_ffx_a</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\common\ffx_cas.h">
+    <ShaderToCpp Include="..\resources\shaders\common\ffx_cas.h">
       <VarName>common_ffx_cas</VarName>
     </ShaderToCpp>
-    <None Include="..\bin\resources\shaders\common\fxaa.fx" />
-    <None Include="..\bin\resources\shaders\opengl\cas.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\convert.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\imgui.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\interlace.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\merge.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\present.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl" />
-    <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\cas.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\imgui.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\interlace.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\merge.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\present.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\shadeboost.glsl" />
-    <None Include="..\bin\resources\shaders\vulkan\tfx.glsl" />
-    <None Include="..\bin\resources\shaders\dx11\convert.fx" />
-    <None Include="..\bin\resources\shaders\dx11\imgui.fx" />
-    <None Include="..\bin\resources\shaders\dx11\interlace.fx" />
-    <None Include="..\bin\resources\shaders\dx11\merge.fx" />
-    <None Include="..\bin\resources\shaders\dx11\present.fx" />
-    <None Include="..\bin\resources\shaders\dx11\shadeboost.fx" />
-    <None Include="..\bin\resources\shaders\dx11\tfx.fx" />
-    <None Include="..\bin\resources\shaders\dx11\cas.hlsl" />
+    <None Include="..\resources\shaders\common\fxaa.fx" />
+    <None Include="..\resources\shaders\opengl\cas.glsl" />
+    <None Include="..\resources\shaders\opengl\convert.glsl" />
+    <None Include="..\resources\shaders\opengl\imgui.glsl" />
+    <None Include="..\resources\shaders\opengl\interlace.glsl" />
+    <None Include="..\resources\shaders\opengl\merge.glsl" />
+    <None Include="..\resources\shaders\opengl\present.glsl" />
+    <None Include="..\resources\shaders\opengl\shadeboost.glsl" />
+    <None Include="..\resources\shaders\opengl\tfx_fs.glsl" />
+    <None Include="..\resources\shaders\opengl\tfx_vgs.glsl" />
+    <None Include="..\resources\shaders\vulkan\cas.glsl" />
+    <None Include="..\resources\shaders\vulkan\convert.glsl" />
+    <None Include="..\resources\shaders\vulkan\imgui.glsl" />
+    <None Include="..\resources\shaders\vulkan\interlace.glsl" />
+    <None Include="..\resources\shaders\vulkan\merge.glsl" />
+    <None Include="..\resources\shaders\vulkan\present.glsl" />
+    <None Include="..\resources\shaders\vulkan\shadeboost.glsl" />
+    <None Include="..\resources\shaders\vulkan\tfx.glsl" />
+    <None Include="..\resources\shaders\dx11\convert.fx" />
+    <None Include="..\resources\shaders\dx11\imgui.fx" />
+    <None Include="..\resources\shaders\dx11\interlace.fx" />
+    <None Include="..\resources\shaders\dx11\merge.fx" />
+    <None Include="..\resources\shaders\dx11\present.fx" />
+    <None Include="..\resources\shaders\dx11\shadeboost.fx" />
+    <None Include="..\resources\shaders\dx11\tfx.fx" />
+    <None Include="..\resources\shaders\dx11\cas.hlsl" />
     <None Include="GS\Renderers\Vulkan\VKEntryPoints.inl">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </None>
