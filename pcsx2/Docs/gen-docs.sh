@@ -4,7 +4,7 @@
 ### - Assumes atleast git 2.18
 LATEST_SEMVER=$(git -c 'versionsort.suffix=-' ls-remote --exit-code --refs --sort='version:refname' --tags https://github.com/PCSX2/pcsx2.git 'v*[0-9].*[0-9].*[0-9]' | tail --lines=1 | cut --delimiter='/' --fields=3)
 
-OUT_DIR=${OUT_DIR:-"../../bin/docs"}
+OUT_DIR=${OUT_DIR:-"./"}
 GIT_TAG_PATTERN="{LATEST-GIT-TAG}"
 PDF_METADATA_START_PATTERN="<!-- PDF METADATA STARTS "
 PDF_METADATA_END_PATTERN=" PDF METADATA ENDS -->"

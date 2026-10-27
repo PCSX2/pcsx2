@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Copy resources for ARM -->
   <ItemGroup>
-    <BinRes Include="$(SolutionDir)bin\resources\**\*" />
+    <BinRes Include="$(SolutionDir)resources\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <BinDocs Include="$(SolutionDir)bin\docs\**\*" />
+    <BinDocs Include="$(SolutionDir)pcsx2\Docs\**\*.pdf" />
+    <BinDocs Include="$(SolutionDir)pcsx2\Docs\**\*.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <BinUtils Include="$(SolutionDir)tools\bulk_compression.py" />
   </ItemGroup>
   <Target Name="CopyBinResources"
     AfterTargets="Build"
@@ -26,6 +29,17 @@
     <Copy
       SourceFiles="@(BinDocs)"
       DestinationFolder="$(OutDir)docs\%(RecursiveDir)"
+      SkipUnchangedFiles="true"
+    />
+  </Target>
+  <Target Name="CopyUtils"
+    AfterTargets="Build"
+    Inputs="@(BinUtils)"
+    Outputs="@(BinUtils -> '$(OutDir)utils\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Message Text="Copying Utils" Importance="High" />
+    <Copy
+      SourceFiles="@(BinDocs)"
+      DestinationFolder="$(OutDir)utils\%(RecursiveDir)"
       SkipUnchangedFiles="true"
     />
   </Target>

@@ -66,48 +66,13 @@ oprofile_data/
 # Kate Projects
 .kateproject*
 
-# Resources and docs in /bin are tracked
-/bin/**/*.dll
-/bin/**/*.dmp
-/bin/**/*.exp
-/bin/**/*.ilk
-/bin/**/*.lib
-/bin/**/*.pdb
-/bin/pcsx2*
-/bin/qt.conf
-/bin/bios
-/bin/cache
-/bin/cheats
-/bin/patches
-/bin/covers
-/bin/dumps
-/bin/gamesettings
-/bin/help
-/bin/inis
-/bin/inis/debuggersettings
-/bin/logs
-/bin/memcards
-/bin/plugins
-/bin/snaps
-/bin/sstates
-/bin/textures
-/bin/translations
-/bin/inputprofiles
-/bin/videos
-/bin/portable.ini
-/bin/portable.txt
-
-# Resources and docs copied from /bin
-/bin-arm64
+!/resources/**
 
 # Manually added by user.
 /bin/resources/patches.zip
 
-# Resources that are runtime downloaded.
-/bin/resources/fonts/NotoSansJP-Regular.ttf
-/bin/resources/fonts/NotoSansKR-Regular.ttf
-/bin/resources/fonts/NotoSansSC-Regular.ttf
-/bin/resources/fonts/NotoSansTC-Regular.ttf
+/bin
+/bin-arm64
 
 /deps-build
 /deps
