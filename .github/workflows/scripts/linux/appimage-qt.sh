@@ -27,8 +27,8 @@
 
 SCRIPTDIR=$(dirname "${BASH_SOURCE[0]}")
 
-if [ "$#" -ne 4 ]; then
-    echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name>"
+if [ "$#" -ne 4 ] && [ "$#" -ne 5 ]; then
+    echo "Syntax: $0 <path to pcsx2 directory> <path to build directory> <deps prefix> <output name> [bin arch suffix]"
     exit 1
 fi
 
@@ -36,6 +36,12 @@ PCSX2DIR=$1
 BUILDDIR=$2
 DEPSDIR=$3
 NAME=$4
+
+if [ "$#" -e 5 ]; then
+  BINDIR="bin-$5"
+else
+  BINDIR="bin-x64"
+fi
 
 BINARY=pcsx2-qt
 APPDIRNAME=PCSX2.AppDir
@@ -111,11 +117,11 @@ EXTRA_PLATFORM_PLUGINS="libqwayland.so" \
 DEPLOY_PLATFORM_THEMES="1" \
 QMAKE="$DEPSDIR/bin/qmake" \
 NO_STRIP="1" \
-$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/bin/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
+$LINUXDEPLOY --plugin qt --appdir="$OUTDIR" --executable="$BUILDDIR/$BINDIR/pcsx2-qt" ${EXTRA_LIBS_ARGS[@]} \
 --desktop-file="net.pcsx2.PCSX2.desktop" --icon-file="PCSX2.png"
 
 echo "Copying resources into AppDir..."
-cp -a "$BUILDDIR/bin/resources" "$OUTDIR/usr/bin"
+cp -a "$BUILDDIR/$BINDIR/resources" "$OUTDIR/usr/bin"
 
 # Restore unstripped deps (for cache).
 rm -fr "$DEPSDIR"
@@ -123,7 +129,7 @@ mv "$DEPSDIR.bak" "$DEPSDIR"
 
 # Fix up translations.
 rm -fr "$OUTDIR/usr/bin/translations" "$OUTDIR/usr/translations"
-cp -a "$BUILDDIR/bin/translations" "$OUTDIR/usr/bin"
+cp -a "$BUILDDIR/$BINDIR/translations" "$OUTDIR/usr/bin"
 
 # Generate AppStream meta-info.
 echo "Generating AppStream metainfo..."
