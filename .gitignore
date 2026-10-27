@@ -71,8 +71,7 @@ oprofile_data/
 # Manually added by user.
 /bin/resources/patches.zip
 
-/bin
-/bin-arm64
+/bin*
 
 /deps-build
 /deps

@@ -87,6 +87,7 @@ if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" 
 
 	list(APPEND PCSX2_DEFS _M_X86=1)
 	set(ARCH_X86 TRUE)
+	set(BIN_DIR bin-x64)
 	if(DISABLE_ADVANCE_SIMD)
 		message(STATUS "Building for x86-64 (Multi-ISA).")
 	else()
@@ -116,6 +117,7 @@ elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64" OR "${CMAKE_SYSTEM_PROCESSOR
        "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
 	message(STATUS "Building for Apple Silicon (ARM64).")
 	set(ARCH_ARM64 TRUE)
+	set(BIN_DIR bin-arm64)
 	if(APPLE)
 		# Min spec is an M1
 		add_compile_options("-march=armv8.4-a" "-mcpu=apple-m1")

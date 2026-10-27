@@ -114,6 +114,17 @@ jobs:
             for /f "usebackq tokens=*" %%i in (`call vswhere -latest -property installationPath`) do set "VSINSTPATH=%%i"
             echo VCVARSPATH=%VSINSTPATH%\VC\Auxiliary\Build\vcvars64.bat>>%GITHUB_ENV%
 
+      - name: Set bin directory
+        id: pcsx2_bin
+        shell: cmd
+        run: |
+          if ${{ inputs.platform }}==x64 (
+            echo directory=bin-x64>>%GITHUB_OUTPUT%
+          )
+          if ${{ inputs.platform }}==ARM64 (
+            echo directory=bin-arm64>>%GITHUB_OUTPUT%
+          )
+
       - name: Download patches
         shell: cmd
         run: |
@@ -155,7 +166,7 @@ jobs:
         shell: cmd
         run: |
           call "%VCVARSPATH%" || exit /b
-          set PATH=%PATH%;%GITHUB_WORKSPACE%\bin
+          set PATH=%PATH%;%GITHUB_WORKSPACE%\${{ steps.pcsx2_bin.outputs.directory }}
           cmake --build build --config Release --target unittests
 
       - name: Upload artifact
@@ -163,14 +174,14 @@ jobs:
         with:
           name: ${{ steps.artifact-metadata.outputs.artifact-name }}
           path: |
-            ./bin
-            !./bin/**/*.bsc
-            !./bin/**/*.exp
-            !./bin/**/*.ilk
-            !./bin/**/*.iobj
-            !./bin/**/*.ipdb
-            !./bin/**/*.pdb
-            !./bin/**/*.lib
+            ./${{ steps.pcsx2_bin.outputs.directory }}
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.bsc
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.exp
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.ilk
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.iobj
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.ipdb
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.pdb
+            !./${{ steps.pcsx2_bin.outputs.directory }}/**/*.lib
 
       - name: Install the Breakpad Symbol Generator
         uses: baptiste0928/cargo-install@8195d4f734a149db85385bb4102b42efcd373759
@@ -181,12 +192,12 @@ jobs:
         shell: pwsh
         run: |
           mkdir -Force symbols
-          Get-ChildItem -Path ./bin -Recurse -File | Where-Object {
+          Get-ChildItem -Path ./${{ steps.pcsx2_bin.outputs.directory }} -Recurse -File | Where-Object {
             ($_.Extension -eq ".exe" -or $_.Extension -eq ".pdb") -and ($_.Name -notmatch "updater")
           } | ForEach-Object {
             & dump_syms $_.FullName >> symbols/pcsx2-qt.bpsym
           }
-          Get-ChildItem -Path ./bin -Recurse -Filter "*.pdb" | ForEach-Object {
+          Get-ChildItem -Path ./${{ steps.pcsx2_bin.outputs.directory }} -Recurse -Filter "*.pdb" | ForEach-Object {
             Copy-Item $_.FullName -Destination symbols/
           }
 
