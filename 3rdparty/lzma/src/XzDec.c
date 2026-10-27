@@ -1754,7 +1754,9 @@ static void XzDecMt_Callback_Parse(void *obj, unsigned coderIndex, CMtDecCallbac
           && XzBlock_HasPackSize(block))
       {
         {
-          if (block->unpackSize * 2 * me->mtc.numStartedThreads > me->props.memUseMax)
+          // (me->mtc.numStartedThreads != 0)
+          if (me->mtc.numStartedThreads) // optional
+          if (block->unpackSize > me->props.memUseMax / 2 / me->mtc.numStartedThreads)
           {
             cc->state = MTDEC_PARSE_OVERFLOW;
             return; // SZ_OK;
