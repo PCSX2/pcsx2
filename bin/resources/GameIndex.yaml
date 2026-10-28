@@ -25096,6 +25096,7 @@ SLES-53900:
   region: "PAL-M3"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes vertical lines.
+    nativeScaling: 2 # Fixes a misaligned halo around cars visible in the stormy weather at high upscales.
 SLES-53901:
   name: "Torino 2006"
   region: "PAL-M5"
@@ -36915,6 +36916,7 @@ SLPM-61121:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes vertical lines.
+    nativeScaling: 2 # Fixes a misaligned halo around cars visible in the stormy weather at high upscales.
 SLPM-61122:
   name: "電撃PS2 / 電撃PlayStation D81"
   name-sort: "でんげき PS2 でんげきPlayStation D81"
@@ -47285,6 +47287,7 @@ SLPM-66022:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 5 # Fixes vertical lines.
+    nativeScaling: 2 # Fixes a misaligned halo around cars visible in the stormy weather at high upscales.
 SLPM-66023:
   name: "ふしぎ遊戯 玄武開伝 外伝 鏡の巫女 [限定版]"
   name-sort: "ふしぎゆうぎ げんぶかいでん がいでん かがみのみこ [げんていばん]"
@@ -72362,6 +72365,7 @@ SLUS-21394:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 5 # Fixes vertical lines.
+    nativeScaling: 2 # Fixes a misaligned halo around cars visible in the stormy weather at high upscales.
 SLUS-21395:
   name: "Avatar - The Last Airbender"
   region: "NTSC-U"
