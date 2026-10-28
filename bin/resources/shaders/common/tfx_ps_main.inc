@@ -24,9 +24,14 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 			uint4 denorm_c = uint4(C);
 			
 			if ((PS_PROCESS_BA & SHUFFLE_READ) != 0)
-				C = splat4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
+			{
+				uint ba = (denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u);
+				C = splat4(float(ba));
+			}
 			else
+			{
 				C.ga = C.rg;
+			}
 		}
 		// Copy of a 16bit source in to this target
 		else if (PS_READ16_SRC != 0)
