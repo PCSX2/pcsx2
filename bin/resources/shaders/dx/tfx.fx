@@ -312,12 +312,19 @@ void DepthWrite(int2 xy, float d)
 }
 
 // Pixel shader global state
-static PSInputGeneric ps_in;
-static float4 current_color;
-static float current_depth;
-static uint prim_id;
-static bool color_discarded;
-static bool depth_discarded;
+static PSInputGeneric ps_in = {
+	float4(0, 0, 0, 0), // p
+	float4(0, 0, 0, 0), // t
+	float4(0, 0, 0, 0), // ti
+	float4(0, 0, 0, 0), // c
+	0,                  // inv_cov
+	0u                  // interior
+};
+static float4 current_color = float4(0, 0, 0, 0);
+static float current_depth = 0;
+static uint prim_id = 0u;
+static bool color_discarded = false;
+static bool depth_discarded = false;
 
 // Include the common PS implementation code
 #include "tfx_ps.inc"
@@ -335,11 +342,7 @@ void ps_main(PS_INPUT input)
 	ps_in = GetPSInput(input);
 	#if NEED_PRIMID
 		prim_id = input.prim_id;
-	#else
-		prim_id = 0;
 	#endif
-	color_discarded = false;
-	depth_discarded = false;
 
 	int2 coord = int2(ps_in.p.xy);
 

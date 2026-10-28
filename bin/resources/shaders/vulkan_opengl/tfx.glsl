@@ -437,12 +437,19 @@ PSInputGeneric GetPSInput()
 }
 
 // Pixel shader global state
-PSInputGeneric ps_in;
-vec4 current_color;
-float current_depth;
-uint prim_id;
-bool color_discarded;
-bool depth_discarded;
+PSInputGeneric ps_in = PSInputGeneric(
+		vec4(0, 0, 0, 0), // p
+		vec4(0, 0, 0, 0), // t
+		vec4(0, 0, 0, 0), // ti
+		vec4(0, 0, 0, 0), // c
+		0,                // inv_cov
+		0u                // interior
+);
+vec4 current_color = vec4(0, 0, 0, 0);
+float current_depth = 0;
+uint prim_id = 0u;
+bool color_discarded = false;
+bool depth_discarded = false;
 
 // Include the common PS implementation code
 #include "tfx_ps.inc"
@@ -451,8 +458,6 @@ void main()
 {
 	ps_in = GetPSInput();
 	prim_id = gl_PrimitiveID;
-	color_discarded = false;
-	depth_discarded = false;
 
 	ivec2 coord = ivec2(ps_in.p.xy);
 

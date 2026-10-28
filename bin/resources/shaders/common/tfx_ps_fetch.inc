@@ -53,7 +53,7 @@ PS_STATIC float4 fetch_gXbY()
 	if (PS_TEX_IS_DEPTH)
 	{
 		uint depth = fetch_raw_depth();
-		uint bg = (depth >> (8 + cb.channel_shuffle_green_shift)) & 0xFFu;
+		uint bg = (depth >> (8u + cb.channel_shuffle_green_shift)) & 0xFFu;
 		return splat4(float(bg));
 	}
 	else

@@ -23,7 +23,7 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 		{
 			uint4 denorm_c = uint4(C);
 			
-			if ((PS_PROCESS_BA & SHUFFLE_READ) != 0u)
+			if ((PS_PROCESS_BA & SHUFFLE_READ) != 0)
 				C = splat4(float((denorm_c.b & 0x7Fu) | (denorm_c.a & 0x80u)));
 			else
 				C.ga = C.rg;
@@ -44,7 +44,7 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 				C.br = C.rb;
 				C.ag = C.ga;
 			}
-			else if ((PS_PROCESS_BA & SHUFFLE_READ) != 0u)
+			else if ((PS_PROCESS_BA & SHUFFLE_READ) != 0)
 			{
 				C.rb = C.bb;
 				C.ga = C.aa;
@@ -183,7 +183,7 @@ PS_STATIC PSOutputGeneric ps_main_impl()
 	if (PS_ZCLAMP != 0)
 		input_z = min(input_z, cb.max_depth_ps);
 
-	if (PS_AA1 == PS_AA1_TRIANGLE_SW_Z && ps_in.interior == 0)
+	if (PS_AA1 == PS_AA1_TRIANGLE_SW_Z && ps_in.interior == 0u)
 		discard_depth(input_z); // No depth update for triangle edges.
 
 	if (!atst_pass)

@@ -177,7 +177,7 @@ PS_STATIC uint4 sample_4_index(float4 uv)
 	if (PS_PAL_FMT == 1)
 		return i & 0xFu;
 	if (PS_PAL_FMT == 2)
-		return i >> 4;
+		return i >> 4u;
 
 	return i;
 }
