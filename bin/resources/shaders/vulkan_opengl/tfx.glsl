@@ -457,7 +457,7 @@ bool depth_discarded = false;
 void main()
 {
 	ps_in = GetPSInput();
-	prim_id = gl_PrimitiveID;
+	prim_id = uint(gl_PrimitiveID);
 
 	ivec2 coord = ivec2(ps_in.p.xy);
 
