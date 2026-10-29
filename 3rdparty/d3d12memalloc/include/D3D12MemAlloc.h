@@ -24,7 +24,7 @@
 
 /** \mainpage D3D12 Memory Allocator
 
-<b>Version 3.2.0</b> (2026-06-05)
+<b>Version 3.2.1</b> (2026-10-26)
 
 Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved. \n
 License: MIT
@@ -317,7 +317,7 @@ enum ALLOCATION_FLAGS
 
     /** %Allocation strategy that chooses always the lowest offset in available space.
     This is not the most efficient strategy but achieves highly packed data.
-    Used internally by defragmentation, not recomended in typical usage.
+    Used internally by defragmentation, not recommended in typical usage.
     */
     ALLOCATION_FLAG_STRATEGY_MIN_OFFSET = 0x0004000,
 
@@ -936,6 +936,8 @@ struct POOL_DESC
     Specify nonzero to set explicit, constant size of memory blocks used by this pool.
     Leave 0 to use default and let the library manage block sizes automatically.
     Then sizes of particular blocks may vary.
+
+    You will be able to create committed resources out of this custom pool only when you set this member to 0.
     */
     UINT64 BlockSize;
     /** \brief Minimum number of heaps (memory blocks) to be always allocated in this pool, even if they stay empty. Optional.
@@ -1082,7 +1084,7 @@ enum ALLOCATOR_FLAGS
     
     Affects both default pools and custom pools.
     To be used for debugging purposes only.
-    There is also an equivalent flag for custom pools: D3D12MA::POOL_FLAG_ALWAYS_COMMITTED.
+    You can also force this behavior for a specific custom pool using D3D12MA::POOL_FLAG_ALWAYS_COMMITTED.
     */
     ALLOCATOR_FLAG_ALWAYS_COMMITTED = 0x2,
 
@@ -1102,13 +1104,16 @@ enum ALLOCATOR_FLAGS
     */
     ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED = 0x4,
 
-    /** Optimization, allocate MSAA textures as committed resources always.
+    /** Optimization, always allocate MSAA textures as committed resources.
 
     Specify this flag to create MSAA textures with implicit heaps, as if they were created
     with flag D3D12MA::ALLOCATION_FLAG_COMMITTED. Usage of this flags enables all default pools
     to create its heaps on smaller alignment not suitable for MSAA textures.
 
     You should always use this flag unless you really need to create some MSAA textures as placed.
+
+    This flag doesn't affect custom pools. To enable this behavior on a custom pool,
+    use D3D12MA::POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED.
     */
     ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED = 0x8,
     /** Disable optimization that prefers creating small buffers as committed to avoid 64 KB alignment.
@@ -1131,6 +1136,9 @@ enum ALLOCATOR_FLAGS
     By default, the feature is used whenever available.
 
     Support can be checked by D3D12MA::Allocator::IsTightAlignmentSupported() regardless of using this flag.
+
+    This flag disables the usage of the tight alignment globally, including default and custom pools.
+    You can also disable it just for a specific custom pool by using D3D12MA::POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT.
     */
     ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x20,
 };
@@ -1311,7 +1319,7 @@ public:
     This function is similar to `ID3D12Device::CreateHeap`, but it may really assign
     part of a larger, existing heap to the allocation.
 
-    `pAllocDesc->heapFlags` should contain one of these values, depending on type of resources you are going to create in this memory:
+    `pAllocDesc->ExtraHeapFlags` should contain one of these values, depending on type of resources you are going to create in this memory:
     `D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS`,
     `D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES`,
     `D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES`.
@@ -1319,8 +1327,15 @@ public:
     may be `D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES` = 0.
     Additional flags in `heapFlags` are allowed as well.
 
-    `pAllocInfo->SizeInBytes` must be multiply of 64KB.
-    `pAllocInfo->Alignment` must be one of the legal values as described in documentation of `D3D12_HEAP_DESC`.
+    `pAllocInfo->SizeInBytes` must cover the resources to be placed within the allocation, including any padding
+    required between them. Use `ID3D12Device::GetResourceAllocationInfo` to determine their
+    required sizes and alignments. Allocation sizes smaller than 64 KB are accepted.
+
+    `pAllocInfo->Alignment` must be a non-zero power of two specifying the required alignment
+    of the allocation's offset within the heap. Smaller resource alignments are accepted,
+    such as 4 KB for small textures or 256 B for tight-alignment buffers.
+    When a separate heap is created, its alignment is calculated independently:
+    64 KB for buffer-only heaps or 4 MB when textures are permitted.
 
     If you use D3D12MA::ALLOCATION_FLAG_COMMITTED you will get a separate memory block -
     a heap that always has offset 0.
@@ -2523,7 +2538,7 @@ When a new requested resource can be placed in a free space of an existing heap 
 this operation is typically much faster, as it only requires creating a new `ID3D12Resource` object
 and not allocating new memory.
 This is the main benefit of using %D3D12MA compared to the naive approach of using Direct3D 12 directly
-and creating each resource as committed with `CreateCommittedResource`, which would result in a separate allocation of an implicit heap every time.
+and creating each resource as committed using `CreateCommittedResource`, which would result in allocation of an implicit heap every time.
 
 When **a large number of small buffers** needs to be created, the overhead of creating even just separate `ID3D12Resource` objects can be significant.
 It can be avoided by creating one or few larger buffers and manually sub-allocating parts of them for specific needs.

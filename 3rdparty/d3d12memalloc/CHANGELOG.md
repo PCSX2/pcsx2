@@ -1,6 +1,16 @@
+# 3.2.1 (2026-10-26)
+
+- Improved `AllocateMemory` implementation, now allowing smaller size and alignment to be specified, while the heap alignment (if one is needed) is calculated correctly (#98).
+- Other fixes and improvements.
+
+# 3.2.0 (2026-06-05)
+
+- Added `POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT` (#91).
+- Further improvements in the algorithm deciding when to use small alignment or tight alignment, including added support for `D3D12_FEATURE_DATA_D3D12_OPTIONS4::MSAA64KBAlignedTextureSupported`.
+
 # 3.1.0 (2026-02-23)
 
-- Added supported for resource tight alignment (feature added in Agility SDK 1.618.1). It is used automatically when available.
+- Added support for resource tight alignment (feature added in Agility SDK 1.618.1). It is used automatically when available.
   - Added function `Allocator::IsTightAlignmentSupported`.
   - Added `ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT`.
 - Fixes and improvements in the internal function `AllocatorPimpl::GetResourceAllocationInfo` (which decides when to use small alignment or tight alignment), including:
