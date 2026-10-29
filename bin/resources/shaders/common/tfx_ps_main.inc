@@ -39,8 +39,10 @@ PS_STATIC void ps_shuffle(IN_OUT_PARAM(float4, C))
 			uint4 denorm_c = uint4(C);
 			uint2 denorm_TA = uint2(cb.ta * 255.5f);
 			
-			C.rb = splat2(float((denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5)));
-			C.ga = splat2(float((denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u)));
+			uint rb = (denorm_c.r >> 3) | (((denorm_c.g >> 3) & 0x7u) << 5);
+			uint ga = (denorm_c.g >> 6) | ((denorm_c.b >> 3) << 2) | (denorm_TA.x & 0x80u);
+			C.rb = splat2(float(rb));
+			C.ga = splat2(float(ga));
 		}
 		else if (PS_SHUFFLE_ACROSS != 0)
 		{
