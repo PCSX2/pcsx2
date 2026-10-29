@@ -16,6 +16,7 @@ jobs:
     with:
       jobName: "AppImage Build"
       artifactPrefixName: "PCSX2-linux-Qt-x64-appimage"
+      cheatsUrl: https://github.com/xCENTx/pcsx2_cheats/releases/latest/download
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
@@ -27,6 +28,7 @@ jobs:
     with:
       jobName: "Debug Build"
       artifactPrefixName: "PCSX2-linux-Qt-x64-debug"
+      cheatsUrl: https://github.com/xCENTx/pcsx2_cheats/releases/latest/download
       compiler: clang
       cmakeflags: ""
       buildAppImage: true
@@ -39,6 +41,7 @@ jobs:
     with:
       jobName: "Flatpak Build"
       artifactPrefixName: "PCSX2-linux-Qt-x64-flatpak"
+      cheatsUrl: https://github.com/xCENTx/pcsx2_cheats/releases/latest/download
       compiler: clang
       cmakeflags: ""
       publish: false

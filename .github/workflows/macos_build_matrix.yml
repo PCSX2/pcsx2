@@ -16,6 +16,7 @@ jobs:
     with:
       jobName: "MacOS Build"
       artifactPrefixName: "PCSX2-macos-Qt"
+      cheatsUrl: https://github.com/xCENTx/pcsx2_cheats/releases/latest/download
       sign_and_notarize: true # If we find that notarization takes a long time we should disable that on PR builds
     secrets: inherit
   build_macos_qt_arm:
@@ -25,5 +26,6 @@ jobs:
     with:
       jobName: "MacOS arm64 Build"
       artifactPrefixName: "PCSX2-macos-Qt-arm64"
+      cheatsUrl: https://github.com/xCENTx/pcsx2_cheats/releases/latest/download
       arch: arm64
     secrets: inherit
