@@ -31,6 +31,10 @@ on:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      cheatsUrl:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_cheats/releases/latest/download
       fetchTags:
         required: false
         type: boolean
@@ -86,6 +90,7 @@ jobs:
         run: |
           cd bin/resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
+          wget "${{ inputs.cheatsUrl || 'https://github.com/xCENTx/pcsx2_cheats/releases/latest/download' }}/cheats.zip"
 
       - name: Validate manifest
         run: |

@@ -82,7 +82,7 @@ namespace Patch
 		const std::span<const PatchTextTable>& Table);
 	static void LoadPatchLine(PatchGroup* group, const std::string_view line);
 	static u32 LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std::string& patch_file);
-	static bool OpenPatchesZip();
+	static bool OpenPnachZip(bool cheats);
 	static std::string GetPnachTemplate(
 		const std::string_view serial, u32 crc, bool include_serial, bool add_wildcard, bool all_crcs);
 	static std::vector<std::string> FindPatchFilesOnDisk(
@@ -115,6 +115,7 @@ namespace Patch
 	static constexpr std::string_view WS_PATCH_NAME = "Widescreen 16:9";
 	static constexpr std::string_view NI_PATCH_NAME = "No-Interlacing";
 	static constexpr std::string_view PATCHES_ZIP_NAME = "patches.zip";
+	static constexpr std::string_view CHEATS_ZIP_NAME = "cheats.zip";
 
 	const char* PATCHES_CONFIG_SECTION = "Patches";
 	const char* CHEATS_CONFIG_SECTION = "Cheats";
@@ -122,6 +123,7 @@ namespace Patch
 	const char* PATCH_DISABLE_CONFIG_KEY = "Disable";
 
 	static zip_t* s_patches_zip;
+	static zip_t* s_cheats_zip;
 	static std::vector<PatchGroup> s_gamedb_patches;
 	static std::vector<PatchGroup> s_game_patches;
 	static std::vector<PatchGroup> s_cheat_patches;
@@ -286,23 +288,39 @@ u32 Patch::LoadPatchesFromString(std::vector<PatchGroup>* patch_list, const std:
 	return static_cast<u32>(patch_list->size() - before);
 }
 
-bool Patch::OpenPatchesZip()
+bool Patch::OpenPnachZip(bool cheats)
 {
-	if (s_patches_zip)
-		return true;
+    zip_t*& archive = cheats ? s_cheats_zip : s_patches_zip;
 
-	const std::string filename = Path::Combine(EmuFolders::Resources, PATCHES_ZIP_NAME);
+    if (archive)
+        return true;
+
+    const std::string_view archive_name =
+        cheats ? CHEATS_ZIP_NAME : PATCHES_ZIP_NAME;
+
+    const std::string filename =
+        Path::Combine(EmuFolders::Resources, archive_name);
 
 	zip_error ze = {};
 	zip_source_t* zs = zip_source_file_create(filename.c_str(), 0, 0, &ze);
-	if (zs && !(s_patches_zip = zip_open_from_source(zs, ZIP_RDONLY, &ze)))
+	if (!zs)
 	{
-		static bool warning_shown = false;
+		Console.Error("Patch: Failed to open bundled archive: %s", filename.c_str());
+		zip_error_fini(&ze);
+		return false;
+	}
+
+	if (zs && !(archive = zip_open_from_source(zs, ZIP_RDONLY, &ze)))
+	{
+		static bool patches_warning_shown = false;
+		static bool cheats_warning_shown = false;
+		bool& warning_shown = cheats ? cheats_warning_shown : patches_warning_shown;
 		if (!warning_shown)
 		{
-			Host::AddIconOSDMessage("PatchesZipOpenWarning", ICON_FA_BANDAGE,
+			Host::AddIconOSDMessage(cheats ? "CheatsZipOpenWarning" : "PatchesZipOpenWarning", 
+				ICON_FA_BANDAGE,
 				fmt::format(TRANSLATE_FS("Patch", "Failed to open {}. Built-in game patches are not available."),
-					PATCHES_ZIP_NAME),
+					archive_name),
 				Host::OSD_ERROR_DURATION);
 			warning_shown = true;
 		}
@@ -313,7 +331,11 @@ bool Patch::OpenPatchesZip()
 		return false;
 	}
 
-	std::atexit([]() { zip_close(s_patches_zip); });
+	if (cheats)
+		std::atexit([]() { zip_close(s_cheats_zip); });
+	else
+		std::atexit([]() { zip_close(s_patches_zip); });
+
 	return true;
 }
 
@@ -381,7 +403,9 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 				if (PatchStringHasUnlabelledPatch(contents.value()))
 				{
 					unlabeled_patch_found = true;
-					Console.WriteLn(fmt::format("Patch: Disabling any bundled '{}' patches due to unlabeled patch being loaded. (To avoid conflicts)", PATCHES_ZIP_NAME));
+					Console.WriteLn(fmt::format(
+						"Patch: Disabling bundled '{}' entries due to an unlabeled local patch. (To avoid conflicts)",
+						cheats ? CHEATS_ZIP_NAME : PATCHES_ZIP_NAME));
 				}
 
 				f(std::move(file), std::move(contents.value()));
@@ -389,17 +413,28 @@ void Patch::EnumeratePnachFiles(const std::string_view serial, u32 crc, bool che
 		}
 	}
 
+	// Fall back to the appropriate bundled archive.
+	// Unlabeled local patches take precedence to avoid conflicts.
+	if (unlabeled_patch_found)
+	    return;
+
+	// Never load bundled cheats during RetroAchievements Hardcore Mode.
+	if (cheats && !for_ui && Achievements::IsHardcoreModeActive())
+    	return;
+
 	// Otherwise fall back to the zip.
-	if (cheats || unlabeled_patch_found || !OpenPatchesZip())
-		return;
+	if (!OpenPnachZip(cheats))
+	    return;
+
+	zip_t* archive = cheats ? s_cheats_zip : s_patches_zip;
 
 	// Prefer filename with serial.
 	std::string zip_filename = GetPnachTemplate(serial, crc, true, false, false);
-	std::optional<std::string> pnach_data(ReadFileInZipToString(s_patches_zip, zip_filename.c_str()));
+	std::optional<std::string> pnach_data(ReadFileInZipToString(archive, zip_filename.c_str()));
 	if (!pnach_data.has_value())
 	{
 		zip_filename = GetPnachTemplate(serial, crc, false, false, false);
-		pnach_data = ReadFileInZipToString(s_patches_zip, zip_filename.c_str());
+		pnach_data = ReadFileInZipToString(archive, zip_filename.c_str());
 	}
 	if (pnach_data.has_value())
 		f(std::move(zip_filename), std::move(pnach_data.value()));

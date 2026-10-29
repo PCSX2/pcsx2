@@ -21,6 +21,10 @@ on:
         required: false
         type: string
         default: https://github.com/PCSX2/pcsx2_patches/releases/latest/download
+      cheatsUrl:
+        required: false
+        type: string
+        default: https://github.com/PCSX2/pcsx2_cheats/releases/latest/download
       fetchTags:
         required: false
         type: boolean
@@ -113,6 +117,7 @@ jobs:
         run: |
           cd bin/resources
           aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
+          aria2c -Z "${{ inputs.cheatsUrl || 'https://github.com/xCENTx/pcsx2_cheats/releases/latest/download' }}/cheats.zip"
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp

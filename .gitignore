@@ -102,6 +102,7 @@ oprofile_data/
 
 # Manually added by user.
 /bin/resources/patches.zip
+/bin/resources/cheats.zip
 
 # Resources that are runtime downloaded.
 /bin/resources/fonts/NotoSansJP-Regular.ttf
