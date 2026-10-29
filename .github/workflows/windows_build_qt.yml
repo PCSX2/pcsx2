@@ -123,7 +123,7 @@ jobs:
         run: |
           cd bin/resources
           aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
-          aria2c -Z "${{ inputs.cheatsUrl || 'https://github.com/xCENTx/pcsx2_cheats/releases/latest/download' }}/cheats.zip"
+          aria2c -Z "${{ inputs.cheatsUrl }}/cheats.zip"
 
       - name: Cache Dependencies
         id: cache-deps

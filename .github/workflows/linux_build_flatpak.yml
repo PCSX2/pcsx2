@@ -90,7 +90,7 @@ jobs:
         run: |
           cd bin/resources
           wget "${{ inputs.patchesUrl }}/patches.zip"
-          wget "${{ inputs.cheatsUrl || 'https://github.com/xCENTx/pcsx2_cheats/releases/latest/download' }}/cheats.zip"
+          wget "${{ inputs.cheatsUrl }}/cheats.zip"
 
       - name: Validate manifest
         run: |

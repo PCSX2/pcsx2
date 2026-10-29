@@ -117,7 +117,7 @@ jobs:
         run: |
           cd bin/resources
           aria2c -Z "${{ inputs.patchesUrl }}/patches.zip"
-          aria2c -Z "${{ inputs.cheatsUrl || 'https://github.com/xCENTx/pcsx2_cheats/releases/latest/download' }}/cheats.zip"
+          aria2c -Z "${{ inputs.cheatsUrl }}/cheats.zip"
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
