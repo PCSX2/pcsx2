@@ -24,7 +24,7 @@
 
 /** \mainpage D3D12 Memory Allocator
 
-<b>Version 3.2.0</b> (2026-06-05)
+<b>Version 3.3.0</b> (2026-11-09)
 
 Copyright (c) 2019-2026 Advanced Micro Devices, Inc. All rights reserved. \n
 License: MIT
@@ -317,7 +317,7 @@ enum ALLOCATION_FLAGS
 
     /** %Allocation strategy that chooses always the lowest offset in available space.
     This is not the most efficient strategy but achieves highly packed data.
-    Used internally by defragmentation, not recomended in typical usage.
+    Used internally by defragmentation, not recommended in typical usage.
     */
     ALLOCATION_FLAG_STRATEGY_MIN_OFFSET = 0x0004000,
 
@@ -893,11 +893,12 @@ enum POOL_FLAGS
     There is also an equivalent flag for the entire allocator: D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED.
     */
     POOL_FLAG_ALWAYS_COMMITTED = 0x4,
-    /** Disables tight resource alignment for all resources created from this pool.
+    /** Disables automatic tight resource alignment for resources created from this pool.
     
-    When tight alignment is supported and enabled for the allocator, resources created from custom pools
-    normally use it automatically. Specify this flag to restore pre-tight-alignment behavior for this pool:
-    tight alignment won't be requested and small buffers may again be preferred as committed resources.
+    When tight alignment is supported and enabled for the allocator, eligible resources with
+    `Alignment == 0` normally use it automatically. Specify this flag to restore pre-tight-alignment behavior
+    for this pool: tight alignment won't be requested automatically and small buffers may again be preferred as committed resources.
+    A caller-supplied `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` flag is preserved.
     */
     POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x8,
 
@@ -936,6 +937,8 @@ struct POOL_DESC
     Specify nonzero to set explicit, constant size of memory blocks used by this pool.
     Leave 0 to use default and let the library manage block sizes automatically.
     Then sizes of particular blocks may vary.
+
+    You will be able to create committed resources out of this custom pool only when you set this member to 0.
     */
     UINT64 BlockSize;
     /** \brief Minimum number of heaps (memory blocks) to be always allocated in this pool, even if they stay empty. Optional.
@@ -1082,7 +1085,7 @@ enum ALLOCATOR_FLAGS
     
     Affects both default pools and custom pools.
     To be used for debugging purposes only.
-    There is also an equivalent flag for custom pools: D3D12MA::POOL_FLAG_ALWAYS_COMMITTED.
+    You can also force this behavior for a specific custom pool using D3D12MA::POOL_FLAG_ALWAYS_COMMITTED.
     */
     ALLOCATOR_FLAG_ALWAYS_COMMITTED = 0x2,
 
@@ -1102,13 +1105,16 @@ enum ALLOCATOR_FLAGS
     */
     ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED = 0x4,
 
-    /** Optimization, allocate MSAA textures as committed resources always.
+    /** Optimization, always allocate MSAA textures as committed resources.
 
     Specify this flag to create MSAA textures with implicit heaps, as if they were created
     with flag D3D12MA::ALLOCATION_FLAG_COMMITTED. Usage of this flags enables all default pools
     to create its heaps on smaller alignment not suitable for MSAA textures.
 
     You should always use this flag unless you really need to create some MSAA textures as placed.
+
+    This flag doesn't affect custom pools. To enable this behavior on a custom pool,
+    use D3D12MA::POOL_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED.
     */
     ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED = 0x8,
     /** Disable optimization that prefers creating small buffers as committed to avoid 64 KB alignment.
@@ -1120,17 +1126,21 @@ enum ALLOCATOR_FLAGS
     Passing this flag will disable this committed preference globally for the allocator.
     It can also be disabled for a single allocation by using #ALLOCATION_FLAG_STRATEGY_MIN_TIME.
 
-    If the tight resource alignment feature is used by the library (which happens automatically whenever supported,
+    If tight resource alignment is enabled for the allocator and the allocation's pool (automatically whenever supported,
     unless you use flag #ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT or
     #POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT on a custom pool), then small buffers are not preferred as committed.
     Long story short, you don't need to specify any of these flags.
     The library chooses the most optimal method automatically.
     */
     ALLOCATOR_FLAG_DONT_PREFER_SMALL_BUFFERS_COMMITTED = 0x10,
-    /** Disables the use of the tight alignment feature even when it is supported on the current system.
-    By default, the feature is used whenever available.
+    /** Disables automatic use of tight alignment even when it is supported on the current system.
+    By default, the feature is requested for eligible resources with `Alignment == 0` whenever available.
 
     Support can be checked by D3D12MA::Allocator::IsTightAlignmentSupported() regardless of using this flag.
+
+    This flag disables automatic tight alignment globally, including default and custom pools.
+    You can also disable it just for a specific custom pool by using D3D12MA::POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT.
+    A caller-supplied `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` flag is preserved.
     */
     ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT = 0x20,
 };
@@ -1306,12 +1316,38 @@ public:
         void** ppvResource);
 #endif  // #ifdef __ID3D12Device10_INTERFACE_DEFINED__
 
+#ifdef __ID3D12Device16_INTERFACE_DEFINED__
+    /** \brief Similar to Allocator::CreateResource3, but accepts `D3D12_RESOURCE_DESC2`, including a texture layout GUID.
+
+    Uses `ID3D12Device16::GetResourceAllocationInfo4`, `CreateCommittedResource4`, or `CreatePlacedResource3`.
+    Returns `E_NOINTERFACE` if the device does not expose `ID3D12Device16`; older APIs remain usable.
+    The descriptor and castable formats are preserved throughout sizing and creation. `NumCastableFormats`
+    must be zero when `pCastableFormats` is null. `ppvResource` is optional, as in Allocator::CreateResource.
+    Buffers must use `D3D12_BARRIER_LAYOUT_UNDEFINED` as their initial layout.
+
+    For ordinary layouts, zero-initialize `LayoutGuid`. For `D3D12_TEXTURE_LAYOUT_GUID`, supply a supported
+    nonzero GUID. The application should query `D3D12_FEATURE_GUID_TEXTURE_LAYOUT` with the actual descriptor
+    and check `GuidSupported` and the required format support bits. The allocator does not choose a layout,
+    enumerate GUIDs, or automatically add tight alignment to GUID layouts. Creation can fail for unsupported
+    descriptors or usages even when the device interface is available.
+    */
+    HRESULT CreateResource4(const ALLOCATION_DESC* pAllocDesc,
+        const D3D12_RESOURCE_DESC2* pResourceDesc,
+        D3D12_BARRIER_LAYOUT InitialLayout,
+        const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+        UINT32 NumCastableFormats,
+        const DXGI_FORMAT* pCastableFormats,
+        Allocation** ppAllocation,
+        REFIID riidResource,
+        void** ppvResource);
+#endif // #ifdef __ID3D12Device16_INTERFACE_DEFINED__
+
     /** \brief Allocates memory without creating any resource placed in it.
 
     This function is similar to `ID3D12Device::CreateHeap`, but it may really assign
     part of a larger, existing heap to the allocation.
 
-    `pAllocDesc->heapFlags` should contain one of these values, depending on type of resources you are going to create in this memory:
+    `pAllocDesc->ExtraHeapFlags` should contain one of these values, depending on type of resources you are going to create in this memory:
     `D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS`,
     `D3D12_HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES`,
     `D3D12_HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES`.
@@ -1319,11 +1355,19 @@ public:
     may be `D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES` = 0.
     Additional flags in `heapFlags` are allowed as well.
 
-    `pAllocInfo->SizeInBytes` must be multiply of 64KB.
-    `pAllocInfo->Alignment` must be one of the legal values as described in documentation of `D3D12_HEAP_DESC`.
+    `pAllocInfo->SizeInBytes` must cover the resources to be placed within the allocation, including any padding
+    required between them. Use `ID3D12Device::GetResourceAllocationInfo` to determine their
+    required sizes and alignments. Allocation sizes smaller than 64 KB are accepted.
+
+    `pAllocInfo->Alignment` must be a non-zero power of two specifying the required alignment
+    of the allocation's offset within the heap. Smaller resource alignments are accepted,
+    such as 4 KB for small textures or 256 B for tight-alignment buffers.
+    When a separate heap is created, its alignment is calculated independently:
+    64 KB for buffer-only heaps or 4 MB when textures are permitted.
 
     If you use D3D12MA::ALLOCATION_FLAG_COMMITTED you will get a separate memory block -
     a heap that always has offset 0.
+
     */
     HRESULT AllocateMemory(
         const ALLOCATION_DESC* pAllocDesc,
@@ -1396,6 +1440,25 @@ public:
         REFIID riidResource,
         void** ppvResource);
 #endif  // #ifdef __ID3D12Device10_INTERFACE_DEFINED__
+
+#ifdef __ID3D12Device16_INTERFACE_DEFINED__
+    /** \brief Similar to Allocator::CreateAliasingResource2, but accepts the complete `D3D12_RESOURCE_DESC2`.
+
+    Uses `ID3D12Device16::GetResourceAllocationInfo4` and `CreatePlacedResource3`.
+    Returns `E_NOINTERFACE` if `ID3D12Device16` is unavailable. See Allocator::CreateResource4 for GUID-layout requirements.
+    The offset is local to the allocation and must satisfy the resource's placement alignment and bounds.
+    Does not change the resource owned by `pAllocation`. The returned resource is owned by the caller.
+    */
+    HRESULT CreateAliasingResource3(Allocation* pAllocation,
+        UINT64 AllocationLocalOffset,
+        const D3D12_RESOURCE_DESC2* pResourceDesc,
+        D3D12_BARRIER_LAYOUT InitialLayout,
+        const D3D12_CLEAR_VALUE* pOptimizedClearValue,
+        UINT32 NumCastableFormats,
+        const DXGI_FORMAT* pCastableFormats,
+        REFIID riidResource,
+        void** ppvResource);
+#endif // #ifdef __ID3D12Device16_INTERFACE_DEFINED__
 
     /** \brief Creates custom pool.
     */
@@ -2277,7 +2340,7 @@ D3D12MA::Allocation* allocation;
 HRESULT hr = allocator->CreateResource(
     &allocationDesc,
     &resourceDesc,
-    D3D12_RESOURCE_STATE_GENERIC_READ,
+    D3D12_RESOURCE_STATE_COMMON,
     NULL,
     &allocation,
     IID_PPV_ARGS(&resource));
@@ -2386,7 +2449,7 @@ allocDesc.CustomPool = pool;
 D3D12_RESOURCE_DESC resDesc = ...
 Allocation* alloc;
 hr = allocator->CreateResource(&allocDesc, &resDesc,
-    D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &alloc, IID_NULL, NULL);
+    D3D12_RESOURCE_STATE_COMMON, NULL, &alloc, IID_NULL, NULL);
 \endcode
 
 All allocations must be released before releasing the pool.
@@ -2429,7 +2492,7 @@ D3D12_RESOURCE_DESC resDesc = ...
 Allocation* alloc;
 ID3D12Resource* res;
 hr = allocator->CreateResource(&allocDesc, &resDesc,
-    D3D12_RESOURCE_STATE_GENERIC_READ, NULL, &alloc, IID_PPV_ARGS(&res));
+    D3D12_RESOURCE_STATE_COMMON, NULL, &alloc, IID_PPV_ARGS(&res));
 \endcode
 
 This feature may seem unnecessary, but creating committed allocations from custom pools may be useful
@@ -2523,7 +2586,7 @@ When a new requested resource can be placed in a free space of an existing heap 
 this operation is typically much faster, as it only requires creating a new `ID3D12Resource` object
 and not allocating new memory.
 This is the main benefit of using %D3D12MA compared to the naive approach of using Direct3D 12 directly
-and creating each resource as committed with `CreateCommittedResource`, which would result in a separate allocation of an implicit heap every time.
+and creating each resource as committed using `CreateCommittedResource`, which would result in allocation of an implicit heap every time.
 
 When **a large number of small buffers** needs to be created, the overhead of creating even just separate `ID3D12Resource` objects can be significant.
 It can be avoided by creating one or few larger buffers and manually sub-allocating parts of them for specific needs.
@@ -2894,12 +2957,19 @@ Note this is a separate feature than the "small alignment" described earlier.
 When using this new SDK and a compatible graphics driver, the API exposes support for this new feature.
 Then, a new flag `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` can be added when creating a resource.
 D3D12 can then return the alignment required for the resource smaller than the default ones described above.
-This library automatically makes use of the tight alignment feature when available and adds that new resource flag.
+
+This library automatically adds this flag to eligible resources when available, but only when the resource description `Alignment` is 0.
+If `Alignment` is nonzero, the library preserves it and does not automatically add the flag.
+This avoids invalid descriptor combinations on older tight-alignment runtimes, which require `Alignment == 0`.
+To use a nonzero alignment as a minimum alignment with tight alignment, explicitly specify `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT`
+and use a runtime that supports this combination (Agility SDK 1.619.4 / 1.721.2-preview or newer), with values allowed by that runtime.
+A caller-supplied tight-alignment flag is preserved, including when automatic tight alignment is disabled.
+GUID texture layouts are excluded from this automatic flag insertion; their allocation requirements come from the native descriptor query.
 When the tight alignment is enabled, the heuristics that creates small buffers as committed described above is deactivated,
 as it is no longer needed.
 
 You can check if the tight alignment it is available in the current system by calling D3D12MA::Allocator::IsTightAlignmentSupported().
-You can tell the library to not use it by specifying D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT.
+You can disable automatic tight alignment by specifying D3D12MA::ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT.
 Custom pools can opt out independently by specifying D3D12MA::POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT.
 Typically, you don't need to do any of those.
 
