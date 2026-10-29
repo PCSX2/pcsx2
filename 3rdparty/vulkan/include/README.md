@@ -49,11 +49,13 @@ Additional features:
    - VK_KHR_bind_memory2.
    - VK_KHR_maintenance4.
    - VK_KHR_maintenance5, including `VkBufferUsageFlags2CreateInfoKHR`.
+   - VK_KHR_extended_dlags, including `VkImageUsageFlags2CreateInfoKHR`.
    - VK_EXT_memory_budget: Used internally if available to query for current usage and budget. If not available, it falls back to an estimation based on memory heap sizes.
    - VK_KHR_buffer_device_address: Flag `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR` is automatically added to memory allocations where needed.
    - VK_EXT_memory_priority: Set `priority` of allocations or custom pools and it will be set automatically using this extension.
    - VK_AMD_device_coherent_memory.
    - VK_KHR_external_memory_win32.
+   - VK_KHR_extended_flags.
 - Defragmentation of GPU and CPU memory: Let the library move data around to free some memory blocks and make your allocations better compacted.
 - Statistics: Obtain brief or detailed statistics about the amount of memory used, unused, number of allocated blocks, number of allocations etc. - globally, per memory heap, and per memory type.
 - Debug annotations: Associate custom `void* pUserData` and debug `char* pName` with each allocation.
