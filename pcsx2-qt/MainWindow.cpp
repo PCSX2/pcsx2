@@ -3364,7 +3364,11 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(); });
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
-			Host::RunOnGSThread([] { FullscreenUI::PreferEnglishGameListChanged(); });
+			Host::RunOnGSThread([] { FullscreenUI::AppearanceSettingsChanged(); });
+		});
+		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::showDecorationsChanged, this, [this] {
+			g_main_window->m_game_list_widget->getModel()->refresh();
+			Host::RunOnGSThread([] { FullscreenUI::AppearanceSettingsChanged(); });
 		});
 	}
 

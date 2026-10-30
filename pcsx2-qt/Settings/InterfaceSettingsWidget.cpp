@@ -144,6 +144,11 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 	connect(m_ui.backgroundOpacity, &QSpinBox::editingFinished, [this]() { emit backgroundChanged(); });
 	connect(m_ui.backgroundScale, &QComboBox::currentIndexChanged, [this]() { emit backgroundChanged(); });
 
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFavoriteIcons, "UI", "ShowFavoriteIcons", true);
+	connect(m_ui.showFavoriteIcons, &QCheckBox::checkStateChanged, [this]() { emit showDecorationsChanged(); });
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showCustomSettingsIcons, "UI", "ShowCustomSettingsIcons", true);
+	connect(m_ui.showCustomSettingsIcons, &QCheckBox::checkStateChanged, [this]() { emit showDecorationsChanged(); });
+
 	populateLanguages();
 	SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "UI", "Language", QtHost::GetDefaultLanguage());
 	connect(m_ui.language, &QComboBox::currentIndexChanged, [this]() { emit languageChanged(); });
@@ -253,6 +258,10 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* settings_dialog
 			tr("Selects the color theme and styling for the PCSX2 user interface."));
 		dialog()->registerWidgetHelp(m_ui.language, tr("Language"), tr("System Default"),
 			tr("Selects the display language for the PCSX2 interface, menus, and setting descriptions."));
+		dialog()->registerWidgetHelp(m_ui.showFavoriteIcons, tr("Show Favorite Icons"), tr("Checked"),
+			tr("Shows a star icon in the game list on favorited games."));
+		dialog()->registerWidgetHelp(m_ui.showCustomSettingsIcons, tr("Show Custom Settings Icons"), tr("Checked"),
+			tr("Shows a gear icon in the game list on games with custom settings applied."));
 	}
 
 	onRenderToSeparateWindowChanged();
