@@ -348,9 +348,10 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 		Console.WriteLnFmt("D3D12: Agility version: {}", sdkVersion);
 	}
 
+	ComPtr<ID3D12InfoQueue> info_queue;
 	if (enable_debug_layer)
 	{
-		ComPtr<ID3D12InfoQueue> info_queue = m_device.try_query<ID3D12InfoQueue>();
+		info_queue = m_device.try_query<ID3D12InfoQueue>();
 		if (info_queue)
 		{
 			if (IsDebuggerPresent())
@@ -394,7 +395,23 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 		D3D12MA::ALLOCATOR_FLAG_SINGLETHREADED |
 		D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED /* | D3D12MA::ALLOCATOR_FLAG_ALWAYS_COMMITTED*/;
 
+	// TODO: Remove this once we update to a D3D12MA version that uses CheckFeatureSupport1.
+	// Until then, suppress deprecation warnings only during allocator init.
+	// https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator/issues/102
+	const bool allocator_filter_pushed = info_queue && SUCCEEDED(info_queue->PushCopyOfStorageFilter());
+	if (allocator_filter_pushed)
+	{
+		D3D12_MESSAGE_ID id = D3D12_MESSAGE_ID_DEPRECATED_API;
+		D3D12_INFO_QUEUE_FILTER filter = {};
+		filter.DenyList.NumIDs = 1;
+		filter.DenyList.pIDList = &id;
+		info_queue->AddStorageFilterEntries(&filter);
+	}
+
 	hr = D3D12MA::CreateAllocator(&allocatorDesc, m_allocator.put());
+	if (allocator_filter_pushed)
+		info_queue->PopStorageFilter();
+
 	if (FAILED(hr))
 	{
 		Console.Error("D3D12: CreateAllocator() failed with HRESULT %08X", hr);
