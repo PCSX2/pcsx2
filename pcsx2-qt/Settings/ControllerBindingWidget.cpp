@@ -120,7 +120,11 @@ void ControllerBindingWidget::onTypeChanged()
 	m_ui.settings->setEnabled(has_settings);
 	m_ui.macros->setEnabled(has_macros);
 
-	if (cinfo->type == Pad::ControllerType::DualShock2)
+	if (cinfo->type == Pad::ControllerType::DualShock1)
+	{
+		m_bindings_widget = ControllerBindingWidget_DualShock1::createInstance(this);
+	}
+	else if (cinfo->type == Pad::ControllerType::DualShock2)
 	{
 		m_bindings_widget = ControllerBindingWidget_DualShock2::createInstance(this);
 	}
@@ -905,6 +909,28 @@ void ControllerBindingWidget_Base::initBindingWidgets()
 			break;
 	}
 }
+
+ControllerBindingWidget_DualShock1::ControllerBindingWidget_DualShock1(ControllerBindingWidget* parent)
+	: ControllerBindingWidget_Base(parent)
+{
+	m_ui.setupUi(this);
+	initBindingWidgets();
+}
+
+ControllerBindingWidget_DualShock1::~ControllerBindingWidget_DualShock1()
+{
+}
+
+QIcon ControllerBindingWidget_DualShock1::getIcon() const
+{
+	return QIcon::fromTheme("controller-line");
+}
+
+ControllerBindingWidget_Base* ControllerBindingWidget_DualShock1::createInstance(ControllerBindingWidget* parent)
+{
+	return new ControllerBindingWidget_DualShock1(parent);
+}
+
 
 ControllerBindingWidget_DualShock2::ControllerBindingWidget_DualShock2(ControllerBindingWidget* parent)
 	: ControllerBindingWidget_Base(parent)
