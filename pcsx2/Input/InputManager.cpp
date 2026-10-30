@@ -1720,7 +1720,7 @@ void InputManager::PollSources()
 
 	GenerateRelativeMouseEvents();
 
-	if (VMManager::GetState() == VMState::Running && !s_pad_vibration_array.empty())
+	if (VMManager::IsRunning() && !s_pad_vibration_array.empty())
 		UpdateContinuedVibration();
 }
 
