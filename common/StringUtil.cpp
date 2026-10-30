@@ -5,15 +5,27 @@
 #include "StringUtil.h"
 
 #include <cctype>
+#include <charconv>
 #include <codecvt>
 #include <cstdio>
+#include <iomanip>
 #include <sstream>
 #include <algorithm>
 
 #include "fmt/format.h"
+#include "fast_float/fast_float.h"
 
 #ifdef _WIN32
 #include "RedtapeWindows.h"
+#endif
+
+// Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
+// merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
+#if !defined(_MSC_VER)
+#include <locale>
+#ifdef __APPLE__
+#include <Availability.h>
+#endif
 #endif
 
 namespace StringUtil
@@ -176,6 +188,160 @@ namespace StringUtil
 			dst[size - 1] = '\0';
 		}
 		return len;
+	}
+
+	template <typename T>
+		requires std::is_integral_v<T>
+	std::optional<T> FromChars(const std::string_view str, int base)
+	{
+		T value;
+
+		const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		return value;
+	}
+
+	template std::optional<u8> FromChars(const std::string_view, int);
+	template std::optional<s32> FromChars(const std::string_view, int);
+	template std::optional<u32> FromChars(const std::string_view, int);
+	template std::optional<s64> FromChars(const std::string_view, int);
+	template std::optional<u64> FromChars(const std::string_view, int);
+
+	template <typename T>
+		requires std::is_integral_v<T>
+	std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr)
+	{
+		T value;
+
+		const char* ptr = str.data();
+		const char* end = ptr + str.length();
+		const std::from_chars_result result = std::from_chars(ptr, end, value, base);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		if (endptr)
+			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
+
+		return value;
+	}
+
+	template std::optional<u8> FromChars(const std::string_view, int, std::string_view*);
+	template std::optional<s32> FromChars(const std::string_view, int, std::string_view*);
+	template std::optional<u32> FromChars(const std::string_view, int, std::string_view*);
+	template std::optional<s64> FromChars(const std::string_view, int, std::string_view*);
+	template std::optional<u64> FromChars(const std::string_view, int, std::string_view*);
+
+	template <typename T>
+		requires std::is_floating_point_v<T>
+	std::optional<T> FromChars(const std::string_view str)
+	{
+		T value;
+
+		const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		return value;
+	}
+
+	template std::optional<float> FromChars(const std::string_view);
+	template std::optional<double> FromChars(const std::string_view);
+
+	template <typename T>
+		requires std::is_floating_point_v<T>
+	std::optional<T> FromChars(const std::string_view str, std::string_view* endptr)
+	{
+		T value;
+
+		const char* ptr = str.data();
+		const char* end = ptr + str.length();
+		const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
+		if (result.ec != std::errc())
+			return std::nullopt;
+
+		if (endptr)
+			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
+
+		return value;
+	}
+
+	template std::optional<float> FromChars(const std::string_view, std::string_view*);
+	template std::optional<double> FromChars(const std::string_view, std::string_view*);
+
+	template <typename T>
+		requires std::is_integral_v<T>
+	std::string ToChars(T value, int base)
+	{
+		// to_chars() requires macOS 10.15+.
+#if !defined(__APPLE__) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15
+		constexpr size_t MAX_SIZE = 32;
+		char buf[MAX_SIZE];
+		std::string ret;
+
+		const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value, base);
+		if (result.ec == std::errc())
+			ret.append(buf, result.ptr - buf);
+
+		return ret;
+#else
+		std::ostringstream ss;
+		ss.imbue(std::locale::classic());
+		ss << std::setbase(base) << value;
+		return ss.str();
+#endif
+	}
+
+	template std::string ToChars(u8, int);
+	template std::string ToChars(s32, int);
+	template std::string ToChars(u32, int);
+	template std::string ToChars(s64, int);
+	template std::string ToChars(u64, int);
+
+	template <typename T>
+		requires std::is_floating_point_v<T>
+	std::string ToChars(T value)
+	{
+		// No to_chars() in older versions of libstdc++/libc++.
+#ifdef _MSC_VER
+		constexpr size_t MAX_SIZE = 64;
+		char buf[MAX_SIZE];
+		std::string ret;
+		const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value);
+		if (result.ec == std::errc())
+			ret.append(buf, result.ptr - buf);
+		return ret;
+#else
+		std::ostringstream ss;
+		ss.imbue(std::locale::classic());
+		ss << value;
+		return ss.str();
+#endif
+	}
+
+	template std::string ToChars(float);
+	template std::string ToChars(double);
+
+	/// Explicit override for booleans
+	template <>
+	std::optional<bool> FromChars(const std::string_view str, int base)
+	{
+		if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
+			Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
+			Strncasecmp("enabled", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
+		{
+			return true;
+		}
+
+		if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
+			Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
+			Strncasecmp("disabled", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
+		{
+			return false;
+		}
+
+		return std::nullopt;
 	}
 
 	std::optional<std::vector<u8>> DecodeHex(const std::string_view in)
