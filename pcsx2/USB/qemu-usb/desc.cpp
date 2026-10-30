@@ -701,7 +701,7 @@ int usb_desc_string(USBDevice* dev, int index, u8* dest, size_t len)
 	str = usb_device_get_usb_desc(dev)->str[index];
 	if (str == nullptr)
 	{
-		return 0;
+		return -1;
 	}
 
 	bLength = strlen(str) * 2 + 2;
