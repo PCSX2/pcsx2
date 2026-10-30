@@ -508,6 +508,7 @@ set(pcsx2GSSources
 	GS/GSTables.cpp
 	GS/GSUtil.cpp
 	GS/GSVector.cpp
+	GS/LibrashaderParams.cpp
 	GS/MultiISA.cpp
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
@@ -548,6 +549,7 @@ set(pcsx2GSHeaders
 	GS/GSUtil.h
 	GS/GSVector.h
 	GS/GSXXH.h
+	GS/LibrashaderParams.h
 	GS/MultiISA.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h
@@ -660,6 +662,10 @@ if(USE_VULKAN)
 	)
 	target_link_libraries(PCSX2_FLAGS INTERFACE vulkan-headers)
 	target_include_directories(PCSX2_FLAGS INTERFACE ${SHADERC_INCLUDE_DIR})
+endif()
+
+if(USE_LIBRASHADER)
+	target_link_libraries(PCSX2_FLAGS INTERFACE Librashader::Librashader)
 endif()
 
 set(pcsx2GSMetalShaders
@@ -1332,6 +1338,9 @@ function(setup_main_executable target)
 			"${DEPS_BINDIR}/swscale-*.dll"
 			"${DEPS_BINDIR}/swresample-*.dll"
 		)
+		if(USE_LIBRASHADER)
+			list(APPEND OPT_DEPS_FULL_PATHS "${DEPS_BINDIR}/librashader_capi.dll")
+		endif()
 		install(FILES ${OPT_DEPS_FULL_PATHS} DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
 
 		set(OPT_DEPS_TO_COPY ${OPT_DEPS_FULL_PATHS})

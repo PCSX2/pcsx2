@@ -17,6 +17,7 @@
 #include "Settings/GamePatchSettingsWidget.h"
 #include "Settings/GameSummaryWidget.h"
 #include "Settings/GraphicsSettingsWidget.h"
+#include "Settings/PostProcessingSettingsWidget.h"
 #include "Settings/OSDSettingsWidget.h"
 #include "Settings/HotkeySettingsWidget.h"
 #include "Settings/InterfaceSettingsWidget.h"
@@ -158,6 +159,9 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	addWidget(m_graphics_settings = new GraphicsSettingsWidget(this, m_ui.settingsContainer), tr("Graphics"), QStringLiteral("image-fill"),
 		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an "
 		   "option for additional information, and Shift+Wheel to scroll this panel."));
+	addWidget(m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
+		QStringLiteral("graphics-line"),
+		tr("<strong>Post-Processing Settings</strong><hr>These options control post-processing effects applied to the final image.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 	addWidget(m_osd_settings = new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
 		QStringLiteral("heart-circle-line"),
 		tr("<strong>On-Screen Display Settings</strong><hr>These options control the on-screen display (OSD) overlays shown during gameplay.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
