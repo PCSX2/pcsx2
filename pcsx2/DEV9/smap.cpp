@@ -323,6 +323,20 @@ void emac3_write(u32 addr)
 	dev9Ru32(addr) = wswap(value);
 }
 
+static u32 smap_readRxfifo(int bytes)
+{
+    int result = 0;
+    int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR) & 16383;
+
+    for (int i = 0; i < bytes; ++i) {
+        u8 byte = dev9.rxfifo[(rd_ptr + i) & 16383];
+        result |= (u32)byte << (i * 8);
+    }
+
+    dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = (rd_ptr + bytes) & 16383;
+    return result;
+}	
+
 u8 smap_read8(u32 addr)
 {
 	switch (addr)
@@ -333,16 +347,16 @@ u8 smap_read8(u32 addr)
 		case SMAP_R_RXFIFO_FRAME_CNT:
 			DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_FRAME_CNT read 8");
 			break;
-
+		case SMAP_R_RXFIFO_DATA:
+			DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_DATA read 8");
+			return (u8)smap_readRxfifo(1);
 		case SMAP_R_BD_MODE:
 			return dev9.bd_swap;
-
 		default:
-			DevCon.WriteLn("DEV9: SMAP : Unknown 8 bit read @ %X,v=%X", addr, dev9Ru8(addr));
-			return dev9Ru8(addr);
+			DevCon.WriteLn("DEV9: SMAP: Unknown 8 bit read");
 	}
 
-	DevCon.WriteLn("DEV9: SMAP : error , 8 bit read @ %X,v=%X", addr, dev9Ru8(addr));
+	DevCon.WriteLn("DEV9: SMAP: 8 bit read @ %X,v=%X", addr, dev9Ru8(addr));
 	return dev9Ru8(addr);
 }
 
@@ -496,6 +510,10 @@ u16 smap_read16(u32 addr)
 			return dev9Ru16(addr);
 	}
 #endif
+
+	if (addr == SMAP_R_RXFIFO_DATA)
+		return (u16)smap_readRxfifo(2);
+
 	return rv;
 }
 
@@ -518,18 +536,8 @@ u32 smap_read32(u32 addr)
 		case SMAP_R_EMAC3_STA_CTRL_L:
 			DevCon.WriteLn("DEV9: SMAP_R_EMAC3_STA_CTRL_L 32bit read value %x", dev9Ru32(addr));
 			return dev9Ru32(addr);
-
 		case SMAP_R_RXFIFO_DATA:
-		{
-			int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR) & 16383;
-
-			const int rv = *((u32*)(dev9.rxfifo + rd_ptr));
-
-			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr + 4) & 16383);
-
-			//DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_DATA 32bit read %x", rv);
-			return rv;
-		}
+			return smap_readRxfifo(4);
 		default:
 			DevCon.WriteLn("DEV9: SMAP : Unknown 32 bit read @ %X,v=%X", addr, dev9Ru32(addr));
 			return dev9Ru32(addr);
