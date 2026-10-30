@@ -10984,6 +10984,7 @@ SCUS-21295:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post-processing.
     nativeScaling: 1 # Fixes post-processing smoothness and position.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SCUS-90174:
   name: "Disney/Pixar Toy Story 3 [PlayStation 2 Bundle]"
   region: "NTSC-U"
@@ -23852,6 +23853,7 @@ SLES-53534:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLES-53535:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-M4"
@@ -23863,6 +23865,7 @@ SLES-53535:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLES-53536:
   name: "London Racer - Police Madness"
   region: "PAL-M3"
@@ -56699,6 +56702,7 @@ SLPS-20380:
     halfPixelOffset: 4 # Fixes ghosting.
     nativeScaling: 1 # Fixes post-processing.
     targetPageRearranging: 1 # Fixes garbage on screen.
+    preloadFrameData: 1 # Preserves palette data.
 SLPS-20381:
   name: "モンキーターンV"
   name-sort: "もんきーたーんV"
@@ -70992,6 +70996,7 @@ SLUS-21208:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -71653,6 +71658,7 @@ SLUS-21295:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
   memcardFilters: # Game saves use the normal edition serial.
     - "SLUS-21208"
 SLUS-21296:
