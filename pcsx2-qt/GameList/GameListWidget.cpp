@@ -36,6 +36,9 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QToolButton>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsDropShadowEffect>
 #include <QShortcut>
 
 static const char* SUPPORTED_FORMATS_STRING = QT_TRANSLATE_NOOP(GameListWidget,
@@ -247,6 +250,27 @@ namespace
 
 	class CoverDecorationsDelegate final : public QStyledItemDelegate
 	{
+		QPixmap createShadowedDecor(QPixmap src, float radius, float offset) const {
+			QGraphicsScene scene;
+			QGraphicsPixmapItem* item = scene.addPixmap(src);
+			QGraphicsDropShadowEffect shadow;
+			shadow.setBlurRadius(radius);
+			shadow.setOffset(offset);
+			shadow.setColor(Qt::black);
+			item->setGraphicsEffect(&shadow);
+
+			const QSize new_size(src.width() + offset, src.height() + offset);
+			QPixmap new_pixmap(new_size);
+			new_pixmap.fill(Qt::transparent);
+
+			QPainter painter(&new_pixmap);
+			scene.render(&painter, QRectF(0, 0, new_size.width(), new_size.height()),
+				QRectF(0, 0, new_size.width(), new_size.height()));
+			painter.end();
+
+			return new_pixmap;
+		}
+
 	public:
 		using QStyledItemDelegate::QStyledItemDelegate;
 
@@ -276,14 +300,14 @@ namespace
 				const QRect star_rect(cover_rect.right() - icon_size - margin, cover_rect.top() + margin, icon_size, icon_size);
 				static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
 				const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(star_rect.topLeft(), star_pixmap);
+				painter->drawPixmap(star_rect.topLeft(), createShadowedDecor(star_pixmap, 6.0f, 3.0f));
 			}
 			if (custom_settings)
 			{
 				const QRect gear_rect(cover_rect.left() + margin, cover_rect.top() + margin, icon_size, icon_size);
 				static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
 				const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(gear_rect.topLeft(), gear_pixmap);
+				painter->drawPixmap(gear_rect.topLeft(), createShadowedDecor(gear_pixmap, 6.0f, 3.0f));
 			}
 			painter->restore();
 		}

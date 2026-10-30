@@ -2905,7 +2905,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				const ImVec2 star_pos(visible_title_bb.Max.x + icon_margin,
 					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
-					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
+					ImVec2(star_pos.x + LayoutScale(3.0f), star_pos.y + LayoutScale(2.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
 			}
@@ -2914,7 +2914,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				const ImVec2 gear_pos(visible_title_bb.Max.x + icon_margin + (icon_size + icon_margin) * s_show_favorite_icons,
 					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
-					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
+					ImVec2(gear_pos.x + LayoutScale(3.0f), gear_pos.y + LayoutScale(2.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					gear_pos, IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
 			}
@@ -3163,7 +3163,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				const float star_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
 				const ImVec2 star_pos(bb.Min.x + image_width - star_size - LayoutScale(10.0f), bb.Min.y + LayoutScale(6.0f));
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size,
-					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)),
+					ImVec2(star_pos.x + LayoutScale(3.0f), star_pos.y + LayoutScale(2.0f)),
 					IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size, star_pos,
 					IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
@@ -3173,7 +3173,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 				const float gear_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
 				const ImVec2 gear_pos(bb.Min.x + LayoutScale(6.0f), bb.Min.y + LayoutScale(6.0f));
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, gear_size,
-					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)),
+					ImVec2(gear_pos.x + LayoutScale(3.0f), gear_pos.y + LayoutScale(2.0f)),
 					IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, gear_size, gear_pos,
 					IM_COL32(87, 181, 255, 255), ICON_FA_GEAR);
