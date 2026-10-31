@@ -68,8 +68,9 @@
         }
       ],
       "post-install": [
-        "cp -a bin \"${FLATPAK_DEST}\"",
-        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/bin/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png\"",
+        "if [ \"${FLATPAK_ARCH}\" = \"x86_64\" ]; then cp -a bin-x64/* \"${FLATPAK_DEST}/bin\"; fi",
+        "if [ \"${FLATPAK_ARCH}\" = \"aarch64\" ]; then cp -a bin-arm64/* \"${FLATPAK_DEST}/bin\"; fi",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.pcsx2.PCSX2.png\"",
         "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/pcsx2-qt.desktop\" \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
         "desktop-file-edit --set-key=Icon --set-value=net.pcsx2.PCSX2 \"${FLATPAK_DEST}/share/applications/net.pcsx2.PCSX2.desktop\"",
         "${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/generate-metainfo.sh \"${FLATPAK_BUILDER_BUILDDIR}/net.pcsx2.PCSX2.metainfo.xml\"",

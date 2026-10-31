@@ -1232,8 +1232,34 @@ function(pcsx2_resource target path basedir)
 		add_custom_command(TARGET ${target} POST_BUILD
 			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/resources/${subdir}"
 			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/resources/${subdir}")
+		install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}/resources/${subdir}")
 	endif()
 	source_group(Resources/${subdir} FILES ${path})
+endfunction()
+
+function(pcsx2_docs target path basedir)
+	# Add docs to resources for not-Windows, since they don't use the bin directory.
+	get_filename_component(dir ${path} DIRECTORY)
+	file(RELATIVE_PATH subdir ${basedir} ${dir})
+	if(APPLE)
+		target_sources(${target} PRIVATE ${path})
+		set_source_files_properties(${path} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/docs/${subdir})
+	else()
+		if (WIN32)
+			set(doc_subdir "docs/")
+		else()
+			set(doc_subdir "resources/docs/")
+		endif()
+		add_custom_command(TARGET ${target} POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:${target}>/${doc_subdir}/${subdir}"
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${path}" "$<TARGET_FILE_DIR:${target}>/${doc_subdir}/${subdir}")
+		install(FILES "${path}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}/${doc_subdir}/${subdir}") #<<<<
+	endif()
+	if(WIN32)
+		source_group(Resources/docs/${subdir} FILES ${path})
+	else()
+		source_group(Docs/${subdir} FILES ${path})
+	endif()
 endfunction()
 
 if (NOT APPLE)
@@ -1269,7 +1295,7 @@ set_property(GLOBAL PROPERTY PCSX2_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set_property(GLOBAL PROPERTY PCSX2_METAL_SHADERS ${pcsx2GSMetalShaders})
 
 function(setup_main_executable target)
-	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/bin/resources/*)
+	file(GLOB_RECURSE RESOURCE_FILES ${CMAKE_SOURCE_DIR}/resources/*)
 	foreach(path IN LISTS RESOURCE_FILES)
 		get_filename_component(file ${path} NAME)
 		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
@@ -1281,19 +1307,20 @@ function(setup_main_executable target)
 		if (NOT BUNDLE_EMOJI_FONT AND "${path}" MATCHES "fonts/Twemoji")
 			continue()
 		endif()
-		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
+		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/resources/)
 	endforeach()
 
-	# Add docs to resources for not-Windows, since they don't use the bin directory.
-	if(NOT WIN32)
-		file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/bin/docs/*)
-		foreach(path IN LISTS DOCS_FILES)
-			get_filename_component(file ${path} NAME)
-			if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
-				continue()
-			endif()
-			pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/)
-		endforeach()
+	file(GLOB_RECURSE DOCS_FILES ${CMAKE_SOURCE_DIR}/pcsx2/Docs/*.pdf ${CMAKE_SOURCE_DIR}/pcsx2/Docs/*.html)
+	foreach(path IN LISTS DOCS_FILES)
+		get_filename_component(file ${path} NAME)
+		if("${file}" MATCHES "^\\.") # Don't copy macOS garbage (mainly Finder's .DS_Store files) into application
+			continue()
+		endif()
+		pcsx2_docs(${target} ${path} ${CMAKE_SOURCE_DIR}/pcsx2/Docs/)
+	endforeach()
+
+	if(WIN32)
+		install(FILES "${CMAKE_SOURCE_DIR}/tools/bulk_compression.py" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}/utils")
 	endif()
 
 	get_property(PCSX2_SOURCE_DIR GLOBAL PROPERTY PCSX2_SOURCE_DIR)
@@ -1305,9 +1332,9 @@ function(setup_main_executable target)
 			${PCSX2_SOURCE_DIR}/windows/PCSX2.rc
 		)
 		set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE TRUE)
-		install(TARGETS ${target} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+		install(TARGETS ${target} DESTINATION ${CMAKE_SOURCE_DIR}/${BIN_DIR})
 		if(MSVC)
-			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+			install(FILES $<TARGET_PDB_FILE:${target}> DESTINATION ${CMAKE_SOURCE_DIR}/${BIN_DIR})
 		endif()
 
 		# Copy dependency libraries.
@@ -1322,7 +1349,7 @@ function(setup_main_executable target)
 			${DEPS_TO_COPY}
 		)
 		foreach(DEP_TO_COPY ${DEPS_TO_COPY})
-			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin")
+			install(FILES "${DEPS_BINDIR}/${DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}")
 		endforeach()
 
 		file(GLOB OPT_DEPS_FULL_PATHS
@@ -1332,7 +1359,7 @@ function(setup_main_executable target)
 			"${DEPS_BINDIR}/swscale-*.dll"
 			"${DEPS_BINDIR}/swresample-*.dll"
 		)
-		install(FILES ${OPT_DEPS_FULL_PATHS} DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
+		install(FILES ${OPT_DEPS_FULL_PATHS} DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}" OPTIONAL)
 
 		set(OPT_DEPS_TO_COPY ${OPT_DEPS_FULL_PATHS})
 		list(TRANSFORM OPT_DEPS_TO_COPY REPLACE "^.*/" "")
@@ -1340,12 +1367,12 @@ function(setup_main_executable target)
 		set(SYMBOLS_TO_COPY ${DEPS_TO_COPY} ${OPT_DEPS_TO_COPY})
 		list(TRANSFORM SYMBOLS_TO_COPY REPLACE "[.]dll" ".pdb")
 		foreach(SYMBOL_TO_COPY ${SYMBOLS_TO_COPY})
-			install(FILES "${DEPS_BINDIR}/${SYMBOL_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin" OPTIONAL)
+			install(FILES "${DEPS_BINDIR}/${SYMBOL_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}" OPTIONAL)
 		endforeach()
 
 		set(AGILITY_DEPS_TO_COPY D3D12Core.dll d3d12SDKLayers.dll)
 		foreach(AGILITY_DEP_TO_COPY ${AGILITY_DEPS_TO_COPY})
-			install(FILES "${DEPS_BINDIR}/D3D12/${AGILITY_DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/bin/D3D12" OPTIONAL)
+			install(FILES "${DEPS_BINDIR}/D3D12/${AGILITY_DEP_TO_COPY}" DESTINATION "${CMAKE_SOURCE_DIR}/${BIN_DIR}/D3D12" OPTIONAL)
 		endforeach()
 
 		get_target_property(WINDEPLOYQT_EXE Qt6::windeployqt IMPORTED_LOCATION)
@@ -1353,18 +1380,18 @@ function(setup_main_executable target)
 		if (ARCH_ARM64)
 			set(DEPS_QT_PATH "--qtpaths \"${DEPS_BINDIR}/qtpaths.bat\"")
 		endif()
-		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/bin/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/bin/QtPlugins\" ${DEPS_QT_PATH} --pdb --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --no-translations --no-network COMMAND_ERROR_IS_FATAL ANY)")
-		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/bin/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")")
+		install(CODE "execute_process(COMMAND \"${WINDEPLOYQT_EXE}\" \"${CMAKE_SOURCE_DIR}/${BIN_DIR}/$<TARGET_FILE_NAME:${target}>\" --plugindir \"${CMAKE_SOURCE_DIR}/${BIN_DIR}/QtPlugins\" ${DEPS_QT_PATH} --pdb --no-compiler-runtime --no-system-d3d-compiler --no-system-dxc-compiler --no-translations --no-network COMMAND_ERROR_IS_FATAL ANY)")
+		install(CODE "file(WRITE \"${CMAKE_SOURCE_DIR}/${BIN_DIR}/qt.conf\" \"[Paths]\\nPlugins = ./QtPlugins\")") #<<<<
 	endif()
 
 
 	if (UNIX AND NOT APPLE)
 		if (PACKAGE_MODE)
 			install(TARGETS pcsx2-qt DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
-			install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin/resources DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
-			install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/translations DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+			install(DIRECTORY ${CMAKE_SOURCE_DIR}/${BIN_DIR}/resources DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
+			install(DIRECTORY ${CMAKE_BINARY_DIR}/${BIN_DIR}/translations DESTINATION ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)
 		else()
-			install(TARGETS pcsx2-qt DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+			install(TARGETS pcsx2-qt DESTINATION ${CMAKE_SOURCE_DIR}/${BIN_DIR})
 		endif()
 	endif()
 

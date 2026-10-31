@@ -5,7 +5,7 @@
 #define A_MSL 1
 #define A_HALF 1
 
-#include "../../../../bin/resources/shaders/common/ffx_a.h"
+#include "../../../../resources/shaders/common/ffx_a.h"
 
 struct CASTextureF
 {
@@ -35,7 +35,7 @@ A_STATIC AH3 CasLoadH(CASTextureH tex, ASW2 coord)
 
 A_STATIC void CasInputH(inoutAH2 r, inoutAH2 g, inoutAH2 b){}
 
-#include "../../../../bin/resources/shaders/common/ffx_cas.h"
+#include "../../../../resources/shaders/common/ffx_cas.h"
 
 #include "GSMTLShaderCommon.h"
 
