@@ -197,8 +197,6 @@ bool SaveStateBase::FreezeInternals(Error* error)
 	if (!FreezeTag("Cycles"))
 		return false;
 
-	Freeze(EEsCycle);
-	Freeze(EEoCycle);
 	Freeze(nextDeltaCounter);
 	Freeze(nextStartCounter);
 	Freeze(psxNextStartCounter);
