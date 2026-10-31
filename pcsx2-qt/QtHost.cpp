@@ -199,6 +199,8 @@ void EmuThread::stopFullscreenUI()
 		m_run_fullscreen_ui.store(false, std::memory_order_release);
 		emit onFullscreenUIStateChange(false);
 
+		// Update appearance settings changed in FullscreenUI
+		Host::RefreshGameListAsync(false);
 		// Resume and refresh background when FullscreenUI exits
 		QMetaObject::invokeMethod(g_main_window, "updateGameListBackground", Qt::QueuedConnection);
 	}
@@ -1452,6 +1454,8 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "DisableWindowResize", false);
 	si.SetBoolValue("UI", "PreferEnglishGameList", false);
 	si.SetStringValue("UI", "Theme", QtHost::GetDefaultThemeName());
+	si.SetBoolValue("UI", "ShowFavoriteIcons", true);
+	si.SetBoolValue("UI", "ShowCustomSettingsIcons", true);
 }
 
 void QtHost::SaveSettings()

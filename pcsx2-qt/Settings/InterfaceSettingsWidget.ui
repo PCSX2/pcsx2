@@ -321,6 +321,20 @@
         </item>
        </layout>
       </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="showFavoriteIcons">
+        <property name="text">
+         <string>Show Favorite Icons</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="showCustomSettingsIcons">
+        <property name="text">
+         <string>Show Custom Settings Icons</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

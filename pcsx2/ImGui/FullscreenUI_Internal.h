@@ -537,5 +537,7 @@ namespace FullscreenUI
 	inline std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
 	inline Common::Timer s_input_binding_timer;
 	inline bool s_prefer_english_titles;
+	inline bool s_show_favorite_icons;
+	inline bool s_show_custom_settings_icons;
 
 } // namespace FullscreenUI
