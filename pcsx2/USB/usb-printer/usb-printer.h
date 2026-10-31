@@ -73,14 +73,70 @@ namespace usb_printer
 	};
 	static int dpp_mp1_config_descriptor_size = sizeof(dpp_mp1_config_descriptor);
 
+	static const uint8_t mpr_g600_dev_desciptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x00, 0x01,  // bcdUSB 1.00
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x4C, 0x05,  // idVendor 0x054C
+		0x3D, 0x00,  // idProduct 0x003D
+		0x00, 0x01,  // bcdDevice 1.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x03,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+	static int mpr_g600_dev_desciptor_size = sizeof(mpr_g600_dev_desciptor);
+
+	static const uint8_t mpr_g600_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x20, 0x00,  // wTotalLength 32
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0x40,        // bmAttributes Self Powered
+		0x01,        // bMaxPower 0mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x02,        // bNumEndpoints 2
+		0x07,        // bInterfaceClass
+		0x01,        // bInterfaceSubClass
+		0x02,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x01,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x82,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+	};
+	static int mpr_g600_config_descriptor_size = sizeof(mpr_g600_config_descriptor);
+
 	enum PrinterModel
 	{
 		Sony_DPP_MP1,
+		Sony_MPR_G600,
 	};
 
 	enum PrinterProtocol
 	{
 		ProtocolSonyUPD,
+		ProtocolPopEgg,		// Canon BJL (Bubble Jet Language) and ESC/P2-style raster data
 	};
 
 	struct PrinterData
@@ -105,6 +161,15 @@ namespace usb_printer
 			{"", "SONY", "USB printer"},
 			"MFG:SONY;MDL:DPP-MP1;DES:SONYDPP-MP1;CMD:SONY-Original;CLS:PRINTER",
 			ProtocolSonyUPD,
+		},
+		{
+			Sony_MPR_G600,
+			"Sony MPR-G600",
+			mpr_g600_dev_desciptor, mpr_g600_dev_desciptor_size,
+			mpr_g600_config_descriptor, mpr_g600_config_descriptor_size,
+			{"", "SONY", "USB printer"},
+			"MFG:SONY;MDL:MPR-G600;DES:SONYMPR-G600;CMD:SONY-Original;CLS:PRINTER",
+			ProtocolPopEgg,
 		},
 	};
 
