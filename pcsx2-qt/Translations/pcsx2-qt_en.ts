@@ -6161,196 +6161,196 @@ Do you want to overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="117"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="136"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="154"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="170"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="118"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="137"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="155"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="171"/>
         <source>Assemble Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="117"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="154"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="118"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="155"/>
         <source>Unable to change assembly while core is running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="161"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="162"/>
         <source>Assemble Instruction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="254"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="255"/>
         <source>Go To In Disassembly</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="261"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="262"/>
         <source>Cannot Go To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="311"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="322"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="312"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="323"/>
         <source>Rename Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="311"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="312"/>
         <source>No function / symbol is currently selected.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="315"/>
-        <location filename="../Debugger/DisassemblyView.cpp" line="847"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="316"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="885"/>
         <source>Rename Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="316"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="317"/>
         <source>Function name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="322"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="323"/>
         <source>Function name cannot be nothing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="378"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="379"/>
         <source>Restore Function Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="378"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="379"/>
         <source>Unable to stub selected address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="774"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="812"/>
         <source>Copy Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="777"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="815"/>
         <source>Copy Instruction Hex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="780"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="818"/>
         <source>&amp;Copy Instruction Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="786"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="824"/>
         <source>Copy Function Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="790"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="828"/>
         <source>Paste Instruction Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="797"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="835"/>
         <source>Restore Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="801"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="839"/>
         <source>Asse&amp;mble new Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="805"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="843"/>
         <source>NOP Instruction(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="810"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="848"/>
         <source>Run to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="813"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="851"/>
         <source>&amp;Jump to Cursor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="817"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="855"/>
         <source>Toggle &amp;Breakpoint</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="821"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="859"/>
         <source>Follow Branch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="826"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="864"/>
         <source>&amp;Go to Address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="836"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="874"/>
         <source>Go to PC on Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="844"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="882"/>
         <source>Add Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="850"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="888"/>
         <source>Remove Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="856"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="894"/>
         <source>Restore Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="861"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="899"/>
         <source>Stub (NOP) Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="867"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="905"/>
         <source>Show &amp;Instruction Bytes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="926"/>
-        <source>%1 NOT VALID ADDRESS</source>
+        <location filename="../Debugger/DisassemblyView.cpp" line="911"/>
+        <source>Show Module &amp;Offset</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DisassemblyViewColumnTitle</name>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="885"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="929"/>
         <source> %1 %2 %3  %4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="889"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="933"/>
         <source> %1 %2  %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="897"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="941"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="902"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="946"/>
         <source>Bytes   </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Debugger/DisassemblyView.cpp" line="906"/>
+        <location filename="../Debugger/DisassemblyView.cpp" line="950"/>
         <source>Instruction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7056,12 +7056,12 @@ Do you want to overwrite?</source>
 <context>
     <name>ExpressionParser</name>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1376"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1386"/>
         <source>Invalid memory access size %d.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1382"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1392"/>
         <source>Invalid memory access (unaligned).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18787,7 +18787,7 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1781"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1796"/>
         <source>Save slot {0} selected ({1}).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18887,98 +18887,98 @@ Swap chain: see Microsoft&apos;s Terminology Portal.</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1217"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1232"/>
         <source>{} Recording Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1221"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1236"/>
         <source>{} Replaying</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1357"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1372"/>
         <source>{} Paused</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1386"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1401"/>
         <source>Saved {0} days ago at {1:%H:%M} on {1:%a} {1:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1388"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1403"/>
         <source>Saved in the future at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1390"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1405"/>
         <source>Saved {0} hours, {1} minutes ago at {2:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1391"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1406"/>
         <source>Saved {0} minutes ago at {1:%H:%M}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1392"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1407"/>
         <source>Saved {} seconds ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1393"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1408"/>
         <source>Saved just now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1421"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1436"/>
         <source>Save state selector is unavailable without a valid game serial.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1500"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1515"/>
         <source>Empty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1505"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1520"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1507"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1522"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1509"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1524"/>
         <source>Select Previous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1511"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1526"/>
         <source>Select Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1513"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1528"/>
         <source>Close Menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1566"/>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1588"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1581"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1603"/>
         <source>Save Slot {0}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1589"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1604"/>
         <source>No save present in this slot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1778"/>
+        <location filename="../../pcsx2/ImGui/ImGuiOverlays.cpp" line="1793"/>
         <source>no save yet</source>
         <translation type="unfinished"></translation>
     </message>
