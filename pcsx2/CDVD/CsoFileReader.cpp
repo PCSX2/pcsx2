@@ -148,12 +148,13 @@ bool CsoFileReader::InitializeBuffers(Error* error)
 	// We might read a bit of alignment too, so be prepared.
 	if (m_frameSize + (1 << m_indexShift) < CSO_READ_BUFFER_SIZE)
 	{
-		m_readBuffer = std::make_unique<u8[]>(CSO_READ_BUFFER_SIZE);
+		m_readBufferSize = CSO_READ_BUFFER_SIZE;
 	}
 	else
 	{
-		m_readBuffer = std::make_unique<u8[]>(m_frameSize + (1 << m_indexShift));
+		m_readBufferSize = m_frameSize + (1 << m_indexShift);
 	}
+	m_readBuffer = std::make_unique<u8[]>(m_readBufferSize);
 
 	const u32 indexSize = numFrames + 1;
 	m_index = std::make_unique<u32[]>(indexSize);
@@ -273,7 +274,8 @@ int CsoFileReader::ReadChunk(void* dst, s64 chunkID)
 				return 0;
 			}
 			readBuffer = m_readBuffer.get();
-			readRawBytes = fread(m_readBuffer.get(), 1, frameRawSize, m_src);
+			const u64 clampedSize = std::min<u64>(frameRawSize, m_readBufferSize);
+			readRawBytes = fread(m_readBuffer.get(), 1, clampedSize, m_src);
 		}
 
 		bool success = false;
