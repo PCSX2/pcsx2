@@ -215,20 +215,6 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 	return parent.isValid() ? 0 : Column_Count;
 }
 
-QString GameListModel::formatTimespan(const time_t timespan)
-{
-	// Avoid an extra string conversion over calling QString::fromStdString(GameList::FormatTimespan).
-	const u32 hours = static_cast<u32>(timespan / 3600);
-	if (hours > 0)
-		return qApp->translate("GameList", "%n hours", "", hours);
-
-	const u32 minutes = static_cast<u32>((timespan % 3600) / 60);
-	if (minutes > 0)
-		return qApp->translate("GameList", "%n minutes", "", minutes);
-	else
-		return qApp->translate("GameList", "%n seconds", "", static_cast<u32>((timespan % 3600) % 60));
-}
-
 QVariant GameListModel::data(const QModelIndex& index, const int role) const
 {
 	if (!index.isValid())
@@ -267,7 +253,7 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 					return QString::fromStdString(fmt::format("{:08X}", ge->crc));
 
 				case Column_TimePlayed:
-					return ge->total_played_time ? formatTimespan(ge->total_played_time) : QVariant();
+					return QString::fromStdString(GameList::FormatTimespan(ge->total_played_time));
 
 				case Column_LastPlayed:
 					return QString::fromStdString(GameList::FormatTimestamp(ge->last_played_time));
