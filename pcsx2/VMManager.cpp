@@ -43,6 +43,7 @@
 #include "Vif_Dynarec.h"
 #include "VMManager.h"
 #include "ps2/BiosTools.h"
+#include "vtlb.h"
 
 #include "common/Console.h"
 #include "common/Error.h"
@@ -2803,6 +2804,7 @@ void VMManager::Execute()
 	}
 
 	// Execute until we're asked to stop.
+	vtlb_ResetQueuedErrors();
 	Cpu->Execute();
 }
 
