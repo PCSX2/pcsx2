@@ -225,7 +225,7 @@ private:
 	void DestroyPendingResources(CommandListResources& cmdlist);
 
 	ComPtr<IDXGIAdapter1> m_adapter;
-	ComPtr<ID3D12Device> m_device;
+	ComPtr<ID3D12Device16> m_device;
 	ComPtr<ID3D12CommandQueue> m_command_queue;
 	ComPtr<D3D12MA::Allocator> m_allocator;
 

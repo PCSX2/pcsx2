@@ -24,7 +24,7 @@ find_package(plutosvg 0.0.7 REQUIRED)
 find_package(ryml REQUIRED)
 find_package(FFMPEG 7.1 COMPONENTS avcodec avformat avutil swresample swscale REQUIRED)
 if (WIN32)
-	find_package(DirectX-Headers 1.618.1 REQUIRED)
+	find_package(DirectX-Headers 1.620.1 REQUIRED)
 endif()
 
 if(USE_VULKAN)
