@@ -553,7 +553,10 @@ static bool ParseDDSHeader(GSTextureReplacements::File& file, DDSLoadInfo* info)
 		}
 
 		info->base_image_pitch = header.dwPitchOrLinearSize;
-		info->base_image_size = info->base_image_pitch * blocks_high;
+		const u64 image_size = static_cast<u64>(info->base_image_pitch) * blocks_high;
+		if (image_size > UINT32_MAX)
+			return false;
+		info->base_image_size = static_cast<u32>(image_size);
 	}
 	else
 	{
