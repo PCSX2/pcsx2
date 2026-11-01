@@ -260,9 +260,11 @@ void FullscreenUI::GamepadLayoutChanged()
 	ApplyLayoutSettings();
 }
 
-void FullscreenUI::PreferEnglishGameListChanged()
+void FullscreenUI::AppearanceSettingsChanged()
 {
 	s_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	s_show_favorite_icons = Host::GetBaseBoolSettingValue("UI", "ShowFavoriteIcons", true);
+	s_show_custom_settings_icons = Host::GetBaseBoolSettingValue("UI", "ShowCustomSettingsIcons", true);
 }
 
 void FullscreenUI::GameListFavoriteChanged()
@@ -335,7 +337,6 @@ bool FullscreenUI::Initialize()
 	ImGuiFullscreen::UpdateLayoutScale();
 	ImGuiFullscreen::UpdateFontScale();
 	ApplyLayoutSettings();
-	PreferEnglishGameListChanged();
 
 	if (!ImGuiFullscreen::Initialize("fullscreenui/placeholder.svg") || !LoadResources())
 	{
@@ -1934,12 +1935,12 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::Settings:
 			{
 				const bool can_change_game_settings = s_current_disc_crc != 0;
-				const std::string game_properties_string = VMManager::AreGameSettingsPresent(VMManager::GetDiscSerial(), VMManager::GetDiscCRC()) ?
-					"Game Properties (Edit)" : "Game Properties (New)";
+				const bool has_custom_settings = VMManager::AreGameSettingsPresent(VMManager::GetDiscSerial(), VMManager::GetDiscCRC());
 
 				if (just_focused)
-					ImGui::SetFocusID(ImGui::GetID(can_change_game_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, game_properties_string.c_str()) :
-																			  FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings")),
+					ImGui::SetFocusID(ImGui::GetID(can_change_game_settings ? (
+							has_custom_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (Edit)") : FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (New)")) :
+							FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings")),
 						ImGui::GetCurrentWindow());
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_PF_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
@@ -1948,7 +1949,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					break;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, game_properties_string.c_str()), false, can_change_game_settings))
+				if (ActiveButton(has_custom_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (Edit)") :
+					FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (New)"), false, can_change_game_settings))
 					SwitchToGameSettings();
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings"), false))
@@ -2709,6 +2711,7 @@ void FullscreenUI::DrawGameListWindow()
 {
 	auto game_list_lock = GameList::GetLock();
 	PopulateGameListEntryList();
+	AppearanceSettingsChanged();
 
 	ImGuiIO& io = ImGui::GetIO();
 	const ImVec2 heading_size =
@@ -2890,27 +2893,25 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			const std::string& title = entry->GetTitle(s_prefer_english_titles);
 
 			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			const bool is_favorite = entry->is_favorite;
-			const bool has_custom_settings = entry->has_custom_settings;
 			const float icon_size = GetLineHeight(g_large_font) * 0.75f;
 			const float icon_margin = LayoutScale(8.0f);
 			ImRect visible_title_bb(title_bb);
-			if (is_favorite || has_custom_settings)
-				visible_title_bb.Max.x -= icon_size * 2.0f + icon_margin * 3.0f;
+			visible_title_bb.Max.x -= icon_size * (s_show_favorite_icons + s_show_custom_settings_icons) +
+									icon_margin * (s_show_favorite_icons + s_show_custom_settings_icons);
 			ImGui::RenderTextClipped(visible_title_bb.Min, visible_title_bb.Max, title.c_str(), title.c_str() + title.size(), nullptr,
 				ImVec2(0.0f, 0.0f), &visible_title_bb);
-			if (is_favorite)
+			if (s_show_favorite_icons && entry->is_favorite)
 			{
-				const ImVec2 star_pos(title_bb.Max.x - icon_size - icon_margin,
+				const ImVec2 star_pos(visible_title_bb.Max.x + icon_margin,
 					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					star_pos, IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
 			}
-			if (has_custom_settings)
+			if (s_show_custom_settings_icons && entry->has_custom_settings)
 			{
-				const ImVec2 gear_pos(title_bb.Max.x - 2.0f * icon_size - 2.0f * icon_margin,
+				const ImVec2 gear_pos(visible_title_bb.Max.x + icon_margin + (icon_size + icon_margin) * s_show_favorite_icons,
 					title_bb.Min.y + (GetLineHeight(g_large_font) - icon_size) * 0.5f);
 				ImGui::GetWindowDrawList()->AddText(g_large_font.first, icon_size,
 					ImVec2(gear_pos.x + LayoutScale(1.0f), gear_pos.y + LayoutScale(1.0f)), IM_COL32(0, 0, 0, 200), ICON_FA_GEAR);
@@ -3157,17 +3158,17 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 			bb.Max -= style.FramePadding;
 
 			DrawGameCover(entry, ImGui::GetWindowDrawList(), bb.Min, bb.Min + image_size);
-			if (entry->is_favorite)
+			if (s_show_favorite_icons && entry->is_favorite)
 			{
 				const float star_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
-				const ImVec2 star_pos(bb.Min.x + image_width - star_size - LayoutScale(6.0f), bb.Min.y + LayoutScale(6.0f));
+				const ImVec2 star_pos(bb.Min.x + image_width - star_size - LayoutScale(10.0f), bb.Min.y + LayoutScale(6.0f));
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size,
 					ImVec2(star_pos.x + LayoutScale(1.0f), star_pos.y + LayoutScale(1.0f)),
 					IM_COL32(0, 0, 0, 200), ICON_PF_STAR);
 				ImGui::GetWindowDrawList()->AddText(g_medium_font.first, star_size, star_pos,
 					IM_COL32(255, 196, 0, 255), ICON_PF_STAR);
 			}
-			if (entry->has_custom_settings)
+			if (s_show_custom_settings_icons && entry->has_custom_settings)
 			{
 				const float gear_size = std::clamp(image_width * 0.12f, LayoutScale(18.0f), LayoutScale(42.0f));
 				const ImVec2 gear_pos(bb.Min.x + LayoutScale(6.0f), bb.Min.y + LayoutScale(6.0f));
@@ -3452,6 +3453,12 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_PF_STAR, "Favorites Only"),
 			FSUI_CSTR("Only displays games marked as favorites in the list and grid."), "UI",
 			"FullscreenUIFavoritesOnly", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_STAR, "Show Favorite Icons"),
+			FSUI_CSTR("Shows a star icon in the game list on favorited games."), "UI",
+			"ShowFavoriteIcons", true);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Show Custom Settings Icons"),
+			FSUI_CSTR("Shows a gear icon in the game list on games with custom settings applied."), "UI",
+			"ShowCustomSettingsIcons", true);
 	}
 
 	MenuHeading(FSUI_CSTR("Operations"));
