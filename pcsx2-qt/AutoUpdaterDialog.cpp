@@ -753,9 +753,13 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& data, QProgressDial
 	}
 
 	// Execute new appimage.
+	QStringList arguments{QStringLiteral("-updatecleanup")};
+	if (EmuConfig.IsPortableMode)
+		arguments << QStringLiteral("-portable");
+
 	QProcess* new_process = new QProcess();
 	new_process->setProgram(qappimage_path);
-	new_process->setArguments(QStringList{QStringLiteral("-updatecleanup")});
+	new_process->setArguments(arguments);
 	if (!new_process->startDetached())
 	{
 		reportError("Failed to execute new AppImage.");
