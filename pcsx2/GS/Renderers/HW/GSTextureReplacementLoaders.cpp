@@ -186,11 +186,15 @@ bool PNGLoader(GSTextureReplacements::File& file, const char* filename, GSTextur
 	}
 
 	const u32 pitch = width * sizeof(u32);
+	const u64 data_size = static_cast<u64>(pitch) * height;
+	if (data_size > UINT32_MAX)
+		return false;
+
 	tex->width = width;
 	tex->height = height;
 	tex->format = GSTexture::Format::Color;
 	tex->pitch = pitch;
-	tex->data.resize(pitch * height);
+	tex->data.resize(static_cast<size_t>(data_size));
 
 	const png_uint_32 row_bytes = png_get_rowbytes(png_ptr, info_ptr);
 	std::vector<u8> row_data(row_bytes);
@@ -553,14 +557,17 @@ static bool ParseDDSHeader(GSTextureReplacements::File& file, DDSLoadInfo* info)
 		}
 
 		info->base_image_pitch = header.dwPitchOrLinearSize;
-		info->base_image_size = info->base_image_pitch * blocks_high;
 	}
 	else
 	{
 		// Assume no padding between rows of blocks.
 		info->base_image_pitch = blocks_wide * info->bytes_per_block;
-		info->base_image_size = info->base_image_pitch * blocks_high;
 	}
+
+	const u64 base_image_size = static_cast<u64>(info->base_image_pitch) * blocks_high;
+	if (base_image_size > UINT32_MAX)
+		return false;
+	info->base_image_size = static_cast<u32>(base_image_size);
 
 	// Check for truncated or corrupted files.
 	info->base_image_offset = sizeof(magic) + header_size;
