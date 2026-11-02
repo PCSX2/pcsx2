@@ -47,7 +47,8 @@ QT=6.11.2
 QTAPNG=1.3.0
 
 FREETYPE=2.14.3
-SDL=SDL3-3.4.18
+SDLMINOR=3.4.18
+SDL=SDL3-$SDLMINOR
 HARFBUZZ=14.2.0
 ZSTD=1.5.7
 LZ4=1.10.0
@@ -118,7 +119,7 @@ if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 	curl -L \
 		-O "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz" \
 		-O "https://github.com/harfbuzz/harfbuzz/archive/$HARFBUZZ/harfbuzz-$HARFBUZZ.tar.gz" \
-		-O "https://libsdl.org/release/$SDL.tar.gz" \
+		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDLMINOR/$SDL.tar.gz" \
 		-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 		-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
 		-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \

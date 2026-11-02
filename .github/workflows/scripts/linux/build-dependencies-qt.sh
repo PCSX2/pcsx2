@@ -27,7 +27,8 @@ LIBJPEGTURBO=3.2.0
 LIBPNG=1.6.58
 LIBWEBP=1.6.0
 NVENC=13.0.19.0
-SDL=SDL3-3.4.18
+SDLMINOR=3.4.18
+SDL=SDL3-$SDLMINOR
 LZ4=1.10.0
 VULKAN=1.4.328.1
 ZSTD=1.5.7
@@ -85,7 +86,7 @@ if ! shasum -sa 256 --check SHASUMS 2> /dev/null; then
 		-O "https://download.sourceforge.net/libpng-apng/libpng-$LIBPNG-apng.patch.gz" \
 		-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
 		-O "https://github.com/lz4/lz4/releases/download/v$LZ4/lz4-$LZ4.tar.gz" \
-		-O "https://libsdl.org/release/$SDL.tar.gz" \
+		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDLMINOR/$SDL.tar.gz" \
 		-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 		-O "https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/vulkan-sdk-$VULKAN.tar.gz" \
 		-O "https://github.com/FFmpeg/nv-codec-headers/releases/download/n$NVENC/nv-codec-headers-$NVENC.tar.gz" \
