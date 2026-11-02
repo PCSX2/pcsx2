@@ -479,14 +479,22 @@ void GSLocalMemoryFunctions::WriteImage(GSLocalMemory& mem, int& tx, int& ty, co
 	if (trbpp == 4 && (TRXREG.RRW & 0x1))
 	{
 		int count = 0;
-		const int t = TRXPOS.DSAY;
+		const int t = TRXPOS.DSAY + ty;
 		const int b = t + (int)TRXREG.RRH;
 		for (int y = t; y < b; y++)
 		{
 			for (int x = l; x < r; x++)
 			{
-				mem.WritePixel4(x, y, src[count >> 1] >> ((count & 1) << 2), BITBLTBUF.DBP, BITBLTBUF.DBW);
+				mem.WritePixel4(x & 0x7FF, y & 0x7FF, src[count >> 1] >> ((count & 1) << 2), BITBLTBUF.DBP, BITBLTBUF.DBW);
 				count++;
+
+				// Stop it going completely crazy.
+				if (count >= (len * 2))
+				{
+					tx = x - TRXPOS.DSAX;
+					ty = y - TRXPOS.DSAY;
+					return;
+				}
 			}
 		}
 		return;
