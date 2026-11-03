@@ -1767,6 +1767,7 @@ SCAJ-20085:
   region: "NTSC-Unk"
 SCAJ-20086:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -1782,6 +1783,7 @@ SCAJ-20086:
     - "SLPS-73224"
 SCAJ-20087:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -2442,6 +2444,7 @@ SCAJ-20178:
   compat: 5
 SCAJ-20179:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes shadows.
@@ -2452,6 +2455,7 @@ SCAJ-20179:
     targetPageRearranging: 1 # Fixes issues with transitions reusing targets.
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes shadows.
@@ -2630,6 +2634,7 @@ SCAJ-25047:
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
   name: "Xenosaga Episode I - Der Wille zur Macht [PlayStation2 the Best]"
+  name-sort: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation2 the Best]"
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
@@ -7115,6 +7120,7 @@ SCES-55670:
   region: "PAL-IN"
 SCES-82034:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -7123,6 +7129,7 @@ SCES-82034:
     roundSprite: 2 # Fixes font artifacts.
 SCES-82035:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -67066,6 +67073,7 @@ SLUS-20468:
   region: "NTSC-U"
 SLUS-20469:
   name: "Xenosaga Episode I - Der Wille zur Macht"
+  name-sort: "Xenosaga Episode 1 - Der Wille zur Macht"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -69376,6 +69384,7 @@ SLUS-20891:
     - "SLUS-20488"
 SLUS-20892:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -70875,6 +70884,7 @@ SLUS-21132:
   compat: 5
 SLUS-21133:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -72683,6 +72693,7 @@ SLUS-21388:
     texturePreloading: 1 # Temporarily fixes black frame flickering.
 SLUS-21389:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -72854,6 +72865,7 @@ SLUS-21416:
     eeClampMode: 3 # Fixes black screen.
 SLUS-21417:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
