@@ -6132,6 +6132,8 @@ void GSDeviceVK::ExternalFeedbackBarrier(GSTextureVK* tex)
 	// If the current layout is not feedback loop, just do a transition.
 	if (tex->GetLayout() != GSTextureVK::Layout::FeedbackLoop)
 	{
+		if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == tex)
+			m_dirty_flags |= DIRTY_FLAG_TFX_TEXTURE_TEX;
 		tex->TransitionToLayout(GSTextureVK::Layout::FeedbackLoop);
 		return;
 	}
