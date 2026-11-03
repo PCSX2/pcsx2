@@ -246,8 +246,7 @@ struct eeProfiler
 	void EmitOp(eeOpcode opcode)
 	{
 		int op = static_cast<int>(opcode);
-		xADD(ptr32[&(((u32*)opStats)[op * 2 + 0])], 1);
-		xADC(ptr32[&(((u32*)opStats)[op * 2 + 1])], 0);
+		xADD(ptr64[&opStats[op]], 1);
 	}
 
 	double per(u64 part, u64 total)
@@ -367,13 +366,13 @@ struct eeProfiler
 		}
 	}
 
-	void EmitMem(int addr_reg)
+	void EmitMem()
 	{
 		// Compact the 4GB virtual address to a 512KB virtual address
 		if (g_cpu.hasBMI2)
 		{
-			xPEXT(arg1regd, xRegister32(addr_reg), ptr[&memMask]);
-			xADD(ptr32[(arg1reg * 4) + memStats], 1);
+			xPEXT(eax, arg1regd, ptr[&memMask]);
+			xADD(ptr32[xComplexAddress(arg3reg, memStats, rax * 4)], 1);
 		}
 	}
 
@@ -389,14 +388,12 @@ struct eeProfiler
 
 	void EmitSlowMem()
 	{
-		xADD(ptr32[(u32*)&memStatsSlow], 1);
-		xADC(ptr32[(u32*)&memStatsSlow + 1], 0);
+		xADD(ptr64[&memStatsSlow], 1);
 	}
 
 	void EmitFastMem()
 	{
-		xADD(ptr32[(u32*)&memStatsFast], 1);
-		xADC(ptr32[(u32*)&memStatsFast + 1], 0);
+		xADD(ptr64[&memStatsFast], 1);
 	}
 };
 #else
@@ -405,7 +402,7 @@ struct eeProfiler
 	__fi void Reset() {}
 	__fi void EmitOp(eeOpcode op) {}
 	__fi void Print() {}
-	__fi void EmitMem(int addrReg) {}
+	__fi void EmitMem() {}
 	__fi void EmitConstMem(u32 add) {}
 	__fi void EmitSlowMem() {}
 	__fi void EmitFastMem() {}
