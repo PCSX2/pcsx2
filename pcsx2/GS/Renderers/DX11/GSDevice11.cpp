@@ -3074,7 +3074,7 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 	const GSVector2i rtsize = (config.rt ? config.rt : config.ds)->GetSize();
 	GSTexture* colclip_rt = g_gs_device->GetColorClipTexture();
 	GSTexture* draw_rt = config.ps.HasColorROV() ? nullptr : config.rt;
-	GSTexture* draw_ds_as_rt = config.ps.IsFeedbackLoopDepth() ? m_ds_as_rt : nullptr;
+	GSTexture* draw_ds_as_rt = (config.ps.IsFeedbackLoopDepth() && !config.ps.HasDepthROV()) ? m_ds_as_rt : nullptr;
 	GSTexture* draw_ds = config.ps.HasDepthROV() ? nullptr : config.ds;
 	GSTexture* draw_rt_rov = config.ps.HasColorROV() ? config.rt : nullptr;
 	GSTexture* draw_ds_rov = config.ps.HasDepthROV() ? config.ds : nullptr;

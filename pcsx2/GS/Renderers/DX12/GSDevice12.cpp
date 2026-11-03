@@ -4630,7 +4630,8 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		m_pipeline_selector.ds = true;
 	}
 
-	GSTexture12* draw_ds_as_rt = config.ps.IsFeedbackLoopDepth() ? static_cast<GSTexture12*>(m_ds_as_rt) : nullptr;
+	GSTexture12* draw_ds_as_rt = (config.ps.IsFeedbackLoopDepth() && !config.ps.HasDepthROV()) ?
+		static_cast<GSTexture12*>(m_ds_as_rt) : nullptr;
 
 	const bool feedback_rt = draw_rt && (((config.require_one_barrier || (config.require_full_barrier && m_features.texture_barrier)) && (config.IsFeedbackLoopRT(config.ps) ||
 		config.IsFeedbackLoopRT(config.alpha_second_pass.ps))));

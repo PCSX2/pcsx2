@@ -6243,7 +6243,8 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	const GSVector2i rtsize(config.rt ? config.rt->GetSize() : config.ds->GetSize());
 	FramebufferInfo fb;
 	fb.rt = config.ps.HasColorROV() ? nullptr : static_cast<GSTextureVK*>(config.rt);
-	fb.ds_as_rt = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(m_ds_as_rt);
+	fb.ds_as_rt = (config.ps.IsFeedbackLoopDepth() && !config.ps.HasDepthROV()) ?
+		static_cast<GSTextureVK*>(m_ds_as_rt) : nullptr;
 	fb.ds = config.ps.HasDepthROV() ? nullptr : static_cast<GSTextureVK*>(config.ds);
 	GSTextureVK* draw_rt_rov = config.ps.HasColorROV() ? static_cast<GSTextureVK*>(config.rt) : nullptr;
 	GSTextureVK* draw_ds_rov = config.ps.HasDepthROV() ? static_cast<GSTextureVK*>(config.ds) : nullptr;
@@ -6728,7 +6729,7 @@ void GSDeviceVK::UpdateHWPipelineSelector(GSHWDrawConfig& config, PipelineSelect
 	pipe.cms.key = config.ps.HasColorROV() ? GSHWDrawConfig::ColorMaskSelector().key : config.colormask.key;
 	pipe.topology = static_cast<u32>(config.topology);
 	pipe.rt = config.rt != nullptr && !config.ps.HasColorROV();
-	pipe.ds_as_rt = m_ds_as_rt != nullptr;
+	pipe.ds_as_rt = m_ds_as_rt != nullptr && config.ps.IsFeedbackLoopDepth() && !config.ps.HasDepthROV();
 	pipe.ds = config.ds != nullptr && !config.ps.HasDepthROV();
 	FeedbackLoopFlags flags = FeedbackLoopFlags::None;
 	if (m_features.texture_barrier)
