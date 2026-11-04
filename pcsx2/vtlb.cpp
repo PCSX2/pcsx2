@@ -539,8 +539,8 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
 		Host::ReportErrorAsync("R5900 Exception", message);
-		VMManager::SetPaused(true);
-		Cpu->ExitExecution();
+		VMManager::Halt();
+		Cpu->ForceExit();
 		return;
 	}
 
@@ -559,8 +559,8 @@ static __ri void vtlb_BusError(u32 addr, u32 mode)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
 		Host::ReportErrorAsync("R5900 Exception", message);
-		VMManager::SetPaused(true);
-		Cpu->ExitExecution();
+		VMManager::Halt();
+		Cpu->ForceExit();
 		return;
 	}
 

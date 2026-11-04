@@ -23,6 +23,8 @@ enum class VMState
 	Initializing,
 	Running,
 	Paused,
+	// Halted should work the same as Paused, but resuming is not allowed
+	Halted,
 	Resetting,
 	Stopping,
 };
@@ -137,8 +139,22 @@ namespace VMManager
 	/// Polls input, updates subsystems which are present while paused/inactive.
 	void IdlePollUpdate();
 
+	// Check if the VM is paused (paused or halted).
+	bool IsPaused();
+
+	// Check if the VM is running.
+	bool IsRunning();
+
 	/// Changes the pause state of the VM, resetting anything needed when unpausing.
 	void SetPaused(bool paused);
+	void Pause();
+	void Resume();
+
+	/// Pauses the VM and disallows resuming.
+	void Halt();
+
+	/// Stop the VM
+	void Stop();
 
 	/// Reloads settings, and applies any changes present.
 	void ApplySettings();
