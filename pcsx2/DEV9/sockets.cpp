@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+#include <sstream>
+
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 #include "common/ScopedGuard.h"
@@ -185,6 +187,60 @@ SocketAdapter::SocketAdapter()
 
 	sendThreadId = std::this_thread::get_id();
 
+	// Pre-bind configured UDP ports for inbound traffic.
+	// This allows host-to-PS2 communication (e.g. ps2link commands)
+	// by creating listening sockets before the PS2 sends any traffic.
+	if (!EmuConfig.DEV9.EthUDPPorts.empty())
+	{
+		std::istringstream portStream(EmuConfig.DEV9.EthUDPPorts);
+		std::string portStr;
+		while (std::getline(portStream, portStr, ','))
+		{
+			// Trim whitespace
+			portStr.erase(0, portStr.find_first_not_of(" \t"));
+			portStr.erase(portStr.find_last_not_of(" \t") + 1);
+
+			if (portStr.empty())
+				continue;
+
+			const int portNum = std::atoi(portStr.c_str());
+			if (portNum <= 0 || portNum > 65535)
+			{
+				Console.Error("DEV9: Socket: Invalid UDP listen port: %s", portStr.c_str());
+				continue;
+			}
+
+			const u16 port = static_cast<u16>(portNum);
+
+			ConnectionKey fKey{};
+			fKey.protocol = static_cast<u8>(IP_Type::UDP);
+			fKey.ps2Port = port;
+			fKey.srvPort = 0;
+
+			// Use the configured PS2 IP from settings for packet routing.
+			// In Sockets mode, dhcpServer.ps2IP is always 192.0.2.100 (virtual),
+			// but the PS2 may use a different static IP (e.g. from IPCONFIG.DAT).
+			const IP_Address configuredIP = *reinterpret_cast<const IP_Address*>(&EmuConfig.DEV9.PS2IP);
+			const IP_Address listenSourceIP = (configuredIP.integer != 0) ? configuredIP : dhcpServer.ps2IP;
+
+			Console.WriteLn("DEV9: Socket: Pre-binding UDP listen port %d (PS2 IP: %d.%d.%d.%d)", port,
+				listenSourceIP.bytes[0], listenSourceIP.bytes[1],
+				listenSourceIP.bytes[2], listenSourceIP.bytes[3]);
+
+			UDP_FixedPort* fPort = new UDP_FixedPort(fKey, adapterIP, port);
+			fPort->isListening = true;
+			fPort->AddConnectionClosedHandler([&](BaseSession* session) { HandleFixedPortClosed(session); });
+
+			fPort->destIP = {};
+			fPort->sourceIP = listenSourceIP;
+
+			connections.Add(fKey, fPort);
+			fixedUDPPorts.Add(port, fPort);
+
+			fPort->Init();
+		}
+	}
+
 	initialized = true;
 }
 
@@ -234,6 +290,7 @@ bool SocketAdapter::recv(NetPacket* pkt)
 				IP_Packet* ipPkt = new IP_Packet(pl->payload.release());
 				ipPkt->destinationIP = session->sourceIP;
 				ipPkt->sourceIP = pl->sourceIP;
+				ipPkt->timeToLive = 64;
 
 				EthernetFrame frame(ipPkt);
 				frame.sourceMAC = internalMAC;
