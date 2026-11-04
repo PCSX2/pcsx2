@@ -4,6 +4,7 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
+#include "CDVDcommon.h"
 
 #include <thread>
 #include <mutex>
@@ -117,6 +118,7 @@ public:
 
 	bool Open(std::string filename, Error* error);
 	bool Precache(ProgressCallback* progress, Error* error);
+	virtual std::vector<toc_entry> ReadTOC();
 	int ReadSync(void* pBuffer, u32 sector, u32 count);
 	void BeginRead(void* pBuffer, u32 sector, u32 count);
 	int FinishRead();
