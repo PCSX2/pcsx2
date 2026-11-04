@@ -110,22 +110,22 @@
     - any-glob-to-any-file:
       - 'pcsx2/GS/*'
       - 'pcsx2/GS/**/*'
-      - 'bin/resources/shaders/*'
-      - 'bin/resources/shaders/**/*'
+      - 'resources/shaders/*'
+      - 'resources/shaders/**/*'
 'GS: Direct3D 11':
   - changed-files:
     - any-glob-to-any-file:
       - 'pcsx2/GS/Renderers/DX11/*'
       - 'pcsx2/GS/Renderers/DX11/**/*'
-      - 'bin/resources/shaders/dx11/*'
-      - 'bin/resources/shaders/dx11/**/*'
+      - 'resources/shaders/dx11/*'
+      - 'resources/shaders/dx11/**/*'
 'GS: Direct3D 12':
   - changed-files:
     - any-glob-to-any-file:
       - 'pcsx2/GS/Renderers/DX12/*'
       - 'pcsx2/GS/Renderers/DX12/**/*'
-      - 'bin/resources/shaders/dx11/*'
-      - 'bin/resources/shaders/dx11/**/*'
+      - 'resources/shaders/dx11/*'
+      - 'resources/shaders/dx11/**/*'
 'GS: Hardware':
   - changed-files:
     - any-glob-to-any-file:
@@ -136,15 +136,15 @@
     - any-glob-to-any-file:
       - 'pcsx2/GS/Renderers/OpenGL/*'
       - 'pcsx2/GS/Renderers/OpenGL/**/*'
-      - 'bin/resources/shaders/opengl/*'
-      - 'bin/resources/shaders/opengl/**/*'
+      - 'resources/shaders/opengl/*'
+      - 'resources/shaders/opengl/**/*'
 'GS: Vulkan':
   - changed-files:
     - any-glob-to-any-file:
       - 'pcsx2/GS/Renderers/Vulkan/*'
       - 'pcsx2/GS/Renderers/Vulkan/**/*'
-      - 'bin/resources/shaders/vulkan/*'
-      - 'bin/resources/shaders/vulkan/**/*'
+      - 'resources/shaders/vulkan/*'
+      - 'resources/shaders/vulkan/**/*'
 'GS: Metal':
   - changed-files:
     - any-glob-to-any-file:
