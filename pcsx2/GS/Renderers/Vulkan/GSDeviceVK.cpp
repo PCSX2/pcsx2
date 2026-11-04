@@ -3084,6 +3084,9 @@ void GSDeviceVK::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r,
 		return;
 	}
 
+	if (dTex->IsDepthStencil())
+		InvalidateDSAsRT(dTex);
+
 	GSTextureVK* const sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* const dTexVK = static_cast<GSTextureVK*>(dTex);
 	const GSVector4i dst_rect(0, 0, dTexVK->GetWidth(), dTexVK->GetHeight());
@@ -3417,6 +3420,9 @@ void GSDeviceVK::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect,
 void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, GSTexture* dTex,
 	const GSVector4i& dRect, u32 dLevel, Filter filter)
 {
+	if (dTex->IsDepthStencil())
+		InvalidateDSAsRT(dTex);
+
 	GSTextureVK* sTexVK = static_cast<GSTextureVK*>(sTex);
 	GSTextureVK* dTexVK = static_cast<GSTextureVK*>(dTex);
 
@@ -3886,6 +3892,13 @@ void GSDeviceVK::OMSetRenderTargets(FramebufferInfo fb, const GSVector4i& scisso
 			}
 		}
 	}
+
+	// Invalidate DS as RT if we're updating DS alone.
+	if (fb.ds && !fb.ds_as_rt)
+		InvalidateDSAsRT(fb.ds);
+
+	// Make sure something didn't go wrong with DS as RT caching.
+	pxAssert(!fb.ds_as_rt || m_ds_as_rt_orig == fb.ds);
 
 	// This is used to set/initialize the framebuffer for tfx rendering.
 	const GSVector2i size = fb.FirstAttachment() ? fb.GetSize() : viewport_size;
