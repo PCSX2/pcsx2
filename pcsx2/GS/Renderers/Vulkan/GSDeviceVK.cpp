@@ -2864,9 +2864,6 @@ bool GSDeviceVK::CheckFeatures()
 	if (!GSConfig.DisableFramebufferFetch)
 	{
 		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
-		m_features.depth_feedback =
-			m_optional_extensions.vk_ext_rasterization_order_attachment_access &&
-			m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth;
 	}
 	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
 	m_features.multidraw_fb_copy = false;
@@ -2907,10 +2904,11 @@ bool GSDeviceVK::CheckFeatures()
 	m_features.line_expand =
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
-	if (!m_features.framebuffer_fetch)
+	m_features.depth_feedback = (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
+		                        GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth);
+	if (m_features.framebuffer_fetch)
 	{
-		m_features.depth_feedback = (GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Auto ||
-		                            GSConfig.DepthFeedbackMode == GSDepthFeedbackMode::Depth);
+		m_features.depth_feedback &= m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth;
 	}
 	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
 
@@ -2919,8 +2917,9 @@ bool GSDeviceVK::CheckFeatures()
 		DevCon.Warning("VK: Device does not support independent blend; depth feedback with DS as RT won't function correctly.");
 	}
 
-	DevCon.WriteLn("Optional features:%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
+	DevCon.WriteLn("Optional features:%s%s%s%s%s%s", m_features.primitive_id ? " primitive_id" : "",
 		m_features.texture_barrier ? " texture_barrier" : "", m_features.framebuffer_fetch ? " framebuffer_fetch" : "",
+		m_features.framebuffer_fetch_depth() ? " framebuffer_fetch_depth" : "",
 		m_features.provoking_vertex_last ? " provoking_vertex_last" : "", m_features.vs_expand ? " vs_expand" : "");
 
 	DevCon.WriteLn("Using %s for point expansion and %s for line expansion.",
