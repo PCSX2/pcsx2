@@ -604,7 +604,7 @@ GSRendererHW::TextureShuffleInfo GSRendererHW::DetectTextureShuffleImpl()
 		}
 		else
 		{
-			pxFail("Impossible.");
+			pxFail(fmt::format("Impossible: x_offset should be 0 or 8: {}", x_offset).c_str());
 		}
 	}
 
