@@ -48,6 +48,9 @@ Login token generated at:</string>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
         <property name="textInteractionFlags">
          <set>Qt::TextInteractionFlag::TextBrowserInteraction</set>
         </property>
