@@ -2243,6 +2243,8 @@ void GSRendererHW::HandleManualDeswizzle()
 	GSIndexBuff& idx_buff = *m_index;
 	// Check for page quadrant and compare it to the quadrant from the verts, if it does match then we need to do correction.
 	const GSVector2i page_quadrant = GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs / 2;
+	const GSVector2i page_mask = GSVector2i(GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.x - 1, GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].pgs.y - 1);
+	const GSVector2i ofxy = GSVector2i(m_context->XYOFFSET.OFX, m_context->XYOFFSET.OFY);
 
 	if (PRIM->FST)
 	{
@@ -2253,6 +2255,10 @@ void GSRendererHW::HandleManualDeswizzle()
 
 			if ((abs((v[index_last].U) - (v[index_first].U)) >> 4) != page_quadrant.x || (abs((v[index_last].V) - (v[index_first].V)) >> 4) != page_quadrant.y)
 				return;
+
+			if ((abs(((v[index_first].U >> 4) & page_mask.x) - (((v[index_first].XYZ.X - ofxy.x) >> 4) & page_mask.x)) < (page_quadrant.x >> 1)) ||
+				(abs(((v[index_first].V >> 4) & page_mask.y) - (((v[index_first].XYZ.Y - ofxy.y) >> 4) & page_mask.y)) < (page_quadrant.y >> 1)))
+				return;
 		}
 	}
 	else
@@ -2261,10 +2267,16 @@ void GSRendererHW::HandleManualDeswizzle()
 		{
 			const u32 index_first = idx_buff.buff[i];
 			const u32 index_last = idx_buff.buff[i + 1];
-			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW)));
-			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH)));
+			const float first_x = ((v[index_first].ST.S / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TW));
+			const float first_y = ((v[index_first].ST.T / v[index_first].RGBAQ.Q) * (1 << m_context->TEX0.TH));
+			const u32 x = abs(((v[index_last].ST.S / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TW)) - first_x);
+			const u32 y = abs(((v[index_last].ST.T / v[index_last].RGBAQ.Q) * (1 << m_context->TEX0.TH)) - first_y);
 
 			if (x != static_cast<u32>(page_quadrant.x) || y != static_cast<u32>(page_quadrant.y))
+				return;
+
+			if ((abs(((v[index_first].U >> 4) & page_mask.x) - (static_cast<int>(first_x) & page_mask.x)) < (page_quadrant.x >> 1)) ||
+				(abs(((v[index_first].V >> 4) & page_mask.y) - (static_cast<int>(first_y) & page_mask.y)) < (page_quadrant.y >> 1)))
 				return;
 		}
 	}
@@ -3015,7 +3027,11 @@ void GSRendererHW::Draw()
 	const bool all_depth_tests_pass = IsDepthAlwaysPassing();
 	bool no_ds = (zm != 0 && all_depth_tests_pass) ||
 	             // No color or Z being written.
-	             (no_rt && zm != 0);
+	             (no_rt && zm != 0) ||
+	             // Writing to Z and RT RGB channel positions at the same memory is unsupported.
+	             (!no_rt && zm == 0 && m_cached_ctx.ZBUF.ZBP == m_cached_ctx.FRAME.FBP &&
+	                 (GSLocalMemory::m_psm[m_cached_ctx.ZBUF.PSM].trbpp != 24 ||
+	                 ((m_cached_ctx.FRAME.FBMSK & 0xFFFFFF) & fm_mask) != (fm_mask & 0xFFFFFF)));
 
 	// No Z test if no z buffer.
 	if (no_ds || all_depth_tests_pass)
@@ -4960,6 +4976,15 @@ void GSRendererHW::Draw()
 			if ((new_w > rt->m_unscaled_size.x || new_h > rt->m_unscaled_size.y || !m_r.rintersect(rt->m_valid).eq(m_r)) && GSConfig.UserHacks_TextureInsideRt >= GSTextureInRtMode::InsideTargets)
 				merge_targets = true;
 
+			if (GSConfig.PreloadFrameWithGSData && m_r.w > rt->m_valid.w)
+			{
+				RGBAMask mask;
+				mask._u32 = GSUtil::GetChannelMask(rt->m_TEX0.PSM);
+				GSVector4i dirty_rect = GSVector4i(std::min(rt->m_valid.x, m_r.x), rt->m_valid.w, std::max(rt->m_valid.z, m_r.z), m_r.w);
+				if (!(dirty_rect.rintersect(m_r).eq(dirty_rect) || !preserve_rt_color))
+					g_texture_cache->AddDirtyRectTarget(rt, dirty_rect, rt->m_TEX0.PSM, rt->m_TEX0.TBW, mask, false);
+			}
+
 			rt->ResizeTexture(new_w, new_h);
 
 			if (!m_texture_shuffle && !m_channel_shuffle)
@@ -4975,6 +5000,7 @@ void GSRendererHW::Draw()
 					g_texture_cache->GetTargetSize(rt->m_TEX0.TBP0, rt->m_TEX0.TBW, rt->m_TEX0.PSM, 0, new_h);
 				}
 				const bool rt_cover = full_cover_clear && (m_r.height() + frame_psm.pgs.y) >= rt->m_valid.height();
+				
 				rt->ResizeValidity(rt_cover ? update_rect : rt->m_valid.rintersect(rt->GetUnscaledRect()));
 				rt->ResizeDrawn(rt_cover ? update_rect : rt->m_drawn_since_read.rintersect(rt->GetUnscaledRect()));
 			}
@@ -5031,6 +5057,15 @@ void GSRendererHW::Draw()
 			pxAssert(ds->GetScale() == target_scale);
 			if (ds->GetUnscaledWidth() != new_w || ds->GetUnscaledHeight() != new_h)
 				GL_INS("HW: Resize DS from %dx%d to %dx%d", ds->GetUnscaledWidth(), ds->GetUnscaledHeight(), new_w, new_h);
+
+			if (GSConfig.PreloadFrameWithGSData && m_r.w > ds->m_valid.w)
+			{
+				RGBAMask mask;
+				mask._u32 = GSUtil::GetChannelMask(ds->m_TEX0.PSM);
+				GSVector4i dirty_rect = GSVector4i(std::min(ds->m_valid.x, m_r.x), ds->m_valid.w, std::max(ds->m_valid.z, m_r.z), m_r.w);
+				if (!dirty_rect.rintersect(m_r).eq(dirty_rect))
+					g_texture_cache->AddDirtyRectTarget(ds, dirty_rect, ds->m_TEX0.PSM, ds->m_TEX0.TBW, mask, false);
+			}
 
 			ds->ResizeTexture(new_w, new_h);
 
@@ -8310,7 +8345,7 @@ __ri void GSRendererHW::EmulateTextureSampler(const GSTextureCache::Target* rt, 
 		}
 
 		if (m_vt.m_primclass == GS_SPRITE_CLASS && m_index->tail >= 4 && GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].bpp >= 16 &&
-			((tex->m_from_target_TEX0.PSM & 0x30) == 0x30 || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0))
+			((tex->m_from_target_TEX0.PSM & 0x30) == 0x30 || tex->m_from_target->m_from_depth || GSLocalMemory::m_psm[m_cached_ctx.TEX0.PSM].pal > 0))
 		{
 			HandleManualDeswizzle();
 		}
@@ -10072,6 +10107,43 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 	if (m_cached_ctx.TEST.ZTST != ZTST_ALWAYS || m_cached_ctx.ZBUF.ZMSK)
 		return false;
 
+	const u32 write_color = GetConstantDirectWriteMemClearColor();
+	const u32 write_depth = GetConstantDirectWriteMemClearDepth();
+
+	if (write_color != write_depth)
+		return false;
+
+	if (m_cached_ctx.FRAME.PSM == 0)
+	{
+		if ((m_cached_ctx.ZBUF.PSM & 0xF) == 1 && (m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) == (0xFF000000 & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk))
+		{
+			m_cached_ctx.FRAME.PSM |= 1;
+			m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+		}
+		// Common with Guitar Hero/Tony Hawk engine games.
+		else if (write_color == 0 && ((m_cached_ctx.FRAME.FBMSK & GSLocalMemory::m_psm[m_cached_ctx.FRAME.PSM].fmsk) & 0xFF000000) == 0x7F000000)
+		{
+			GSTextureCache::Target* frame = g_texture_cache->GetExactTarget(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, GSTextureCache::RenderTarget, m_cached_ctx.FRAME.Block());
+
+			if (frame)
+			{
+				// If there is no information in the top bit but that's the only one not masked, treat it as masked.
+				if (frame->m_alpha_max < 128)
+				{
+					m_cached_ctx.FRAME.PSM |= 1;
+					m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+				}
+
+				frame = nullptr;
+			}
+			else
+			{
+				m_cached_ctx.FRAME.PSM |= 1;
+				m_context->offset.fb = m_mem.GetOffset(m_cached_ctx.FRAME.Block(), m_cached_ctx.FRAME.FBW, m_cached_ctx.FRAME.PSM);
+			}
+		}
+	}
+
 	// Block when any bits are masked. Too many false positives if we don't.
 	// Siren does a C32+Z24 clear with A masked, GTA:LCS does C32+Z24 but doesn't set FBMSK, leaving half
 	// of the alpha channel untouched (no effect because it uses Z24 elsewhere).
@@ -10098,11 +10170,6 @@ bool GSRendererHW::DetectDoubleHalfClear(bool& no_rt, bool& no_ds)
 
 	// Z and color must be constant and the same and both are enabled.
 	if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || (no_ds != no_rt))
-		return false;
-
-	const u32 write_color = GetConstantDirectWriteMemClearColor();
-	const u32 write_depth = GetConstantDirectWriteMemClearDepth();
-	if (write_color != write_depth)
 		return false;
 
 	// Frame and depth pointer can be inverted
