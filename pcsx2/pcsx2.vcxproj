@@ -91,9 +91,6 @@
     <ShaderToCpp Include="..\bin\resources\shaders\vulkan\shadeboost.glsl">
       <VarName>vulkan_shadeboost</VarName>
     </ShaderToCpp>
-    <ShaderToCpp Include="..\bin\resources\shaders\opengl\cas.glsl">
-      <VarName>opengl_cas</VarName>
-    </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\vulkan_opengl\tfx.glsl">
       <VarName>vulkan_opengl_tfx</VarName>
     </ShaderToCpp>
@@ -117,6 +114,12 @@
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\opengl\present.glsl">
       <VarName>opengl_present</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_fs.glsl">
+      <VarName>opengl_tfx_fs</VarName>
+    </ShaderToCpp>
+    <ShaderToCpp Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl">
+      <VarName>opengl_tfx_vgs</VarName>
     </ShaderToCpp>
     <ShaderToCpp Include="..\bin\resources\shaders\dx\cas.hlsl">
       <VarName>dx_cas</VarName>
@@ -222,6 +225,8 @@
     <None Include="..\bin\resources\shaders\opengl\merge.glsl" />
     <None Include="..\bin\resources\shaders\opengl\present.glsl" />
     <None Include="..\bin\resources\shaders\opengl\shadeboost.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\tfx_fs.glsl" />
+    <None Include="..\bin\resources\shaders\opengl\tfx_vgs.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\cas.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\convert.glsl" />
     <None Include="..\bin\resources\shaders\vulkan\imgui.glsl" />

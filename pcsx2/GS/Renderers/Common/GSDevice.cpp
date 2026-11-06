@@ -391,6 +391,8 @@ GSVector4i GSDevice::ProcessCopyArea(const GSVector4i& rtsize, const GSVector4i&
 #include "opengl_merge.cpp"
 #include "opengl_present.cpp"
 #include "opengl_shadeboost.cpp"
+#include "opengl_tfx_fs.cpp"
+#include "opengl_tfx_vgs.cpp"
 #include "common_tfx_defs.cpp"
 #include "common_tfx_uniforms.cpp"
 #include "common_tfx_ps_atst.cpp"
@@ -437,6 +439,8 @@ static const std::map<std::string, const unsigned char*> s_baked_shaders = {
 	{ "shaders/opengl/merge.glsl"           , opengl_merge },
 	{ "shaders/opengl/present.glsl"         , opengl_present },
 	{ "shaders/opengl/shadeboost.glsl"      , opengl_shadeboost },
+	{ "shaders/opengl/tfx_fs.glsl"          , opengl_tfx_fs },
+	{ "shaders/opengl/tfx_vgs.glsl"         , opengl_tfx_vgs },
 	{ "shaders/common/tfx_defs.inc"         , common_tfx_defs},
 	{ "shaders/common/tfx_uniforms.inc"     , common_tfx_uniforms},
 	{ "shaders/common/tfx_ps_atst.inc"      , common_tfx_ps_atst},
