@@ -148,8 +148,16 @@ void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 			// Create placeholder image if no user-provided cover exists.
 			if (image.isNull())
 			{
-				const std::string& title = entry.GetTitle(m_prefer_english_titles);
-				image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, m_dpr, title);
+				if (const GameDatabaseSchema::GameEntry* game_db = GameDatabase::findGame(entry.serial))
+				{
+					const std::string& title = game_db->name;
+					image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, m_dpr, title);
+				}
+				else
+				{
+					const std::string& title = entry.GetTitle(m_prefer_english_titles);
+					image = createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, m_dpr, title);
+				}
 			}
 			// Create resized image from user-provided cover.
 			else
