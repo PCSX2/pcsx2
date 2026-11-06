@@ -244,8 +244,10 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 		return QVariant();
 	if (role == FavoriteRole)
 		return ge->is_favorite;
-	if (role == CustomSettingsRole)
-		return ge->has_custom_settings;
+	if (role == FavoriteIconRole)
+		return m_show_favorite_icons && ge->is_favorite;
+	if (role == CustomSettingsIconRole)
+		return m_show_custom_settings_icons && ge->has_custom_settings;
 
 	// See: https://doc.qt.io/qt-6/qt.html#ItemDataRole-enum
 	switch (role)
@@ -288,17 +290,19 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 			switch (index.column())
 			{
 				case Column_Title:
-				{
-					QPixmap title_decor = QPixmap(40, 20);
-					title_decor.fill(Qt::transparent);
-					QPainter painter(&title_decor);
-					if (ge->is_favorite)
-						painter.drawPixmap(0, 0, m_favorite_pixmap);
-					if (ge->has_custom_settings)
-						painter.drawPixmap(20, 0, m_custom_settings_pixmap);
-					painter.end();
-					return title_decor;
-				}
+					if (m_show_favorite_icons || m_show_custom_settings_icons)
+					{
+						QPixmap title_decor = QPixmap(20 * m_show_favorite_icons + 20 * m_show_custom_settings_icons, 20);
+						title_decor.fill(Qt::transparent);
+						QPainter painter(&title_decor);
+						if (m_show_favorite_icons && ge->is_favorite)
+							painter.drawPixmap(0, 0, m_favorite_pixmap);
+						if (m_show_custom_settings_icons && ge->has_custom_settings)
+							painter.drawPixmap(20 * m_show_favorite_icons, 0, m_custom_settings_pixmap);
+						painter.end();
+						return title_decor;
+					}
+					return QVariant();
 
 				case Column_Type:
 					return m_type_pixmaps[static_cast<u32>(ge->type)];
@@ -521,6 +525,8 @@ bool GameListModel::lessThan(const QModelIndex& left_index, const QModelIndex& r
 void GameListModel::loadSettings()
 {
 	m_prefer_english_titles = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
+	m_show_favorite_icons = Host::GetBaseBoolSettingValue("UI", "ShowFavoriteIcons", true);
+	m_show_custom_settings_icons = Host::GetBaseBoolSettingValue("UI", "ShowCustomSettingsIcons", true);
 }
 
 QIcon GameListModel::getIconForType(const GameList::EntryType type)
