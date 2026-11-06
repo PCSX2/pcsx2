@@ -244,6 +244,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
+	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.depthFeedback, "EmuCore/GS", "DepthFeedbackMode", static_cast<int>(GSDepthFeedbackMode::Auto));
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
 
@@ -541,6 +542,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_advanced.texturePreloading, tr("Texture Preloading"), tr("Full (Hash Cache)"),
 			tr("Uploads entire textures at once instead of in small pieces, avoiding redundant uploads when possible. "
 			   "Improves performance in most games, but can make a small selection slower."));
+
+		dialog()->registerWidgetHelp(m_advanced.depthFeedback, tr("Depth Feedback Mode"), tr("Auto (Default)"),
+			tr("What type of depth feedback to use for AAT (acurate alpha test) and AA1 (antialiasing). "
+			   "'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing."));
 
 		dialog()->registerWidgetHelp(m_fixes.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
 			tr("When enabled the GPU will convert colormap textures, otherwise the CPU will. "

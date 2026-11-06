@@ -198,6 +198,40 @@
         </property>
        </widget>
       </item>
+      <item row="7" column="1">
+       <widget class="QComboBox" name="depthFeedback">
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Auto (Default)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Depth</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Depth as RT</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="depthFeedbackLabel">
+        <property name="text">
+         <string>Depth Feedback Mode:</string>
+        </property>
+        <property name="buddy">
+         <cstring>depthFeedback</cstring>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -365,6 +399,7 @@
   <tabstop>gsDumpCompression</tabstop>
   <tabstop>texturePreloading</tabstop>
   <tabstop>exclusiveFullscreenControl</tabstop>
+  <tabstop>depthFeedback</tabstop>
   <tabstop>extendedUpscales</tabstop>
   <tabstop>spinGPUDuringReadbacks</tabstop>
   <tabstop>spinCPUDuringReadbacks</tabstop>
