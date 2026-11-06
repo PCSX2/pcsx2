@@ -216,7 +216,7 @@ float manual_lod(float uv_w)
 }
 #endif
 
-#if PS_ANISOTROPIC_FILTERING > 1
+#if PS_SW_ANISO > 1
 vec4 sample_c_af(vec2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
@@ -305,7 +305,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	{
 		vec2 aniso_line_dir = is_major_x ? dX : dY;
 
-		aniso_ratio = min(length_major / length_minor, PS_ANISOTROPIC_FILTERING);
+		aniso_ratio = min(length_major / length_minor, PS_SW_ANISO);
 		length_lod = length_major / aniso_ratio;
 
 		// clamp to top Lod
@@ -369,7 +369,7 @@ vec4 sample_c(vec2 uv)
 	#endif
 #endif
 
-#if PS_ANISOTROPIC_FILTERING > 1
+#if PS_SW_ANISO > 1
 	return sample_c_af(uv, PSin.t_float.w);
 #elif PS_AUTOMATIC_LOD == 1
 	return texture(TextureSampler, uv);
@@ -885,17 +885,17 @@ vec4 ps_color()
 
 #if !NEEDS_TEX
 	vec4 T = vec4(0.0);
-#elif PS_CHANNEL_FETCH == 1
+#elif PS_CHANNEL == 1
 	vec4 T = fetch_red();
-#elif PS_CHANNEL_FETCH == 2
+#elif PS_CHANNEL == 2
 	vec4 T = fetch_green();
-#elif PS_CHANNEL_FETCH == 3
+#elif PS_CHANNEL == 3
 	vec4 T = fetch_blue();
-#elif PS_CHANNEL_FETCH == 4
+#elif PS_CHANNEL == 4
 	vec4 T = fetch_alpha();
-#elif PS_CHANNEL_FETCH == 5
+#elif PS_CHANNEL == 5
 	vec4 T = fetch_rgb();
-#elif PS_CHANNEL_FETCH == 6
+#elif PS_CHANNEL == 6
 	vec4 T = fetch_gXbY();
 #elif PS_DEPTH_FMT > 0
 	// Integral coordinate
