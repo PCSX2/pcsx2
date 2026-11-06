@@ -138,6 +138,13 @@
           </property>
          </widget>
         </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="unifiedTFXShaderGL">
+          <property name="text">
+           <string>Unified TFX Shader GL</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item row="6" column="0">
@@ -371,6 +378,7 @@
   <tabstop>useBlitSwapChain</tabstop>
   <tabstop>disableMailboxPresentation</tabstop>
   <tabstop>rovBarriersVK</tabstop>
+  <tabstop>unifiedTFXShaderGL</tabstop>
   <tabstop>ntscFrameRate</tabstop>
   <tabstop>palFrameRate</tabstop>
   <tabstop>overrideTextureBarriers</tabstop>

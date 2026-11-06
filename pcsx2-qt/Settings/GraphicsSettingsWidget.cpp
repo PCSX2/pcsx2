@@ -243,6 +243,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinCPUDuringReadbacks, "EmuCore/GS", "HWSpinCPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.spinGPUDuringReadbacks, "EmuCore/GS", "HWSpinGPUForReadbacks", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.rovBarriersVK, "EmuCore/GS", "HWROVBarriersVK", false);
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_advanced.unifiedTFXShaderGL, "EmuCore/GS", "UnifiedTFXShaderGL", false);
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_advanced.texturePreloading, "EmuCore/GS", "texture_preloading", static_cast<int>(TexturePreloadingLevel::Off));
 
 	setTabVisible(m_advanced_tab, QtHost::ShouldShowAdvancedSettings());
@@ -811,6 +812,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_advanced.rovBarriersVK, tr("ROV Barriers Vulkan"), tr("Unchecked"),
 			tr("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."));
 
+			dialog()->registerWidgetHelp(m_advanced.unifiedTFXShaderGL, tr("Unified TFX Shader GL"), tr("Unchecked"),
+			tr("Uses the unified (cross-platform) shader for OpenGL. Checking this may cause crashes/bugs on older hardware."));
+
 		dialog()->registerWidgetHelp(m_advanced.disableFramebufferFetch, tr("Disable Framebuffer Fetch"), tr("Unchecked"),
 			tr("Prevents the usage of framebuffer fetch when supported by host GPU."));
 
@@ -1113,6 +1117,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	if (m_advanced.rovBarriersVK)
 		m_advanced.rovBarriersVK->setDisabled(!is_hardware || !is_vk);
+
+	if (m_advanced.unifiedTFXShaderGL)
+		m_advanced.unifiedTFXShaderGL->setDisabled(!is_hardware || !is_ogl);
 
 	// populate adapters
 	std::vector<GSAdapterInfo> adapters = GSGetAdapterInfo(type);

@@ -3608,6 +3608,9 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
 			FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
 			"EmuCore/GS", "HWROVBarriersVK", false);
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BRUSH, "Unified TFX Shader GL"),
+			FSUI_CSTR("Uses the unified (cross-platform) shader for OpenGL. Checking this may cause crashes/bugs on older hardware."),
+			"EmuCore/GS", "UnifiedTFXShaderGL", false);
 		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "Spin CPU During Readbacks"),
 			FSUI_CSTR("Does useless work on the CPU during readbacks to prevent it from going into powersave modes. "
 					  "May improve performance during readbacks but with a significant increase in power usage."),

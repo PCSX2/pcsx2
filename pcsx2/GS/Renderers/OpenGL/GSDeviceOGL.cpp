@@ -768,20 +768,40 @@ bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
 
-	std::optional<std::string> shader = ReadShaderSource("shaders/vulkan_opengl/tfx.glsl");
-	if (!shader.has_value())
-	{
-		Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan_opengl/tfx.glsl.");
-		return false;
-	}
+	std::optional<std::string> vertex_shader; // GL specific
+	std::optional<std::string> fragment_shader; // GL specific
+	std::optional<std::string> shader; // Unified (cross-platform)
 
-	if (!GetTFXShaderSource(&*shader))
+	if (GSConfig.UnifiedTFXShaderGL)
 	{
-		Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
-		return false;
-	}
+		shader = ReadShaderSource("shaders/vulkan_opengl/tfx.glsl");
+		if (!shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/vulkan_opengl/tfx.glsl.");
+			return false;
+		}
 
-	m_shader_tfx = std::move(*shader);
+		if (!GetTFXShaderSource(&*shader))
+		{
+			Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
+			return false;
+		}
+
+		m_shader_tfx = std::move(*shader);
+	}
+	else
+	{
+		vertex_shader = ReadShaderSource("shaders/opengl/tfx_vgs.glsl");
+		fragment_shader = ReadShaderSource("shaders/opengl/tfx_fs.glsl");
+		if (!vertex_shader.has_value() || !fragment_shader.has_value())
+		{
+			Host::ReportErrorAsync("GS", "Failed to read shaders/opengl/tfx_{vgs,fs}.glsl.");
+			return false;
+		}
+
+		m_shader_tfx_vgs = std::move(*vertex_shader);
+		m_shader_tfx_fs = std::move(*fragment_shader);
+	}
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(PSSamplerSelector(0));
@@ -1851,7 +1871,14 @@ std::string GSDeviceOGL::GetVSSource(VSSelector sel)
 		+ fmt::format("#define VS_EXPAND_TYPE {}\n", static_cast<int>(sel.expand));
 
 	std::string src = GenGlslHeader("vs_main", GL_VERTEX_SHADER, macro);
-	src += m_shader_tfx;
+	if (GSConfig.UnifiedTFXShaderGL)
+	{
+		src += m_shader_tfx;
+	}
+	else
+	{
+		src += m_shader_tfx_vgs;
+	}
 	return src;
 }
 
@@ -1924,7 +1951,14 @@ std::string GSDeviceOGL::GetPSSource(const PSSelector& sel)
 	;
 
 	std::string src = GenGlslHeader("ps_main", GL_FRAGMENT_SHADER, macro);
-	src += m_shader_tfx;
+	if (GSConfig.UnifiedTFXShaderGL)
+	{
+		src += m_shader_tfx;
+	}
+	else
+	{
+		src += m_shader_tfx_fs;
+	}
 	return src;
 }
 

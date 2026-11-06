@@ -269,7 +269,9 @@ private:
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
 	GSHWDrawConfig::VSPushConstants m_vs_pc_cache;
 
-	std::string m_shader_tfx;
+	std::string m_shader_tfx_vgs; // GL specific
+	std::string m_shader_tfx_fs; // GL specific
+	std::string m_shader_tfx; // Unified (cross-platform)
 
 	bool CheckFeatures();
 
