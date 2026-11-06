@@ -383,6 +383,7 @@ private:
 	bool m_using_allow_tearing = false;
 	bool m_is_exclusive_fullscreen = false;
 	D3D_SHADER_MODEL m_shader_model = D3D_SHADER_MODEL_5_1;
+	D3D12_RENDER_PASS_TIER m_render_pass_tier = D3D12_RENDER_PASS_TIER_0;
 	bool m_uma = false;
 	bool m_typed_casting_supported = false;
 	bool m_enhanced_barriers = false;

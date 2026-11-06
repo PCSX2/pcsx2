@@ -1585,6 +1585,11 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	m_typed_casting_supported = SUCCEEDED(hr) && device_options3.CastingFullyTypedFormatSupported;
 	Console.WriteLnFmt("D3D12: Casting Fully Typed Formats: {}", m_typed_casting_supported ? "Supported" : "Not Supported");
 
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5 device_options5 = {};
+	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &device_options5, sizeof(device_options5));
+	m_render_pass_tier = SUCCEEDED(hr) ? device_options5.RenderPassesTier : D3D12_RENDER_PASS_TIER_0;
+	Console.WriteLnFmt("D3D12: Render Passes: Tier {}", static_cast<u32>(m_render_pass_tier));
+
 	D3D12_FEATURE_DATA_D3D12_OPTIONS12 device_options12 = {};
 	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &device_options12, sizeof(device_options12));
 	if (SUCCEEDED(hr))
@@ -3955,6 +3960,33 @@ void GSDevice12::BeginRenderPass(D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE color_b
 	if (stencil_end == D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD)
 		GL_INS("D3D12: BeginRenderPass() end stencil is DISCARDED.");
 
+	if (m_render_pass_tier == D3D12_RENDER_PASS_TIER_0)
+	{
+		ID3D12GraphicsCommandList4* cmdlist = GetCommandList().list4.get();
+		if (m_current_render_target && color_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+			cmdlist->ClearRenderTargetView(m_current_render_target->GetWriteDescriptor(), clear_color.v, 0, nullptr);
+
+		if (m_current_depth_render_target && GetLoadOpForTexture(m_current_depth_render_target) == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+			cmdlist->ClearRenderTargetView(m_current_depth_render_target->GetWriteDescriptor(), m_current_depth_render_target->GetClearForFormat().v, 0, nullptr);
+
+		if (m_current_depth_target)
+		{
+			D3D12_CLEAR_FLAGS clear_flags = {};
+			if (depth_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+				clear_flags |= D3D12_CLEAR_FLAG_DEPTH;
+			if (stencil_begin == D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR)
+				clear_flags |= D3D12_CLEAR_FLAG_STENCIL;
+			if (clear_flags != 0)
+			{
+				cmdlist->ClearDepthStencilView(m_current_depth_target->GetWriteDescriptor(),
+					clear_flags, clear_depth, clear_stencil, 0, nullptr);
+			}
+		}
+
+		ApplyBaseState(DIRTY_FLAG_RENDER_TARGET, cmdlist);
+		return;
+	}
+
 	std::array<D3D12_RENDER_PASS_RENDER_TARGET_DESC, 2> rt = {};
 	u32 num_rts = 0;
 	if (m_current_render_target)
@@ -4026,7 +4058,8 @@ void GSDevice12::EndRenderPass()
 
 	g_perfmon.Put(GSPerfMon::RenderPasses, 1);
 
-	GetCommandList().list4->EndRenderPass();
+	if (m_render_pass_tier != D3D12_RENDER_PASS_TIER_0)
+		GetCommandList().list4->EndRenderPass();
 }
 
 void GSDevice12::SetViewport(const D3D12_VIEWPORT& viewport)
