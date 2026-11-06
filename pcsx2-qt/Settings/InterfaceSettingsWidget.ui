@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>725</width>
-    <height>637</height>
+    <height>684</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -154,6 +154,13 @@
        <widget class="QCheckBox" name="startFullscreenUI">
         <property name="text">
          <string>Start In Big Picture Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="enableFileNameAsTitle">
+        <property name="text">
+         <string>Enable File Name As Title</string>
         </property>
        </widget>
       </item>
