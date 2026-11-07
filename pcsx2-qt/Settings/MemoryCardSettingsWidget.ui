@@ -10,7 +10,7 @@
     <height>600</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -47,6 +47,25 @@
       <string>Memory Card Slots</string>
      </property>
      <layout class="QGridLayout" name="gridLayout"/>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="Options">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="preselectMemoryCard">
+        <property name="text">
+         <string>Pre-Select Memory Card</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>

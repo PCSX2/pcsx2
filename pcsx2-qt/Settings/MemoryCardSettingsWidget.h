@@ -108,6 +108,7 @@ private:
 	void tryInsertCard(u32 slot, const QString& newCard);
 	void ejectSlot(u32 slot);
 
+	void helpText(); // widget help text
 	void createCard();
 
 	void saveCardListSortState();
