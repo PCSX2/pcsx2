@@ -34,7 +34,7 @@ bool MemoryCardListWidget::MemoryCardListItem::operator<(const QTreeWidgetItem& 
 	if (column == MemoryCardListColumn::LastModified)
 	{
 		return data(MemoryCardListColumn::LastModified, Qt::UserRole).toLongLong() <
-				other.data(MemoryCardListColumn::LastModified, Qt::UserRole).toLongLong();
+		       other.data(MemoryCardListColumn::LastModified, Qt::UserRole).toLongLong();
 	}
 	return text(column).localeAwareCompare(other.text(column)) < 0;
 }
@@ -52,6 +52,7 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 
 	SettingWidgetBinder::BindWidgetToFolderSetting(sif, m_ui.directory, m_ui.browse, m_ui.open, m_ui.reset, "Folders",
 		"MemoryCards", Path::Combine(EmuFolders::DataRoot, "memcards"));
+	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.preselectMemoryCard, "MemCards", "PreselectMemoryCard", false);
 
 	setupAdditionalUi();
 
@@ -73,7 +74,15 @@ MemoryCardSettingsWidget::MemoryCardSettingsWidget(SettingsWindow* settings_dial
 	connect(m_ui.cardList->header(), &QHeaderView::sortIndicatorChanged, this,
 		&MemoryCardSettingsWidget::saveCardListSortState);
 
+	helpText();
+
 	refresh();
+}
+
+void MemoryCardSettingsWidget::helpText()
+{
+	dialog()->registerWidgetHelp(m_ui.preselectMemoryCard, tr("Preselect MemoryCard"), tr("Unchecked"),
+		tr("Automatically Insert a MemCard dedicated to the game being played into Slot 1. Existing Cards are matcheds on the Games Serial."));
 }
 
 MemoryCardSettingsWidget::~MemoryCardSettingsWidget() = default;
