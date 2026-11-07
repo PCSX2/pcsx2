@@ -187,37 +187,37 @@ Do you want to enable hardcore mode?</source>
 <context>
     <name>AchievementSettingsWidget</name>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="117"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="120"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="54"/>
         <source>Enable Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="124"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="127"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="55"/>
         <source>Enable Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="145"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="148"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="74"/>
         <source>Test Unofficial Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="253"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="256"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="60"/>
         <source>Enable Sound Effects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="155"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="158"/>
         <source>Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="191"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="237"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="194"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="240"/>
         <source>5 seconds</source>
         <translation type="unfinished"></translation>
     </message>
@@ -227,187 +227,187 @@ Do you want to enable hardcore mode?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="71"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="74"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="234"/>
         <source>Login...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="64"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="67"/>
         <source>View Profile...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="111"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="114"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="131"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="134"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="73"/>
         <source>Enable Spectator Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="138"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="141"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="72"/>
         <source>Enable Encore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="200"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="203"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="56"/>
         <source>Show Achievement Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="246"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="249"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="58"/>
         <source>Show Leaderboard Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="327"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="330"/>
         <source>Overlay Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="334"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="337"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="71"/>
         <source>Top Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="281"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="339"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="284"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="342"/>
         <source>Top Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="286"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="344"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="289"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="347"/>
         <source>Top Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="291"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="349"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="294"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="352"/>
         <source>Center Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="296"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="354"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="299"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="357"/>
         <source>Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="301"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="359"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="304"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="362"/>
         <source>Center Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="306"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="364"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="309"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="367"/>
         <source>Bottom Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="311"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="369"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="314"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="372"/>
         <source>Bottom Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="374"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="377"/>
         <source>Bottom Right (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="260"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="263"/>
         <source>Notification Position:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="271"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="274"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="276"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="279"/>
         <source>Top Left (Default)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="316"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="319"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="70"/>
         <source>Bottom Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="382"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="385"/>
         <source>Overlay Position:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="392"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="395"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="68"/>
         <source>Enable In-Game Overlays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="399"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="402"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="69"/>
         <source>Enable In-Game Leaderboard Overlays</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="409"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="412"/>
         <source>Sound Effects</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="418"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="428"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="466"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="421"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="431"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="469"/>
         <source>Default Sound Effect</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="435"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="456"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="473"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="438"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="459"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="476"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="442"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="508"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="515"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="445"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="511"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="518"/>
         <source>Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="449"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="452"/>
         <source>Achievement Unlock Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="480"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="487"/>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="501"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="483"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="490"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="504"/>
         <source>Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="494"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="497"/>
         <location filename="../Settings/AchievementSettingsWidget.cpp" line="62"/>
         <source>Notification Sound</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="522"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="525"/>
         <source>Leaderboard Submit Sound</source>
         <translation type="unfinished"></translation>
     </message>
@@ -418,7 +418,7 @@ Login token generated at:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/AchievementSettingsWidget.ui" line="89"/>
+        <location filename="../Settings/AchievementSettingsWidget.ui" line="92"/>
         <source>Game Info</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3929,7 +3929,7 @@ You cannot undo this action.</source>
     </message>
     <message>
         <location filename="../CoverDownloadDialog.ui" line="56"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${crc}:&lt;/span&gt; CRC of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14517,7 +14517,7 @@ accuracy, but this may increase system requirements.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1433"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1455"/>
         <source>Downloading cover for {0} [{1}]...</source>
         <translation type="unfinished"></translation>
     </message>
