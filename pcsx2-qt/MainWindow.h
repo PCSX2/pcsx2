@@ -18,6 +18,7 @@
 #include "Settings/SettingsWindow.h"
 #include "Debugger/DebuggerWindow.h"
 #include "ui_MainWindow.h"
+#include "pcsx2/VMManager.h"
 
 class QProgressBar;
 
@@ -170,6 +171,7 @@ private Q_SLOTS:
 	void onGameListEntryActivated();
 	void onGameListEntryContextMenuRequested(const QPoint& point);
 
+	void onPreselectMemCard(std::shared_ptr<VMBootParameters> params, const GameList::Entry& entry);
 	void onStartFileActionTriggered();
 	void onStartDiscActionTriggered();
 	void onStartBIOSActionTriggered();

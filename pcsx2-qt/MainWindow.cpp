@@ -45,6 +45,7 @@
 #include "pcsx2/Recording/InputRecordingControls.h"
 #include "pcsx2/SaveState.h"
 #include "pcsx2/SIO/Sio.h"
+#include "pcsx2/SIO/Memcard/MemoryCardFile.h"
 #include "pcsx2/GS/GSExtra.h"
 
 #include "common/Assertions.h"
@@ -1979,6 +1980,71 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 	menu.exec(point);
 }
 
+void MainWindow::onPreselectMemCard(std::shared_ptr<VMBootParameters> params, const GameList::Entry& entry)
+{
+	const QString& title = QString::fromStdString(entry.title);
+	const QString& serial = QString::fromStdString(entry.serial);
+	const QString& region = QString::fromStdString(GameList::RegionToString(entry.region, true));
+	const auto& m_card_list = FileMcd_GetAvailableCards(true);
+
+	QStringList match_cards;
+	match_cards.reserve(m_card_list.size());
+
+	for (const auto& card : m_card_list)
+	{
+		const QString name = QString::fromStdString(card.name);
+		if (name.contains(serial, Qt::CaseInsensitive))
+			match_cards.append(name);
+	}
+
+	std::string chosen;
+	const QString slot = QString::fromStdString(Host::GetStringSettingValue("MemoryCards", "Slot1_Filename"));
+
+	if (match_cards.size() == 1)
+	{
+		chosen = match_cards.first().toStdString();
+	}
+	else if (match_cards.size() > 1)
+	{
+		// if the chosen card is same as slot1
+		if (match_cards.contains(slot))
+		{
+			g_emu_thread->startVM(std::move(params));
+			return;
+		}
+
+		bool ok = false;
+		const QString sel_item = QInputDialog::getItem(
+			this, tr("Choose a Memcard"), tr("Memcards"), match_cards, 0, false, &ok);
+
+		if (ok && !sel_item.isEmpty())
+			chosen = sel_item.toStdString();
+	}
+	else
+	{
+		const std::string new_card = fmt::format(
+			"{} {} ({}).ps2",
+			serial.toStdString(),
+			title.toStdString(),
+			region.toStdString());
+
+		if (Path::IsValidFileName(new_card, false) &&
+			FileMcd_CreateNewCard(new_card, MemoryCardType::File, MemoryCardFileType::PS2_8MB))
+		{
+			chosen = new_card;
+		}
+	}
+
+	if (!chosen.empty())
+	{
+		Host::SetBaseStringSettingValue("MemoryCards", "Slot1_Filename", chosen.c_str());
+		Host::CommitBaseSettingChanges();
+		VMManager::ApplySettings();
+	}
+
+	g_emu_thread->startVM(std::move(params));
+}
+
 void MainWindow::onStartFileActionTriggered()
 {
 	const QString path(
@@ -3519,8 +3585,10 @@ void MainWindow::startGameListEntry(const GameList::Entry& entry, std::optional<
 
 		params->save_state = std::move(state_filename);
 	}
-
-	g_emu_thread->startVM(std::move(params));
+	if (Host::GetBoolSettingValue("MemCards", "PreselectMemoryCard"))
+		onPreselectMemCard(std::move(params), entry);
+	else
+		g_emu_thread->startVM(std::move(params));
 }
 
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry& entry)
@@ -3597,7 +3665,7 @@ void MainWindow::openSnapshotsFolderForGame(const GameList::Entry& entry)
 	if (EmuConfig.GS.OrganizeSnapshotsByGame && !entry.title.empty())
 	{
 		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
-		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
+		std::string game_name = (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
 		Path::SanitizeFileName(&game_name);
 
 		const std::string game_dir = Path::Combine(EmuFolders::Snapshots, game_name);
@@ -3655,7 +3723,7 @@ void MainWindow::openVideoCaptureFolder(const GameList::Entry& entry)
 	if (EmuConfig.GS.OrganizeVideoCaptureByGame && !entry.title.empty())
 	{
 		const bool prefer_english = Host::GetBaseBoolSettingValue("UI", "PreferEnglishGameList", false);
-		std::string game_name =  (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
+		std::string game_name = (prefer_english && !entry.title_en.empty()) ? entry.title_en : entry.title;
 		Path::SanitizeFileName(&game_name);
 
 		const std::string game_dir = Path::Combine(EmuFolders::Videos, game_name);
