@@ -421,9 +421,13 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 	entry->total_size = sd.Size;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
 
+	// filename as the title if game is found in db
+	bool is_fn_as_title = Host::GetBoolSettingValue("UI", "EnableFileNameAsTitle", false);
+
 	if (const GameDatabaseSchema::GameEntry* db_entry = GameDatabase::findGame(entry->serial))
 	{
-		entry->title = std::move(db_entry->name);
+
+		entry->title = is_fn_as_title ? Path::GetFileTitle(path) : std::move(db_entry->name);
 		entry->title_sort = std::move(db_entry->name_sort);
 		entry->title_en = std::move(db_entry->name_en);
 		entry->compatibility_rating = db_entry->compat;
