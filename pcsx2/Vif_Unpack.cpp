@@ -336,7 +336,18 @@ _vifT int nVifUnpack(const u8* data)
 	const uint wl     = vifRegs.cycle.wl ? vifRegs.cycle.wl : 256;
 	const uint ret    = std::min(vif.vifpacketsize, vif.tag.size);
 	const bool isFill = (vifRegs.cycle.cl < wl);
-	s32        size   = ret << 2;
+
+	if (v.bSize > sizeof(v.buffer) || ret > (sizeof(v.buffer) - v.bSize) / sizeof(u32))
+	{
+		Console.Warning("VIF%d UNPACK buffer overflow: offset %u, transfer %u words", idx, v.bSize, ret);
+		vif.pass = 0;
+		vif.tag.size = 0;
+		vif.cmd = 0;
+		vifRegs.num = 0;
+		v.bSize = 0;
+		return ret;
+	}
+	s32 size = ret << 2;
 
 	if (ret == vif.tag.size) // Full Transfer
 	{
