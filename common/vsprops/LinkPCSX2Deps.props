@@ -38,6 +38,7 @@
   <ItemGroup>
     <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\D3D12Core.dll')" Include="$(DepsBinDir)D3D12\D3D12Core.dll" />
     <AgilityDLLs Condition="Exists('$(DepsBinDir)D3D12\d3d12SDKLayers.dll')" Include="$(DepsBinDir)D3D12\d3d12SDKLayers.dll" />
+    <AgilityLicense Condition="Exists('$(DepsBinDir)D3D12\LICENSE.txt')" Include="$(DepsBinDir)D3D12\LICENSE.txt" />
   </ItemGroup>
   <Target Name="DepsListPDBs"
     AfterTargets="Build">
@@ -69,11 +70,16 @@
   </Target>
   <Target Name="DepsCopyAgilityDLLs"
     AfterTargets="Build"
-    Inputs="@(AgilityDLLs)"
-    Outputs="@(AgilityDLLs -> '$(OutDir)D3D12\%(RecursiveDir)%(Filename)%(Extension)')">
+    Inputs="@(AgilityDLLs);@(AgilityLicense)"
+    Outputs="@(AgilityDLLs -> '$(OutDir)D3D12\%(RecursiveDir)%(Filename)%(Extension)');@(AgilityLicense -> '$(OutDir)D3D12\%(Filename)%(Extension)')">
     <Message Text="Copying Agility SDK DLLs" Importance="High" />
     <Copy
       SourceFiles="@(AgilityDLLs)"
+      DestinationFolder="$(OutDir)D3D12"
+      SkipUnchangedFiles="true"
+    />
+    <Copy
+      SourceFiles="@(AgilityLicense)"
       DestinationFolder="$(OutDir)D3D12"
       SkipUnchangedFiles="true"
     />
