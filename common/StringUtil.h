@@ -4,27 +4,15 @@
 #pragma once
 #include "Pcsx2Types.h"
 #include <algorithm>
-#include <charconv>
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
-#include <iomanip>
+#include <iterator>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
-
-#include "fast_float/fast_float.h"
-
-// Older versions of libstdc++ are missing support for from_chars() with floats, and was only recently
-// merged in libc++. So, just fall back to stringstream (yuck!) on everywhere except MSVC.
-#if !defined(_MSC_VER)
-#include <locale>
-#include <sstream>
-#ifdef __APPLE__
-#include <Availability.h>
-#endif
-#endif
 
 namespace StringUtil
 {
@@ -66,132 +54,34 @@ namespace StringUtil
 	}
 
 	/// Wrapper around std::from_chars
+	/// Implementations live in StringUtil.cpp and are explicitly instantiated there, so that
+	/// the <charconv>/<sstream>/<locale> stack doesn't have to be parsed by every includer.
 	template <typename T>
 		requires std::is_integral_v<T>
-	inline std::optional<T> FromChars(const std::string_view str, int base = 10)
-	{
-		T value;
-
-		const std::from_chars_result result = std::from_chars(str.data(), str.data() + str.length(), value, base);
-		if (result.ec != std::errc())
-			return std::nullopt;
-
-		return value;
-	}
+	std::optional<T> FromChars(const std::string_view str, int base = 10);
 	template <typename T>
 		requires std::is_integral_v<T>
-	inline std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr)
-	{
-		T value;
-
-		const char* ptr = str.data();
-		const char* end = ptr + str.length();
-		const std::from_chars_result result = std::from_chars(ptr, end, value, base);
-		if (result.ec != std::errc())
-			return std::nullopt;
-
-		if (endptr)
-			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
-
-		return value;
-	}
+	std::optional<T> FromChars(const std::string_view str, int base, std::string_view* endptr);
 
 	template <typename T>
 		requires std::is_floating_point_v<T>
-	inline std::optional<T> FromChars(const std::string_view str)
-	{
-		T value;
-
-		const fast_float::from_chars_result result = fast_float::from_chars(str.data(), str.data() + str.length(), value);
-		if (result.ec != std::errc())
-			return std::nullopt;
-
-		return value;
-	}
+	std::optional<T> FromChars(const std::string_view str);
 	template <typename T>
 		requires std::is_floating_point_v<T>
-	inline std::optional<T> FromChars(const std::string_view str, std::string_view* endptr)
-	{
-		T value;
-
-		const char* ptr = str.data();
-		const char* end = ptr + str.length();
-		const fast_float::from_chars_result result = fast_float::from_chars(ptr, end, value);
-		if (result.ec != std::errc())
-			return std::nullopt;
-
-		if (endptr)
-			*endptr = (result.ptr < end) ? std::string_view(result.ptr, end - result.ptr) : std::string_view();
-
-		return value;
-	}
+	std::optional<T> FromChars(const std::string_view str, std::string_view* endptr);
 
 	/// Wrapper around std::to_chars
 	template <typename T>
 		requires std::is_integral_v<T>
-	inline std::string ToChars(T value, int base = 10)
-	{
-		// to_chars() requires macOS 10.15+.
-#if !defined(__APPLE__) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15
-		constexpr size_t MAX_SIZE = 32;
-		char buf[MAX_SIZE];
-		std::string ret;
-
-		const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value, base);
-		if (result.ec == std::errc())
-			ret.append(buf, result.ptr - buf);
-
-		return ret;
-#else
-		std::ostringstream ss;
-		ss.imbue(std::locale::classic());
-		ss << std::setbase(base) << value;
-		return ss.str();
-#endif
-	}
+	std::string ToChars(T value, int base = 10);
 
 	template <typename T>
 		requires std::is_floating_point_v<T>
-	inline std::string ToChars(T value)
-	{
-		// No to_chars() in older versions of libstdc++/libc++.
-#ifdef _MSC_VER
-		constexpr size_t MAX_SIZE = 64;
-		char buf[MAX_SIZE];
-		std::string ret;
-		const std::to_chars_result result = std::to_chars(buf, buf + MAX_SIZE, value);
-		if (result.ec == std::errc())
-			ret.append(buf, result.ptr - buf);
-		return ret;
-#else
-		std::ostringstream ss;
-		ss.imbue(std::locale::classic());
-		ss << value;
-		return ss.str();
-#endif
-	}
-
+	std::string ToChars(T value);
 
 	/// Explicit override for booleans
 	template <>
-	inline std::optional<bool> FromChars(const std::string_view str, int base)
-	{
-		if (Strncasecmp("true", str.data(), str.length()) == 0 || Strncasecmp("yes", str.data(), str.length()) == 0 ||
-			Strncasecmp("on", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0 ||
-			Strncasecmp("enabled", str.data(), str.length()) == 0 || Strncasecmp("1", str.data(), str.length()) == 0)
-		{
-			return true;
-		}
-
-		if (Strncasecmp("false", str.data(), str.length()) == 0 || Strncasecmp("no", str.data(), str.length()) == 0 ||
-			Strncasecmp("off", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0 ||
-			Strncasecmp("disabled", str.data(), str.length()) == 0 || Strncasecmp("0", str.data(), str.length()) == 0)
-		{
-			return false;
-		}
-
-		return std::nullopt;
-	}
+	std::optional<bool> FromChars(const std::string_view str, int base);
 
 	template <>
 	inline std::string ToChars(bool value, int base)
