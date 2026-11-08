@@ -2852,30 +2852,172 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="230"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="234"/>
         <source>No devices available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="240"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="244"/>
         <source>Clear Bindings</source>
         <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="242"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="246"/>
         <source>Are you sure you want to clear all bindings for this controller? This action cannot be undone.</source>
         <extracomment>Binding: A pair of (host button, target button); Mapping: A list of bindings covering an entire controller. These are two different things (which might be the same in your language, please make sure to verify this).</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="271"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="275"/>
         <source>Automatic Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="272"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="276"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ControllerBindingWidget_DualShock1</name>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="43"/>
+        <source>D-Pad</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="49"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="218"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="861"/>
+        <source>Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="89"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="258"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="821"/>
+        <source>Left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="129"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="298"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="941"/>
+        <source>Up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="169"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="338"/>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="901"/>
+        <source>Right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="212"/>
+        <source>Left Analog</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="381"/>
+        <source>Large Motor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="438"/>
+        <source>L2</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="472"/>
+        <source>R2</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="506"/>
+        <source>L1</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="540"/>
+        <source>R1</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="574"/>
+        <source>Start</source>
+        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="608"/>
+        <source>Select</source>
+        <extracomment>Leave this button name as-is or uppercase it entirely.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="646"/>
+        <source>Face Buttons</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="652"/>
+        <source>Cross</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="692"/>
+        <source>Square</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="732"/>
+        <source>Triangle</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="772"/>
+        <source>Circle</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="815"/>
+        <source>Right Analog</source>
+        <extracomment>Try to use Sony&apos;s official terminology for this. A good place to start would be in the console or the DualShock 2&apos;s manual. If this element was officially translated to your language by Sony in later DualShocks, you may use that term.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="984"/>
+        <source>Small Motor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="1115"/>
+        <source>L3</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="1155"/>
+        <source>R3</source>
+        <extracomment>Leave this button name as-is.</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerBindingWidget_DualShock1.ui" line="1195"/>
+        <source>Analog</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3353,17 +3495,17 @@ Unread messages: {2}</source>
 <context>
     <name>ControllerCustomSettingsWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="754"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="758"/>
         <source>Restore Default Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="726"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="730"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="730"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="734"/>
         <source>Select File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3599,33 +3741,33 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="435"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="439"/>
         <source>Not Configured</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="440"/>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="445"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="444"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="449"/>
         <source>%1%</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="452"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="456"/>
         <source>Set Frequency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="452"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="456"/>
         <source>Frequency: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="479"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="483"/>
         <source>Macro will not repeat.</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="481"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="485"/>
         <source>Macro will toggle buttons every %n frames.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -3636,17 +3778,17 @@ Unread messages: {2}</source>
 <context>
     <name>ControllerMacroWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="317"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="321"/>
         <source>Controller Port %1%2 Macros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="321"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="325"/>
         <source>Controller Port %1 Macros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="332"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="336"/>
         <source>Macro %1
 %2</source>
         <extracomment>This is the full text that appears in each option of the 16 available macros, and reads like this:
@@ -23432,6 +23574,7 @@ Target speed set to 120%.</source>
 <context>
     <name>Pad</name>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="17"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="20"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="16"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="16"/>
@@ -23439,6 +23582,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="18"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="21"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="17"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="17"/>
@@ -23446,6 +23590,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="19"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="22"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="18"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="18"/>
@@ -23453,6 +23598,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="20"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="23"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="19"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="19"/>
@@ -23460,30 +23606,35 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="21"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="24"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="20"/>
         <source>Triangle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="22"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="25"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="21"/>
         <source>Circle</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="23"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="26"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="22"/>
         <source>Cross</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="24"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="27"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="23"/>
         <source>Square</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="25"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="28"/>
         <location filename="../../pcsx2/SIO/Pad/PadGuitar.cpp" line="20"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="24"/>
@@ -23492,6 +23643,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="26"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="29"/>
         <location filename="../../pcsx2/SIO/Pad/PadGuitar.cpp" line="21"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="25"/>
@@ -23501,40 +23653,47 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="27"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="30"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="26"/>
         <source>L1 (Left Bumper)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="28"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="31"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="27"/>
         <source>L2 (Left Trigger)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="29"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="32"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="28"/>
         <source>R1 (Right Bumper)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="30"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="33"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="29"/>
         <source>R2 (Right Trigger)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="31"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="34"/>
         <source>L3 (Left Stick Button)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="32"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="35"/>
         <source>R3 (Right Stick Button)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="33"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="36"/>
         <source>Analog Toggle</source>
         <translation type="unfinished"></translation>
@@ -23545,46 +23704,55 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="34"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="38"/>
         <source>Left Stick Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="35"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="39"/>
         <source>Left Stick Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="36"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="40"/>
         <source>Left Stick Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="37"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="41"/>
         <source>Left Stick Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="38"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="42"/>
         <source>Right Stick Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="39"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="43"/>
         <source>Right Stick Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="40"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="44"/>
         <source>Right Stick Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="41"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="45"/>
         <source>Right Stick Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="42"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="46"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="33"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="30"/>
@@ -23592,6 +23760,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="43"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="47"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="34"/>
         <location filename="../../pcsx2/SIO/Pad/PadNegcon.cpp" line="31"/>
@@ -23599,56 +23768,71 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="47"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="51"/>
         <source>Not Inverted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="48"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="52"/>
         <source>Invert Left/Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="48"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="52"/>
         <source>Invert Up/Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="49"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="53"/>
         <source>Invert Left/Right + Up/Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="52"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="56"/>
         <source>Invert Left Stick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="53"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="57"/>
         <source>Inverts the direction of the left analog stick.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="55"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="59"/>
         <source>Invert Right Stick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="56"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="60"/>
         <source>Inverts the direction of the right analog stick.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="58"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="62"/>
         <source>Analog Deadzone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="59"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="63"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="61"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="66"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="69"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="72"/>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="76"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="65"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="70"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="75"/>
@@ -23659,6 +23843,11 @@ Target speed set to 120%.</source>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="41"/>
         <location filename="../../pcsx2/SIO/Pad/PadJogcon.cpp" line="44"/>
         <source>%.0f%%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="80"/>
+        <source>PS1 Analog Controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -23677,11 +23866,13 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="73"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="82"/>
         <source>Button/Trigger Deadzone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="74"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="83"/>
         <source>Sets the deadzone for activating buttons/triggers, i.e. the fraction of the trigger which will be ignored.</source>
         <translation type="unfinished"></translation>
@@ -23692,36 +23883,48 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="695"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="744"/>
         <source>Analog light is now on for port {0} / slot {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="696"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="745"/>
         <source>Analog light is now off for port {0} / slot {1}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="62"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="66"/>
         <source>Analog Sensitivity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="63"/>
+        <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="67"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="76"/>
         <source>Large Motor Vibration Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="68"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="77"/>
         <source>Increases or decreases the intensity of low frequency vibration sent by the game.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="70"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="79"/>
         <source>Small Motor Vibration Scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/SIO/Pad/PadDualshock1.cpp" line="71"/>
         <location filename="../../pcsx2/SIO/Pad/PadDualshock2.cpp" line="80"/>
         <source>Increases or decreases the intensity of high frequency vibration sent by the game.</source>
         <translation type="unfinished"></translation>
@@ -23967,7 +24170,7 @@ Target speed set to 120%.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="619"/>
+        <location filename="../../pcsx2/SIO/Pad/Pad.cpp" line="624"/>
         <source>Controller port {0}, slot {1} has a {2} connected, but the save state has a {3}.
 Ejecting {2} and replacing it with {3}.</source>
         <extracomment>{0} and {1} are the port and multitap slot, {2} and {3} are controller types (e.g. &quot;DualShock 2&quot;, &quot;Jogcon&quot;)</extracomment>
@@ -27330,12 +27533,12 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
 <context>
     <name>USBBindingWidget</name>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1316"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1342"/>
         <source>Axes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1344"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1370"/>
         <source>Buttons</source>
         <translation type="unfinished"></translation>
     </message>
@@ -28155,32 +28358,32 @@ Xbox 360 turntables require a 256x multiplier, most other turntables can use the
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1023"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1049"/>
         <source>USB Port %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1197"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1223"/>
         <source>No devices available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1206"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1232"/>
         <source>Clear Bindings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1207"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1233"/>
         <source>Are you sure you want to clear all bindings for this device? This action cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1236"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1262"/>
         <source>Automatic Binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerBindingWidget.cpp" line="1237"/>
+        <location filename="../Settings/ControllerBindingWidget.cpp" line="1263"/>
         <source>No generic bindings were generated for device &apos;%1&apos;. The controller/source may not support automatic mapping.</source>
         <translation type="unfinished"></translation>
     </message>
