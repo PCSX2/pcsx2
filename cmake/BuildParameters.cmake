@@ -1,8 +1,6 @@
 # Extra preprocessor definitions that will be added to all pcsx2 builds
 set(PCSX2_DEFS "")
 
-include(GNUInstallDirs)
-
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
@@ -215,6 +213,12 @@ if(MSVC)
 		$<${CONFIG_REL_NO_DEB}:/OPT:ICF>
 	)
 endif()
+
+if (NOT PACKAGE_MODE)
+	set(CMAKE_INSTALL_BINDIR "${BIN_DIR}")
+endif()
+
+include(GNUInstallDirs)
 
 if(PACKAGE_MODE)
 	file(RELATIVE_PATH relative_datadir ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_DATADIR}/PCSX2)

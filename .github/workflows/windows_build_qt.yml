@@ -146,7 +146,7 @@ jobs:
         shell: cmd
         run: |
           call "%VCVARSPATH%" || exit /b
-          cmake . -B build ${{ inputs.cmakeFlags }} "-DCMAKE_PREFIX_PATH=%cd%\deps" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DDISABLE_ADVANCE_SIMD=ON -G Ninja
+          cmake . -B build ${{ inputs.cmakeFlags }} "-DCMAKE_PREFIX_PATH=%cd%\deps" "-DCMAKE_INSTALL_PREFIX=%cd%" -DQT_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DDISABLE_ADVANCE_SIMD=ON -G Ninja
 
       - name: Build PCSX2
         shell: cmd

@@ -33,6 +33,7 @@ include(SearchForStuff)
 
 # Write binaries to the bin directory under the build directory.
 # This makes it simple to run development builds directly out of the build directory.
+# is this still needed?
 if (UNIX AND NOT APPLE)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${BIN_DIR}")
 	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${BIN_DIR}")
