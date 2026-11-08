@@ -115,6 +115,8 @@ namespace VMManager
 	static bool HasValidOrInitializingVM();
 	static void PrecacheCDVDFile();
 
+	static void SetState(VMState state);
+
 	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
 	static bool DoLoadState(const char* filename, Error* error = nullptr);
 	static void DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state, std::function<void(const std::string&)> error_callback);
@@ -267,7 +269,7 @@ void VMManager::ResetResumeTimestamp()
 	s_session_resume_timestamp = static_cast<u64>(Common::Timer::GetCurrentValue());
 }
 
-void VMManager::SetState(VMState state)
+static void VMManager::SetState(VMState state)
 {
 	// Some state transitions aren't valid.
 	pxAssert(state != VMState::Initializing && state != VMState::Shutdown);

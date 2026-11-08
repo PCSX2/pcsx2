@@ -83,9 +83,6 @@ namespace VMManager
 	/// Returns the current state of the VM.
 	VMState GetState();
 
-	/// Alters the current state of the VM.
-	void SetState(VMState state);
-
 	/// Returns true if there is an active virtual machine.
 	bool HasValidVM();
 
