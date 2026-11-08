@@ -11733,6 +11733,11 @@ SCUS-97266:
   name: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SCUS-97268:
   name: "Ratchet & Clank 2 - Going Commando"
   region: "NTSC-U"
@@ -11750,6 +11755,11 @@ SCUS-97269:
   name: "Final Fantasy XI [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SCUS-97270:
   name: "Kiosk Demo Disc 2.9"
   region: "NTSC-U"
@@ -19515,14 +19525,12 @@ SLES-52047:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLES-52048:
   name: "The Sims - Bustin' Out"
   name-sort: "Sims, The - Bustin' Out"
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLES-52055:
   name: "Harry Potter and the Philosopher's Stone"
   region: "PAL-M11"
@@ -22575,6 +22583,9 @@ SLES-53090:
 SLES-53091:
   name: "Predator - Concrete Jungle"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
+    nativeScaling: 2 # Softens and fixes misaligned bloom.
 SLES-53092:
   name: "Motocross Mania 3"
   region: "PAL-M5"
@@ -31865,7 +31876,6 @@ SLKA-25137:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLKA-25138:
   name: ".hack//악성변이 Vol.2"
   name-sort: ".hack Mutation Vol. 2"
@@ -35169,6 +35179,11 @@ SLPM-55229:
   name-sort: "ふぁいなるふぁんたじー11 ゔぁな・でぃーる これくしょん2"
   name-en: "Final Fantasy XI - Vana'diel Collection 2"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-55230:
   name: "マーセナリーズ2 ワールド イン フレームス"
   name-sort: "まーせなりーず2 わーるど いん ふれーむす"
@@ -35529,6 +35544,11 @@ SLPM-55298:
   name-sort: "ふぁいなるふぁんたじー11 あどぅりんのまきょう"
   name-en: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-60101:
   name: "ØSTORY [体験版]"
   name-sort: "らぶすとーりー [たいけんばん]"
@@ -38990,11 +39010,21 @@ SLPM-62332:
   name-sort: "ぷれいおんらいん びゅーわー てとらますたー & じゃんほうろう"
   name-en: "PlayOnline Viewer - Tetra Master & Janhourou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-62333:
   name: "プレイオンライン ビューワー ～テトラマスター & 雀鳳楼～"
   name-sort: "ぷれいおんらいん びゅーわー てとらますたー & じゃんほうろう"
   name-en: "PlayOnline Viewer - Tetra Master & Janhourou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-62334:
   name: "SIMPLE2000シリーズ Vol.29 THE 恋愛ボードゲーム ～青春18ラヂオ～"
   name-sort: "しんぷる2000しりーず Vol.  29 THEれんあいぼーどげーむ せいしゅん18らじお"
@@ -43206,16 +43236,31 @@ SLPM-65287:
   name-sort: "ふぁいなるふぁんたじー11 じらーとのげんえい かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Girade no Genei"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65288:
   name: "ファイナルファンタジーⅪ ジラートの幻影 オールインワンパック2003 [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 じらーとのげんえい おーるいんわんぱっく2003 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Girade no Genei [All-in-One Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65289:
   name: "ファイナルファンタジーⅪ エントリーディスク [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 えんとりーでぃすく [ぷれいおんらいん]"
   name-en: "Final Fantasy XI [Entry Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65290:
   name: "マージ ～あの時の遠い約束を～ [初回限定版]"
   name-sort: "まーじ ～あのときのとおいやくそくを～ [しょかいげんていばん]"
@@ -44308,7 +44353,6 @@ SLPM-65479:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLPM-65480:
   name: "michigan"
   name-sort: "みしがん"
@@ -45618,11 +45662,21 @@ SLPM-65705:
   name-sort: "ふぁいなるふぁんたじー11 ぷろましあのじゅばく かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Chains of Promathia [Expansion Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65706:
   name: "ファイナルファンタジーⅪ オールインワンパック2004 [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 おーるいんわんぱっく2004 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Chains of Promathia [All-in-One Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65708:
   name: "鋼の錬金術師2 赤きエリクシルの悪魔 [初回限定版]"
   name-sort: "はがねのれんきんじゅつし2 あかきえりくしるのあくま [しょかいげんていばん]"
@@ -47090,6 +47144,11 @@ SLPM-65953:
   name-sort: "ふぁいなるふぁんたじー11 えんとりーでぃすく2005 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI [Entry Disc 2005]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65954:
   name: "トム・クランシーシリーズ ゴーストリコン [UBISOFT BEST]"
   name-sort: "とむくらんしーしりーず ごーすとりこん [UBISOFT BEST]"
@@ -49905,11 +49964,21 @@ SLPM-66393:
   name-sort: "ふぁいなるふぁんたじー11 おーるいんわんぱっく2006 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - All-in-One Pack 2006"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66394:
   name: "ファイナルファンタジーⅪ アトルガンの秘宝 拡張データディスク"
   name-sort: "ふぁいなるふぁんたじー11 あとるがんのひほう かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Aht Urhgan no Hihou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66395:
   name: "炎の宅配便"
   name-sort: "ほのおのたくはいびん"
@@ -53055,11 +53124,21 @@ SLPM-66893:
   name-sort: "ふぁいなるふぁんたじー11 ゔぁな・でぃーる これくしょん [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Vana'diel Collection"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66894:
   name: "ファイナルファンタジーⅪ アルタナの神兵 拡張データディスク"
   name-sort: "ふぁいなるふぁんたじー11 あるたなのかみへい かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Wings of the Goddess"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66895:
   name: "マネーすごろく カブコロ"
   name-sort: "まねーすごろく かぶころ"
@@ -56120,6 +56199,11 @@ SLPS-20200:
   name-sort: "ふぁいなるふぁんたじー11 [でぃすく2/2]"
   name-en: "Final Fantasy XI [Disc 2 of 2]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-20201:
   name: "最強 東大将棋4 付・矢倉道場"
   name-sort: "さいきょう とうだいしょうぎ4  つき・やぐらどうじょう"
@@ -56279,6 +56363,14 @@ SLPS-20231:
   name-sort: "ふりーくすたいる もとくろす"
   name-en: "Freekstyle Motocross"
   region: "NTSC-J"
+SLPS-20232:
+  name: "PlayOnline Viewer - Tetra Master & Janhourou"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-20233:
   name: "必殺パチンコステーションV6 夢の超特急"
   name-sort: "ひっさつぱちんこすてーしょんV 6 ゆめのちょうとっきゅう"
@@ -58737,6 +58829,11 @@ SLPS-25160:
   name-sort: "ふぁいなるふぁんたじー11 2002 SPECIAL ART BOX"
   name-en: "Final Fantasy XI 2002 [Special Art Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25161:
   name: "宇宙戦艦ヤマト 暗黒星団帝国の逆襲 [初回生産限定版]"
   name-sort: "うちゅうせんかんやまと あんこくせいだんていこくのぎゃくしゅう [しょかいせいさんげんてい]"
@@ -58965,6 +59062,11 @@ SLPS-25200:
   name-en: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25201:
   name: "リーヴェルファンタジア マリエルと妖精物語"
   name-sort: "りーゔぇるふぁんたじあ まりえるとようせいものがたり"
@@ -69067,7 +69169,6 @@ SLUS-20842:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLUS-20843:
   name: "Dead to Rights II"
   region: "NTSC-U"
@@ -69281,6 +69382,9 @@ SLUS-20875:
   name: "Predator - Concrete Jungle"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
+    nativeScaling: 2 # Softens and fixes misaligned bloom.
 SLUS-20876:
   name: "Backyard Football 2006"
   region: "NTSC-U"
@@ -70528,6 +70632,11 @@ SLUS-21069:
 SLUS-21070:
   name: "Final Fantasy XI - Chains of Promathia"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21071:
   name: "The Nightmare of Druaga - Fushigino Dungeon"
   region: "NTSC-U"
@@ -72787,6 +72896,11 @@ SLUS-21403:
 SLUS-21404:
   name: "Final Fantasy XI - Treasures of Aht Urhgan"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21405:
   name: "Xiaolin Showdown"
   region: "NTSC-U"
@@ -74433,6 +74547,11 @@ SLUS-21704:
   name: "Final Fantasy XI - Vana'diel Collection 2008"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21705:
   name: "Madden NFL 08 en Español"
   region: "NTSC-U"
