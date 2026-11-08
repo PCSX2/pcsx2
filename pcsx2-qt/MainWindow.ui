@@ -175,6 +175,8 @@
     <addaction name="actionFullscreen"/>
     <addaction name="menuWindowSize"/>
     <addaction name="separator"/>
+    <addaction name="actionShowFavoriteIcons"/>
+    <addaction name="actionShowCustomSettingsIcons"/>
     <addaction name="actionGridViewShowTitles"/>
     <addaction name="actionGridViewShowFullTitles"/>
     <addaction name="actionGridViewZoomIn"/>
@@ -800,6 +802,22 @@
    </property>
    <property name="text">
     <string>Game &amp;Grid</string>
+   </property>
+  </action>
+  <action name="actionShowFavoriteIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Favorite Icons</string>
+   </property>
+  </action>
+  <action name="actionShowCustomSettingsIcons">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Custom &amp;Settings Icons</string>
    </property>
   </action>
   <action name="actionGridViewShowTitles">

@@ -242,6 +242,12 @@ void MainWindow::setupAdditionalUi()
 	m_game_list_widget->initialize();
 	m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->getShowGridCoverTitles());
 	m_ui.actionGridViewShowFullTitles->setChecked(m_game_list_widget->getShowGridFullCoverTitles());
+
+	const bool show_favorite_icons = Host::GetBaseBoolSettingValue("UI", "ShowFavoriteIcons", true);
+	const bool show_custom_settings_icons = Host::GetBaseBoolSettingValue("UI", "ShowCustomSettingsIcons", true);
+	m_ui.actionShowFavoriteIcons->setChecked(show_favorite_icons);
+	m_ui.actionShowCustomSettingsIcons->setChecked(show_custom_settings_icons);
+
 	m_ui.mainContainer->addWidget(m_game_list_widget);
 
 	rebuildToolbar();
@@ -562,6 +568,8 @@ void MainWindow::connectSignals()
 	connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
 	connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
 	connect(m_ui.actionControllerTester, &QAction::triggered, this, &MainWindow::onToolsControllerTesterTriggered);
+	connect(m_ui.actionShowFavoriteIcons, &QAction::triggered, this, &MainWindow::onShowFavoriteIconsTriggered);
+	connect(m_ui.actionShowCustomSettingsIcons, &QAction::triggered, this, &MainWindow::onShowCustomSettingsIconsTriggered);
 	connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
 	connect(m_ui.actionGridViewShowFullTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowFullCoverTitles);
 	connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
@@ -2068,6 +2076,11 @@ void MainWindow::onFullscreenUIStateChange(bool running)
 {
 	m_ui.actionStartFullscreenUI->setText(running ? tr("Stop Big Picture Mode") : tr("Start Big Picture &Mode"));
 	m_ui.actionToolbarStartFullscreenUI->setText(running ? tr("Exit Big Picture", "In Toolbar") : tr("Big Picture", "In Toolbar"));
+
+	const bool show_favorite_icons = Host::GetBaseBoolSettingValue("UI", "ShowFavoriteIcons", true);
+	const bool show_custom_settings_icons = Host::GetBaseBoolSettingValue("UI", "ShowCustomSettingsIcons", true);
+	m_ui.actionShowFavoriteIcons->setChecked(show_favorite_icons);
+	m_ui.actionShowCustomSettingsIcons->setChecked(show_custom_settings_icons);
 }
 
 void MainWindow::onViewToolbarActionToggled(bool checked)
@@ -2308,6 +2321,22 @@ void MainWindow::onToolsControllerTesterTriggered()
 	}
 
 	startFile(QString::fromStdString(path));
+}
+
+void MainWindow::onShowFavoriteIconsTriggered(bool enabled)
+{
+	Host::SetBaseBoolSettingValue("UI", "ShowFavoriteIcons", enabled);
+	Host::CommitBaseSettingChanges();
+	m_game_list_widget->getModel()->refresh();
+	Host::RunOnGSThread([] { FullscreenUI::AppearanceSettingsChanged(); });
+}
+
+void MainWindow::onShowCustomSettingsIconsTriggered(bool enabled)
+{
+	Host::SetBaseBoolSettingValue("UI", "ShowCustomSettingsIcons", enabled);
+	Host::CommitBaseSettingChanges();
+	m_game_list_widget->getModel()->refresh();
+	Host::RunOnGSThread([] { FullscreenUI::AppearanceSettingsChanged(); });
 }
 
 #if !defined(__APPLE__)
@@ -3364,7 +3393,7 @@ SettingsWindow* MainWindow::getSettingsWindow()
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::backgroundChanged, m_game_list_widget, [this] { m_game_list_widget->setCustomBackground(); });
 		connect(m_settings_window->getInterfaceSettingsWidget(), &InterfaceSettingsWidget::preferEnglishGameListChanged, this, [] {
 			g_main_window->m_game_list_widget->refreshGridCovers();
-			Host::RunOnGSThread([] { FullscreenUI::PreferEnglishGameListChanged(); });
+			Host::RunOnGSThread([] { FullscreenUI::AppearanceSettingsChanged(); });
 		});
 	}
 

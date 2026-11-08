@@ -21,7 +21,8 @@ class GameListModel final : public QAbstractTableModel
 
 public:
 	static constexpr int FavoriteRole = Qt::UserRole + 1;
-	static constexpr int CustomSettingsRole = Qt::UserRole + 2;
+	static constexpr int FavoriteIconRole = Qt::UserRole + 2;
+	static constexpr int CustomSettingsIconRole = Qt::UserRole + 3;
 	enum Column : int
 	{
 		Column_Type,
@@ -97,6 +98,8 @@ private:
 	bool m_show_titles_for_covers = false;
 	bool m_show_full_titles_for_covers = false;
 	bool m_prefer_english_titles = false;
+	bool m_show_favorite_icons = true;
+	bool m_show_custom_settings_icons = true;
 
 	std::array<QString, Column_Count> m_column_display_names;
 	std::array<QPixmap, static_cast<u32>(GameList::EntryType::Count)> m_type_pixmaps;
