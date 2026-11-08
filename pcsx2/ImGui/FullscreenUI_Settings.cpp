@@ -562,7 +562,8 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
 				(i == static_cast<size_t>(index)));
 		}
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings, section, key, option_offset](s32 index, const std::string& title, bool checked) {
+			[game_settings, section = std::string(section), key = std::string(key), option_offset](s32 index, const std::string& title,
+				bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -570,13 +571,13 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
 					if (game_settings)
 					{
 						if (index == 0)
-							bsi->DeleteValue(section, key);
+							bsi->DeleteValue(section.c_str(), key.c_str());
 						else
-							bsi->SetIntValue(section, key, index - 1 + option_offset);
+							bsi->SetIntValue(section.c_str(), key.c_str(), index - 1 + option_offset);
 					}
 					else
 					{
-						bsi->SetIntValue(section, key, index + option_offset);
+						bsi->SetIntValue(section.c_str(), key.c_str(), index + option_offset);
 					}
 
 					SetSettingsChanged(bsi);
@@ -1223,7 +1224,8 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 				(value.has_value() && i == static_cast<size_t>(index)));
 		}
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings, section, key, option_values_copy = std::move(option_values_copy)](s32 index, const std::string& title, bool checked) {
+			[game_settings, section = std::string(section), key = std::string(key),
+				option_values_copy = std::move(option_values_copy)](s32 index, const std::string& title, bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1231,13 +1233,13 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 					if (game_settings)
 					{
 						if (index == 0)
-							bsi->DeleteValue(section, key);
+							bsi->DeleteValue(section.c_str(), key.c_str());
 						else
-							bsi->SetStringValue(section, key, option_values_copy[index - 1].c_str());
+							bsi->SetStringValue(section.c_str(), key.c_str(), option_values_copy[index - 1].c_str());
 					}
 					else
 					{
-						bsi->SetStringValue(section, key, option_values_copy[index].c_str());
+						bsi->SetStringValue(section.c_str(), key.c_str(), option_values_copy[index].c_str());
 					}
 
 					SetSettingsChanged(bsi);
@@ -1267,7 +1269,8 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 		for (size_t i = 0; i < raw_options.size(); i++)
 			cd_options.emplace_back(raw_options[i].second, (value.has_value() && value.value() == raw_options[i].first));
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings, section, key, raw_options = std::move(raw_options)](s32 index, const std::string& title, bool checked) {
+			[game_settings, section = std::string(section), key = std::string(key), raw_options = std::move(raw_options)](s32 index,
+				const std::string& title, bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1275,13 +1278,13 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
 					if (game_settings)
 					{
 						if (index == 0)
-							bsi->DeleteValue(section, key);
+							bsi->DeleteValue(section.c_str(), key.c_str());
 						else
-							bsi->SetStringValue(section, key, raw_options[index - 1].first.c_str());
+							bsi->SetStringValue(section.c_str(), key.c_str(), raw_options[index - 1].first.c_str());
 					}
 					else
 					{
-						bsi->SetStringValue(section, key, raw_options[index].first.c_str());
+						bsi->SetStringValue(section.c_str(), key.c_str(), raw_options[index].first.c_str());
 					}
 
 					SetSettingsChanged(bsi);
@@ -1415,7 +1418,8 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
 				(value.has_value() && i == static_cast<size_t>(index)));
 		}
 		OpenChoiceDialog(title, false, std::move(cd_options),
-			[game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
+			[game_settings, section = std::string(section), key = std::string(key), option_values](s32 index, const std::string& title,
+				bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1423,13 +1427,13 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
 					if (game_settings)
 					{
 						if (index == 0)
-							bsi->DeleteValue(section, key);
+							bsi->DeleteValue(section.c_str(), key.c_str());
 						else
-							bsi->SetFloatValue(section, key, option_values[index - 1]);
+							bsi->SetFloatValue(section.c_str(), key.c_str(), option_values[index - 1]);
 					}
 					else
 					{
-						bsi->SetFloatValue(section, key, option_values[index]);
+						bsi->SetFloatValue(section.c_str(), key.c_str(), option_values[index]);
 					}
 
 					SetSettingsChanged(bsi);
@@ -1466,7 +1470,8 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 				(typed_value.has_value() && i == static_cast<u32>(typed_value.value())));
 		OpenChoiceDialog(
 			title, false, std::move(cd_options),
-			[section, key, to_string_function, game_settings](s32 index, const std::string& title, bool checked) {
+			[section = std::string(section), key = std::string(key), to_string_function, game_settings](s32 index, const std::string& title,
+				bool checked) {
 				if (index >= 0)
 				{
 					auto lock = Host::GetSettingsLock();
@@ -1474,13 +1479,13 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
 					if (game_settings)
 					{
 						if (index == 0)
-							bsi->DeleteValue(section, key);
+							bsi->DeleteValue(section.c_str(), key.c_str());
 						else
-							bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+							bsi->SetStringValue(section.c_str(), key.c_str(), to_string_function(static_cast<DataType>(index - 1)));
 					}
 					else
 					{
-						bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
+						bsi->SetStringValue(section.c_str(), key.c_str(), to_string_function(static_cast<DataType>(index)));
 					}
 
 					SetSettingsChanged(bsi);
