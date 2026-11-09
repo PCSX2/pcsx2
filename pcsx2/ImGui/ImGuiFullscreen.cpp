@@ -912,6 +912,134 @@ void ImGuiFullscreen::EndFullscreenColumnWindow()
 	ImGui::PopStyleColor();
 }
 
+void ImGuiFullscreen::BeginSidebar(const char* name, float width, SidebarState& state)
+{
+	static constexpr float alpha = 0.8f;
+
+	if (state.focus_requested)
+		ImGui::SetNextWindowFocus();
+
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, alpha));
+	ImGui::PushStyleColor(ImGuiCol_NavCursor, IM_COL32(0, 0, 0, 0));
+	ImGui::PushStyleColor(ImGuiCol_TextDisabled, MulAlpha(UIPrimaryTextColor, 0.7f));
+	PushPrimaryColor();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
+	ImGui::BeginChild(name, ImVec2(width, 0.0f), ImGuiChildFlags_NavFlattened | ImGuiChildFlags_AlwaysUseWindowPadding, 0);
+	ImGui::PopStyleVar(2);
+	state.has_focus = ImGui::IsWindowFocused();
+
+	// focusing a child window doesn't select anything in it, so we have to do it here
+	ImGuiContext& g = *GImGui;
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (state.focus_requested && g.NavWindow == window)
+		ImGui::NavInitWindow(window, true);
+
+	BeginMenuButtons();
+}
+
+bool ImGuiFullscreen::SidebarItem(const char* str_id, bool selected, bool default_focus, const char* title, const char* summary,
+	const char* icon, GSTexture* badge, SidebarState& state)
+{
+	static constexpr float padding = 12.0f;
+	static constexpr float icon_size = 30.0f;
+	static constexpr float icon_spacing = 8.0f;
+
+	// long names wrap onto multiple lines, and the entry grows to fit
+	const float text_width = std::max(1.0f, ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FramePadding.x * 2.0f -
+												LayoutScale(padding + icon_size + icon_spacing));
+	const float title_height = g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, text_width, title).y;
+	const float summary_height = summary ? g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, text_width, summary).y : 0.0f;
+
+	ImRect bb;
+	bool visible, hovered;
+	MenuButtonFrame(str_id, true, LayoutUnscale(std::max(LayoutScale(icon_size), title_height + summary_height)), &visible, &hovered,
+		&bb.Min, &bb.Max, 0, 1.0f);
+
+	// this has to happen even if the item is clipped, otherwise it won't scroll into view
+	if (state.focus_requested && default_focus)
+		ImGui::SetKeyboardFocusHere(-1);
+
+	if (!visible)
+		return false;
+
+	ImDrawList* dl = ImGui::GetWindowDrawList();
+	if (selected)
+		dl->AddRectFilled(bb.Min, ImVec2(bb.Min.x + LayoutScale(4.0f), bb.Max.y), ImGui::GetColorU32(ImGuiCol_Text));
+
+	const ImVec2 icon_min(bb.Min.x + LayoutScale(padding), bb.Min.y + (bb.GetHeight() - LayoutScale(icon_size)) * 0.5f);
+	if (badge)
+	{
+		dl->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()), icon_min, icon_min + LayoutScale(icon_size, icon_size),
+			ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+	}
+	else if (icon)
+	{
+		const std::pair<ImFont*, float> icon_font(g_large_font.first, LayoutScale(icon_size));
+		const ImVec2 glyph_size = icon_font.first->CalcTextSizeA(icon_font.second, FLT_MAX, 0.0f, icon);
+		AddTextWithShadow(dl, icon_font,
+			ImVec2(icon_min.x + (LayoutScale(icon_size) - glyph_size.x) * 0.5f, bb.Min.y + (bb.GetHeight() - glyph_size.y) * 0.5f),
+			ImGui::GetColorU32(ImGuiCol_Text), icon);
+	}
+
+	const float text_x = bb.Min.x + LayoutScale(padding + icon_size + icon_spacing);
+	const float text_y = bb.Min.y + (bb.GetHeight() - title_height - summary_height) * 0.5f;
+	const ImVec4 text_clip(text_x, bb.Min.y, bb.Max.x, bb.Max.y);
+	AddTextWithShadow(dl, g_medium_font, ImVec2(text_x, text_y), ImGui::GetColorU32(ImGuiCol_Text), title, nullptr, text_width, &text_clip);
+	if (summary)
+	{
+		AddTextWithShadow(dl, g_medium_font, ImVec2(text_x, text_y + title_height), ImGui::GetColorU32(ImGuiCol_TextDisabled), summary,
+			nullptr, text_width, &text_clip);
+	}
+
+	if (ImGui::IsItemClicked() || ImGui::IsItemActivated())
+	{
+		// the content child is drawn after us, so it'll pick up the focus
+		ImGui::SetNextWindowFocus();
+		return true;
+	}
+
+	return false;
+}
+
+void ImGuiFullscreen::EndSidebar(SidebarState& state)
+{
+	EndMenuButtons();
+	ImGui::EndChild();
+	PopPrimaryColor();
+	ImGui::PopStyleColor(3);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+	ImGui::SameLine();
+	ImGui::PopStyleVar();
+
+	// nav doesn't move from the sidebar into the content child on its own
+	if (state.has_focus && (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false)))
+	{
+		ImGui::SetNextWindowFocus();
+		ForceKeyNavEnabled();
+	}
+
+	state.focus_requested = false;
+}
+
+void ImGuiFullscreen::UpdateSidebarFocus(SidebarState& state)
+{
+	// we've just been given focus from the sidebar, but nothing is selected yet
+	ImGuiContext& g = *GImGui;
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (g.NavWindow == window && g.NavId == 0)
+		ImGui::NavInitWindow(window, false);
+
+	if (!state.has_focus && (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false)))
+	{
+		state.has_focus = true;
+		state.focus_requested = true;
+		ForceKeyNavEnabled();
+	}
+}
+
 bool ImGuiFullscreen::BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
 	const ImVec4& background /* = HEX_TO_IMVEC4(0x212121, 0xFF) */, float rounding /*= 0.0f*/,
 	const ImVec2& padding /*= 0.0f*/, ImGuiWindowFlags flags /*= 0*/)

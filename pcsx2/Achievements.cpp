@@ -183,7 +183,7 @@ namespace Achievements
 	static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
 		float name_column_width, float time_column_width, float column_spacing);
 	static void OpenSubset(const rc_client_subset_t* subset);
-	static bool DrawSubsetSidebar(float sidebar_width, bool& sidebar_has_focus, bool& focus_sidebar, bool leaderboards_only);
+	static void DrawSubsetSidebar(float sidebar_width, ImGuiFullscreen::SidebarState& sidebar, bool leaderboards_only);
 	static void DrawSubsetSidebarFooter(bool sidebar_has_focus);
 	static void OpenLeaderboard(const rc_client_leaderboard_t* lboard);
 	static void LeaderboardFetchNearbyCallback(
@@ -2443,103 +2443,34 @@ bool Achievements::PrepareAchievementsWindow()
 	return true;
 }
 
-bool Achievements::DrawSubsetSidebar(float sidebar_width, bool& sidebar_has_focus, bool& focus_sidebar, bool leaderboards_only)
+void Achievements::DrawSubsetSidebar(float sidebar_width, ImGuiFullscreen::SidebarState& sidebar, bool leaderboards_only)
 {
 	if (!s_subset_list)
-		return false;
+		return;
 
-	using ImGuiFullscreen::g_medium_font;
-	using ImGuiFullscreen::LayoutScale;
-	using ImGuiFullscreen::UIBackgroundColor;
+	ImGuiFullscreen::BeginSidebar("subset_sidebar", sidebar_width, sidebar);
 
-	static constexpr float alpha = 0.8f;
-	const ImVec4 sidebar_bg(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, alpha);
-	ImGui::PushStyleColor(ImGuiCol_ChildBg, sidebar_bg);
-	ImGui::PushStyleColor(ImGuiCol_NavCursor, IM_COL32(0, 0, 0, 0));
-
-	bool subset_selected = false;
-
-	if (ImGui::BeginChild("subset_sidebar", ImVec2(sidebar_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
+	for (u32 i = 0; i < s_subset_list->num_subsets; i++)
 	{
-		sidebar_has_focus = ImGui::IsWindowFocused();
-		ImGuiFullscreen::BeginMenuButtons();
+		const rc_client_subset_t* subset = s_subset_list->subsets[i];
+		if (leaderboards_only && subset->num_leaderboards == 0)
+			continue;
 
-		const float padding = LayoutScale(10.0f);
-		const float spacing = LayoutScale(8.0f);
-		const float icon_size = LayoutScale(28.0f);
+		TinyString id_str;
+		id_str.format("sidebar_subset_{}", subset->id);
 
-		for (u32 i = 0; i < s_subset_list->num_subsets; i++)
+		const std::string badge_path = GetSubsetBadgePath(subset);
+		GSTexture* badge = badge_path.empty() ? nullptr : ImGuiFullscreen::GetCachedTextureAsync(badge_path);
+
+		const bool is_open = (s_open_subset && s_open_subset->id == subset->id);
+		if (ImGuiFullscreen::SidebarItem(id_str, is_open, is_open || (!s_open_subset && i == 0), subset->title, nullptr, nullptr, badge, sidebar))
 		{
-			const rc_client_subset_t* subset = s_subset_list->subsets[i];
-			if (leaderboards_only && subset->num_leaderboards == 0)
-				continue;
-
-			TinyString id_str;
-			id_str.format("sidebar_subset_{}", subset->id);
-
-			// A zero wrap width disables wrapping.
-			const float text_width = std::max(1.0f, ImGui::GetContentRegionAvail().x -
-														(ImGui::GetStyle().FramePadding.x + padding) * 2.0f - icon_size - spacing);
-			const ImVec2 text_size = g_medium_font.first->CalcTextSizeA(g_medium_font.second, FLT_MAX, text_width, subset->title);
-			const float height = ImGuiFullscreen::LayoutUnscale(std::max(icon_size, text_size.y));
-
-			ImRect bb;
-			bool visible, hovered;
-			ImGuiFullscreen::MenuButtonFrame(id_str, true, height,
-				&visible, &hovered, &bb.Min, &bb.Max, 0, 1.0f);
-
-			if (focus_sidebar && ((s_open_subset && s_open_subset->id == subset->id) || (!s_open_subset && i == 0)))
-			{
-				ImGui::SetItemDefaultFocus();
-			}
-
-			if (s_open_subset && s_open_subset->id == subset->id)
-			{
-				ImGui::GetWindowDrawList()->AddRectFilled(
-					ImVec2(bb.Min.x, bb.Min.y), ImVec2(bb.Min.x + LayoutScale(4.0f), bb.Max.y), IM_COL32(52, 152, 219, 255));
-			}
-
-			const ImVec2 icon_min(bb.Min.x + padding, bb.Min.y + (bb.Max.y - bb.Min.y - icon_size) * 0.5f);
-			const ImVec2 icon_max(icon_min.x + icon_size, icon_min.y + icon_size);
-
-			std::string badge_path = GetSubsetBadgePath(subset);
-			if (!badge_path.empty())
-			{
-				GSTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(badge_path);
-				if (badge)
-				{
-					ImGui::GetWindowDrawList()->AddImage(reinterpret_cast<ImTextureID>(badge->GetNativeHandle()),
-						icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
-				}
-			}
-
-			const ImRect text_bb(ImVec2(icon_max.x + spacing, bb.Min.y), ImVec2(bb.Max.x - padding, bb.Max.y));
-			const ImVec2 text_pos(text_bb.Min.x, text_bb.Min.y + (text_bb.GetHeight() - text_size.y) * 0.5f);
-			const ImVec4 text_clip(text_bb.Min.x, text_bb.Min.y, text_bb.Max.x, text_bb.Max.y);
-			ImGuiFullscreen::AddTextWithShadow(ImGui::GetWindowDrawList(), g_medium_font, text_pos,
-				ImGui::GetColorU32(ImGuiCol_Text), subset->title, nullptr, text_width, &text_clip);
-
-			if (ImGui::IsItemClicked() || ImGui::IsItemActivated())
-			{
-				OpenSubset(subset);
-				subset_selected = true;
-				break;
-			}
+			OpenSubset(subset);
+			break;
 		}
-
-		ImGuiFullscreen::EndMenuButtons();
 	}
-	ImGui::EndChild();
 
-	ImGui::PopStyleColor(2);
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
-	ImGui::SameLine();
-	ImGui::PopStyleVar();
-
-	if (focus_sidebar)
-		focus_sidebar = false;
-
-	return subset_selected;
+	ImGuiFullscreen::EndSidebar(sidebar);
 }
 
 void Achievements::DrawSubsetSidebarFooter(bool sidebar_has_focus)
@@ -2603,10 +2534,9 @@ void Achievements::DrawAchievementsWindow()
 	Achievements::IdleUpdate();
 
 	const bool has_multiple_subsets = (s_subset_list && s_subset_list->num_subsets > 1);
-	static bool sidebar_has_focus = false;
-	static bool focus_sidebar = false;
+	static ImGuiFullscreen::SidebarState sidebar;
 	if (!has_multiple_subsets)
-		sidebar_has_focus = false;
+		sidebar = {};
 
 	static constexpr float alpha = 0.8f;
 	static constexpr float heading_alpha = 0.95f;
@@ -2660,7 +2590,7 @@ void Achievements::DrawAchievementsWindow()
 			if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
 				wants_close)
 			{
-				sidebar_has_focus = false;
+				sidebar = {};
 				FullscreenUI::ReturnToPreviousWindow();
 			}
 
@@ -2740,7 +2670,7 @@ void Achievements::DrawAchievementsWindow()
 
 	ImGui::SetNextWindowBgAlpha(alpha);
 
-	const float sidebar_width = has_multiple_subsets ? LayoutScale(220.0f) : 0.0f;
+	const float sidebar_width = has_multiple_subsets ? LayoutScale(ImGuiFullscreen::LAYOUT_SIDEBAR_WIDTH) : 0.0f;
 
 	if (has_multiple_subsets && !s_open_subset)
 	{
@@ -2753,14 +2683,7 @@ void Achievements::DrawAchievementsWindow()
 			"achievements", background, 0.0f, ImVec2(0.0f, 0.0f), 0))
 	{
 		if (has_multiple_subsets)
-		{
-			if (focus_sidebar)
-			{
-				ImGui::SetNextWindowFocus();
-			}
-			if (DrawSubsetSidebar(sidebar_width, sidebar_has_focus, focus_sidebar, false))
-				ImGui::SetNextWindowFocus();
-		}
+			DrawSubsetSidebar(sidebar_width, sidebar, false);
 
 		const float content_width = has_multiple_subsets ? (display_size.x - sidebar_width) : display_size.x;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
@@ -2771,12 +2694,8 @@ void Achievements::DrawAchievementsWindow()
 
 		if (ImGui::BeginChild("achievements_content", ImVec2(content_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
 		{
-			if (has_multiple_subsets && !sidebar_has_focus &&
-				(ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false)))
-			{
-				sidebar_has_focus = true;
-				focus_sidebar = true;
-			}
+			if (has_multiple_subsets)
+				ImGuiFullscreen::UpdateSidebarFocus(sidebar);
 
 			static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
 				TRANSLATE_NOOP("Achievements", "Unknown"),
@@ -2832,7 +2751,7 @@ void Achievements::DrawAchievementsWindow()
 	ImGui::PopStyleColor();
 
 	if (has_multiple_subsets)
-		DrawSubsetSidebarFooter(sidebar_has_focus);
+		DrawSubsetSidebarFooter(sidebar.has_focus);
 	else
 		FullscreenUI::SetStandardSelectionFooterText(true);
 }
@@ -3121,10 +3040,9 @@ void Achievements::DrawLeaderboardsWindow()
 	const bool has_multiple_subsets = (s_subset_list && std::count_if(s_subset_list->subsets, 
 		s_subset_list->subsets + s_subset_list->num_subsets,
 		[](const rc_client_subset_t* subset) { return subset->num_leaderboards > 0; }) > 1);
-	static bool sidebar_has_focus = false;
-	static bool focus_sidebar = false;
+	static ImGuiFullscreen::SidebarState sidebar;
 	if (!has_multiple_subsets || is_leaderboard_open)
-		sidebar_has_focus = false;
+		sidebar = {};
 
 	ImRect bb;
 
@@ -3211,7 +3129,7 @@ void Achievements::DrawLeaderboardsWindow()
 				if (ImGuiFullscreen::FloatingButton(ICON_FA_SQUARE_XMARK, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
 					wants_close)
 				{
-					sidebar_has_focus = false;
+					sidebar = {};
 					FullscreenUI::ReturnToPreviousWindow();
 				}
 			}
@@ -3376,7 +3294,7 @@ void Achievements::DrawLeaderboardsWindow()
 
 	if (!is_leaderboard_open)
 	{
-		const float sidebar_width = has_multiple_subsets ? LayoutScale(220.0f) : 0.0f;
+		const float sidebar_width = has_multiple_subsets ? LayoutScale(ImGuiFullscreen::LAYOUT_SIDEBAR_WIDTH) : 0.0f;
 
 		if (ImGuiFullscreen::BeginFullscreenWindow(
 				ImVec2(0.0f, heading_height),
@@ -3384,14 +3302,7 @@ void Achievements::DrawLeaderboardsWindow()
 				"leaderboards", background, 0.0f, ImVec2(0.0f, 0.0f), 0))
 		{
 			if (has_multiple_subsets)
-			{
-				if (focus_sidebar)
-				{
-					ImGui::SetNextWindowFocus();
-				}
-				if (DrawSubsetSidebar(sidebar_width, sidebar_has_focus, focus_sidebar, true))
-					ImGui::SetNextWindowFocus();
-			}
+				DrawSubsetSidebar(sidebar_width, sidebar, true);
 
 			const float content_width = has_multiple_subsets ? (display_size.x - sidebar_width) : display_size.x;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
@@ -3402,12 +3313,8 @@ void Achievements::DrawLeaderboardsWindow()
 
 			if (ImGui::BeginChild("leaderboards_content", ImVec2(content_width, 0.0f), ImGuiChildFlags_NavFlattened, 0))
 			{
-				if (has_multiple_subsets && !sidebar_has_focus &&
-					(ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false)))
-				{
-					sidebar_has_focus = true;
-					focus_sidebar = true;
-				}
+				if (has_multiple_subsets)
+					ImGuiFullscreen::UpdateSidebarFocus(sidebar);
 
 				if (s_restore_leaderboard_scroll)
 				{
@@ -3477,7 +3384,7 @@ void Achievements::DrawLeaderboardsWindow()
 		ImGuiFullscreen::EndFullscreenWindow();
 
 		if (has_multiple_subsets)
-			DrawSubsetSidebarFooter(sidebar_has_focus);
+			DrawSubsetSidebarFooter(sidebar.has_focus);
 		else
 			FullscreenUI::SetStandardSelectionFooterText(true);
 	}
