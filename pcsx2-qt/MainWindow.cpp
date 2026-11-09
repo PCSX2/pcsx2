@@ -1872,11 +1872,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 		const bool has_custom_settings = VMManager::AreGameSettingsPresent(entry->serial, entry->crc);
 		const bool is_favorite = entry->is_favorite;
 
-		QAction* action;
-		if (has_custom_settings)
-			action = menu.addAction(tr("Properties... (Edit)"));
-		else
-			action = menu.addAction(tr("Properties... (New)"));
+		QAction* action = menu.addAction(tr("Properties..."));
 		action->setEnabled(!entry->serial.empty() || entry->type == GameList::EntryType::ELF);
 		if (action->isEnabled())
 		{
