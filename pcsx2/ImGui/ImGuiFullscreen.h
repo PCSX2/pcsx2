@@ -37,6 +37,7 @@ namespace ImGuiFullscreen
 	static constexpr float LAYOUT_MENU_BUTTON_X_PADDING = 15.0f;
 	static constexpr float LAYOUT_MENU_BUTTON_Y_PADDING = 10.0f;
 	static constexpr float LAYOUT_MENU_WINDOW_X_PADDING = 12.0f;
+	static constexpr float LAYOUT_SIDEBAR_WIDTH = 220.0f;
 	static constexpr float LAYOUT_FOOTER_PADDING = 10.0f;
 	static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_FOOTER_PADDING * 2.0f;
 	static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
@@ -158,6 +159,19 @@ namespace ImGuiFullscreen
 
 	bool BeginFullscreenColumnWindow(float start, float end, const char* name, const ImVec4& background = UIBackgroundColor);
 	void EndFullscreenColumnWindow();
+
+	struct SidebarState
+	{
+		bool has_focus = false;
+		bool focus_requested = false;
+	};
+	void BeginSidebar(const char* name, float width, SidebarState& state);
+	bool SidebarItem(const char* str_id, bool selected, bool default_focus, const char* title, const char* summary, const char* icon,
+		GSTexture* badge, SidebarState& state);
+	void EndSidebar(SidebarState& state);
+
+	/// Call this inside the content child next to the sidebar.
+	void UpdateSidebarFocus(SidebarState& state);
 
 	bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
 		const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f, const ImVec2& padding = ImVec2(),
