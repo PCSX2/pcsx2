@@ -570,6 +570,12 @@ const char* USB::GetDeviceIconName(u32 port)
         return nullptr;
 }
 
+const char* USB::GetDeviceTypeIconName(const std::string_view device)
+{
+	const DeviceProxy* dev = RegisterDevice::instance().Device(device);
+	return dev ? dev->IconName() : nullptr;
+}
+
 const char* USB::GetDeviceSubtypeName(const std::string_view device, u32 subtype)
 {
 	const DeviceProxy* dev = RegisterDevice::instance().Device(device);

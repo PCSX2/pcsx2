@@ -1748,6 +1748,8 @@ void FullscreenUI::SwitchToSettings()
 
 	s_current_main_window = MainWindowType::Settings;
 	s_settings_page = SettingsPage::Interface;
+	s_controller_category = ControllerCategory::Global;
+	s_controller_sidebar = {};
 }
 
 void FullscreenUI::SwitchToGameSettings(const std::string_view serial, u32 crc)
@@ -1850,6 +1852,40 @@ void FullscreenUI::DoClearGameSettings()
 		fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."), Path::GetFileTitle(s_game_settings_interface->GetFileName())));
 }
 
+SidebarState* FullscreenUI::GetSidebarForPage(SettingsPage page)
+{
+	switch (page)
+	{
+		case SettingsPage::Controller:
+			return &s_controller_sidebar;
+
+			// TODO: Add the graphics page here once it gets a sidebar.
+			// case SettingsPage::Graphics:
+			//	return &s_graphics_sidebar;
+
+		default:
+			return nullptr;
+	}
+}
+
+bool FullscreenUI::BeginSidebarContent(const char* name, SidebarState& sidebar)
+{
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f));
+	ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4());
+	const bool ret = ImGui::BeginChild(
+		name, ImVec2(ImGui::GetContentRegionAvail().x, 0.0f), ImGuiChildFlags_NavFlattened | ImGuiChildFlags_AlwaysUseWindowPadding, 0);
+	if (ret)
+		UpdateSidebarFocus(sidebar);
+	return ret;
+}
+
+void FullscreenUI::EndSidebarContent()
+{
+	ImGui::EndChild();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleVar();
+}
+
 void FullscreenUI::DrawSettingsWindow()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -1881,7 +1917,6 @@ void FullscreenUI::DrawSettingsWindow()
 			ICON_FA_FOLDER_OPEN,
 			ICON_FA_TROPHY,
 			ICON_PF_GAMEPAD_ALT,
-			ICON_PF_KEYBOARD_ALT,
 			ICON_FA_TRIANGLE_EXCLAMATION,
 		};
 		static constexpr const char* per_game_icons[] = {
@@ -1907,7 +1942,6 @@ void FullscreenUI::DrawSettingsWindow()
 			SettingsPage::Folders,
 			SettingsPage::Achievements,
 			SettingsPage::Controller,
-			SettingsPage::Hotkey,
 			SettingsPage::Advanced,
 		};
 		static constexpr SettingsPage per_game_pages[] = {
@@ -1934,7 +1968,6 @@ void FullscreenUI::DrawSettingsWindow()
 			FSUI_NSTR("Folder Settings"),
 			FSUI_NSTR("Achievements Settings"),
 			FSUI_NSTR("Controller Settings"),
-			FSUI_NSTR("Hotkey Settings"),
 			FSUI_NSTR("Advanced Settings"),
 			FSUI_NSTR("Patches"),
 			FSUI_NSTR("Cheats"),
@@ -1958,16 +1991,20 @@ void FullscreenUI::DrawSettingsWindow()
 
 		if (!ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopup))
 		{
-			if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) ||
-				ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))
+			// on pages with a sidebar, left/right have to go through it before changing page
+			const SidebarState* sidebar = GetSidebarForPage(s_settings_page);
+			const bool left_changes_page = (!sidebar || sidebar->has_focus);
+			const bool right_changes_page = (!sidebar || !sidebar->has_focus);
+			if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, true) ||
+				(left_changes_page && (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, true) || ImGui::IsKeyPressed(ImGuiKey_LeftArrow, true))))
 			{
 				index = (index == 0) ? (count - 1) : (index - 1);
 				s_settings_page = pages[index];
 				QueueResetFocus(FocusResetType::WindowChanged);
 			}
-			else if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) ||
-					 ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) ||
-					 ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))
+			else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, true) ||
+					 (right_changes_page &&
+						 (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, true) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, true))))
 			{
 				index = (index + 1) % count;
 				s_settings_page = pages[index];
@@ -2023,11 +2060,11 @@ void FullscreenUI::DrawSettingsWindow()
 			ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
 			TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_page)).c_str(),
 			ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, content_bg_alpha), 0.0f,
-			ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+			ImVec2(GetSidebarForPage(s_settings_page) ? 0.0f : ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
 	{
 		ResetFocusHere();
 
-		if (ImGui::IsWindowFocused() && WantsToCloseMenu())
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows | ImGuiFocusedFlags_NoPopupHierarchy) && WantsToCloseMenu())
 			ReturnToPreviousWindow();
 
 		auto lock = Host::GetSettingsLock();
@@ -2080,10 +2117,6 @@ void FullscreenUI::DrawSettingsWindow()
 
 			case SettingsPage::Controller:
 				DrawControllerSettingsPage();
-				break;
-
-			case SettingsPage::Hotkey:
-				DrawHotkeySettingsPage();
 				break;
 
 			case SettingsPage::Patches:
@@ -5275,7 +5308,100 @@ void FullscreenUI::DoResetSettings()
 		});
 }
 
+// we reorder things a little to make it look less silly for mtap
+static constexpr const std::array<char, 4> mtap_slot_names = {{'A', 'B', 'C', 'D'}};
+static constexpr const std::array<u32, Pad::NUM_CONTROLLER_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
+static constexpr const std::array<const char*, Pad::NUM_CONTROLLER_PORTS> pad_sections = {
+	{"Pad1", "Pad2", "Pad3", "Pad4", "Pad5", "Pad6", "Pad7", "Pad8"}};
+
 void FullscreenUI::DrawControllerSettingsPage()
+{
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	const std::array<bool, 2> mtap_enabled = {
+		{bsi->GetBoolValue("Pad", "MultitapPort1", false), bsi->GetBoolValue("Pad", "MultitapPort2", false)}};
+
+	// the selected port doesn't exist anymore if multitap was turned off
+	if (s_controller_category == ControllerCategory::Port && sioPadIsMultitapSlot(s_controller_index) &&
+		!mtap_enabled[std::get<0>(sioConvertPadToPortAndSlot(s_controller_index))])
+	{
+		s_controller_category = ControllerCategory::Global;
+	}
+
+	BeginSidebar("controller_sidebar", LayoutScale(LAYOUT_SIDEBAR_WIDTH), s_controller_sidebar);
+
+	bool selected = (s_controller_category == ControllerCategory::Global);
+	if (SidebarItem("sidebar_global", selected, selected, FSUI_CSTR("Global Settings"), nullptr, ICON_FA_GEAR, nullptr, s_controller_sidebar))
+		s_controller_category = ControllerCategory::Global;
+
+	for (u32 global_slot : mtap_port_order)
+	{
+		const auto [mtap_port, mtap_slot] = sioConvertPadToPortAndSlot(global_slot);
+		if (sioPadIsMultitapSlot(global_slot) && !mtap_enabled[mtap_port])
+			continue;
+
+		const Pad::ControllerInfo* ci = Pad::GetConfigControllerType(*bsi, pad_sections[global_slot], global_slot);
+		const SmallString title = mtap_enabled[mtap_port] ?
+		                              SmallString::from_format(FSUI_FSTR("Controller Port {}{}"), mtap_port + 1, mtap_slot_names[mtap_slot]) :
+		                              SmallString::from_format(FSUI_FSTR("Controller Port {}"), mtap_port + 1);
+		selected = (s_controller_category == ControllerCategory::Port && s_controller_index == global_slot);
+		if (SidebarItem(TinyString::from_format("sidebar_pad_{}", global_slot).c_str(), selected, selected, title.c_str(),
+				ci ? ci->GetLocalizedName() : FSUI_CSTR("Unknown"), (ci && ci->icon_name) ? ci->icon_name : ICON_PF_GAMEPAD_ALT, nullptr,
+				s_controller_sidebar))
+		{
+			s_controller_category = ControllerCategory::Port;
+			s_controller_index = global_slot;
+		}
+	}
+
+	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	{
+		const std::string type(USB::GetConfigDevice(*bsi, port));
+		const char* icon = USB::GetDeviceTypeIconName(type);
+		const SmallString title = SmallString::from_format(FSUI_FSTR("USB Port {}"), port + 1);
+		selected = (s_controller_category == ControllerCategory::USB && s_controller_index == port);
+		if (SidebarItem(TinyString::from_format("sidebar_usb_{}", port).c_str(), selected, selected, title.c_str(),
+				Host::TranslateToCString("USB", USB::GetDeviceName(type)), icon ? icon : ICON_PF_USB, nullptr, s_controller_sidebar))
+		{
+			s_controller_category = ControllerCategory::USB;
+			s_controller_index = port;
+		}
+	}
+
+	selected = (s_controller_category == ControllerCategory::Hotkeys);
+	if (SidebarItem("sidebar_hotkeys", selected, selected, FSUI_CSTR("Hotkeys"), nullptr, ICON_PF_KEYBOARD_ALT, nullptr, s_controller_sidebar))
+		s_controller_category = ControllerCategory::Hotkeys;
+
+	EndSidebar(s_controller_sidebar);
+
+	const bool has_index = (s_controller_category == ControllerCategory::Port || s_controller_category == ControllerCategory::USB);
+	const TinyString content_name =
+		TinyString::from_format("controller_content_{}_{}", static_cast<u32>(s_controller_category), has_index ? s_controller_index : 0);
+	if (BeginSidebarContent(content_name.c_str(), s_controller_sidebar))
+	{
+		switch (s_controller_category)
+		{
+			case ControllerCategory::Global:
+				DrawControllerGlobalSettings();
+				break;
+
+			case ControllerCategory::Port:
+				DrawControllerPortSettings(s_controller_index);
+				break;
+
+			case ControllerCategory::USB:
+				DrawUSBPortSettings(s_controller_index);
+				break;
+
+			case ControllerCategory::Hotkeys:
+				DrawHotkeySettingsPage();
+				break;
+		}
+	}
+	EndSidebarContent();
+}
+
+void FullscreenUI::DrawControllerGlobalSettings()
 {
 	BeginMenuButtons();
 
@@ -5323,362 +5449,359 @@ void FullscreenUI::DrawControllerSettingsPage()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SQUARE_PLUS, "Multitap on Console Port 2"),
 		FSUI_CSTR("Enables an additional three controller slots. Not supported in all games."), "Pad", "MultitapPort2", false, true, false);
 
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawControllerPortSettings(u32 global_slot)
+{
+	BeginMenuButtons();
+
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
 	const std::array<bool, 2> mtap_enabled = {
 		{bsi->GetBoolValue("Pad", "MultitapPort1", false), bsi->GetBoolValue("Pad", "MultitapPort2", false)}};
 
-	// we reorder things a little to make it look less silly for mtap
-	static constexpr const std::array<char, 4> mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-	static constexpr const std::array<u32, Pad::NUM_CONTROLLER_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
-	static constexpr const std::array<const char*, Pad::NUM_CONTROLLER_PORTS> sections = {
-		{"Pad1", "Pad2", "Pad3", "Pad4", "Pad5", "Pad6", "Pad7", "Pad8"}};
+	const auto [mtap_port, mtap_slot] = sioConvertPadToPortAndSlot(global_slot);
 
-	// create the ports
-	for (u32 global_slot : mtap_port_order)
+	if (mtap_enabled[mtap_port])
 	{
-		const bool is_mtap_port = sioPadIsMultitapSlot(global_slot);
-		const auto [mtap_port, mtap_slot] = sioConvertPadToPortAndSlot(global_slot);
-		if (is_mtap_port && !mtap_enabled[mtap_port])
+		MenuHeading(SmallString::from_format(
+			fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1, mtap_slot_names[mtap_slot]));
+	}
+	else
+	{
+		MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
+	}
+
+	const char* section = pad_sections[global_slot];
+	const Pad::ControllerInfo* ci = Pad::GetConfigControllerType(*bsi, section, global_slot);
+	if (MenuButton(FSUI_ICONSTR(ICON_PF_GAMEPAD_ALT, "Controller Type"), ci ? ci->GetLocalizedName() : FSUI_CSTR("Unknown")))
+	{
+		const std::vector<std::pair<const char*, const char*>> raw_options = Pad::GetControllerTypeNames();
+		ImGuiFullscreen::ChoiceDialogOptions options;
+		options.reserve(raw_options.size());
+		for (auto& it : raw_options)
+			options.emplace_back(it.second, (ci && ci->name == it.first));
+		OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Controller Type"), global_slot + 1).c_str(), false, std::move(options),
+			[game_settings = IsEditingGameSettings(bsi), section, raw_options = std::move(raw_options)](
+				s32 index, const std::string& title, bool checked) {
+				if (index < 0)
+					return;
+
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+				bsi->SetStringValue(section, "Type", raw_options[index].first);
+				SetSettingsChanged(bsi);
+				CloseChoiceDialog();
+			});
+	}
+
+	if (!ci || ci->bindings.empty())
+	{
+		EndMenuButtons();
+		return;
+	}
+
+	if (MenuButton(
+			FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"), FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
+		StartAutomaticBinding(global_slot);
+
+	for (const InputBindingInfo& bi : ci->bindings)
+		if (bi.name) [[likely]]
+			DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), bi.icon_name, true);
+
+	if (mtap_enabled[mtap_port])
+	{
+		MenuHeading(SmallString::from_format(
+			fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Controller Port {}{} Macros")), mtap_port + 1, mtap_slot_names[mtap_slot]));
+	}
+	else
+	{
+		MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Controller Port {} Macros")), mtap_port + 1));
+	}
+
+	static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+
+	for (u32 macro_index = 0; macro_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
+	{
+		bool& expanded = macro_button_expanded[global_slot][macro_index];
+		expanded ^=
+			MenuHeadingButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Macro Button {}")), macro_index + 1),
+				macro_button_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP : ICON_FA_CHEVRON_DOWN);
+		if (!expanded)
 			continue;
 
-		ImGui::PushID(global_slot);
-		if (mtap_enabled[mtap_port])
+		ImGui::PushID(&expanded);
+
+		DrawInputBindingButton(
+			bsi, InputBindingInfo::Type::Macro, section, TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"), nullptr);
+
+		SmallString binds_string = bsi->GetSmallStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str());
+		TinyString pretty_binds_string;
+		if (!binds_string.empty())
 		{
-			MenuHeading(SmallString::from_format(
-				fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")), mtap_port + 1, mtap_slot_names[mtap_slot]));
-		}
-		else
-		{
-			MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
-		}
-
-		const char* section = sections[global_slot];
-		const Pad::ControllerInfo* ci = Pad::GetConfigControllerType(*bsi, section, global_slot);
-		if (MenuButton(FSUI_ICONSTR(ICON_PF_GAMEPAD_ALT, "Controller Type"), ci ? ci->GetLocalizedName() : FSUI_CSTR("Unknown")))
-		{
-			const std::vector<std::pair<const char*, const char*>> raw_options = Pad::GetControllerTypeNames();
-			ImGuiFullscreen::ChoiceDialogOptions options;
-			options.reserve(raw_options.size());
-			for (auto& it : raw_options)
-				options.emplace_back(it.second, (ci && ci->name == it.first));
-			OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Controller Type"), global_slot + 1).c_str(), false, std::move(options),
-				[game_settings = IsEditingGameSettings(bsi), section, raw_options = std::move(raw_options)](
-					s32 index, const std::string& title, bool checked) {
-					if (index < 0)
-						return;
-
-					auto lock = Host::GetSettingsLock();
-					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					bsi->SetStringValue(section, "Type", raw_options[index].first);
-					SetSettingsChanged(bsi);
-					CloseChoiceDialog();
-				});
-		}
-
-		if (!ci || ci->bindings.empty())
-		{
-			ImGui::PopID();
-			continue;
-		}
-
-		if (MenuButton(
-				FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"), FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
-			StartAutomaticBinding(global_slot);
-
-		for (const InputBindingInfo& bi : ci->bindings)
-			if (bi.name) [[likely]]
-				DrawInputBindingButton(bsi, bi.bind_type, section, bi.name, Host::TranslateToCString("Pad", bi.display_name), bi.icon_name, true);
-
-		if (mtap_enabled[mtap_port])
-		{
-			MenuHeading(SmallString::from_format(
-				fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Controller Port {}{} Macros")), mtap_port + 1, mtap_slot_names[mtap_slot]));
-		}
-		else
-		{
-			MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Controller Port {} Macros")), mtap_port + 1));
-		}
-
-		static bool macro_button_expanded[Pad::NUM_CONTROLLER_PORTS][Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
-
-		for (u32 macro_index = 0; macro_index < Pad::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
-		{
-			bool& expanded = macro_button_expanded[global_slot][macro_index];
-			expanded ^=
-				MenuHeadingButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Macro Button {}")), macro_index + 1),
-					macro_button_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP : ICON_FA_CHEVRON_DOWN);
-			if (!expanded)
-				continue;
-
-			ImGui::PushID(&expanded);
-
-			DrawInputBindingButton(
-				bsi, InputBindingInfo::Type::Macro, section, TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"), nullptr);
-
-			SmallString binds_string = bsi->GetSmallStringValue(section, fmt::format("Macro{}Binds", macro_index + 1).c_str());
-			TinyString pretty_binds_string;
-			if (!binds_string.empty())
+			for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
 			{
-				for (const std::string_view& bind : StringUtil::SplitString(binds_string, '&', true))
+				const char* dispname = nullptr;
+				for (const InputBindingInfo& bi : ci->bindings)
 				{
-					const char* dispname = nullptr;
+					if (bind == bi.name)
+					{
+						dispname = bi.icon_name ? bi.icon_name : Host::TranslateToCString("Pad", bi.display_name);
+						break;
+					}
+				}
+				pretty_binds_string.append_format("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
+			}
+		}
+		if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Buttons"), nullptr, pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
+				LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+		{
+			std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
+			ImGuiFullscreen::ChoiceDialogOptions options;
+			for (const InputBindingInfo& bi : ci->bindings)
+			{
+				if (bi.bind_type != InputBindingInfo::Type::Button && bi.bind_type != InputBindingInfo::Type::Axis &&
+					bi.bind_type != InputBindingInfo::Type::HalfAxis)
+				{
+					continue;
+				}
+				options.emplace_back(Host::TranslateToCString("Pad", bi.display_name),
+					std::any_of(
+						buttons_split.begin(), buttons_split.end(), [bi](const std::string_view& it) { return (it == bi.name); }));
+			}
+
+			OpenChoiceDialog(fmt::format(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1).c_str(), true, std::move(options),
+				[section, macro_index, ci](s32 index, const std::string& title, bool checked) {
+					// convert display name back to bind name
+					std::string_view to_modify;
 					for (const InputBindingInfo& bi : ci->bindings)
 					{
-						if (bind == bi.name)
+						if (bi.display_name == title)
 						{
-							dispname = bi.icon_name ? bi.icon_name : Host::TranslateToCString("Pad", bi.display_name);
+							to_modify = bi.name;
 							break;
 						}
 					}
-					pretty_binds_string.append_format("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
-				}
-			}
-			if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Buttons"), nullptr, pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
-					LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-			{
-				std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
-				ImGuiFullscreen::ChoiceDialogOptions options;
-				for (const InputBindingInfo& bi : ci->bindings)
-				{
-					if (bi.bind_type != InputBindingInfo::Type::Button && bi.bind_type != InputBindingInfo::Type::Axis &&
-						bi.bind_type != InputBindingInfo::Type::HalfAxis)
+					if (to_modify.empty())
 					{
-						continue;
+						// wtf?
+						return;
 					}
-					options.emplace_back(Host::TranslateToCString("Pad", bi.display_name),
-						std::any_of(
-							buttons_split.begin(), buttons_split.end(), [bi](const std::string_view& it) { return (it == bi.name); }));
-				}
 
-				OpenChoiceDialog(fmt::format(FSUI_FSTR("Select Macro {} Binds"), macro_index + 1).c_str(), true, std::move(options),
-					[section, macro_index, ci](s32 index, const std::string& title, bool checked) {
-						// convert display name back to bind name
-						std::string_view to_modify;
-						for (const InputBindingInfo& bi : ci->bindings)
-						{
-							if (bi.display_name == title)
-							{
-								to_modify = bi.name;
-								break;
-							}
-						}
-						if (to_modify.empty())
-						{
-							// wtf?
-							return;
-						}
+					auto lock = Host::GetSettingsLock();
+					SettingsInterface* bsi = GetEditingSettingsInterface();
+					const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
 
-						auto lock = Host::GetSettingsLock();
-						SettingsInterface* bsi = GetEditingSettingsInterface();
-						const std::string key(fmt::format("Macro{}Binds", macro_index + 1));
-
-						std::string binds_string(bsi->GetStringValue(section, key.c_str()));
-						std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
-						auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
-						if (checked)
-						{
-							if (it == buttons_split.end())
-								buttons_split.push_back(to_modify);
-						}
-						else
-						{
-							if (it != buttons_split.end())
-								buttons_split.erase(it);
-						}
-
-						binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
-						if (binds_string.empty())
-							bsi->DeleteValue(section, key.c_str());
-						else
-							bsi->SetStringValue(section, key.c_str(), binds_string.c_str());
-
-						SetSettingsChanged(bsi);
-					});
-			}
-
-			DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Press To Toggle"),
-				FSUI_CSTR("Toggles the macro when the button is pressed, instead of held."), section,
-				TinyString::from_format("Macro{}Toggle", macro_index + 1), false, true, false);
-
-			const TinyString freq_key = TinyString::from_format("Macro{}Frequency", macro_index + 1);
-			const TinyString freq_label = TinyString::from_format(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
-			s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
-			const SmallString freq_summary =
-				((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
-									TinyString::from_format(FSUI_FSTR("{} Frames"), frequency));
-			if (MenuButtonWithValue(freq_label, FSUI_CSTR("Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."), freq_summary, true))
-				ImGui::OpenPopup(freq_label.c_str());
-
-			const std::string pressure_key(fmt::format("Macro{}Pressure", macro_index + 1));
-			DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
-				FSUI_CSTR("Determines how much pressure is simulated when macro is active."), section, pressure_key.c_str(), 1.0f, 0.01f,
-				1.0f, 0.01f, 100.0f, "%.0f%%");
-
-			const std::string deadzone_key(fmt::format("Macro{}Deadzone", macro_index + 1));
-			DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SKULL, "Deadzone"),
-				FSUI_CSTR("Determines the pressure required to activate the macro."), section, deadzone_key.c_str(), 0.0f, 0.00f, 1.0f,
-				0.01f, 100.0f, "%.0f%%");
-
-			ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
-			ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-			ImGui::PushFont(g_large_font.first, g_large_font.second);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-				LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-
-			if (ImGui::BeginPopupModal(
-					freq_label.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
-			{
-				ImGui::SetNextItemWidth(LayoutScale(450.0f));
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
-				ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(8.0f));
-				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.45f, 0.65f, 0.95f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.55f, 0.75f, 1.0f, 1.0f));
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-				if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"), ImGuiSliderFlags_NoInput))
-				{
-					if (frequency == 0)
-						bsi->DeleteValue(section, freq_key.c_str());
+					std::string binds_string(bsi->GetStringValue(section, key.c_str()));
+					std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
+					auto it = std::find(buttons_split.begin(), buttons_split.end(), to_modify);
+					if (checked)
+					{
+						if (it == buttons_split.end())
+							buttons_split.push_back(to_modify);
+					}
 					else
-						bsi->SetIntValue(section, freq_key.c_str(), frequency);
+					{
+						if (it != buttons_split.end())
+							buttons_split.erase(it);
+					}
+
+					binds_string = StringUtil::JoinString(buttons_split.begin(), buttons_split.end(), " & ");
+					if (binds_string.empty())
+						bsi->DeleteValue(section, key.c_str());
+					else
+						bsi->SetStringValue(section, key.c_str(), binds_string.c_str());
 
 					SetSettingsChanged(bsi);
-				}
-
-				ImGui::PopStyleColor(7);
-				ImGui::PopStyleVar(3);
-
-				BeginMenuButtons();
-				if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-					ImGui::CloseCurrentPopup();
-				EndMenuButtons();
-
-				ImGui::EndPopup();
-			}
-
-			ImGui::PopStyleVar(4);
-			ImGui::PopFont();
-
-			ImGui::PopID();
+				});
 		}
 
-		if (!ci->settings.empty())
+		DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Press To Toggle"),
+			FSUI_CSTR("Toggles the macro when the button is pressed, instead of held."), section,
+			TinyString::from_format("Macro{}Toggle", macro_index + 1), false, true, false);
+
+		const TinyString freq_key = TinyString::from_format("Macro{}Frequency", macro_index + 1);
+		const TinyString freq_label = TinyString::from_format(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
+		s32 frequency = bsi->GetIntValue(section, freq_key.c_str(), 0);
+		const SmallString freq_summary =
+			((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
+								TinyString::from_format(FSUI_FSTR("{} Frames"), frequency));
+		if (MenuButtonWithValue(freq_label, FSUI_CSTR("Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."), freq_summary, true))
+			ImGui::OpenPopup(freq_label.c_str());
+
+		const std::string pressure_key(fmt::format("Macro{}Pressure", macro_index + 1));
+		DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
+			FSUI_CSTR("Determines how much pressure is simulated when macro is active."), section, pressure_key.c_str(), 1.0f, 0.01f,
+			1.0f, 0.01f, 100.0f, "%.0f%%");
+
+		const std::string deadzone_key(fmt::format("Macro{}Deadzone", macro_index + 1));
+		DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SKULL, "Deadzone"),
+			FSUI_CSTR("Determines the pressure required to activate the macro."), section, deadzone_key.c_str(), 0.0f, 0.00f, 1.0f,
+			0.01f, 100.0f, "%.0f%%");
+
+		ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+		ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+		ImGui::PushFont(g_large_font.first, g_large_font.second);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(ImGuiFullscreen::LAYOUT_WINDOW_ROUNDING));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+			LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING, ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+
+		if (ImGui::BeginPopupModal(
+				freq_label.c_str(), nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 		{
-			if (mtap_enabled[mtap_port])
+			ImGui::SetNextItemWidth(LayoutScale(450.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, LayoutScale(ImGuiFullscreen::LAYOUT_FRAME_ROUNDING));
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_GrabRounding, LayoutScale(8.0f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.45f, 0.65f, 0.95f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.55f, 0.75f, 1.0f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+			if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"), ImGuiSliderFlags_NoInput))
 			{
-				MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "Controller Port {}{} Settings")),
-					mtap_port + 1, mtap_slot_names[mtap_slot]));
-			}
-			else
-			{
-				MenuHeading(
-					SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "Controller Port {} Settings")), mtap_port + 1));
+				if (frequency == 0)
+					bsi->DeleteValue(section, freq_key.c_str());
+				else
+					bsi->SetIntValue(section, freq_key.c_str(), frequency);
+
+				SetSettingsChanged(bsi);
 			}
 
-			for (const SettingInfo& si : ci->settings)
-				DrawSettingInfoSetting(bsi, section, Host::TranslateToCString("Pad", si.name), si, "Pad");
+			ImGui::PopStyleColor(7);
+			ImGui::PopStyleVar(3);
+
+			BeginMenuButtons();
+			if (MenuButton("OK", nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+				ImGui::CloseCurrentPopup();
+			EndMenuButtons();
+
+			ImGui::EndPopup();
 		}
+
+		ImGui::PopStyleVar(4);
+		ImGui::PopFont();
 
 		ImGui::PopID();
 	}
 
-	for (u32 port = 0; port < USB::NUM_PORTS; port++)
+	if (!ci->settings.empty())
 	{
-		ImGui::PushID(port);
-		MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "USB Port {}")), port + 1));
-
-		const std::string type(USB::GetConfigDevice(*bsi, port));
-		if (MenuButton(FSUI_ICONSTR(ICON_PF_USB, "Device Type"), USB::GetDeviceName(type)))
+		if (mtap_enabled[mtap_port])
 		{
-			const std::vector<std::pair<const char*, const char*>> raw_options = USB::GetDeviceTypes();
+			MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "Controller Port {}{} Settings")),
+				mtap_port + 1, mtap_slot_names[mtap_slot]));
+		}
+		else
+		{
+			MenuHeading(
+				SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "Controller Port {} Settings")), mtap_port + 1));
+		}
+
+		for (const SettingInfo& si : ci->settings)
+			DrawSettingInfoSetting(bsi, section, Host::TranslateToCString("Pad", si.name), si, "Pad");
+	}
+
+	EndMenuButtons();
+}
+
+void FullscreenUI::DrawUSBPortSettings(u32 port)
+{
+	BeginMenuButtons();
+
+	SettingsInterface* bsi = GetEditingSettingsInterface();
+
+	MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "USB Port {}")), port + 1));
+
+	const std::string type(USB::GetConfigDevice(*bsi, port));
+	if (MenuButton(FSUI_ICONSTR(ICON_PF_USB, "Device Type"), USB::GetDeviceName(type)))
+	{
+		const std::vector<std::pair<const char*, const char*>> raw_options = USB::GetDeviceTypes();
+		ImGuiFullscreen::ChoiceDialogOptions options;
+		options.reserve(raw_options.size());
+		for (auto& it : raw_options)
+		{
+			options.emplace_back(it.second, type == it.first);
+		}
+		OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Device"), port + 1).c_str(), false, std::move(options),
+			[game_settings = IsEditingGameSettings(bsi), raw_options = std::move(raw_options), port](
+				s32 index, const std::string& title, bool checked) {
+				if (index < 0)
+					return;
+
+				auto lock = Host::GetSettingsLock();
+				SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+				USB::SetConfigDevice(*bsi, port, raw_options[static_cast<u32>(index)].first);
+				SetSettingsChanged(bsi);
+				CloseChoiceDialog();
+			});
+	}
+
+	if (type.empty() || type == "None")
+	{
+		EndMenuButtons();
+		return;
+	}
+
+	const u32 subtype = USB::GetConfigSubType(*bsi, port, type);
+	const std::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
+	if (!subtypes.empty())
+	{
+		const char* subtype_name = USB::GetDeviceSubtypeName(type, subtype);
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_GEAR, "Device Subtype"), subtype_name))
+		{
 			ImGuiFullscreen::ChoiceDialogOptions options;
-			options.reserve(raw_options.size());
-			for (auto& it : raw_options)
-			{
-				options.emplace_back(it.second, type == it.first);
-			}
-			OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Device"), port + 1).c_str(), false, std::move(options),
-				[game_settings = IsEditingGameSettings(bsi), raw_options = std::move(raw_options), port](
-					s32 index, const std::string& title, bool checked) {
+			options.reserve(subtypes.size());
+			for (u32 i = 0; i < subtypes.size(); i++)
+				options.emplace_back(subtypes[i], i == subtype);
+
+			OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Subtype"), port + 1).c_str(), false, std::move(options),
+				[game_settings = IsEditingGameSettings(bsi), port, type](s32 index, const std::string& title, bool checked) {
 					if (index < 0)
 						return;
 
 					auto lock = Host::GetSettingsLock();
 					SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-					USB::SetConfigDevice(*bsi, port, raw_options[static_cast<u32>(index)].first);
+					USB::SetConfigSubType(*bsi, port, type.c_str(), static_cast<u32>(index));
 					SetSettingsChanged(bsi);
 					CloseChoiceDialog();
 				});
 		}
+	}
 
-		if (type.empty() || type == "None")
+	const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(type, subtype));
+	if (!bindings.empty())
+	{
+		MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "{} Bindings")), USB::GetDeviceName(type)));
+
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Bindings"), FSUI_CSTR("Clears all bindings for this USB controller.")))
 		{
-			ImGui::PopID();
-			continue;
+			USB::ClearPortBindings(*bsi, port);
+			SetSettingsChanged(bsi);
 		}
 
-		const u32 subtype = USB::GetConfigSubType(*bsi, port, type);
-		const std::span<const char*> subtypes(USB::GetDeviceSubtypes(type));
-		if (!subtypes.empty())
+		const std::string section(USB::GetConfigSection(port));
+		for (const InputBindingInfo& bi : bindings)
 		{
-			const char* subtype_name = USB::GetDeviceSubtypeName(type, subtype);
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_GEAR, "Device Subtype"), subtype_name))
-			{
-				ImGuiFullscreen::ChoiceDialogOptions options;
-				options.reserve(subtypes.size());
-				for (u32 i = 0; i < subtypes.size(); i++)
-					options.emplace_back(subtypes[i], i == subtype);
-
-				OpenChoiceDialog(fmt::format(FSUI_FSTR("Port {} Subtype"), port + 1).c_str(), false, std::move(options),
-					[game_settings = IsEditingGameSettings(bsi), port, type](s32 index, const std::string& title, bool checked) {
-						if (index < 0)
-							return;
-
-						auto lock = Host::GetSettingsLock();
-						SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-						USB::SetConfigSubType(*bsi, port, type.c_str(), static_cast<u32>(index));
-						SetSettingsChanged(bsi);
-						CloseChoiceDialog();
-					});
-			}
+			DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(),
+				Host::TranslateToCString("USB", bi.display_name), bi.icon_name);
 		}
+	}
 
-		const std::span<const InputBindingInfo> bindings(USB::GetDeviceBindings(type, subtype));
-		if (!bindings.empty())
-		{
-			MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "{} Bindings")), USB::GetDeviceName(type)));
+	const std::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));
+	if (!settings.empty())
+	{
+		MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "{} Settings")), USB::GetDeviceName(type)));
 
-			if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Bindings"), FSUI_CSTR("Clears all bindings for this USB controller.")))
-			{
-				USB::ClearPortBindings(*bsi, port);
-				SetSettingsChanged(bsi);
-			}
-
-			const std::string section(USB::GetConfigSection(port));
-			for (const InputBindingInfo& bi : bindings)
-			{
-				DrawInputBindingButton(bsi, bi.bind_type, section.c_str(), USB::GetConfigSubKey(type, bi.name).c_str(),
-					Host::TranslateToCString("USB", bi.display_name), bi.icon_name);
-			}
-		}
-
-		const std::span<const SettingInfo> settings(USB::GetDeviceSettings(type, subtype));
-		if (!settings.empty())
-		{
-			MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS, "{} Settings")), USB::GetDeviceName(type)));
-
-			const std::string section(USB::GetConfigSection(port));
-			for (const SettingInfo& si : settings)
-				DrawSettingInfoSetting(bsi, section.c_str(), USB::GetConfigSubKey(type, si.name).c_str(), si, "USB");
-		}
-		ImGui::PopID();
+		const std::string section(USB::GetConfigSection(port));
+		for (const SettingInfo& si : settings)
+			DrawSettingInfoSetting(bsi, section.c_str(), USB::GetConfigSubKey(type, si.name).c_str(), si, "USB");
 	}
 
 	EndMenuButtons();
