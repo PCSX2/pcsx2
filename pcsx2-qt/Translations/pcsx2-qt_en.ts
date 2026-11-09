@@ -670,12 +670,12 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2008"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2012"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1612"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1616"/>
         <source>Hardcore mode is now enabled.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -795,78 +795,78 @@ Login token generated on %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1613"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1617"/>
         <source>Hardcore mode is now disabled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2002"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2006"/>
         <source>Confirm Hardcore Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2371"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2375"/>
         <source>Active Challenge Achievements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2559"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2578"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2563"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2582"/>
         <source>Subsets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2667"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2671"/>
         <source> (Hardcore Mode)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2691"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2695"/>
         <source>You have unlocked all achievements and earned {} points!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3420"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3424"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3421"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3425"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3423"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3427"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3548"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3556"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3552"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3560"/>
         <source>Switch Rankings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2558"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2577"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3549"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3557"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2562"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2581"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3553"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3561"/>
         <source>Change Selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2552"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2560"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2571"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2579"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3550"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3558"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2556"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2564"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2575"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2583"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3554"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3562"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3736"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3756"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3740"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3760"/>
         <source>Leaderboard Download Failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -908,170 +908,170 @@ Leaderboard Position: {1} of {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2696"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2700"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2778"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3419"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2782"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3423"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2779"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2783"/>
         <source>Locked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2780"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2784"/>
         <source>Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2781"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3422"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2785"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3426"/>
         <source>Unsupported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2782"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2786"/>
         <source>Unofficial</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2783"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2787"/>
         <source>Recently Unlocked</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2784"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2788"/>
         <source>Active Challenges</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2785"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2789"/>
         <source>Almost There</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2550"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2569"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2554"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2573"/>
         <source>Navigate Subsets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2551"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2570"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2555"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2574"/>
         <source>Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2910"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2914"/>
         <source>{} points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2910"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2914"/>
         <source>{} point</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2859"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2863"/>
         <source>XXX points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3021"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3025"/>
         <source>Unlocked: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3259"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3263"/>
         <source>This game has {} leaderboards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3275"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3279"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3302"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3306"/>
         <source>Show Best</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3302"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3306"/>
         <source>Show Nearby</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3160"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3336"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3164"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3340"/>
         <source>Rank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="1921"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="1925"/>
         <source>Score: {0} pts (Casual: {1} pts)
 Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2923"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2927"/>
         <source>Missable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2930"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2934"/>
         <source>Progression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="2937"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2941"/>
         <source>Win Condition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3342"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3346"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3346"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3350"/>
         <source>Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3347"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3351"/>
         <source>Score</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3348"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3352"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3359"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3363"/>
         <source>Date Submitted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3506"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3510"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/Achievements.cpp" line="3525"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="3531"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3529"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="3535"/>
         <source>Loading...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../pcsx2/Achievements.cpp" line="1160"/>
-        <location filename="../../pcsx2/Achievements.cpp" line="2703"/>
+        <location filename="../../pcsx2/Achievements.cpp" line="2707"/>
         <source>This game has no achievements.</source>
         <translation type="unfinished"></translation>
     </message>
