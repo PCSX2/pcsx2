@@ -1934,11 +1934,8 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 			case PauseSubMenu::Settings:
 			{
 				const bool can_change_game_settings = s_current_disc_crc != 0;
-				const std::string game_properties_string = VMManager::AreGameSettingsPresent(VMManager::GetDiscSerial(), VMManager::GetDiscCRC()) ?
-					"Game Properties (Edit)" : "Game Properties (New)";
-
 				if (just_focused)
-					ImGui::SetFocusID(ImGui::GetID(can_change_game_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, game_properties_string.c_str()) :
+					ImGui::SetFocusID(ImGui::GetID(can_change_game_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties") :
 																			  FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings")),
 						ImGui::GetCurrentWindow());
 
@@ -1948,7 +1945,7 @@ void FullscreenUI::DrawPauseMenu(MainWindowType type)
 					break;
 				}
 
-				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, game_properties_string.c_str()), false, can_change_game_settings))
+				if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, can_change_game_settings))
 					SwitchToGameSettings();
 
 				if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS, "Global Settings"), false))
@@ -3221,13 +3218,12 @@ void FullscreenUI::HandleGameListActivate(const GameList::Entry* entry)
 void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 {
 	const bool is_favorite = entry->is_favorite;
-	const bool has_custom_settings = VMManager::AreGameSettingsPresent(entry->serial, entry->crc);
 	ImGuiFullscreen::ChoiceDialogOptions options = {
-		{has_custom_settings ? FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (Edit)") : FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties (New)"), false},
+		{FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
 		{is_favorite ? FSUI_ICONSTR(ICON_PF_STAR, "Remove from Favorites") : FSUI_ICONSTR(ICON_PF_STAR, "Add to Favorites"), false},
 		{FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
 		{FSUI_ICONSTR(ICON_FA_ARROW_ROTATE_LEFT, "Load State"), false},
-		{has_custom_settings ? FSUI_ICONSTR(ICON_PF_START, "Default Boot (Custom settings)") : FSUI_ICONSTR(ICON_PF_START, "Default Boot (Global settings)"), false},
+		{FSUI_ICONSTR(ICON_PF_START, "Default Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_FORWARD_FAST, "Fast Boot"), false},
 		{FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Full Boot"), false},
 	};

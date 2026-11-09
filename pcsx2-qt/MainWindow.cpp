@@ -1869,7 +1869,6 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 	if (entry.has_value())
 	{
-		const bool has_custom_settings = VMManager::AreGameSettingsPresent(entry->serial, entry->crc);
 		const bool is_favorite = entry->is_favorite;
 
 		QAction* action = menu.addAction(tr("Properties..."));
@@ -1928,10 +1927,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 		if (!s_vm_valid)
 		{
-			if (has_custom_settings)
-				action = menu.addAction(tr("Default Boot (Custom settings)"));
-			else
-				action = menu.addAction(tr("Default Boot (Global settings)"));
+			action = menu.addAction(tr("Default Boot"));
 			connect(action, &QAction::triggered, [this, entry]() { startGameListEntry(*entry); });
 			// Make bold to indicate it's the default choice when double-clicking
 			if (!VMManager::HasSaveStateInSlot(entry->serial.c_str(), entry->crc, -1))
@@ -3873,16 +3869,6 @@ void MainWindow::updateGameDependentActions()
 	m_ui.actionEditCheats->setEnabled(can_use_pnach);
 	m_ui.actionEditPatches->setEnabled(can_use_pnach);
 	m_ui.actionReloadPatches->setEnabled(s_vm_valid);
-
-	if (s_vm_valid)
-	{
-		if (VMManager::AreGameSettingsPresent(VMManager::GetDiscSerial(), VMManager::GetDiscCRC()))
-			m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties (Edit)", nullptr));
-		else
-			m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties (New)", nullptr));
-	}
-	else
-		m_ui.actionViewGameProperties->setText(QCoreApplication::translate("MainWindow", "Game &Properties", nullptr));
 }
 
 void MainWindow::updateGameGridActions(const bool show_game_grid, const bool show_grid_cover_titles)
