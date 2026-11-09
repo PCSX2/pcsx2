@@ -52,6 +52,7 @@ using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginHorizontalMenu;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
+using ImGuiFullscreen::BeginSidebar;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
@@ -61,6 +62,7 @@ using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
+using ImGuiFullscreen::EndSidebar;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::FocusResetType;
@@ -93,6 +95,7 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
+using ImGuiFullscreen::LAYOUT_SIDEBAR_WIDTH;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::LoadSvgTexture;
 using ImGuiFullscreen::LoadTexture;
@@ -119,6 +122,8 @@ using ImGuiFullscreen::ResetFocusHere;
 using ImGuiFullscreen::RightAlignNavButtons;
 using ImGuiFullscreen::SetFullscreenFooterText;
 using ImGuiFullscreen::ShowToast;
+using ImGuiFullscreen::SidebarItem;
+using ImGuiFullscreen::SidebarState;
 using ImGuiFullscreen::SvgScaling;
 using ImGuiFullscreen::ThreeWayToggleButton;
 using ImGuiFullscreen::ToggleButton;
@@ -139,6 +144,7 @@ using ImGuiFullscreen::UISecondaryTextColor;
 using ImGuiFullscreen::UISecondaryWeakColor;
 using ImGuiFullscreen::UITextHighlightColor;
 using ImGuiFullscreen::UITextShadowColor;
+using ImGuiFullscreen::UpdateSidebarFocus;
 using ImGuiFullscreen::WantsToCloseMenu;
 
 namespace FullscreenUI
@@ -181,12 +187,19 @@ namespace FullscreenUI
 		Folders,
 		Achievements,
 		Controller,
-		Hotkey,
 		Advanced,
 		Patches,
 		Cheats,
 		GameFixes,
 		Count
+	};
+
+	enum class ControllerCategory
+	{
+		Global,
+		Port,
+		USB,
+		Hotkeys,
 	};
 
 	enum class GameListView
@@ -422,6 +435,9 @@ namespace FullscreenUI
 	void DrawFoldersSettingsPage();
 	void DrawAchievementsSettingsPage();
 	void DrawControllerSettingsPage();
+	void DrawControllerGlobalSettings();
+	void DrawControllerPortSettings(u32 global_slot);
+	void DrawUSBPortSettings(u32 port);
 	void DrawHotkeySettingsPage();
 	void DrawAdvancedSettingsPage();
 	void DrawPatchesOrCheatsSettingsPage(bool cheats);
@@ -442,6 +458,10 @@ namespace FullscreenUI
 	void DoSaveInputProfile();
 	void DoSaveInputProfile(const std::string& name);
 	void DoResetSettings();
+
+	SidebarState* GetSidebarForPage(SettingsPage page);
+	bool BeginSidebarContent(const char* name, SidebarState& sidebar);
+	void EndSidebarContent();
 
 	bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section, const char* key,
 		bool default_value, bool enabled = true, bool allow_tristate = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
@@ -517,6 +537,9 @@ namespace FullscreenUI
 	void DoCreateMemoryCard(std::string name, MemoryCardType type, MemoryCardFileType file_type, bool use_ntfs_compression = false);
 
 	inline SettingsPage s_settings_page = SettingsPage::Interface;
+	inline ControllerCategory s_controller_category = ControllerCategory::Global;
+	inline u32 s_controller_index = 0; // pad slot or USB port
+	inline SidebarState s_controller_sidebar;
 	inline std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 	inline std::unique_ptr<GameList::Entry> s_game_settings_entry;
 	inline std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
