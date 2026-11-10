@@ -9465,6 +9465,7 @@ SCPS-15097:
     - "SCAJ-20196"
     - "SCAJ-20099"
     - "SCPS-11003"
+    - "SCPS-15097"
     - "SCPS-19103"
     - "SCPS-19151"
     - "SCPS-55001"
@@ -18989,6 +18990,8 @@ SLES-51862:
 SLES-51863:
   name: "Maze Action"
   region: "PAL-E"
+  gameFixes:
+    - InstantDMAHack # Fixes SPS on characters.
 SLES-51864:
   name: "Police Chase Down"
   region: "PAL-E"
