@@ -38974,8 +38974,10 @@ SLPM-62323:
 SLPM-62324:
   name: "SIMPLE2000シリーズ Ultimate Vol.8 激闘！迷路キング"
   name-sort: "しんぷる2000しりーず あるてぃめっと Vol. 8 げきとう！めいろきんぐ"
-  name-en: "Simple 2000 Series Vol. 8 - Gekitou! Meiro King"
+  name-en: "Simple 2000 Series Ultimate Vol. 8 - Gekitou! Meiro King"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes SPS on characters.
 SLPM-62325:
   name: "ハイヒートメジャーリーグベースボール 2003 [THE BEST タカラモノ]"
   name-sort: "はいひーとめじゃーりーぐべーすぼーる 2003 [THE BEST たからもの]"
