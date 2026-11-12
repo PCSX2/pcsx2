@@ -43,7 +43,7 @@ out SHADER
 
 const float exp_min32 = exp2(-32.0f);
 
-#if VS_EXPAND == VS_EXPAND_NONE
+#if VS_EXPAND_TYPE == VS_EXPAND_NONE
 
 layout(location = 0) in vec2  i_st;
 layout(location = 2) in uvec4 i_c;
@@ -103,7 +103,7 @@ void vs_main()
 	#endif
 }
 
-#else // VS_EXPAND
+#else // VS_EXPAND_TYPE
 
 struct RawVertex
 {
@@ -305,14 +305,14 @@ void main()
 
 	uint vid = uint(gl_VertexID);
 
-#if VS_EXPAND == VS_EXPAND_POINT
+#if VS_EXPAND_TYPE == VS_EXPAND_POINT
 
 	vtx = load_vertex(vid >> 2);
 
 	vtx.p.x += ((vid & 1u) != 0u) ? PointSize.x : 0.0f;
 	vtx.p.y += ((vid & 2u) != 0u) ? PointSize.y : 0.0f;
 
-#elif (VS_EXPAND == VS_EXPAND_LINE) || (VS_EXPAND == VS_EXPAND_LINE_AA1)
+#elif (VS_EXPAND_TYPE == VS_EXPAND_LINE) || (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
 
 	uint vid_base = vid >> 2;
 	bool is_bottom = (vid & 2u) != 0u;
@@ -325,14 +325,14 @@ void main()
 	vec2 line_delta = is_bottom ? (vtx.p.xy - other.p.xy) : (other.p.xy - vtx.p.xy);
 	vec2 line_vector = normalize(line_delta / VertexScale);
 	vec2 line_expand = vec2(line_vector.y, -line_vector.x);
-#if VS_EXPAND == VS_EXPAND_LINE_AA1
+#if VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1
 	line_expand *= 2.0f * LineAA1Width;
 #endif
 	vec2 line_width = (line_expand * PointSize) / 2;
 	vec2 offset = is_right ? line_width : -line_width;
 	vtx.p.xy += offset;
 
-#if VS_EXPAND == VS_EXPAND_LINE_AA1
+#if VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1
 	VSout.inv_cov = is_right ? 1.0f : -1.0f;
 #endif
 
@@ -340,7 +340,7 @@ void main()
 	// This means that both triangles will have a point based off the top line point as their first point
 	// So we don't have to do anything for !IIP
 
-#elif VS_EXPAND == VS_EXPAND_SPRITE
+#elif VS_EXPAND_TYPE == VS_EXPAND_SPRITE
 
 	// Sprite points are always in pairs
 	uint vid_base = vid >> 1;
@@ -361,7 +361,7 @@ void main()
 	vtx.t_float.y = is_bottom ? lt.t_float.y : vtx.t_float.y;
 	vtx.t_int.yw = is_bottom ? lt.t_int.yw : vtx.t_int.yw;
 
-#elif VS_EXPAND == VS_EXPAND_TRIANGLE_AA1
+#elif VS_EXPAND_TYPE == VS_EXPAND_TRIANGLE_AA1
 
 	// Triangles with AA1 are expanded as follows:
 	// - Vertices 0-2: Interior of triangle (1 triangle).
@@ -465,6 +465,6 @@ void main()
 	VSout.c = vtx.c;
 }
 
-#endif // VS_EXPAND
+#endif // VS_EXPAND_TYPE
 
 #endif // VERTEX_SHADER

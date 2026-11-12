@@ -1120,7 +1120,7 @@ if(LINUX)
 	target_sources(PCSX2 PRIVATE
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders}
-		)
+	)
 
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PkgConfig::LIBUDEV
@@ -1284,6 +1284,9 @@ function(setup_main_executable target)
 			continue()
 		endif()
 		pcsx2_resource(${target} ${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
+		if((CMAKE_GENERATOR MATCHES "Xcode") AND ("${path}" MATCHES "/shaders/common/"))
+			set_source_files_properties(${path} PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.metal)
+		endif()
 	endforeach()
 
 	# Add docs to resources for not-Windows, since they don't use the bin directory.
