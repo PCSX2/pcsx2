@@ -1857,8 +1857,8 @@ mVUop(mVU_XGKICK)
 			xMOV(ptr32[&VU1.xgkickcyclecount], 0);
 			xMOV(gprT2, ptr32[&mVU.totalCycles]);
 			xSUB(gprT2, ptr32[&mVU.cycles]);
-			xADD(gprT2, ptr64[&VU1.cycle]);
-			xMOV(ptr32[&VU1.xgkicklastcycle], gprT2);
+			xADD(gprT2q, ptr64[&VU1.cycle]);
+			xMOV(ptr64[&VU1.xgkicklastcycle], gprT2q);
 			xMOV(gprT1, regS);
 			xAND(gprT1, 0x3FF);
 			xSHL(gprT1, 4);
