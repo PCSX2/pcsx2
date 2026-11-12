@@ -28,6 +28,8 @@ namespace GLState
 	extern u8 bf;
 	extern u8 wrgba;
 
+	extern bool ds_as_rt_mask;
+
 	extern bool depth;
 	extern GLenum depth_func;
 	extern bool depth_mask;
@@ -49,6 +51,7 @@ namespace GLState
 	extern bool ds_written; // Depth Stencil written
 
 	extern GLuint tex_unit[8]; // shader input texture
+	extern GLuint image_unit[8]; // shader read/write image
 
 	extern u32 UpdateDrawBuffers();
 	extern void Clear();

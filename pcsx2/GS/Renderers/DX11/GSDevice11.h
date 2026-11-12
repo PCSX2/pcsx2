@@ -34,17 +34,22 @@ public:
 		struct
 		{
 			GSHWDrawConfig::ColorMaskSelector colormask;
-			u8 pad[3];
+			u8 ds_as_rt;
+			u8 ds_as_rt_slot;
+			u8 pad[1];
 			GSHWDrawConfig::BlendState blend;
 		};
 		u64 key;
 
 		constexpr OMBlendSelector() : key(0) {}
-		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_)
+		constexpr OMBlendSelector(GSHWDrawConfig::ColorMaskSelector colormask_, GSHWDrawConfig::BlendState blend_,
+			bool ds_as_rt_ = false, u8 ds_as_rt_slot_ = 0)
 		{
 			key = 0;
 			colormask = colormask_;
 			blend = blend_;
+			ds_as_rt = ds_as_rt_;
+			ds_as_rt_slot = ds_as_rt_slot_;
 		}
 	};
 	static_assert(sizeof(OMBlendSelector) == sizeof(u64));
@@ -97,6 +102,8 @@ private:
 	};
 
 	void SetFeatures(IDXGIAdapter1* adapter);
+
+	bool UseVSExpandIndexBuffer() const { return m_features.aa1 || m_features.depth_integer; }
 
 	u32 GetSwapChainBufferCount() const;
 	bool CreateSwapChain();
@@ -397,7 +404,7 @@ public:
 	void PSSetShaderResource(int i, GSTexture* sr);
 	void PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb);
 	void PSUpdateShaderState(const bool sr_update, const bool ss_update);
-	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr);
+	void PSUnbindConflictingSRVs(GSTexture* tex1 = nullptr, GSTexture* tex2 = nullptr, GSTexture* tex3 = nullptr);
 	void PSSetSamplerState(ID3D11SamplerState* ss0);
 
 	void OMSetDepthStencilState(ID3D11DepthStencilState* dss, u8 sref);
