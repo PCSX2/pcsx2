@@ -73,6 +73,7 @@ oprofile_data/
 /bin/**/*.ilk
 /bin/**/*.lib
 /bin/**/*.pdb
+/bin/D3D12/
 /bin/pcsx2*
 /bin/qt.conf
 /bin/bios
