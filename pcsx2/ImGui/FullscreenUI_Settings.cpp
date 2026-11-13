@@ -3028,6 +3028,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("JPEG"),
 		FSUI_NSTR("WebP"),
 	};
+	static constexpr const char* s_depth_feedback_modes[] = {
+		"None",
+		"Auto",
+		"Depth",
+		"Depth as RT",
+	};
 
 	const GSRendererType renderer =
 		static_cast<GSRendererType>(GetEffectiveIntSetting(bsi, "EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
@@ -3597,6 +3603,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
 			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
 			(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Depth Feedback Mode"),
+			FSUI_CSTR("Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). "
+				"'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing."),
+			"EmuCore/GS", "DepthFeedbackMode", static_cast<int>(GSDepthFeedbackMode::Auto), s_depth_feedback_modes,
+			std::size(s_depth_feedback_modes), true, 0, renderer != GSRendererType::SW);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Override Texture Barriers"),
 			FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
 			s_generic_options, std::size(s_generic_options), true, -1);

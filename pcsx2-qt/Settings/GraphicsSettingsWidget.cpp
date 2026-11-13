@@ -544,7 +544,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 			   "Improves performance in most games, but can make a small selection slower."));
 
 		dialog()->registerWidgetHelp(m_advanced.depthFeedback, tr("Depth Feedback Mode"), tr("Auto (Default)"),
-			tr("What type of depth feedback to use for AAT (acurate alpha test) and AA1 (antialiasing). "
+			tr("Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). "
 			   "'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing."));
 
 		dialog()->registerWidgetHelp(m_fixes.gpuPaletteConversion, tr("GPU Palette Conversion"), tr("Unchecked"),
