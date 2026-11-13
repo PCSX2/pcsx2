@@ -99,6 +99,7 @@ private:
 	/// On XMM registers this will be a load of a full 128-bit value, with the broadcast happening before storing to the local data
 	void pbroadcastwLocal(const XYm& reg, const Xbyak::Address& mem);
 	void broadcastsd(const XYm& reg, const Xbyak::Address& mem);
+	void broadcastss(const XYm& reg, const Xbyak::Address& mem);
 	/// Broadcast a 32-bit GPR to a vector register
 	void broadcastGPRToVec(const XYm& vec, const Xbyak::Reg32& gpr);
 	void modulate16(const XYm& a, const Xbyak::Operand& f, u8 shift);
@@ -167,6 +168,8 @@ private:
 		const Xmm& s2,   const Xmm& s3,
 		int pixels,      int mip_offset);
 	void ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInA3, bool preserveDst);
+	void RoundUV(const XYm& u, const XYm& v, const XYm& tmp1, const XYm& tmp2, const XYm& tmp3,
+		const XYm& tmp4, const XYm& tmp5, const XYm& tmp6);
 };
 
 MULTI_ISA_UNSHARED_END
