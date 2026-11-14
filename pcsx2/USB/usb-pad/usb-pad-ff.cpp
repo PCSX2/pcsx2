@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
-#include "usb-pad.h"
+#include "usb-pad-ff.h"
+#include "usb-pad-sdl-ff.h"
 #include "lg/lg_ff.h"
 
 #include "common/Console.h"
@@ -83,10 +84,10 @@ namespace usb_pad
 	}
 
 	// Unless passing ff packets straight to a device, parse it here
-	void PadState::ParseFFData(const ff_data* ffdata, bool isDFP)
+	void ProcessLogitechFFPacket(FFDevice& ffdev, const ff_data* ffdata, bool isDFP, ff_state& state)
 	{
-		if (!mFFdev)
-			return;
+		FFDevice* dev = &ffdev;
+
 #if defined(PCSX2_DEVBUILD) || defined(_DEBUG)
 		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X",
 			ffdata->cmdslot, ffdata->type, ffdata->u.params[0], ffdata->u.params[1],
@@ -103,7 +104,7 @@ namespace usb_pad
 					for (int i = 0; i < 4; i++)
 					{
 						if (slots & (1 << i))
-							mFFstate.slot_type[i] = ffdata->type;
+							state.slot_type[i] = ffdata->type;
 					}
 					break;
 				case CMD_DOWNLOAD_AND_PLAY: //0x01
@@ -112,9 +113,9 @@ namespace usb_pad
 					{
 						if (slots & (1 << i))
 						{
-							mFFstate.slot_type[i] = ffdata->type;
+							state.slot_type[i] = ffdata->type;
 							if (ffdata->type == FTYPE_CONSTANT)
-								mFFstate.slot_force[i] = ffdata->u.params[i];
+								state.slot_force[i] = ffdata->u.params[i];
 						}
 					}
 
@@ -133,26 +134,26 @@ namespace usb_pad
 										t++;
 									force = (std::min)((std::max)(force + t - 128, -128), 127);
 								}
-								SetConstantForce(mFFdev.get(), 128 + force);
+								SetConstantForce(dev, 128 + force);
 							}
 							else
 							{
 								for (int i = 0; i < 4; i++)
 								{
 									if (slots == (1 << i))
-										SetConstantForce(mFFdev.get(), ffdata->u.params[i]);
+										SetConstantForce(dev, ffdata->u.params[i]);
 								}
 							}
 							break;
 						case FTYPE_SPRING:
-							SetSpringForce(mFFdev.get(), ffdata->u.spring, isDFP ? 0 : FF_LG_CAPS_OLD_LOW_RES_COEF);
+							SetSpringForce(dev, ffdata->u.spring, isDFP ? 0 : FF_LG_CAPS_OLD_LOW_RES_COEF);
 							break;
 						case FTYPE_HIGH_RESOLUTION_SPRING:
-							SetSpringForce(mFFdev.get(), ffdata->u.spring, FF_LG_CAPS_HIGH_RES_COEF | FF_LG_CAPS_HIGH_RES_DEADBAND);
+							SetSpringForce(dev, ffdata->u.spring, FF_LG_CAPS_HIGH_RES_COEF | FF_LG_CAPS_HIGH_RES_DEADBAND);
 							break;
 						case FTYPE_VARIABLE: //Ramp-like
-							//SetRampVariable(mFFdev, ffdata->u.variable);
-							//SetConstantForce(mFFdev, ffdata->u.params[0]);
+							//SetRampVariable(dev, ffdata->u.variable);
+							//SetConstantForce(dev, ffdata->u.params[0]);
 							if (slots & (1 << 0))
 							{
 								if (ffdata->u.variable.t1 && ffdata->u.variable.s1)
@@ -166,7 +167,7 @@ namespace usb_pad
 								}
 								else
 								{
-									SetConstantForce(mFFdev.get(), ffdata->u.variable.l1);
+									SetConstantForce(dev, ffdata->u.variable.l1);
 								}
 							}
 							else if (slots & (1 << 2))
@@ -182,24 +183,24 @@ namespace usb_pad
 								}
 								else
 								{
-									SetConstantForce(mFFdev.get(), ffdata->u.variable.l2);
+									SetConstantForce(dev, ffdata->u.variable.l2);
 								}
 							}
 							break;
 						case FTYPE_FRICTION:
-							SetFrictionForce(mFFdev.get(), ffdata->u.friction);
+							SetFrictionForce(dev, ffdata->u.friction);
 							break;
 						case FTYPE_DAMPER:
-							SetDamperForce(mFFdev.get(), ffdata->u.damper, 0);
+							SetDamperForce(dev, ffdata->u.damper, 0);
 							break;
 						case FTYPE_HIGH_RESOLUTION_DAMPER:
 							caps = FF_LG_CAPS_HIGH_RES_COEF;
 							if (isDFP)
 								caps |= FF_LG_CAPS_DAMPER_CLIP;
-							SetDamperForce(mFFdev.get(), ffdata->u.damper, caps);
+							SetDamperForce(dev, ffdata->u.damper, caps);
 							break;
 						case FTYPE_AUTO_CENTER_SPRING:
-							SetAutoCenter(mFFdev.get(), ffdata->u.autocenter);
+							SetAutoCenter(dev, ffdata->u.autocenter);
 							break;
 						default:
 							DevCon.WriteLn("CMD_DOWNLOAD_AND_PLAY: unhandled force type 0x%02X in slots 0x%02X\n", ffdata->type, slots);
@@ -213,28 +214,28 @@ namespace usb_pad
 					{
 						if (slots & (1 << i))
 						{
-							switch (mFFstate.slot_type[i])
+							switch (state.slot_type[i])
 							{
 								case FTYPE_CONSTANT:
-									mFFdev->DisableForce(EFF_CONSTANT);
+									dev->DisableForce(EFF_CONSTANT);
 									break;
 								case FTYPE_VARIABLE:
-									//mFFdev->DisableRamp();
-									mFFdev->DisableForce(EFF_CONSTANT);
+									//dev->DisableRamp();
+									dev->DisableForce(EFF_CONSTANT);
 									break;
 								case FTYPE_SPRING:
 								case FTYPE_HIGH_RESOLUTION_SPRING:
-									mFFdev->DisableForce(EFF_SPRING);
+									dev->DisableForce(EFF_SPRING);
 									break;
 								case FTYPE_AUTO_CENTER_SPRING:
-									mFFdev->SetAutoCenter(0);
+									dev->SetAutoCenter(0);
 									break;
 								case FTYPE_FRICTION:
-									mFFdev->DisableForce(EFF_FRICTION);
+									dev->DisableForce(EFF_FRICTION);
 									break;
 								case FTYPE_DAMPER:
 								case FTYPE_HIGH_RESOLUTION_DAMPER:
-									mFFdev->DisableForce(EFF_DAMPER);
+									dev->DisableForce(EFF_DAMPER);
 									break;
 								default:
 									DevCon.WriteLn("CMD_STOP: unhandled force type 0x%02X in slot 0x%02X\n", ffdata->type, slots);
@@ -252,7 +253,7 @@ namespace usb_pad
 					if (slots == 0x0F)
 					{
 						//just release force
-						SetConstantForce(mFFdev.get(), 127);
+						SetConstantForce(dev, 127);
 					}
 					else
 					{
@@ -293,4 +294,8 @@ namespace usb_pad
 		}
 	}
 
+	std::unique_ptr<FFDevice> CreateSDLFFDevice(std::string_view device)
+	{
+		return SDLFFDevice::Create(device);
+	}
 } // namespace usb_pad
