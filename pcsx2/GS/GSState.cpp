@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
