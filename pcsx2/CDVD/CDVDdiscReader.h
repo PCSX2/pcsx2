@@ -21,14 +21,6 @@ class Error;
 extern int curDiskType;
 extern int curTrayStatus;
 
-struct toc_entry
-{
-	u32 lba;
-	u8 track;
-	u8 adr : 4;
-	u8 control : 4;
-};
-
 class IOCtlSrc
 {
 	IOCtlSrc(const IOCtlSrc&) = delete;
