@@ -761,6 +761,8 @@ Pcsx2Config::GSOptions::GSOptions()
 	HWROV = false;
 	HWROVLogging = false;
 	HWROVBarriersVK = false;
+	ExtendedDynamicStateVK = GSExtendedDynamicStateModeVK::Off;
+	ExtendedDynamicStateFullVK = GSExtendedDynamicStateFullModeVK::Auto;
 
 	ManualUserHacks = false;
 	UserHacks_AlignSpriteX = false;
@@ -867,6 +869,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(UserHacks_TargetPageRearranging) &&
 		OpEqu(OverrideTextureBarriers) &&
 		OpEqu(DepthFeedbackMode) &&
+		OpEqu(ExtendedDynamicStateVK) &&
+		OpEqu(ExtendedDynamicStateFullVK) &&
 
 		OpEqu(CAS_Sharpness) &&
 		OpEqu(ShadeBoost_Brightness) &&
@@ -924,7 +928,9 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(OverrideTextureBarriers) &&
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
-		   OpEqu(ExclusiveFullscreenControl);
+		   OpEqu(ExclusiveFullscreenControl) &&
+		   OpEqu(ExtendedDynamicStateVK) &&
+	     OpEqu(ExtendedDynamicStateFullVK);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -1065,6 +1071,8 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(HWROV);
 	SettingsWrapBitBool(HWROVLogging);
 	SettingsWrapBitBool(HWROVBarriersVK);
+	SettingsWrapIntEnumEx(ExtendedDynamicStateVK, "ExtendedDynamicStateVK");
+	SettingsWrapIntEnumEx(ExtendedDynamicStateFullVK, "ExtendedDynamicStateFullVK");
 	SettingsWrapIntEnumEx(AccurateBlendingUnit, "accurate_blending_unit");
 	SettingsWrapIntEnumEx(TextureFiltering, "filter");
 	SettingsWrapIntEnumEx(TexturePreloading, "texture_preloading");
