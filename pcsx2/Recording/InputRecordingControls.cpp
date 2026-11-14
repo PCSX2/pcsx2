@@ -27,7 +27,7 @@ void InputRecordingControls::toggleRecordMode()
 
 void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 {
-	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
+	if (!waitForFrameToEnd || VMManager::IsPaused())
 	{
 		m_state = Mode::Recording;
 		Pad::ResetAllControllerInputs();
@@ -46,7 +46,7 @@ void InputRecordingControls::setRecordMode(bool waitForFrameToEnd)
 
 void InputRecordingControls::setReplayMode(bool waitForFrameToEnd)
 {
-	if (!waitForFrameToEnd || VMManager::GetState() == VMState::Paused)
+	if (!waitForFrameToEnd || VMManager::IsPaused())
 	{
 		m_state = Mode::Replaying;
 		InputRec::log(TRANSLATE("InputRecordingControls","Replay Mode Enabled"), Host::OSD_INFO_DURATION);

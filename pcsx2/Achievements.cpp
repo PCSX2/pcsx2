@@ -3937,7 +3937,7 @@ void Achievements::RAIntegration::RACallbackCauseUnpause()
 	Host::RunOnCPUThread([]() {
 		if (VMManager::HasValidVM())
 			if (VMManager::HasValidVM())
-				VMManager::SetState(VMState::Running);
+				VMManager::SetPaused(false);
 	});
 }
 
@@ -3945,7 +3945,7 @@ void Achievements::RAIntegration::RACallbackCausePause()
 {
 	Host::RunOnCPUThread([]() {
 		if (VMManager::HasValidVM())
-			VMManager::SetState(VMState::Paused);
+			VMManager::SetPaused(true);
 	});
 }
 
