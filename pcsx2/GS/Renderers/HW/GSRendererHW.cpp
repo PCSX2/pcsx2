@@ -9199,14 +9199,22 @@ void GSRendererHW::EmulateAlphaTest(DATEOptions& date_options)
 	}
 	else if (simple_rgb_only)
 	{
-		// First pass is to update color; second pass is to update Z;
-		GL_INS("Alpha test: RGBA (A with dual-source blend), then Z (accurate)");
-
+		// First pass is to update color; second pass is to update Z.
+		if (features.framebuffer_fetch)
+		{
+			GL_INS("Alpha test: RGBA (A with FB fetch feedback), then Z (accurate)");
+			m_conf.ps.afail = PS_AFAIL::RGB_ONLY;
+		}
+		else
+		{
+			GL_INS("Alpha test: RGBA (A with dual source blend), then Z (accurate)");
+			m_conf.ps.afail = PS_AFAIL::RGB_ONLY_DSB;
+		}
+		
 		// Tells shader to use dual source blending AFAIL on first pass.
 		GetAlphaTestConfigPS(atst, aref, false, ps_atst, ps_aref);
 		m_conf.ps.atst = ps_atst;
 		m_conf.cb_ps.FogColor_AREF.a = ps_aref;
-		m_conf.ps.afail = PS_AFAIL::RGB_ONLY_DSB;
 
 		// Swap stencil DATE for PrimID DATE, for both Z on and off cases.
 		// Because we're making some pixels pass, but not updating A, the stencil won't be synced.
@@ -9279,8 +9287,9 @@ void GSRendererHW::EmulateAlphaTestSecondPass()
 		}
 
 		// Setup for RBG_ONLY dual source blend selection
-		if (m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::SIMPLE_RGB_ONLY)
+		if (m_conf.ps.afail == PS_AFAIL::RGB_ONLY_DSB)
 		{
+			pxAssert(m_conf.alpha_test == GSHWDrawConfig::AlphaTestMode::SIMPLE_RGB_ONLY);
 			if (!m_conf.blend.enable)
 			{
 				m_conf.blend = GSHWDrawConfig::BlendState(true, GSDevice::CONST_ONE, GSDevice::CONST_ZERO,
