@@ -104,12 +104,34 @@ static constexpr VkColorBlendEquationEXT s_vk_date_primid_init_blend = {
 	.alphaBlendOp = VK_BLEND_OP_ADD,
 };
 
+static constexpr VkColorBlendEquationEXT s_vk_no_blend = {
+	.srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
+	.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO,
+	.colorBlendOp = VK_BLEND_OP_ADD,
+	.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+	.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+	.alphaBlendOp = VK_BLEND_OP_ADD,
+};
+
+// As * Cs + (1 - As) * Cd
 static constexpr GSHWDrawConfig::BlendState s_standard_blend =
 	GSHWDrawConfig::BlendState(true, GSDevice::SRC_ALPHA, GSDevice::INV_SRC_ALPHA,
 		GSDevice::OP_ADD, GSDevice::CONST_ONE, GSDevice::CONST_ZERO, false, 0);
 
 static constexpr GSHWDrawConfig::DepthStencilSelector s_no_depth =
 	GSHWDrawConfig::DepthStencilSelector::NoDepth();
+
+static VkColorBlendEquationEXT GetVkColorBlendEquation(const GSHWDrawConfig::BlendState& bs)
+{
+	VkColorBlendEquationEXT vk_eqn = {};
+	vk_eqn.srcColorBlendFactor = s_vk_blend_factors[bs.src_factor];
+	vk_eqn.dstColorBlendFactor = s_vk_blend_factors[bs.dst_factor];
+	vk_eqn.colorBlendOp = s_vk_blend_ops[bs.op];
+	vk_eqn.srcAlphaBlendFactor = s_vk_blend_factors[bs.src_factor_alpha];
+	vk_eqn.dstAlphaBlendFactor = s_vk_blend_factors[bs.dst_factor_alpha];
+	vk_eqn.alphaBlendOp = VK_BLEND_OP_ADD;
+	return vk_eqn;
+}
 
 static void AddPipelineDynamicState(Vulkan::GraphicsPipelineBuilder& gpb, bool extended)
 {
@@ -6085,40 +6107,38 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 
 	if (UseExtendedDynamicStateTFX() || UseExtendedDynamicStateUtility())
 	{
+		const u32 num_rts = m_current_framebuffer.NumColorAttachments();
+		pxAssert(num_rts <= 2); // Right now there's at most 2 color RTs.
+
 		if (flags & DIRTY_FLAG_EDS_COLOR_BLEND)
 		{
 			if (m_extended_dynamic_state.date_init == DATEInitMethod::PrimID)
 			{
-				VkBool32 vk_enable = VK_TRUE;
+				const VkBool32 vk_enable = VK_TRUE;
 				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &s_vk_date_primid_init_blend);
 				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
 			}
 			else if (m_extended_dynamic_state.bs.enable)
 			{
 				const GSHWDrawConfig::BlendState& bs = m_extended_dynamic_state.bs;
-				VkColorBlendEquationEXT vk_blend_eqn = {};
-				vk_blend_eqn.srcColorBlendFactor = s_vk_blend_factors[bs.src_factor];
-				vk_blend_eqn.dstColorBlendFactor = s_vk_blend_factors[bs.dst_factor];
-				vk_blend_eqn.colorBlendOp = s_vk_blend_ops[bs.op];
-				vk_blend_eqn.srcAlphaBlendFactor = s_vk_blend_factors[bs.src_factor_alpha];
-				vk_blend_eqn.dstAlphaBlendFactor = s_vk_blend_factors[bs.dst_factor_alpha];
-				vk_blend_eqn.alphaBlendOp = VK_BLEND_OP_ADD;
-				VkBool32 vk_enable = VK_TRUE;
+				const VkColorBlendEquationEXT vk_blend_eqn = GetVkColorBlendEquation(bs);
+				const VkBool32 vk_enable = VK_TRUE;
 				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &vk_blend_eqn);
 				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
 			}
 			else
 			{
-				VkColorBlendEquationEXT vk_blend_eqn = {};
-				vk_blend_eqn.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-				vk_blend_eqn.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-				vk_blend_eqn.colorBlendOp = VK_BLEND_OP_ADD;
-				vk_blend_eqn.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-				vk_blend_eqn.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-				vk_blend_eqn.alphaBlendOp = VK_BLEND_OP_ADD;
-				VkBool32 vk_enable = VK_FALSE;
-				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &vk_blend_eqn);
+				const VkBool32 vk_enable = VK_FALSE;
+				vkCmdSetColorBlendEquationEXT(cmdbuf, 0, 1, &s_vk_no_blend);
 				vkCmdSetColorBlendEnableEXT(cmdbuf, 0, 1, &vk_enable);
+			}
+
+			if (num_rts > 1)
+			{
+				// 2nd RT if any is always DS as RT and we never blend to it.
+				const VkBool32 vk_disable = VK_FALSE;
+				vkCmdSetColorBlendEquationEXT(cmdbuf, 1, num_rts - 1, &s_vk_no_blend);
+				vkCmdSetColorBlendEnableEXT(cmdbuf, 1, num_rts - 1, &vk_disable);
 			}
 		}
 
@@ -6126,14 +6146,21 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 		{
 			if (m_extended_dynamic_state.date_init == DATEInitMethod::PrimID)
 			{
-				VkColorComponentFlags vk_color_mask = VK_COLOR_COMPONENT_R_BIT;
+				const VkColorComponentFlags vk_color_mask = VK_COLOR_COMPONENT_R_BIT;
 				vkCmdSetColorWriteMaskEXT(cmdbuf, 0, 1, &vk_color_mask);
 			}
 			else
 			{
-				VkColorComponentFlags vk_color_mask =
+				const VkColorComponentFlags vk_color_mask =
 					static_cast<VkColorComponentFlags>(m_extended_dynamic_state.cms.wrgba);
 				vkCmdSetColorWriteMaskEXT(cmdbuf, 0, 1, &vk_color_mask);
+			}
+
+			if (num_rts > 1)
+			{
+				// 2nd RT if any is always DS as RT and we always write to it.
+				const VkColorComponentFlags vk_color_mask = VK_COLOR_COMPONENT_R_BIT;
+				vkCmdSetColorWriteMaskEXT(cmdbuf, 1, num_rts - 1, &vk_color_mask);
 			}
 		}
 
