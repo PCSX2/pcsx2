@@ -391,7 +391,8 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		const GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
 		target_width = static_cast<float>(resolution.x);
 		target_height = static_cast<float>(resolution.y);
-	} else if (GSConfig.DisplaySizeOverride == DisplaySizeOverrideMode::Custom)
+	}
+	else if (GSConfig.DisplaySizeOverride == DisplaySizeOverrideMode::Custom)
 	{
 		target_width = static_cast<float>(GSConfig.DisplaySizeOverrideWidth);
 		target_height = static_cast<float>(GSConfig.DisplaySizeOverrideHeight);

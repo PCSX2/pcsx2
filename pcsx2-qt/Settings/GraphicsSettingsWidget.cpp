@@ -108,7 +108,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		m_display.fullscreenModes, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onFullscreenModeChanged);
 	connect(
 		m_display.displaySizeOverrideMode, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onDisplaySizeOverrideModeChanged);
-	onDisplaySizeOverrideModeChanged(m_display.displaySizeOverrideMode->currentIndex());
+	onDisplaySizeOverrideModeChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
@@ -925,12 +925,15 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 	g_emu_thread->applySettings();
 }
 
-void GraphicsSettingsWidget::onDisplaySizeOverrideModeChanged(int index)
+void GraphicsSettingsWidget::onDisplaySizeOverrideModeChanged()
 {
-	const bool enabled = (dialog()->getEffectiveIntValue("EmuCore/GS", "display_size_override_mode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_DISPLAY_SIZE_OVERRIDE_MODE)) ==
-						  static_cast<int>(DisplaySizeOverrideMode::Custom));
-	m_display.displaySizeOverrideWidth->setEnabled(enabled);
-	m_display.displaySizeOverrideHeight->setEnabled(enabled);
+	const int effectiveInt = dialog()->getEffectiveIntValue("EmuCore/GS", "display_size_override_mode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_DISPLAY_SIZE_OVERRIDE_MODE));
+	const bool customSizeEnabled = effectiveInt == static_cast<int>(DisplaySizeOverrideMode::Custom);
+	m_display.displaySizeOverrideWidth->setEnabled(customSizeEnabled);
+	m_display.displaySizeOverrideHeight->setEnabled(customSizeEnabled);
+	const bool exclusiveOptionsEnabled = effectiveInt == static_cast<int>(DisplaySizeOverrideMode::Off);
+	m_display.aspectRatio->setEnabled(exclusiveOptionsEnabled);
+	m_display.integerScaling->setEnabled(exclusiveOptionsEnabled);
 }
 
 void GraphicsSettingsWidget::onTrilinearFilteringChanged()
