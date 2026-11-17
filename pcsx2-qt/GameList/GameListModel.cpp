@@ -31,6 +31,10 @@ static constexpr int SIZE_HINT_HEIGHT_TITLES = SIZE_HINT_HEIGHT + COVER_ART_SPAC
 
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 
+// Divide with the byte and get the correct label for each one
+static constexpr unsigned long long GB_SIZE = 1073741824ULL;
+static constexpr unsigned long long MB_SIZE = 1048576ULL; 
+
 static QPixmap createPlaceholderImage(const QPixmap& placeholder_pixmap, int width, int height, float scale,
 	qreal dpr, const std::string& title)
 {
@@ -215,6 +219,20 @@ int GameListModel::columnCount(const QModelIndex& parent) const
 	return parent.isValid() ? 0 : Column_Count;
 }
 
+QString GameListModel::formatByte(const u64& byte)
+{
+	if (byte >= GB_SIZE)
+	{
+		double gb = static_cast<double>(byte) / GB_SIZE;
+		return QString("%1 GB").arg(gb, 0, 'f', 2);
+	}
+	else
+	{
+		double mb = static_cast<double>(byte) / MB_SIZE;
+		return QString("%1 MB").arg(mb, 0, 'f', 2);
+	}
+}
+
 QVariant GameListModel::data(const QModelIndex& index, const int role) const
 {
 	if (!index.isValid())
@@ -259,7 +277,7 @@ QVariant GameListModel::data(const QModelIndex& index, const int role) const
 					return QString::fromStdString(GameList::FormatTimestamp(ge->last_played_time));
 
 				case Column_Size:
-					return QString("%1 MB").arg(static_cast<double>(ge->total_size) / 1048576.0, 0, 'f', 2);
+					return ge->total_size ? formatByte(ge->total_size) : formatByte();
 
 				case Column_Cover:
 					return m_show_titles_for_covers ? QString::fromStdString(ge->GetTitle(m_prefer_english_titles)) : QVariant();
