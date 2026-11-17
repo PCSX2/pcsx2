@@ -1636,12 +1636,12 @@ void FullscreenUI::DrawIPAddressSetting(SettingsInterface* bsi, const char* titl
 	}
 }
 
-void FullscreenUI::StartAutomaticBinding(u32 port)
+void FullscreenUI::StartAutomaticBinding(u32 port, bool usb)
 {
 	// messy because the enumeration has to happen on the input thread
-	Host::RunOnCPUThread([port]() {
+	Host::RunOnCPUThread([port, usb]() {
 		std::vector<std::pair<std::string, std::string>> devices(InputManager::EnumerateDevices());
-		MTGS::RunOnGSThread([port, devices = std::move(devices)]() {
+		MTGS::RunOnGSThread([port, usb, devices = std::move(devices)]() {
 			if (devices.empty())
 			{
 				ShowToast(ICON_FA_TRIANGLE_EXCLAMATION, FSUI_STR("Automatic binding failed, no devices are available."));
@@ -1661,15 +1661,16 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
 				names.push_back(std::move(name));
 			}
 			OpenChoiceDialog(FSUI_CSTR("Select Device"), false, std::move(options),
-				[port, names = std::move(names)](s32 index, const std::string& title, bool checked) {
+				[port, usb, names = std::move(names)](s32 index, const std::string& title, bool checked) {
 					if (index < 0)
 						return;
 
 					// since this is working with the device, it has to happen on the input thread too
-					Host::RunOnCPUThread([port, name = std::move(names[index])]() {
+					Host::RunOnCPUThread([port, usb, name = std::move(names[index])]() {
 						auto lock = Host::GetSettingsLock();
 						SettingsInterface* bsi = GetEditingSettingsInterface();
-						const bool result = Pad::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
+						const std::vector<std::pair<GenericInputBinding, std::string>> mapping = InputManager::GetGenericBindingMapping(name);
+						const bool result = usb ? USB::MapDevice(*bsi, port, mapping) : Pad::MapController(*bsi, port, mapping);
 						SetSettingsChanged(bsi);
 
 
@@ -5435,12 +5436,22 @@ void FullscreenUI::DrawControllerGlobalSettings()
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Enable DualSense Player LED"),
 		FSUI_CSTR("Enable/Disable the Player LED on DualSense controllers."), "InputSources", "SDLPS5PlayerLED", true,
 		bsi->GetBoolValue("InputSources", "SDLControllerEnhancedMode", true), true);
+#ifdef __APPLE__
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable IOKit Driver"), FSUI_CSTR("Allow SDL to use the IOKit driver for controllers."),
+		"InputSources", "SDLIOKitDriver", true, bsi->GetBoolValue("InputSources", "SDL", true), false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable MFI Driver"),
+		FSUI_CSTR("Allow SDL to use Apple's GameController (MFI) framework for controllers."), "InputSources", "SDLMFIDriver", true,
+		bsi->GetBoolValue("InputSources", "SDL", true), false);
+#endif
 #ifdef _WIN32
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable SDL Raw Input"), FSUI_CSTR("Allow SDL to use raw access to input devices."),
 		"InputSources", "SDLRawInput", false, bsi->GetBoolValue("InputSources", "SDL", true), false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable XInput Input Source"),
 		FSUI_CSTR("The XInput source provides support for XBox 360/XBox One/XBox Series controllers."), "InputSources", "XInput", false,
 		true, false);
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable DInput Input Source"),
+		FSUI_CSTR("The DInput source provides support for legacy controllers which do not support XInput."), "InputSources", "DInput",
+		false, true, false);
 #endif
 
 	MenuHeading(FSUI_CSTR("Multitap"));
@@ -5505,6 +5516,12 @@ void FullscreenUI::DrawControllerPortSettings(u32 global_slot)
 	if (MenuButton(
 			FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"), FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
 		StartAutomaticBinding(global_slot);
+
+	if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Bindings"), FSUI_CSTR("Clears all bindings for this controller.")))
+	{
+		Pad::ClearPortBindings(*bsi, global_slot);
+		SetSettingsChanged(bsi);
+	}
 
 	for (const InputBindingInfo& bi : ci->bindings)
 		if (bi.name) [[likely]]
@@ -5779,6 +5796,12 @@ void FullscreenUI::DrawUSBPortSettings(u32 port)
 	if (!bindings.empty())
 	{
 		MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "{} Bindings")), USB::GetDeviceName(type)));
+
+		if (MenuButton(FSUI_ICONSTR(ICON_FA_WAND_MAGIC_SPARKLES, "Automatic Mapping"),
+				FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
+		{
+			StartAutomaticBinding(port, true);
+		}
 
 		if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Bindings"), FSUI_CSTR("Clears all bindings for this USB controller.")))
 		{

@@ -530,7 +530,7 @@ namespace FullscreenUI
 	void DrawInputBindingWindow();
 	void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section, const char* name, const char* display_name, const char* icon_name, bool show_type = true);
 	void ClearInputBindingVariables();
-	void StartAutomaticBinding(u32 port);
+	void StartAutomaticBinding(u32 port, bool usb = false);
 	void DrawSettingInfoSetting(SettingsInterface* bsi, const char* section, const char* key, const SettingInfo& si,
 		const char* translation_ctx);
 	void OpenMemoryCardCreateDialog();
