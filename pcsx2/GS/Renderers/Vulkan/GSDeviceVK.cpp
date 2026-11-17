@@ -3983,6 +3983,10 @@ void GSDeviceVK::OMSetRenderTargets(FramebufferInfo fb, const GSVector4i& scisso
 		}
 
 		m_current_framebuffer = fb;
+
+		// If the number of attachments changes we may need to reset the dynamic state.
+		if (UseExtendedDynamicStateTFX() || UseExtendedDynamicStateUtility())
+			m_dirty_flags |= DIRTY_EDS_STATE;
 	}
 	else if (InRenderPass())
 	{
