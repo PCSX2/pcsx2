@@ -1216,6 +1216,8 @@ struct alignas(16) GSHWDrawConfig
 
 		// Blending has no effect if RGB is masked.
 		bool IsEffective(ColorMaskSelector colormask) const;
+
+		bool HasDualSourceBlendFactor() const;
 	};
 
 	enum class AlphaTestMode

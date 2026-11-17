@@ -258,6 +258,7 @@ private:
 	void ConfigureROV(bool color_rov, bool depth_rov); // Actual config for ROV
 	void ConvertTextureTypeROV(GSTextureCache::Target* rt, GSTextureCache::Target* ds); // Convert to RW capable textures if needed.
 	void ConvertTextureTypeROVSingle(GSTextureCache::Target* tgt, bool shader_write); // Helper to do the above.
+	void SetupDualSourceBlend();
 
 	void SetTCOffset();
 	bool NextDrawColClip() const;
