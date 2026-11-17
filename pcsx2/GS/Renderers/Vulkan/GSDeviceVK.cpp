@@ -5980,37 +5980,35 @@ bool GSDeviceVK::BeginPresentRenderPass(VkRenderPass rp, const GSVector4i& rect,
 	return true;
 }
 
-void GSDeviceVK::BeginTFXRenderPass(const DrawPassConfig& config, GSTextureVK* rt, GSTextureVK* ds_as_rt,
-	GSTextureVK* ds, const GSVector2i& rtsize)
+void GSDeviceVK::BeginTFXRenderPass(const DrawPassConfig& config, const FramebufferInfo& fb,
+	const GSVector2i& rtsize)
 {
 	const PipelineSelector& pipe = m_pipeline_selector;
 
-	const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(rt);
-	const VkAttachmentLoadOp ds_as_rt_op = GetLoadOpForTexture(ds_as_rt);
-	const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(ds);
+	const VkAttachmentLoadOp rt_op = GetLoadOpForTexture(fb.rt);
+	const VkAttachmentLoadOp ds_as_rt_op = GetLoadOpForTexture(fb.ds_as_rt);
+	const VkAttachmentLoadOp ds_op = GetLoadOpForTexture(fb.ds);
 	const VkRenderPass rp = GetTFXRenderPass(pipe.rt, pipe.ds_as_rt, pipe.ds, pipe.ps.colclip_hw,
 		config.destination_alpha() == GSHWDrawConfig::DestinationAlphaMode::Stencil, pipe.IsRTFeedbackLoop(),
 		pipe.IsTestingAndSamplingDepth(), rt_op, ds_as_rt_op, ds_op);
-	const bool is_clearing_rt = (rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR || ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR);
+	const bool is_clearing_rt =
+		rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR ||
+		ds_as_rt_op == VK_ATTACHMENT_LOAD_OP_CLEAR ||
+		ds_op == VK_ATTACHMENT_LOAD_OP_CLEAR;
 
 	// Only draw to the active area of the colclip hw target. Except when depth is cleared, we need to use the full
 	// buffer size, otherwise it'll only clear the draw part of the depth buffer.
 	const bool use_drawarea =
 		pipe.ps.colclip_hw &&
 		(config.colclip_mode() == GSHWDrawConfig::ColClipMode::ConvertAndResolve) &&
+		ds_as_rt_op != VK_ATTACHMENT_LOAD_OP_CLEAR &&
 		ds_op != VK_ATTACHMENT_LOAD_OP_CLEAR;
 	const GSVector4i render_area = use_drawarea ? config.drawarea() : GSVector4i::loadh(rtsize);
 
 	if (is_clearing_rt)
 	{
-		alignas(16) VkClearValue cvs[2];
-		u32 cv_count = 0;
-		if (rt)
-			GSVector4::store<true>(&cvs[cv_count++].color, rt->GetClearForFormat());
-		if (ds)
-			cvs[cv_count++].depthStencil = { ds->GetClearDepth(), 0 };
-
-		BeginClearRenderPass(rp, render_area, cvs, cv_count);
+		alignas(16) std::array<VkClearValue, 3> cvs = fb.GetClearValues();
+		BeginClearRenderPass(rp, render_area, cvs.data(), fb.NumAttachments());
 	}
 	else
 	{
@@ -6883,7 +6881,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 
 	// Begin render pass if new target or out of the area.
 	if (!InRenderPass())
-		BeginTFXRenderPass(main_pass, fb.rt, fb.ds_as_rt, fb.ds, rtsize);
+		BeginTFXRenderPass(main_pass, fb, rtsize);
 
 	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::StencilOne)
 	{

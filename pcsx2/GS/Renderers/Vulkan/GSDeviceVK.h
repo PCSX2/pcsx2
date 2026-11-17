@@ -717,7 +717,7 @@ public:
 	// Calling this function is allowed even if a pass has not begun.
 	bool InRenderPass();
 	void BeginRenderPass(VkRenderPass rp, const GSVector4i& rect);
-	void BeginTFXRenderPass(const DrawPassConfig& config, GSTextureVK* rt, GSTextureVK* ds_as_rt, GSTextureVK* ds,
+	void BeginTFXRenderPass(const DrawPassConfig& config, const FramebufferInfo& fb,
 		const GSVector2i& rtsize);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, const VkClearValue* cv, u32 cv_count);
 	void BeginClearRenderPass(VkRenderPass rp, const GSVector4i& rect, u32 clear_color);
