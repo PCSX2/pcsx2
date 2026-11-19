@@ -4642,6 +4642,12 @@ bool GSTextureCache::PrepareDownloadTexture(u32 width, u32 height, GSTexture::Fo
 }*/
 void GSTextureCache::InvalidateContainedTargets(u32 start_bp, u32 end_bp, u32 write_psm, u32 write_bw, u32 fb_mask, bool ignore_exact)
 {
+	// Don't run if the range is empty. TryGSMemClear() may send empty ranges
+	// when it's clearing local (CPU side) memory but doesn't want to
+	// invalidate any textures in the TC.
+	if (end_bp <= start_bp)
+		return;
+
 	const bool preserve_alpha = (GSLocalMemory::m_psm[write_psm].trbpp == 24) || (fb_mask & 0xFF000000);
 	for (int type = 0; type < (ignore_exact ? 1 : 2); type++)
 	{
