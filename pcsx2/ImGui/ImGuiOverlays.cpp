@@ -1748,6 +1748,11 @@ s32 SaveStateSelectorUI::GetCurrentSlot()
 	return s_current_slot.load(std::memory_order_acquire) + 1;
 }
 
+void SaveStateSelectorUI::SetCurrentSlot(s32 slot)
+{
+	s_current_slot.store(slot - 1, std::memory_order_release);
+}
+
 void SaveStateSelectorUI::LoadCurrentSlot()
 {
 	Host::RunOnCPUThread([slot = GetCurrentSlot()]() {

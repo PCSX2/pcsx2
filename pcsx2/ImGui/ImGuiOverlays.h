@@ -32,6 +32,7 @@ namespace SaveStateSelectorUI
 	void SelectPreviousSlot(bool open_selector);
 
 	s32 GetCurrentSlot();
+	void SetCurrentSlot(s32 slot);
 	void LoadCurrentSlot();
 	void LoadCurrentBackupSlot();
 	void SaveCurrentSlot();
