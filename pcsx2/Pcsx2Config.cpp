@@ -10,6 +10,7 @@
 #include "common/SmallString.h"
 #include "Config.h"
 #include "GS.h"
+#include "GS/LibrashaderParams.h"
 #include "CDVD/CDVDcommon.h"
 #include "Host.h"
 #include "Host/AudioStream.h"
@@ -873,6 +874,8 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(ShadeBoost_Contrast) &&
 		OpEqu(ShadeBoost_Saturation) &&
 		OpEqu(ShadeBoost_Gamma) &&
+		OpEqu(LibrashaderPreset) &&
+		OpEqu(LibrashaderPresetParams) &&
 		OpEqu(PNGCompressionLevel) &&
 		OpEqu(SaveDrawStart) &&
 		OpEqu(SaveDrawCount) &&
@@ -925,6 +928,20 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		   OpEqu(DepthFeedbackMode) &&
 		   OpEqu(HWAA1) &&
 		   OpEqu(ExclusiveFullscreenControl);
+}
+
+void Pcsx2Config::GSOptions::LoadLibrashaderPresetParams(std::string_view game_serial, u32 game_crc)
+{
+#ifdef ENABLE_LIBRASHADER
+	LibrashaderPresetParams.clear();
+	StringUtil::StripWhitespace(&LibrashaderPreset);
+	Path::ToNativePath(&LibrashaderPreset);
+	if (LibrashaderPreset.empty())
+		return;
+
+	for (auto& [key, value] : LoadLibrashaderSavedParams(LibrashaderPreset, game_serial, game_crc))
+		LibrashaderPresetParams.emplace_back(std::move(key), value);
+#endif
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -1020,6 +1037,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBoolEx(UserHacks_TargetPageRearranging, "UserHacks_TargetPageRearranging");
 	SettingsWrapBitBoolEx(FXAA, "fxaa");
 	SettingsWrapBitBool(ShadeBoost);
+	SettingsWrapBitBool(LibrashaderEnabled);
 	SettingsWrapBitBoolEx(DumpGSData, "DumpGSData");
 	SettingsWrapBitBoolEx(SaveRT, "SaveRT");
 	SettingsWrapBitBoolEx(SaveFrame, "SaveFrame");
@@ -1098,6 +1116,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitfield(ShadeBoost_Contrast);
 	SettingsWrapBitfield(ShadeBoost_Saturation);
 	SettingsWrapBitfield(ShadeBoost_Gamma);
+	SettingsWrapEntry(LibrashaderPreset);
 	SettingsWrapBitfield(ExclusiveFullscreenControl);
 	SettingsWrapBitfieldEx(PNGCompressionLevel, "png_compression_level");
 	SettingsWrapBitfieldEx(SaveDrawStart, "SaveDrawStart");

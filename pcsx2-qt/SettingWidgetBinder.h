@@ -15,6 +15,7 @@
 #include <QtWidgets/QDateTimeEdit>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
@@ -38,6 +39,7 @@ namespace SettingWidgetBinder
 	static constexpr const char* NULLABLE_PROPERTY = "SettingWidgetBinder_isNullable";
 	static constexpr const char* IS_NULL_PROPERTY = "SettingWidgetBinder_isNull";
 	static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_globalValue";
+	static constexpr const char* ORIGINAL_TITLE_PROPERTY = "SettingWidgetBinder_originalTitle";
 
 	template <typename T>
 	struct SettingAccessor
@@ -255,6 +257,155 @@ namespace SettingWidgetBinder
 		static void connectValueChanged(QCheckBox* widget, F func)
 		{
 			widget->connect(widget, &QCheckBox::checkStateChanged, func);
+		}
+	};
+
+	template <>
+	struct SettingAccessor<QGroupBox>
+	{
+		static bool isNullable(const QGroupBox* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
+
+		static void updateNullState(QGroupBox* widget, bool isNull)
+		{
+			if (isNull)
+			{
+				if (!widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+					widget->setProperty(ORIGINAL_TITLE_PROPERTY, widget->title());
+				const QString base = widget->property(ORIGINAL_TITLE_PROPERTY).toString();
+				widget->setTitle(qApp->translate("SettingWidgetBinder", "Default: %1").arg(base));
+			}
+			else if (widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+			{
+				widget->setTitle(widget->property(ORIGINAL_TITLE_PROPERTY).toString());
+			}
+		}
+
+		static bool getBoolValue(const QGroupBox* widget) { return widget->isChecked(); }
+		static void setBoolValue(QGroupBox* widget, bool value) { widget->setChecked(value); }
+		static void makeNullableBool(QGroupBox* widget, bool globalSetting)
+		{
+			if (!widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+				widget->setProperty(ORIGINAL_TITLE_PROPERTY, widget->title());
+			widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+			widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalSetting));
+		}
+		static std::optional<bool> getNullableBoolValue(const QGroupBox* widget)
+		{
+			if (widget->property(IS_NULL_PROPERTY).toBool())
+				return std::nullopt;
+
+			return getBoolValue(widget);
+		}
+		static void setNullableBoolValue(QGroupBox* widget, std::optional<bool> value)
+		{
+			widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+			setBoolValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toBool());
+			updateNullState(widget, !value.has_value());
+		}
+
+		static int getIntValue(const QGroupBox* widget) { return widget->isChecked() ? 1 : 0; }
+		static void setIntValue(QGroupBox* widget, int value) { widget->setChecked(value != 0); }
+		static void makeNullableInt(QGroupBox* widget, int globalValue)
+		{
+			if (!widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+				widget->setProperty(ORIGINAL_TITLE_PROPERTY, widget->title());
+			widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+			widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+		}
+		static std::optional<int> getNullableIntValue(const QGroupBox* widget)
+		{
+			if (widget->property(IS_NULL_PROPERTY).toBool())
+				return std::nullopt;
+
+			return getIntValue(widget);
+		}
+		static void setNullableIntValue(QGroupBox* widget, std::optional<int> value)
+		{
+			widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+			setIntValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toInt());
+			updateNullState(widget, !value.has_value());
+		}
+
+		static float getFloatValue(const QGroupBox* widget) { return widget->isChecked() ? 1.0f : 0.0f; }
+		static void setFloatValue(QGroupBox* widget, float value) { widget->setChecked(value != 0.0f); }
+		static void makeNullableFloat(QGroupBox* widget, float globalValue)
+		{
+			if (!widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+				widget->setProperty(ORIGINAL_TITLE_PROPERTY, widget->title());
+			widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+			widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+		}
+		static std::optional<float> getNullableFloatValue(const QGroupBox* widget)
+		{
+			if (widget->property(IS_NULL_PROPERTY).toBool())
+				return std::nullopt;
+
+			return getFloatValue(widget);
+		}
+		static void setNullableFloatValue(QGroupBox* widget, std::optional<float> value)
+		{
+			widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+			setFloatValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toFloat());
+			updateNullState(widget, !value.has_value());
+		}
+
+		static QString getStringValue(const QGroupBox* widget)
+		{
+			return widget->isChecked() ? QStringLiteral("1") : QStringLiteral("0");
+		}
+		static void setStringValue(QGroupBox* widget, const QString& value) { widget->setChecked(value.toInt() != 0); }
+		static void makeNullableString(QGroupBox* widget, const QString& globalValue)
+		{
+			if (!widget->property(ORIGINAL_TITLE_PROPERTY).isValid())
+				widget->setProperty(ORIGINAL_TITLE_PROPERTY, widget->title());
+			widget->setProperty(NULLABLE_PROPERTY, QVariant(true));
+			widget->setProperty(GLOBAL_VALUE_PROPERTY, QVariant(globalValue));
+		}
+		static std::optional<QString> getNullableStringValue(const QGroupBox* widget)
+		{
+			if (widget->property(IS_NULL_PROPERTY).toBool())
+				return std::nullopt;
+
+			return getStringValue(widget);
+		}
+		static void setNullableStringValue(QGroupBox* widget, std::optional<QString> value)
+		{
+			widget->setProperty(IS_NULL_PROPERTY, QVariant(!value.has_value()));
+			setStringValue(widget, value.has_value() ? value.value() : widget->property(GLOBAL_VALUE_PROPERTY).toString());
+			updateNullState(widget, !value.has_value());
+		}
+
+		template <typename F>
+		static void connectValueChanged(QGroupBox* widget, F func)
+		{
+			if (!isNullable(widget))
+			{
+				widget->connect(widget, &QGroupBox::toggled, func);
+			}
+			else
+			{
+				widget->setContextMenuPolicy(Qt::CustomContextMenu);
+				widget->connect(widget, &QGroupBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
+					QMenu menu(widget);
+					widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
+						[widget, func = std::move(func)]() {
+							const bool old = widget->blockSignals(true);
+							setNullableBoolValue(widget, std::nullopt);
+							widget->blockSignals(old);
+							updateNullState(widget, true);
+							func();
+						});
+					menu.exec(widget->mapToGlobal(pt));
+				});
+				widget->connect(widget, &QGroupBox::toggled, widget, [widget, func = std::move(func)](bool) {
+					if (widget->property(IS_NULL_PROPERTY).toBool())
+					{
+						widget->setProperty(IS_NULL_PROPERTY, QVariant(false));
+						updateNullState(widget, false);
+					}
+					func();
+				});
+			}
 		}
 	};
 

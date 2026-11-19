@@ -10,7 +10,6 @@
 #include "ui_GraphicsHardwareFixesSettingsTab.h"
 #include "ui_GraphicsHardwareRenderingSettingsTab.h"
 #include "ui_GraphicsMediaCaptureSettingsTab.h"
-#include "ui_GraphicsPostProcessingSettingsTab.h"
 #include "ui_GraphicsSettingsHeader.h"
 #include "ui_GraphicsSoftwareRenderingSettingsTab.h"
 #include "ui_GraphicsTextureReplacementSettingsTab.h"
@@ -43,7 +42,6 @@ private Q_SLOTS:
 	void onFullscreenModeChanged(int index);
 	void onTextureDumpChanged();
 	void onTextureReplacementChanged();
-	void onShadeBoostChanged();
 	void onCaptureContainerChanged();
 	void onCaptureCodecChanged();
 	void onEnableVideoCaptureChanged();
@@ -64,7 +62,6 @@ private:
 	Ui::GraphicsHardwareFixesSettingsTab m_fixes;
 	Ui::GraphicsUpscalingFixesSettingsTab m_upscaling;
 	Ui::GraphicsTextureReplacementSettingsTab m_texture;
-	Ui::GraphicsPostProcessingSettingsTab m_post;
 	Ui::GraphicsMediaCaptureSettingsTab m_capture;
 	Ui::GraphicsAdvancedSettingsTab m_advanced;
 
