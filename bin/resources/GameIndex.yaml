@@ -1767,6 +1767,7 @@ SCAJ-20085:
   region: "NTSC-Unk"
 SCAJ-20086:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -1782,6 +1783,7 @@ SCAJ-20086:
     - "SLPS-73224"
 SCAJ-20087:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -2442,6 +2444,7 @@ SCAJ-20178:
   compat: 5
 SCAJ-20179:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes shadows.
@@ -2452,6 +2455,7 @@ SCAJ-20179:
     targetPageRearranging: 1 # Fixes issues with transitions reusing targets.
 SCAJ-20180:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-Unk"
   gsHWFixes:
     autoFlush: 1 # Fixes shadows.
@@ -2630,6 +2634,7 @@ SCAJ-25047:
     minimumBlendingLevel: 2 # Fixes dark font to more bright like software mode.
 SCAJ-30001:
   name: "Xenosaga Episode I - Der Wille zur Macht [PlayStation2 the Best]"
+  name-sort: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation2 the Best]"
   region: "NTSC-Unk"
   compat: 5
   gsHWFixes:
@@ -7115,6 +7120,7 @@ SCES-55670:
   region: "PAL-IN"
 SCES-82034:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -7123,6 +7129,7 @@ SCES-82034:
     roundSprite: 2 # Fixes font artifacts.
 SCES-82035:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "PAL-M3"
   gsHWFixes:
     autoFlush: 2 # Fixes shadows in cutscenes.
@@ -9458,6 +9465,7 @@ SCPS-15097:
     - "SCAJ-20196"
     - "SCAJ-20099"
     - "SCPS-11003"
+    - "SCPS-15097"
     - "SCPS-19103"
     - "SCPS-19151"
     - "SCPS-55001"
@@ -10984,6 +10992,7 @@ SCUS-21295:
     recommendedBlendingLevel: 3 # Fixes water and grass textures.
     halfPixelOffset: 4 # Mostly aligns post-processing.
     nativeScaling: 1 # Fixes post-processing smoothness and position.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SCUS-90174:
   name: "Disney/Pixar Toy Story 3 [PlayStation 2 Bundle]"
   region: "NTSC-U"
@@ -11726,6 +11735,11 @@ SCUS-97266:
   name: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SCUS-97268:
   name: "Ratchet & Clank 2 - Going Commando"
   region: "NTSC-U"
@@ -11743,6 +11757,11 @@ SCUS-97269:
   name: "Final Fantasy XI [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SCUS-97270:
   name: "Kiosk Demo Disc 2.9"
   region: "NTSC-U"
@@ -18971,6 +18990,8 @@ SLES-51862:
 SLES-51863:
   name: "Maze Action"
   region: "PAL-E"
+  gameFixes:
+    - InstantDMAHack # Fixes SPS on characters.
 SLES-51864:
   name: "Police Chase Down"
   region: "PAL-E"
@@ -19508,14 +19529,12 @@ SLES-52047:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLES-52048:
   name: "The Sims - Bustin' Out"
   name-sort: "Sims, The - Bustin' Out"
   region: "PAL-M5"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLES-52055:
   name: "Harry Potter and the Philosopher's Stone"
   region: "PAL-M11"
@@ -22568,6 +22587,9 @@ SLES-53090:
 SLES-53091:
   name: "Predator - Concrete Jungle"
   region: "PAL-E"
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
+    nativeScaling: 2 # Softens and fixes misaligned bloom.
 SLES-53092:
   name: "Motocross Mania 3"
   region: "PAL-M5"
@@ -23852,6 +23874,7 @@ SLES-53534:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLES-53535:
   name: "Tony Hawk's American Wasteland"
   region: "PAL-M4"
@@ -23863,6 +23886,7 @@ SLES-53535:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLES-53536:
   name: "London Racer - Police Madness"
   region: "PAL-M3"
@@ -31858,7 +31882,6 @@ SLKA-25137:
   region: "NTSC-K"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLKA-25138:
   name: ".hack//악성변이 Vol.2"
   name-sort: ".hack Mutation Vol. 2"
@@ -33851,6 +33874,14 @@ SLPM-20436:
   name: "Sakigake!! Otokojuku (SLPS-20436 ?)"
   region: "NTSC-J"
   compat: 5
+SLPM-55001:
+  name: "Def Jam - VENDETTA [EA:SY! 1980]"
+  name-sort: "でふ じゃむ ヴぇんでった [EA:SY! 1980]"
+  name-en: "Def Jam - Vendetta [EA:SY! 1980]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Reduces post misalignment.
+    nativeScaling: 2 # Fixes remaining post misalignment.
 SLPM-55002:
   name: "メダル・オブ・オナー ～ライジングサン～ [EA:SY! 1980]"
   name-sort: "めだる・おぶ・おなー らいじんぐさん [EA:SY! 1980]"
@@ -33996,19 +34027,29 @@ SLPM-55022:
     halfPixelOffset: 4 # Fixes bloom misalignment.
     nativeScaling: 1 # Fixes bloom smoothness.
 SLPM-55023:
-  name: "ドラゴンクエスト&ファイナルファンタジー in いただきストリートSpecial"
-  name-sort: "どらごんくえすと&ふぁいなるふぁんたじー in いただきすとりーとSpecial"
-  name-en: "Dragon Quest & Final Fantasy in Itadaki Street Special"
+  name: "ドラゴンクエスト&ファイナルファンタジー in いただきストリートSpecial [ULTIMATE HITS]"
+  name-sort: "どらごんくえすと&ふぁいなるふぁんたじー in いただきすとりーとSpecial [ULTIMATE HITS]"
+  name-en: "Dragon Quest & Final Fantasy in Itadaki Street Special [ULTIMATE HITS]"
   region: "NTSC-J"
 SLPM-55024:
   name: "実況パワフルプロ野球15"
   name-sort: "じっきょうぱわふるぷろやきゅう15"
   name-en: "Jikkyou Powerful Pro Yakyuu 15"
   region: "NTSC-J"
+SLPM-55025:
+  name: "白銀のソレイユ Contract to the future 未来への契約 [限定版]"
+  name-sort: "しろがねのそれいゆ Contract to the future みらいへのけいやく [げんていばん]"
+  name-en: "Shirogane no Soleil - Contract to the Future - Mirai he no Keiyaku [Limited Edition]"
+  region: "NTSC-J"
 SLPM-55026:
   name: "白銀のソレイユ Contract to the future 未来への契約 [通常版]"
   name-sort: "しろがねのそれいゆ Contract to the future みらいへのけいやく [つうじょうばん]"
   name-en: "Shirogane no Soleil - Contract to the Future - Mirai he no Keiyaku [Standard Edition]"
+  region: "NTSC-J"
+SLPM-55027:
+  name: "シークレットゲーム -KILLER QUEEN- [初回限定版]"
+  name-sort: "しーくれっとげーむ -きらー くいーん- [しょかいげんていばん]"
+  name-en: "Secret Game - Killer Queen [First Limited Edition]"
   region: "NTSC-J"
 SLPM-55028:
   name: "シークレットゲーム -KILLER QUEEN-"
@@ -34016,9 +34057,9 @@ SLPM-55028:
   name-en: "Secret Game - Killer Queen"
   region: "NTSC-J"
 SLPM-55029:
-  name: "ギャラクシーエンジェルⅡ ～絶対領域の扉～"
-  name-sort: "ぎゃらくしーえんじぇる2 ぜったいりょういきのとびら"
-  name-en: "Galaxy Angel II"
+  name: "ギャラクシーエンジェルⅡ ～絶対領域の扉～ [Broccoli Best Quality]"
+  name-sort: "ぎゃらくしーえんじぇる2 ぜったいりょういきのとびら [Broccoli Best Quality]"
+  name-en: "Galaxy Angel II [Broccoli Best Quality]"
   region: "NTSC-J"
 SLPM-55030:
   name: "魔人探偵脳噛ネウロ バトルだヨ！犯人集合！ [限定版]"
@@ -34136,9 +34177,14 @@ SLPM-55047:
   name-en: "Sugar+Spice! - Anoko no Suteki na Nanimokamo"
   region: "NTSC-J"
 SLPM-55048:
-  name: "真・三國無双4 Empires"
-  name-sort: "しんさんごくむそう4 えんぱいあーず"
-  name-en: "Shin Sangoku Musou 4 - Empires"
+  name: "真・三國無双4 Empires [KOEI The Best]"
+  name-sort: "しんさんごくむそう4 えんぱいあーず [KOEI The Best]"
+  name-en: "Shin Sangoku Musou 4 - Empires [KOEI The Best]"
+  region: "NTSC-J"
+SLPM-55050:
+  name: "遙かなる時空の中で 舞一夜 [KOEI The Best]"
+  name-sort: "はるかなるときのなかで まいひとよ [KOEI The Best]"
+  name-en: "Harukanaru Toki no Naka de Maihitoyo [KOEI The Best]"
   region: "NTSC-J"
 SLPM-55051:
   name: "ウィル・オ・ウィスプ ～ イースターの奇跡"
@@ -34269,6 +34315,11 @@ SLPM-55072:
   name-sort: "じーわんじょっきー4 2008"
   name-en: "G1 Jockey 4 2008"
   region: "NTSC-J"
+SLPM-55075:
+  name: "Scarlett ～日常の境界線～ DXパック [限定版]"
+  name-sort: "すかーれっと ～にちじょうのきょうかいせん～ DXぱっく [げんていばん]"
+  name-en: "Scarlett - Nichijou no Kyoukaisen DX Pack [Limited Edition]"
+  region: "NTSC-J"
 SLPM-55076:
   name: "メダル・オブ・オナー ～ヴァンガード～ [EA:SY! 1980]"
   name-sort: "めだる・おぶ・おなー ゔぁんがーど [EA:SY! 1980]"
@@ -34290,6 +34341,14 @@ SLPM-55077:
     textureInsideRT: 1 # Fixes rainbow effect in the pause menu before a jump.
     halfPixelOffset: 2 # Fixes depth lines.
     nativeScaling: 1 # Fixes post-processing
+SLPM-55078:
+  name: "Def Jam - FIGHT FOR NY [EA:SY! 1980]"
+  name-sort: "でふじゃむ・ふぁいと・ふぉー・NY [EA:SY! 1980]"
+  name-en: "Def Jam - Fight for NY [EA:SY! 1980]"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 4 # Reduces post misalignment.
+    nativeScaling: 2 # Fixes remaining post misalignment.
 SLPM-55079:
   name: "Scarlett ～日常の境界線～ [通常版]"
   name-sort: "すかーれっと ～にちじょうのきょうかいせん～ [つうじょうばん]"
@@ -34311,8 +34370,8 @@ SLPM-55080:
     textureInsideRT: 1 # Fixes post shuffle effect.
     halfPixelOffset: 2 # Fixes boxes around shuffle effect pages.
 SLPM-55081:
-  name: "ドラッグオンドラグーン2 ～封印の紅 背徳の黒～"
-  name-sort: "どらっぐおんどらぐーん2 ～ふういんのあか はいとくのくろ～"
+  name: "ドラッグオンドラグーン2 ～封印の紅 背徳の黒～ [ULTIMATE HITS]"
+  name-sort: "どらっぐおんどらぐーん2 ～ふういんのあか はいとくのくろ～ [ULTIMATE HITS]"
   name-en: "Drag-on Dragoon 2 - Fuuin no Aka, Haitoku no Kuro [Ultimate Hits]"
   region: "NTSC-J"
   clampModes:
@@ -34329,6 +34388,18 @@ SLPM-55083:
   name: "真・三國無双5 Special [ディスク 2]"
   name-sort: "しんさんごくむそう5 Special [でぃすく 2]"
   name-en: "Shin Sangoku Musou 5 Special [Disc 2]"
+  region: "NTSC-J"
+SLPM-55084:
+  name: "シークレット・オブ・エヴァンゲリオン [BEST HIT セレクション]"
+  name-sort: "しーくれっと おぶ えゔぁんげりおん [BEST HIT セレクション]"
+  name-en: "Secret of Evangelion [Best Hit Selection]"
+  region: "NTSC-J"
+  gsHWFixes:
+    roundSprite: 2 # Reduces artifacts like vertical lines in main menu but there are many other artifacts still.
+SLPM-55085:
+  name: "エンジェル・プロファイル [BEST HIT セレクション]"
+  name-sort: "えんじぇる ぷろふぁいる [BEST HIT セレクション]"
+  name-en: "Angel Profile [Best Hit Selection]"
   region: "NTSC-J"
 SLPM-55086:
   name: "Ever17 ～the out of infinity～ [恋セレ]"
@@ -34348,7 +34419,7 @@ SLPM-55088:
   gameFixes:
     - SkipMPEGHack # Prevents the game from freezing.
 SLPM-55089:
-  name: " naxat soft reach mania vol.1 - CRギャラクシーエンジェル [通常版]"
+  name: "naxat soft reach mania vol.1 - CRギャラクシーエンジェル [通常版]"
   name-sort: "なぐざっと そふと りーち まにあ Vol.1 CRぎゃらくしーえんじぇる [つうじょうばん]"
   name-en: "Naxat Soft Reach Mania Vol. 1 - CR Galaxy Angel [Standard Ediiton]"
   region: "NTSC-J"
@@ -34370,14 +34441,14 @@ SLPM-55092:
     autoFlush: 1 # Fixes post-processing.
     nativeScaling: 4 # Fixes misaligned bloom.
 SLPM-55093:
-  name: "ギャラクシーエンジェルⅡ 無限回廊の鍵 [ディスク1/2]"
-  name-sort: "ぎゃらくしーえんじぇる2 むげんかいろうのかぎ [でぃすく1/2]"
-  name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Disc 1 of 2]"
+  name: "ギャラクシーエンジェルⅡ 無限回廊の鍵 [Broccoli Best Quality] [ディスク1/2]"
+  name-sort: "ぎゃらくしーえんじぇる2 むげんかいろうのかぎ [Broccoli Best Quality] [でぃすく1/2]"
+  name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Broccoli Best Quality] [Disc 1 of 2]"
   region: "NTSC-J"
 SLPM-55094:
-  name: "ギャラクシーエンジェルⅡ 無限回廊の鍵 [ディスク2/2]"
-  name-sort: "ぎゃらくしーえんじぇる2 むげんかいろうのかぎ [でぃすく2/2]"
-  name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Disc 2 of 2]"
+  name: "ギャラクシーエンジェルⅡ 無限回廊の鍵 [Broccoli Best Quality] [ディスク2/2]"
+  name-sort: "ぎゃらくしーえんじぇる2 むげんかいろうのかぎ [Broccoli Best Quality] [でぃすく2/2]"
+  name-en: "Galaxy Angel II - Mugen Kairou no Kagi [Broccoli Best Quality] [Disc 2 of 2]"
   region: "NTSC-J"
 SLPM-55095:
   name: "神曲奏界ポリフォニカ THE BLACK -EPSODE 1 & 2 BOX EDITION-"
@@ -34402,6 +34473,16 @@ SLPM-55098:
   name: "恋する乙女と守護の楯 [通常版]"
   name-sort: "こいするおとめとしゅごのたて [つうじょうばん]"
   name-en: "Koi suru Otome to Shugo no Tate - The Shield of AIGIS [Standard Edition]"
+  region: "NTSC-J"
+SLPM-55099:
+  name: "想い出に変わる君 ～Memories Off～ [恋愛ゲームセレクション]"
+  name-sort: "おもいでにかわるきみ めもりーずおふ [れんあいげーむせれくしょん]"
+  name-en: "Omoide ni Kawaru Kimi - Memories Off [Renai Game Selection]"
+  region: "NTSC-J"
+SLPM-55100:
+  name: "Memories Off ～それから～ [恋愛ゲームセレクション]"
+  name-sort: "めもりーず おふ それから [れんあいげーむせれくしょん]"
+  name-en: "Memories Off... - Sorekara [Renai Game Selection]"
   region: "NTSC-J"
 SLPM-55101:
   name: "Memories Off Duet ～1st & 2nd Stories～ [恋愛ゲームセレクション]"
@@ -34440,7 +34521,7 @@ SLPM-55107:
     autoFlush: 2 # Fixes missing glow.
     nativeScaling: 2 # Fixes post-processing alignment.
 SLPM-55108:
-  name: "フェイト/アンリミテッドコード"
+  name: "Fate/Unlimited codes"
   name-sort: "ふぇいと/あんりみてっどこーど"
   name-en: "Fate - Unlimited Codes"
   region: "NTSC-J"
@@ -34461,15 +34542,20 @@ SLPM-55110:
     minimumBlendingLevel: 2 # General lighting improvement over basic blend.
     recommendedBlendingLevel: 4 # Further improves lighting on things like plants.
     nativeScaling: 1 # Fixes post lighting.
+SLPM-55111:
+  name: "紫の焔 [限定版]"
+  name-sort: "しのほむら [げんていばん]"
+  name-en: "Shi no Homura [Limited Edition]"
+  region: "NTSC-J"
 SLPM-55112:
-  name: "三國志11 with パワーアップキット"
-  name-sort: "さんごくし11 with ぱわーあっぷきっと"
-  name-en: "Sangokushi XI with Power-Up Kit"
+  name: "三國志11 with パワーアップキット [KOEI The Best]"
+  name-sort: "さんごくし11 with ぱわーあっぷきっと [KOEI The Best]"
+  name-en: "Sangokushi XI with Power-Up Kit [KOEI The Best]"
   region: "NTSC-J"
 SLPM-55113:
-  name: "WIN BACK 2 Project Poseidon [KOEI The Best]"
-  name-sort: "うぃん ばっく 2 ぷろじぇくとぽせいどん [KOEI The Best]"
-  name-en: "WinBack 2 - Project Poseidon [KOEI The Best]"
+  name: "WIN BACK 2 Project Poseidon [コーエー定番シリーズ]"
+  name-sort: "うぃん ばっく 2 ぷろじぇくとぽせいどん [こーえーていんばんしりーず]"
+  name-en: "WinBack 2 - Project Poseidon [KOEI Teiban Series]"
   region: "NTSC-J"
 SLPM-55114:
   name: "マナケミア２ ～おちた学園と錬金術士たち～ [ガストBest Price]"
@@ -34523,6 +34609,11 @@ SLPM-55125:
   name: "はかれなはーと 君がために輝きを [Russell games best]"
   name-sort: "はかれなはーと きみがためにかがやきを [Russell games best]"
   name-en: "Hakarena Heart - Kimi ga Tame ni Kagayaki wo [Russell games best]"
+  region: "NTSC-J"
+SLPM-55126:
+  name: "いつか、届く、あの空に。 ～陽の道と緋の昏と～ [Russell games best]"
+  name-sort: "いつかとどくあのそらに ようのみちとひのたそがれと [Russell games best]"
+  name-en: "Itsuka, Todoku, Ano Sora ni [Russell games best]"
   region: "NTSC-J"
 SLPM-55127:
   name: "ニード・フォー・スピード アンダーカバー"
@@ -34628,6 +34719,11 @@ SLPM-55141:
     nativeScaling: 2 # Fixes post-processing and lighting smoothness and position.
     autoFlush: 1 # Fixes sun occlusion and brightness.
     textureInsideRT: 1 # Fixes shadow maps.
+SLPM-55142:
+  name: "Piaキャロットへようこそ！！G.O. ～サマーフェア～ [Piacci BEST]"
+  name-sort: "ぴあきゃろっとへようこそ！！ G.O. さまーふぇあ [Piacci BEST]"
+  name-en: "Pia Carrot he Youkoso!! G.O. Summer Fair [Piacci Best]"
+  region: "NTSC-J"
 SLPM-55143:
   name: "バイオハザード コード:ベロニカ 完全版 [Best Price]"
   name-sort: "ばいおはざーど こーど べろにか かんぜんばん [Best Price]"
@@ -34642,9 +34738,9 @@ SLPM-55144:
     cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-55145:
-  name: "悪代官3 [PlayStation2 The Best]"
-  name-sort: "あくだいかん3 [PlayStation2 The Best]"
-  name-en: "Akudaikan 3 [PlayStation2 The Best]"
+  name: "悪代官3 [GLOBAL The Best]"
+  name-sort: "あくだいかん3 [GLOBAL The Best]"
+  name-en: "Akudaikan 3 [GLOBAL The Best]"
   region: "NTSC-J"
 SLPM-55146:
   name: "実況パワフルプロ野球2009"
@@ -34675,9 +34771,9 @@ SLPM-55150:
   name-en: "Winning Post World"
   region: "NTSC-J"
 SLPM-55151:
-  name: "ニード・フォー・スピード プロストリート"
-  name-sort: "にーど・ふぉー・すぴーど ぷろすとりーと"
-  name-en: "Need for Speed - ProStreet"
+  name: "ニード・フォー・スピード プロストリート [EA:SY! 1980]"
+  name-sort: "にーど・ふぉー・すぴーど ぷろすとりーと [EA:SY! 1980]"
+  name-en: "Need for Speed - ProStreet [EA:SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes depth line.
@@ -34786,6 +34882,16 @@ SLPM-55170:
   name-sort: "すきっぷ・びーと"
   name-en: "Skip Beat!"
   region: "NTSC-J"
+SLPM-55171:
+  name: "D.C.Ⅱ P.S. ～ダ・カーポⅡ～ プラスシチュエーション [ディスク 1] [KADOKAWA THE Best]"
+  name-sort: "だかーぽ2 ぷらすしちゅえーしょん [でぃすく1] [KADOKAWA THE Best]"
+  name-en: "D.C.II P.S. - Da Capo II - Plus Situation [Disc 1] [Kadokawa The Best]"
+  region: "NTSC-J"
+SLPM-55172:
+  name: "D.C.Ⅱ P.S. ～ダ・カーポⅡ～ プラスシチュエーション [ディスク 2] [KADOKAWA THE Best]"
+  name-sort: "だかーぽ2 ぷらすしちゅえーしょん [でぃすく2] [KADOKAWA THE Best]"
+  name-en: "D.C.II P.S. - Da Capo II - Plus Situation [Disc 2] [Kadokawa The Best]"
+  region: "NTSC-J"
 SLPM-55173:
   name: "ストライクウィッチーズ あなたとできること [限定版]"
   name-sort: "すとらいくうぃっちーず あなたとできること [げんていばん]"
@@ -34811,6 +34917,19 @@ SLPM-55177:
   name-sort: "わんど おぶ ふぉーちゅん [つうじょうばん]"
   name-en: "Wand of Fortune [Standard Edition]"
   region: "NTSC-J"
+SLPM-55178:
+  name: "CLANNAD ベスト版 Key3部作 [プレミアムBOX]"
+  name-sort: "くらなど べすとばん きーさんぶさく [ぷれみあむぼっくす]"
+  name-en: "Clannad Best -KeyTrilogy- [Premium Box]"
+  region: "NTSC-J"
+SLPM-55181:
+  name: "CLANNAD [ベスト版]"
+  name-sort: "くらなど [べすとばん]"
+  name-en: "Clannad [Best Version]"
+  region: "NTSC-J"
+  gsHWFixes:
+    gpuTargetCLUT: 1 # Fixes colours.
+    minimumBlendingLevel: 4 # Fixes transparancy.
 SLPM-55182:
   name: "Jリーグ ウイニングイレブン2009 クラブチャンピオンシップ"
   name-sort: "Jりーぐ ういにんぐいれぶん2009 くらぶちゃんぴおんしっぷ"
@@ -34889,13 +35008,18 @@ SLPM-55195:
   name-sort: "ぷりんせすらばー！ Eternal Love For My Lady [しょかいげんていばん]"
   name-en: "Princess Lover! Eternal Love for My Lady [First Limited Edition]"
   region: "NTSC-J"
+SLPM-55196:
+  name: "プリンセスラバー！ Eternal Love For My Lady [通常版]"
+  name-sort: "ぷりんせすらばー！ Eternal Love For My Lady [つうじょうばん]"
+  name-en: "Princess Lover! Eternal Love for My Lady [Standard Edition]"
+  region: "NTSC-J"
 SLPM-55197:
   name: "Memories Off 6 Next Relation"
   name-sort: "めもりーず おふ 6 ねくすと りれーしょん"
   name-en: "Memories Off  6 - Next Relation"
   region: "NTSC-J"
 SLPM-55198:
-  name: " naxat soft reach mania vol.1 - CRギャラクシーエンジェル [naxat Best]"
+  name: "naxat soft reach mania vol.1 - CRギャラクシーエンジェル [naxat Best]"
   name-sort: "なぐざっと そふと りーち まにあ Vol.1 CRぎゃらくしーえんじぇる [naxat Best]"
   name-en: "Naxat Soft Reach Mania Vol. 1 - CR Galaxy Angel [naxat Best]"
   region: "NTSC-J"
@@ -34905,14 +35029,14 @@ SLPM-55200:
   name-en: "Touka Gettan - Koufuu no Ryouou [Standard Edition]"
   region: "NTSC-J"
 SLPM-55201:
-  name: "白銀のソレイユ Contract to the future 未来への契約 [Russel games best]"
-  name-sort: "しろがねのそれいゆ Contract to the future みらいへのけいやく [Russel games best]"
-  name-en: "Shirogane no Soleil - Contract to the Future - Mirai he no Keiyaku [Russel games best]"
+  name: "白銀のソレイユ Contract to the future 未来への契約 [Russell games best]"
+  name-sort: "しろがねのそれいゆ Contract to the future みらいへのけいやく [Russell games best]"
+  name-en: "Shirogane no Soleil - Contract to the Future - Mirai he no Keiyaku [Russell games best]"
   region: "NTSC-J"
 SLPM-55202:
-  name: "終末少女幻想アリスマチック Apocalypse [Russel games best]"
-  name-sort: "しゅうまつしょうじょありすまちっく あぽかりぷす [Russel games best]"
-  name-en: "Shuumatsu Shoujo Gensou Alicematic Apocalypse [Russel Games Best]"
+  name: "終末少女幻想アリスマチック Apocalypse [Russell games best]"
+  name-sort: "しゅうまつしょうじょありすまちっく あぽかりぷす [Russell games best]"
+  name-en: "Shuumatsu Shoujo Gensou Alicematic Apocalypse [Russell games best]"
   region: "NTSC-J"
 SLPM-55203:
   name: "リトルバスターズ！ Converted Edition"
@@ -35026,6 +35150,12 @@ SLPM-55223:
   name-sort: "なでぷろ!! きさまもせいゆうやってみろ! [つうじょうばん]"
   name-en: "NadePro!! Kisama mo Seiyuu Yatte Miro! [Standard Edition]"
   region: "NTSC-J"
+SLPM-55224:
+  name: "戦国BASARA X [Best Price]"
+  name-sort: "せんごくばさら くろす [Best Price]"
+  name-en: "Sengoku Basara X [Best Price]"
+  region: "NTSC-J"
+  compat: 5
 SLPM-55225:
   name: "戦極姫 ～戦乱に舞う乙女達～"
   name-sort: "せんごくひめ ～せんらんにまうおとめたち～"
@@ -35055,9 +35185,14 @@ SLPM-55229:
   name-sort: "ふぁいなるふぁんたじー11 ゔぁな・でぃーる これくしょん2"
   name-en: "Final Fantasy XI - Vana'diel Collection 2"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-55230:
-  name: "マーセナリーズ2 ワールド イン フレームス"
-  name-sort: "まーせなりーず2 わーるど いん ふれーむす"
+  name: "マーセナリーズ2 ワールド イン フレームス [EA:SY! 1980]"
+  name-sort: "まーせなりーず2 わーるど いん ふれーむす [EA:SY! 1980]"
   name-en: "Mercenaries 2 - World in Flames [EA:SY! 1980]"
   region: "NTSC-J"
   gsHWFixes:
@@ -35076,14 +35211,14 @@ SLPM-55231:
     halfPixelOffset: 5 # Fixes post-processing and bloom misaligment.
     nativeScaling: 2 # Fixes post-processing smoothness and position.
 SLPM-55233:
-  name: "金色のコルダ [KOEI The Best]"
-  name-sort: "きんいろのこるだ [KOEI The Best]"
-  name-en: "Kin'iro no Corda [KOEI The Best]"
+  name: "金色のコルダ [コーエー定番シリーズ]"
+  name-sort: "きんいろのこるだ [こーえーていばんしりーず]"
+  name-en: "Kin'iro no Corda [Koei Teiban Series]"
   region: "NTSC-J"
 SLPM-55234:
-  name: "Zill O'll ～infinite～ [KOEI The Best]"
-  name-sort: "じるおーる ～infinite～ [KOEI The Best]"
-  name-en: "Zill O'll Infinite [KOEI The Best]"
+  name: "Zill O'll ～infinite～ [コーエー定番シリーズ]"
+  name-sort: "じるおーる ～infinite～ [コーエー定番シリーズ]"
+  name-en: "Zill O'll Infinite [KOEI Teiban Series]"
   region: "NTSC-J"
 SLPM-55236:
   name: "METAL GEAR SOLID 3 SNAKE EATER [コナミ殿堂セレクション] [ディスク 1]"
@@ -35104,6 +35239,14 @@ SLPM-55237:
   name-sort: "めたるぎあ そりっど2 そりっどすねーく [こなみでんどうせれくしょん] [でぃすく 2]"
   name-en: "Metal Gear Solid 2 - Solid Snake [KONAMI Dendou Selection] [Disc 2]"
   region: "NTSC-J"
+SLPM-55238:
+  name: "Fate/Unlimited codes [Best Price]"
+  name-sort: "ふぇいと/あんりみてっどこーど [Best Price]"
+  name-en: "Fate - Unlimited Codes [Best Price]"
+  region: "NTSC-J"
+  compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes bow porjectile trajectories.
 SLPM-55239:
   name: "デス・コネクション"
   name-sort: "です こねくしょん"
@@ -35169,6 +35312,11 @@ SLPM-55248:
   name-sort: "きんいろのこるだ3"
   name-en: "Kin'iro no Corda 3"
   region: "NTSC-J"
+SLPM-55249:
+  name: "金色のコルダ [KOEI The Best]"
+  name-sort: "きんいろのこるだ [KOEI The Best]"
+  name-en: "Kin'iro no Corda [KOEI The Best]"
+  region: "NTSC-J"
 SLPM-55250:
   name: "ウォーシップガンナー2 - 鋼鉄の咆哮 [コーエー定番シリーズ]"
   name-sort: "うぉーしっぷがんなー2 くろがねのほうこう [こーえーていばんしりーず]"
@@ -35214,6 +35362,11 @@ SLPM-55259:
   name-sort: "でざーと きんぐだむ"
   name-en: "Desert Kingdom"
   region: "NTSC-J"
+SLPM-55260:
+  name: "ミステリート ～八十神かおるの事件ファイル～ [Abel the Best]"
+  name-sort: "みすてりーと やそがみかおるのじけんふぁいる [Abel the Best]"
+  name-en: "Mystereet [Abel the Best]"
+  region: "NTSC-J"
 SLPM-55262:
   name: "Jリーグ ウイニングイレブン2010 クラブチャンピオンシップ"
   name-sort: "Jりーぐ ういにんぐいれぶん2010 くらぶちゃんぴおんしっぷ"
@@ -35229,6 +35382,11 @@ SLPM-55264:
   name-sort: "もうじゅうつかいとおうじさま"
   name-en: "Moujuutsukai to Oujisama"
   region: "NTSC-J"
+SLPM-55265:
+  name: "スカーレッドライダー ゼクス [限定版]"
+  name-sort: "すかーれっどらいだー ぜくす [げんていばん]"
+  name-en: "Scared Rider Xechs [Limited Edition]"
+  region: "NTSC-J"
 SLPM-55266:
   name: "スカーレッドライダー ゼクス [通常版]"
   name-sort: "すかーれっどらいだー ぜくす [つうじょうばん]"
@@ -35240,8 +35398,8 @@ SLPM-55267:
   name-en: "Natsuzora no Monologue [Limited Edition]"
   region: "NTSC-J"
 SLPM-55268:
-  name: "信長の野望・革新 with パワーアップキット [KOEIテクモ the BEST]"
-  name-sort: "のぶながのやぼう かくしん with ぱわーあっぷきっと [KOEIテクモ the BEST]"
+  name: "信長の野望・革新 with パワーアップキット [コーエーテクモ the Best]"
+  name-sort: "のぶながのやぼう かくしん with ぱわーあっぷきっと [コーエーテクモ the Best]"
   name-en: "Nobunaga no Yabou - Kakushin with Power-Up Kit [Koei Tecmo the Best]"
   region: "NTSC-J"
 SLPM-55269:
@@ -35295,6 +35453,11 @@ SLPM-55278:
   name-sort: "せんごくひめ2・えん ～ひゃっか せんらんたつかぜのごとく～"
   name-en: "Sengoku-hime 2 - En - Hyakka, Senran Tatsukaze no Gotoku"
   region: "NTSC-J"
+SLPM-55279:
+  name: "乙女的恋革命★ラブレボ！！ [ベスト版]"
+  name-sort: "おとめてきこいかくめい らぶれぼ！！ [べすとばん]"
+  name-en: "Otometeki Koi Kakumei Rabu Rebo!! [Best Version]"
+  region: "NTSC-J"
 SLPM-55280:
   name: "Palais de Reine/パレドゥレーヌ [ベスト版]"
   name-sort: "ぱれどぅれーぬ [べすとばん]"
@@ -35319,6 +35482,11 @@ SLPM-55285:
   name: "クリムゾン・エンパイア"
   name-sort: "くりむぞん えんぱいあ"
   name-en: "Crimson Empire"
+  region: "NTSC-J"
+SLPM-55286:
+  name: "猛獣使いと王子様 ～Snow Bride～ [限定版]"
+  name-sort: "もうじゅうづかいとおうじさま ～すのーぶらいど～ [げんていばん]"
+  name-en: "Moujuutsukai to Oujisama - Snow Bride [Limited Edition]"
   region: "NTSC-J"
 SLPM-55287:
   name: "猛獣使いと王子様 ～Snow Bride～"
@@ -35367,11 +35535,26 @@ SLPM-55294:
   name-sort: "わーるどさっかーういにんぐいれぶん2012"
   name-en: "World Soccer Winning Eleven 2012"
   region: "NTSC-J"
+SLPM-55295:
+  name: "戦極姫 ～戦乱に舞う乙女達～ [システムソフトセレクション]"
+  name-sort: "せんごくひめ ～せんらんにまうおとめたち～ [システムソフトセレクション]"
+  name-en: "Sengoku-hime - Senran ni Mau Otome-tachi [SYSTEMSOFT Selection]"
+  region: "NTSC-J"
+SLPM-55296:
+  name: "遙かなる時空の中で4 [コーエーテクモ the Best]"
+  name-sort: "はるかなるときのなかで4 [コーエーテクモ the Best]"
+  name-en: "Harukanaru Toki no Naka de 4 [Koei Tecmo the Best]"
+  region: "NTSC-J"
 SLPM-55298:
   name: "ファイナルファンタジーⅪ アドゥリンの魔境"
   name-sort: "ふぁいなるふぁんたじー11 あどぅりんのまきょう"
   name-en: "Final Fantasy XI - Adoulin no Makyou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-60101:
   name: "ØSTORY [体験版]"
   name-sort: "らぶすとーりー [たいけんばん]"
@@ -37077,8 +37260,8 @@ SLPM-61146:
   name-en: "Dengeki PS2 / DengekiPlayStation D90"
   region: "NTSC-J"
 SLPM-61147:
-  name: "ゼノサーガ エピソードⅢ [ツァラトゥストラはかく語りき] [体験版]"
-  name-sort: "ぜのさーが えぴそーど3 [つぁらとぅすとらはかくかたりき] [たいけんばん]"
+  name: "ゼノサーガ エピソードⅢ ツァラトゥストラはかく語りき [体験版]"
+  name-sort: "ぜのさーが えぴそーど3 つぁらとぅすとらはかくかたりき [たいけんばん]"
   name-en: "Xenosaga Episode III - Also Sprach Zarathustra [Trial]"
   region: "NTSC-J"
   gsHWFixes:
@@ -37281,8 +37464,8 @@ SLPM-62016:
   region: "NTSC-J"
   compat: 5
 SLPM-62019:
-  name: "Winning Post 4 MAXIMUM"
-  name-sort: "ういにんぐぽすと4 MAXIMUM"
+  name: "Winning Post4 MAXIMUM"
+  name-sort: "ういにんぐぽすと4 まきしまむ"
   name-en: "Winning Post 4 Maximum"
   region: "NTSC-J"
 SLPM-62020:
@@ -37478,24 +37661,24 @@ SLPM-62056:
   name-en: "DNA - Dark Native Apostle"
   region: "NTSC-J"
 SLPM-62058:
-  name: "Winning Post 4 MAXIMUM 2001"
-  name-sort: "ういにんぐぽすと4 MAXIMUM 2001"
-  name-en: "Winning Post 4 Maximum 2001"
+  name: "Winning Post4 MAXIMUM 2001 [GⅠ JOCKEY2 2001 & Winning Post4 MAXIMUM 2001 スーパーバリューセット]"
+  name-sort: "ういにんぐぽすと4 まきしまむ 2001 [じーわんじょっきー2 2001 & ういにんぐぽすと4 まきしまむ 2001 すーぱーばりゅーせっと]"
+  name-en: "Winning Post 4 Maximum 2001 [G1 Jockey 2 - 2001 & Winning Post 4 Maximum 2001 Super  Value Set]"
   region: "NTSC-J"
 SLPM-62059:
-  name: "GⅠ JOCKEY2 2001"
-  name-sort: "じーわんじょっきー2 2001"
-  name-en: "G1 JOCKEY2 2001"
+  name: "GⅠ JOCKEY2 2001 [GⅠ JOCKEY2 2001 & Winning Post4 MAXIMUM 2001 スーパーバリューセット]"
+  name-sort: "じーわんじょっきー2 2001 [じーわんじょっきー2 2001 & ういにんぐぽすと4 まきしまむ 2001 すーぱーばりゅーせっと]"
+  name-en: "G1 Jockey 2 - 2001 [G1 Jockey 2 - 2001 & Winning Post 4 Maximum 2001 Super  Value Set]"
   region: "NTSC-J"
 SLPM-62060:
-  name: "Winning Post4 MAXIMUM 2001 & GⅠ Jockey2 2001 [スーパーバリューセット]"
-  name-sort: "ういにんぐぽすと4 MAXIMUM 2001 ういにんぐぽすと4 MAXIMUM 2001 & じーわんじょっきー2 2001 [すーぱーばりゅーせっと]"
-  name-en: "Winning Post 4 Maximum 2001 & G1 Jockey2 2001 [Super Value Set] [Winning Post]"
+  name: "Winning Post4 MAXIMUM 2001"
+  name-sort: "ういにんぐぽすと4 まきしまむ 2001"
+  name-en: "Winning Post 4 Maximum 2001"
   region: "NTSC-J"
 SLPM-62061:
-  name: "Winning Post4 MAXIMUM 2001 & GⅠ Jockey2 2001 [スーパーバリューセット]"
-  name-sort: "じーわんじょっきー2 2001 ういにんぐぽすと4 MAXIMUM 2001 & じーわんじょっきー2 2001 [すーぱーばりゅーせっと]"
-  name-en: "Winning Post 4 Maximum 2001 & G1 Jockey2 2001 [Super Value Set] [G1 Jockey]"
+  name: "GⅠ JOCKEY2 2001"
+  name-sort: "じーわんじょっきー2 2001"
+  name-en: "G1 Jockey2 2001"
   region: "NTSC-J"
 SLPM-62062:
   name: "ギタルマンワン"
@@ -37513,6 +37696,11 @@ SLPM-62065:
   name: "SIMPLE2000シリーズ Vol.1 THE テーブルゲーム"
   name-sort: "しんぷる2000しりーず Vol.   1 THEてーぶるげーむ"
   name-en: "Simple 2000 Series Vol. 1 - The Table Game"
+  region: "NTSC-J"
+SLPM-62066:
+  name: "街ingメーカー"
+  name-sort: "まっちんぐめーかー"
+  name-en: "Machi-ing Maker"
   region: "NTSC-J"
 SLPM-62067:
   name: "HUNTER×HUNTER 龍派の祭壇"
@@ -37617,6 +37805,11 @@ SLPM-62088:
   name: "Jリーグ ウイニングイレブン5"
   name-sort: "Jりーぐ ういにんぐいれぶん 5"
   name-en: "J-League Winning Eleven 5"
+  region: "NTSC-J"
+SLPM-62090:
+  name: "SILENT SCOPE [KONAMI The BEST]"
+  name-sort: "さいれんと すこーぷ [KONAMI The BEST]"
+  name-en: "Silent Scope [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-62091:
   name: "RING OF RED [KONAMI The BEST]"
@@ -37847,9 +38040,9 @@ SLPM-62133:
   name-en: "Bloody Roar 3 [HUDSON THE BEST]"
   region: "NTSC-J"
 SLPM-62134:
-  name: "ファイナルファンタジーⅪ β Version"
-  name-sort: "ふぁいなるふぁんたじー11 β Version"
-  name-en: "Final Fantasy XI [Beta Edition]"
+  name: "プレイオンライン β2 Edition"
+  name-sort: "ぷれいおんらいん べーた2 えでぃしょん"
+  name-en: "PLay Online β2 Edition"
   region: "NTSC-J"
 SLPM-62135:
   name: "ファイナルファンタジーⅪ β Version"
@@ -38071,19 +38264,19 @@ SLPM-62182:
   name-en: "Top Gun - Ace of the Sky"
   region: "NTSC-J"
 SLPM-62183:
-  name: "真・三國無双"
-  name-sort: "しんさんごくむそう"
-  name-en: "Shin Sangoku Musou"
+  name: "真・三國無双 [コーエースプリングパック]"
+  name-sort: "しんさんごくむそう [コーエースプリングパック]"
+  name-en: "Shin Sangoku Musou [KOEI Spring Pack]"
   region: "NTSC-J"
 SLPM-62184:
-  name: "三國志Ⅷ"
-  name-sort: "さんごくし 8"
-  name-en: "Sangokushi VIII"
+  name: "三國志Ⅷ [三國志Ⅷ & 三國志Ⅶ コーエー2002スプリングパック]"
+  name-sort: "さんごくし 8 [さんごくし 8 & さんごくし 7 こーえー2002すぷりんぐぱっく]"
+  name-en: "Sangokushi VIII [Sangokushi VIII & Sangokushi VII KOEI 2002 Spring Pack]"
   region: "NTSC-J"
 SLPM-62185:
-  name: "三國志Ⅶ"
-  name-sort: "さんごくし 7"
-  name-en: "Sangokushi VII"
+  name: "三國志Ⅶ [三國志Ⅷ & 三國志Ⅶ コーエー2002スプリングパック]"
+  name-sort: "さんごくし 7 [さんごくし 8 & さんごくし 7 こーえー2002すぷりんぐぱっく]"
+  name-en: "Sangokushi VII [Sangokushi VIII & Sangokushi VII KOEI 2002 Spring Pack]"
   region: "NTSC-J"
 SLPM-62186:
   name: "GetBackers奪還屋 奪われた無限城"
@@ -38095,6 +38288,14 @@ SLPM-62188:
   name-sort: "くれいじーばんぷ ～かっとびかーばとる！～"
   name-en: "Crazy BUMP's - Kattobi Car Battle!"
   region: "NTSC-J"
+SLPM-62189:
+  name: "MIDNIGHT CLUB ～STREET RACING～ [SYSCOM GAME GALLERY]"
+  name-sort: "みっどないと くらぶ ～すとりーと れーしんぐ～ [SYSCOM GAME GALLERY]"
+  name-en: "Midnight Club - Street Racing [SYSCOM GAME GALLERY]"
+  region: "NTSC-J"
+  memcardFilters:
+    - "SLPS-20068"
+    - "SLPS-20067"
 SLPM-62190:
   name: "ハイヒートメジャーリーグベースボール 2003"
   name-sort: "はいひーとめじゃーりーぐべーすぼーる 2003"
@@ -38156,7 +38357,7 @@ SLPM-62201:
     vuClampMode: 3 # Fixes missing 3D polygons when going ingame.
 SLPM-62202:
   name: "Winning Post4 MAXIMUM 2001 [コーエーサマーチャンス 2002]"
-  name-sort: "ういにんぐぽすと4 MAXIMUM 2001 [こーえーさまーちゃんす 2002]"
+  name-sort: "ういにんぐぽすと4 まきしまむ 2001 [こーえーさまーちゃんす 2002]"
   name-en: "Winning Post 4 Maximum 2001 [KOEI Summer Chance 2002]"
   region: "NTSC-J"
 SLPM-62203:
@@ -38191,9 +38392,9 @@ SLPM-62207:
   name-en: "Simple 2000 Series Vol. 9 - The Renai Adventure - Bittersweet Fools"
   region: "NTSC-J"
 SLPM-62208:
-  name: "信長の野望 Online"
-  name-sort: "のぶながのやぼう おんらいん"
-  name-en: "Nobunaga no Yabou Online"
+  name: "信長の野望 Online [β version]"
+  name-sort: "のぶながのやぼう おんらいん [β version]"
+  name-en: "Nobunaga no Yabou Online [β version]"
   region: "NTSC-J"
 SLPM-62209:
   name: "ギガンティック ドライブ"
@@ -38257,7 +38458,7 @@ SLPM-62220:
   region: "NTSC-J"
 SLPM-62221:
   name: "Winning Post5 MAXIMUM 2002"
-  name-sort: "ういにんぐぽすと5 MAXIMUM 2002"
+  name-sort: "ういにんぐぽすと5 まきしまむ 2002"
   name-en: "Winning Post 5 Maximum 2002"
   region: "NTSC-J"
 SLPM-62223:
@@ -38331,7 +38532,7 @@ SLPM-62236:
   gameFixes:
     - XGKickHack # Fixes black models on certain games in World Tour.
 SLPM-62237:
-  name: "学園都市ヴァラノワール [定版]"
+  name: "学園都市ヴァラノワール [限定版]"
   name-sort: "がくえんとし ゔぁらのわーる [げんていばん]"
   name-en: "Gakuen Toshi Vara Noir [Limited Edition]"
   region: "NTSC-J"
@@ -38359,9 +38560,9 @@ SLPM-62241:
     textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
 SLPM-62242:
-  name: "撞球 ビリヤードマスター2"
-  name-sort: "どうきゅう びりやーどますたー2"
-  name-en: "Doukyuu - Billiard Master 2 [LowPrice Version]"
+  name: "撞球 ビリヤードマスター2 [わくわくプライス]"
+  name-sort: "どうきゅう びりやーどますたー2 [わくわくプライス]"
+  name-en: "Doukyuu - Billiard Master 2 [WakuWaku Price]"
   region: "NTSC-J"
 SLPM-62244:
   name: "チョロQ HG3"
@@ -38372,6 +38573,11 @@ SLPM-62245:
   name: "遊星からの物体X episode Ⅱ"
   name-sort: "ゆうせいからのぶったいX episode 2"
   name-en: "Yuusei kara no Buttai X - Episode II"
+  region: "NTSC-J"
+SLPM-62246:
+  name: "SILENT SCOPE 3"
+  name-sort: "さいれんと すこーぷ 3"
+  name-en: "Silent Scope 3"
   region: "NTSC-J"
 SLPM-62247:
   name: "真魂斗羅"
@@ -38456,8 +38662,8 @@ SLPM-62261:
   name-en: "DogStation [Only Soft]"
   region: "NTSC-J"
 SLPM-62262:
-  name: "GⅠ JOCKEY2 [KOEI The BEST]"
-  name-sort: "じーわんじょっきー2 [KOEI The BEST]"
+  name: "GⅠ JOCKEY2 [KOEI The Best]"
+  name-sort: "じーわんじょっきー2 [KOEI The Best]"
   name-en: "G1 JOCKEY2 [Koei the best]"
   region: "NTSC-J"
 SLPM-62263:
@@ -38544,14 +38750,14 @@ SLPM-62278:
   name-en: "Hunter x Hunter"
   region: "NTSC-J"
 SLPM-62279:
-  name: "GⅠ JOCKEY3 & Winning Post5 MAXIMUM 2002 [プレミアムパック]"
-  name-sort: "じーわんじょっきー3 じーわんじょっきー3 & ういにんぐぽすと5 MAXIMUM 2002 [ぷれみあむぱっく]"
-  name-en: "G1 Jockey 3 & Winning Post5 Maximum 2002 [Premium Pack]"
+  name: "GⅠ JOCKEY3 [GⅠ JOCKEY3 & Winning Post5 MAXIMUM 2002 プレミアムパック]"
+  name-sort: "じーわんじょっきー3 [じーわんじょっきー3 & ういにんぐぽすと5 まきしまむ 2002 ぷれみあむぱっく]"
+  name-en: "G1 Jockey 3  [G1 Jockey 3 & Winning Post5 Maximum 2002 Premium Pack]"
   region: "NTSC-J"
 SLPM-62280:
-  name: "GⅠ JOCKEY3 & Winning Post5 MAXIMUM 2002 [プレミアムパック]"
-  name-sort: "ういにんぐぽすと5 MAXIMUM 2002 じーわんじょっきー3 & ういにんぐぽすと5 MAXIMUM 2002 [ぷれみあむぱっく]"
-  name-en: "G1 Jockey 3 & Winning Post5 Maximum 2002 [Premium Pack]"
+  name: "Winning Post5 MAXIMUM 2002 [GⅠ JOCKEY3 & Winning Post5 MAXIMUM 2002 プレミアムパック]"
+  name-sort: "ういにんぐぽすと5 まきしまむ 2002 [じーわんじょっきー3 & ういにんぐぽすと5 まきしまむ 2002 ぷれみあむぱっく]"
+  name-en: "Winning Post5 Maximum 2002 [G1 Jockey 3 & Winning Post5 Maximum 2002 Premium Pack]"
   region: "NTSC-J"
 SLPM-62281:
   name: "US OPEN 2002 - A USTA EVENT"
@@ -38719,7 +38925,7 @@ SLPM-62314:
   region: "NTSC-J"
 SLPM-62315:
   name: "プチコプター [ラジコンプロポ型コントローラセット]"
-  name-sort: "ぷちこぷたー [らじこんぷろぽがたこんとろーらせっと]"
+  name-sort: "ぷちこぷたー [らじこんぷろぽがたこんとろらせっと]"
   name-en: "Puchi Copter [with Controller]"
   region: "NTSC-J"
 SLPM-62316:
@@ -38768,8 +38974,10 @@ SLPM-62323:
 SLPM-62324:
   name: "SIMPLE2000シリーズ Ultimate Vol.8 激闘！迷路キング"
   name-sort: "しんぷる2000しりーず あるてぃめっと Vol. 8 げきとう！めいろきんぐ"
-  name-en: "Simple 2000 Series Vol. 8 - Gekitou! Meiro King"
+  name-en: "Simple 2000 Series Ultimate Vol. 8 - Gekitou! Meiro King"
   region: "NTSC-J"
+  gameFixes:
+    - InstantDMAHack # Fixes SPS on characters.
 SLPM-62325:
   name: "ハイヒートメジャーリーグベースボール 2003 [THE BEST タカラモノ]"
   name-sort: "はいひーとめじゃーりーぐべーすぼーる 2003 [THE BEST たからもの]"
@@ -38810,11 +39018,21 @@ SLPM-62332:
   name-sort: "ぷれいおんらいん びゅーわー てとらますたー & じゃんほうろう"
   name-en: "PlayOnline Viewer - Tetra Master & Janhourou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-62333:
   name: "プレイオンライン ビューワー ～テトラマスター & 雀鳳楼～"
   name-sort: "ぷれいおんらいん びゅーわー てとらますたー & じゃんほうろう"
   name-en: "PlayOnline Viewer - Tetra Master & Janhourou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-62334:
   name: "SIMPLE2000シリーズ Vol.29 THE 恋愛ボードゲーム ～青春18ラヂオ～"
   name-sort: "しんぷる2000しりーず Vol.  29 THEれんあいぼーどげーむ せいしゅん18らじお"
@@ -38937,24 +39155,24 @@ SLPM-62356:
   region: "NTSC-J"
   compat: 5
 SLPM-62357:
-  name: "テニスの王子様 Smash Hit！ Original Anime Game"
-  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game"
-  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game"
+  name: "テニスの王子様 Smash Hit！ Original Anime Game [初回SP限定版] [特典ディスク-A]"
+  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game [しょかいSPげんていばん] [とくてんでぃすく-A]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game [First SP Limited] [Special Disk-A]"
   region: "NTSC-J"
 SLPM-62358:
-  name: "テニスの王子様 Smash Hit！ Original Anime Game"
-  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game"
-  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game"
+  name: "テニスの王子様 Smash Hit！ Original Anime Game [初回SP限定版] [特典ディスク-B]"
+  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game [しょかいSPげんていばん] [とくてんでぃすく-B]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game [First SP Limited] [Special Disk-B]"
   region: "NTSC-J"
 SLPM-62359:
-  name: "テニスの王子様 Smash Hit！ Original Anime Game"
-  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game"
-  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game"
+  name: "テニスの王子様 Smash Hit！ Original Anime Game [初回SP限定版] [特典ディスク-C]"
+  name-sort: "てにすのおうじさま Smash Hit！ Original Anime Game [しょかいSPげんていばん] [とくてんでぃすく-C]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit! Original Anime Game [First SP Limited] [Special Disk-C]"
   region: "NTSC-J"
 SLPM-62360:
-  name: "超兄貴 ～聖なるプロテイン伝説～"
-  name-sort: "ちょうあにき せいなるぷろていんでんせつ"
-  name-en: "Chou Aniki - Seinaru Protein Densetsu"
+  name: "超兄貴 ～聖なるプロテイン伝説～ [体験版]"
+  name-sort: "ちょうあにき せいなるぷろていんでんせつ [たいけんばん]"
+  name-en: "Chou Aniki - Seinaru Protein Densetsu [Demo]"
   region: "NTSC-J"
 SLPM-62361:
   name: "真魂斗羅 [KONAMI The BEST]"
@@ -39122,9 +39340,9 @@ SLPM-62392:
   name-en: "G1 Jockey 3 2003"
   region: "NTSC-J"
 SLPM-62393:
-  name: "GⅠ JOCKEY3 2003 & Winning Post6 [プレミアムパック]"
-  name-sort: "じーわんじょっきー3 2003 じーわんじょっきー3 2003 & ういにんぐぽすと6 [ぷれみあむぱっく]"
-  name-en: "G1 JOCKEY3 2003 & Winning Post6 [Premium Pack]"
+  name: "GⅠ JOCKEY3 2003 [GⅠ JOCKEY3 2003 & Winning Post6 プレミアムパック]"
+  name-sort: "じーわんじょっきー3 2003 [じーわんじょっきー3 2003 & ういにんぐぽすと6 ぷれみあむぱっく]"
+  name-en: "G1 JOCKEY3 2003 [G1 JOCKEY3 2003 & Winning Post6 Premium Pack]"
   region: "NTSC-J"
 SLPM-62394:
   name: "パワースマッシュ2 [SEGA THE BEST 2800]"
@@ -39343,10 +39561,24 @@ SLPM-62433:
   name-en: "Sega Ages 2500 Series Vol.06 - Bonanza Brothers"
   region: "NTSC-J"
   compat: 5
+SLPM-62434:
+  name: "テニスの王子様 Smash Hit 2！ Original Anime Game [初回SP限定版 A-Type]"
+  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game [しょかいSPげんていばん A-Type]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game [Shokai SP Genteiban A-Type]"
+  region: "NTSC-J"
+  gsHWFixes:
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-62435:
-  name: "テニスの王子様 Smash Hit 2！ Original Anime Game"
-  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game"
-  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game"
+  name: "テニスの王子様 Smash Hit 2！ Original Anime Game [初回SP限定版 B-Type]"
+  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game [しょかいSPげんていばん B-Type]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game [Shokai SP Genteiban B-Type]"
+  region: "NTSC-J"
+  gsHWFixes:
+    forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
+SLPM-62436:
+  name: "テニスの王子様 Smash Hit 2！ Original Anime Game [初回SP限定版 C-Type]"
+  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game [しょかいSPげんていばん C-Type]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game [Shokai SP Genteiban C-Type]"
   region: "NTSC-J"
   gsHWFixes:
     forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
@@ -39816,9 +40048,9 @@ SLPM-62519:
   name-en: "Sangokushi VIII [Koei The Best]"
   region: "NTSC-J"
 SLPM-62520:
-  name: "信長の野望・蒼天録"
-  name-sort: "のぶながのやぼう そうてんろく"
-  name-en: "Nobunaga no Yabou - Soutenroku"
+  name: "信長の野望・蒼天録 [KOEI The Best]"
+  name-sort: "のぶながのやぼう そうてんろく [KOEI The Best]"
+  name-en: "Nobunaga no Yabou - Soutenroku [KOEI The Best]"
   region: "NTSC-J"
 SLPM-62521:
   name: "極 麻雀DXⅡ - The 4th MONDO21Cup Competition - [Athena Best Collection Vol.2]"
@@ -39886,6 +40118,11 @@ SLPM-62534:
   name-en: "Simple 2000 Series Vol. 63 - Mogitate Mizugi! Onna Mamire no The Suieitaikai"
   region: "NTSC-J"
   compat: 5
+SLPM-62535:
+  name: "戦国無双 - 最強データ"
+  name-sort: "せんごくむそう さいきょうでーた"
+  name-en: "Sengoku Muso - Saikyo Data"
+  region: "NTSC-J"
 SLPM-62536:
   name: "GⅠ JOCKEY3 [KOEI The Best]"
   name-sort: "じーわんじょっきー3 [KOEI The Best]"
@@ -40173,14 +40410,14 @@ SLPM-62589:
   name-en: "Simple 2000 Series Vol. 72 - Ninkyou"
   region: "NTSC-J"
 SLPM-62590:
-  name: "GⅠ JOCKEY3 2005年度版 [プレミアムパック]"
-  name-sort: "じーわんじょっきー3 2005ねんどばん [ぷれみあむぱっく]"
-  name-en: "G1 Jockey 3 - 2005 [Premium Pack]"
+  name: "GⅠ JOCKEY3 2005年度版 [GⅠ JOCKEY3 2003年度版 & Winning Post6 2005年度版 プレミアムパック]"
+  name-sort: "じーわんじょっきー3 2005ねんどばん [じーわんじょっきー3 2005ねんどばん & ういにんぐぽすと6 2005ねんどばん ぷれみあむぱっく]"
+  name-en: "G1 Jockey 3 - 2005 [G1 Jockey 3 - 2005 & Winning Post 6 - 2005 Premium Pack]"
   region: "NTSC-J"
 SLPM-62591:
   name: "GⅠ JOCKEY3 2005年度版"
   name-sort: "じーわんじょっきー3 2005ねんどばん"
-  name-en: "G1 Jockey 3 2005"
+  name-en: "G1 Jockey 3 - 2005"
   region: "NTSC-J"
 SLPM-62593:
   name: "彩京シューティングコレクション Vol.3 ソルディバイド&ドラゴンブレイズ"
@@ -40804,9 +41041,9 @@ SLPM-62715:
   name-en: "Shin Sangoku Musou Series Collection Joukan Saikyou Data"
   region: "NTSC-J"
 SLPM-62716:
-  name: "戦国無双2 & 戦国無双2 猛将伝 - 最強データ"
-  name-sort: "せんごくむそう2 & せんごくむそう もうしょうでん - さいきょうでーた"
-  name-en: "Sengoku Musou 2 & Sengoku Musou 2 - Moushouden -Saikyou Data"
+  name: "戦国無双 & 戦国無双 猛将伝 - 最強データ"
+  name-sort: "せんごくむそう & せんごくむそう もうしょうでん - さいきょうでーた"
+  name-en: "Sengoku Musou & Sengoku Musou - Moushouden -Saikyou Data"
   region: "NTSC-J"
 SLPM-62717:
   name: "SEGA AGES 2500シリーズ Vol.26 ダイナマイト刑事"
@@ -40897,17 +41134,17 @@ SLPM-62736:
   name-en: "Slotter Up Mania - Chou Oki-Slot! Pioneer Special [Dorart Value Series]"
   region: "NTSC-J"
 SLPM-62737:
-  name: "ラリーショックス&フリークスタイル モトクロス [EA BEST HITS] [Rally Shoxディスク]"
-  name-sort: "らりーしょっくす&ふりーくすたいる もとくろす [EA BEST HITS] [Rally Shoxディスク]"
-  name-en: "Rally Shox & Freekstyle Motocross [EA Best Hits] [Rally Shoxディスク]"
+  name: "RALLY SHOX [RALLY SHOX & FREEK STYLE モトクロス] [EA BEST HITS]"
+  name-sort: "らりーしょっくす [らりーしょっくす & ふりーくすたいる もとくろす] [EA BEST HITS]"
+  name-en: "Rally Shox [Rally Shox & Freekstyle Motocross] [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 4 # Aligns UI in Rally Shox.
     nativeScaling: 2 # Fixes window reflections in Rally Shox.
 SLPM-62738:
-  name: "ラリーショックス&フリークスタイル モトクロス [EA BEST HITS] [FREEK STYLE MOTOCROSSディスク]"
-  name-sort: "らりーしょっくす&ふりーくすたいる もとくろす [EA BEST HITS] [FREEK STYLE MOTOCROSSディスク]"
-  name-en: "Rally Shox & Freekstyle Motocross [EA Best Hits] [FREEK STYLE MOTOCROSSディスク]"
+  name: "FREEK STYLE モトクロス [RALLY SHOX & FREEK STYLE モトクロス] [EA BEST HITS]"
+  name-sort: "ふりーくすたいる もとくろす [らりーしょっくす & ふりーくすたいる もとくろす] [EA BEST HITS]"
+  name-en: "Freekstyle Motocross [Rally Shox & Freekstyle Motocross] [EA Best Hits]"
   region: "NTSC-J"
 SLPM-62739:
   name: "パチスロ完全攻略 ～ スロ原人・鬼浜爆走愚連隊激闘編"
@@ -41127,9 +41364,14 @@ SLPM-62784:
   name-en: "Kao no nai Tsuki Select Story"
   region: "NTSC-J"
 SLPM-62785:
-  name: "最強将棋 激指スペシャル"
-  name-sort: "さいきょうしょうぎ げきさしすぺしゃる"
-  name-en: "Saikyo Shogi Gekisashi Special"
+  name: "最強将棋 激指スペシャル [MYCOM BEST]"
+  name-sort: "さいきょうしょうぎ げきさしすぺしゃる [MYCOM BEST]"
+  name-en: "Saikyo Shogi Gekisashi Special [MYCOM BEST]"
+  region: "NTSC-J"
+SLPM-64073:
+  name: "魔法先生ネギま！ 1時間目 お子ちゃま先生は魔法使い！ [KONAMI The Best]"
+  name-sort: "まほうせんせいねぎま！ 1じかんめ おこちゃませんせいはまほうつかい！ [KONAMI The Best]"
+  name-en: "Magic Teacher Negima - Honor Version [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-64501:
   name: "진・삼국무쌍"
@@ -41391,7 +41633,7 @@ SLPM-65014:
   gameFixes:
     - GoemonTlbHack
 SLPM-65015:
-  name: "決戦II"
+  name: "決戦Ⅱ"
   name-sort: "けっせん2"
   name-en: "Kessen II"
   region: "NTSC-J"
@@ -41485,12 +41727,12 @@ SLPM-65029:
   name-en: "Anime Eikaiwa - Tondemo Nezumi Daikatsuyaku"
   region: "NTSC-J"
 SLPM-65030:
-  name: "決戦&決戦2 スーパーバリューセット [決戦ディスク]"
+  name: "決戦&決戦Ⅱ スーパーバリューセット [決戦ディスク]"
   name-sort: "けっせん&けっせん2 すーぱーばりゅーせっと [けっせんでぃすく]"
   name-en: "Kesse & Kessen2 Super Value Set [Kessen Disc]"
   region: "NTSC-J"
 SLPM-65031:
-  name: "決戦&決戦II スーパーバリューセット [決戦Ⅱディスク]"
+  name: "決戦&決戦Ⅱ スーパーバリューセット [決戦Ⅱディスク]"
   name-sort: "けっせん&けっせん2 すーぱーばりゅーせっと [けっせん2でぃすく]"
   name-en: "Kesse & Kessen II Super Value Set [Kessen II Disc]"
   region: "NTSC-J"
@@ -42153,9 +42395,9 @@ SLPM-65145:
   name-en: "Tokimeki Memorial - Girl's Side"
   region: "NTSC-J"
 SLPM-65146:
-  name: "真・三國無双2"
-  name-sort: "しんさんごくむそう2"
-  name-en: "Shin Sangoku Musou 2"
+  name: "真・三國無双2 [コーエースプリングパック]"
+  name-sort: "しんさんごくむそう2 [こーえーすぷりんぐぱっく]"
+  name-en: "Shin Sangoku Musou 2 [KOEI Spring Pack]"
   region: "NTSC-J"
 SLPM-65148:
   name: "電車でGO！ ～旅情編～"
@@ -42220,9 +42462,9 @@ SLPM-65160: #serial used on printed labels only, internal serial is always SLPM-
   roundModes:
     eeRoundMode: 1 # Fixes disappearing characters.
 SLPM-65161:
-  name: "エアロダンシング 4"
-  name-sort: "えあろだんしんぐ 4"
-  name-en: "Aero Dancing 4"
+  name: "エアロダンシング 4 ニュージェネレーション"
+  name-sort: "えあろだんしんぐ 4 にゅーじぇねれーしょん"
+  name-en: "Aero Dancing 4 - New Generation"
   region: "NTSC-J"
 SLPM-65162:
   name: "San Guo Zhi Zhan Ji"
@@ -42248,9 +42490,9 @@ SLPM-65165:
   name-en: "Project Minerva"
   region: "NTSC-J"
 SLPM-65166:
-  name: "UFC THROWDOWN"
-  name-sort: "UFC すろーだうん"
-  name-en: "UFC - Ultimate Fighting Championship - Throwdown"
+  name: "UFC 2 TAP OUT"
+  name-sort: "ゆーえふしー 2 たっぷ あうと"
+  name-en: "UFC: Tapout 2"
   region: "NTSC-J"
 SLPM-65167:
   name: "PRIDE"
@@ -42272,14 +42514,14 @@ SLPM-65170:
   name-en: "Shin Sangoku Musou 2 - Moushouden"
   region: "NTSC-J"
 SLPM-65171:
-  name: "真・三國無双2 & 真・三國無双2 猛将伝 [ディスク 1] [プレミアムパック]"
-  name-sort: "しんさんごくむそう2 & しんさんごくむそう2 もうしょうでん [でぃすく 1] [ぷれみあむぱっく]"
-  name-en: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 - [Disc 1] [Premium Pack]"
+  name: "真・三國無双2 [真・三國無双2 & 真・三國無双2 猛将伝 プレミアムパック]"
+  name-sort: "しんさんごくむそう2 [しんさんごくむそう2 & しんさんごくむそう2 もうしょうでん ぷれみあむぱっく]"
+  name-en: "Shin Sangoku Musou 2 [Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Premium Pack]"
   region: "NTSC-J"
 SLPM-65172:
-  name: "真・三國無双2 & 真・三國無双2 猛将伝 [ディスク 2] [プレミアムパック]"
-  name-sort: "しんさんごくむそう2 & しんさんごくむそう2 もうしょうでん [でぃすく 2] [ぷれみあむぱっく]"
-  name-en: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 - [Disc 2] [Premium Pack]"
+  name: "真・三國無双2 猛将伝 [真・三國無双2 & 真・三國無双2 猛将伝 プレミアムパック]"
+  name-sort: "しんさんごくむそう2 もうしょうでん [しんさんごくむそう2 & しんさんごくむそう2 もうしょうでん ぷれみあむぱっく]"
+  name-en: "Shin Sangoku Musou 2 [Shin Sangoku Musou 2 & Shin Sangoku Musou 2 [Premium Pack]"
   region: "NTSC-J"
 SLPM-65173:
   name: "探偵 神宮寺三郎 Innocent Black"
@@ -42528,14 +42770,14 @@ SLPM-65209:
         //Force jump to execute iReferEventFlagStatus
         patch=1,IOP,00025198,word,0800946D
 SLPM-65210:
-  name: "超・バトル封神&封神演義2 [プレミアムパック] [超・バトル封神ディスク]"
-  name-sort: "ちょう・ばとるほうしん&ほうしんえんぎ2 [ぷれみあむぱっく]01[ちょう・ばとるほうしんでぃすく]"
-  name-en: "Chou Battle Houshin [Premium Pack] [Chou Battl Houshin Disc]"
+  name: "超・バトル封神 [超・バトル封神 & 封神演義2 プレミアムパック]"
+  name-sort: "ちょう・ばとるほうしん [ちょう・ばとるほうしん&ほうしんえんぎ2 ぷれみあむぱっく]"
+  name-en: "Chou Battle Houshin [Chou Battle Houshin & Houshin Engi 2 Premium Pack]"
   region: "NTSC-J"
 SLPM-65211:
-  name: "超・バトル封神&封神演義2 [プレミアムパック] [封神演義2ディスク]"
-  name-sort: "ちょう・ばとるほうしん&ほうしんえんぎ2 [ぷれみあむぱっく]02[ほうしんえんぎ2でぃすく]"
-  name-en: "Chou Battle Houshin [Premium Pack] [Houshin Engi 2 Disc]"
+  name: "封神演義2 [超・バトル封神 & 封神演義2 プレミアムパック]"
+  name-sort: "ほうしんえんぎ2 [ちょう・ばとるほうしん & ほうしんえんぎ2 ぷれみあむぱっく]"
+  name-en: "Houshin Engi 2 [Chou Battle Houshin & Houshin Engi 2 Premium Pack]"
   region: "NTSC-J"
 SLPM-65212:
   name: "ロード・オブ・ザ リング / 二つの塔"
@@ -42586,9 +42828,9 @@ SLPM-65221:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
 SLPM-65222:
-  name: "遊戯王真デュエルモンスターズⅡ 継承されし記憶 [コナミ殿堂セレクション]"
-  name-sort: "ゆうぎおうしんでゅえるもんすたーず2 けいしょうされしきおく [こなみでんどうせれくしょん]"
-  name-en: "Yu-Gi-Oh!Shin Duel-Monsters 2 -Keishousaresshi Kioku [KONAMI Dendou Selection]"
+  name: "遊戯王真デュエルモンスターズⅡ 継承されし記憶 [KONAMI The BEST]"
+  name-sort: "ゆうぎおうしんでゅえるもんすたーず2 けいしょうされしきおく [KONAMI The BEST]"
+  name-en: "Yu-Gi-Oh!Shin Duel-Monsters 2 -Keishousaresshi Kioku [KONAMI The BEST]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 2 # Partially fixes battle animation.
@@ -42833,6 +43075,11 @@ SLPM-65257:
     - "SLPM-65098"
     - "SLPM-65341"
     - "SLPM-65631"
+SLPM-65258:
+  name: "EX人生ゲームⅡ [35周年記念限定版]"
+  name-sort: "EXじんせいげーむ2  [35しゅうねんきねんげんていばん]"
+  name-en: "EX Jinsei Game II [35th Aniversary Limited Edition]"
+  region: "NTSC-J"
 SLPM-65259:
   name: "真・女神転生Ⅲ - NOCTURNE [TSUTAYAオリジナルバージョン]"
   name-sort: "しんめがみてんせい3 - NOCTURNE [TSUTAYAおりじなるばーじょん]"
@@ -43016,16 +43263,31 @@ SLPM-65287:
   name-sort: "ふぁいなるふぁんたじー11 じらーとのげんえい かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Girade no Genei"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65288:
   name: "ファイナルファンタジーⅪ ジラートの幻影 オールインワンパック2003 [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 じらーとのげんえい おーるいんわんぱっく2003 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Girade no Genei [All-in-One Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65289:
   name: "ファイナルファンタジーⅪ エントリーディスク [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 えんとりーでぃすく [ぷれいおんらいん]"
   name-en: "Final Fantasy XI [Entry Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65290:
   name: "マージ ～あの時の遠い約束を～ [初回限定版]"
   name-sort: "まーじ ～あのときのとおいやくそくを～ [しょかいげんていばん]"
@@ -43062,8 +43324,8 @@ SLPM-65297:
   name-en: "F - Fanatic"
   region: "NTSC-J"
 SLPM-65298:
-  name: "Winning Post5 MAXIMAM 2003"
-  name-sort: "ういにんぐぽすと5 MAXIMAM 2003"
+  name: "Winning Post5 MAXIMUM 2003"
+  name-sort: "ういにんぐぽすと5 まきしまむ 2003"
   name-en: "Winning Post 5 Maximum 2003"
   region: "NTSC-J"
 SLPM-65299:
@@ -43102,9 +43364,9 @@ SLPM-65304:
   name-en: "Frogger"
   region: "NTSC-J"
 SLPM-65305:
-  name: "幻想水滸伝Ⅲ [KONAMI THE BEST]"
-  name-sort: "げんそうすいこでん3 [KONAMI THE BEST]"
-  name-en: "Gensou Suikoden 3"
+  name: "幻想水滸伝Ⅲ [KONAMI The BEST]"
+  name-sort: "げんそうすいこでん3 [KONAMI The BEST]"
+  name-en: "Gensou Suikoden 3 [KONAMI The BEST]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes half screen.
@@ -43142,9 +43404,9 @@ SLPM-65308:
   gsHWFixes:
     halfPixelOffset: 5 # Fixes vertical lines.
 SLPM-65309:
-  name: "Splashdown [PlayStation2 the Best]"
-  name-sort: "すぷらっしゅだうん [PlayStation2 the Best]"
-  name-en: "Splashdown [PlayStation2 the Best]"
+  name: "Splashdown [ATARI HOT SERIES]"
+  name-sort: "すぷらっしゅだうん [ATARI HOT SERIES]"
+  name-en: "Splashdown [ATARI HOT SERIES]"
   region: "NTSC-J"
 SLPM-65310:
   name: "The Mark of KRI"
@@ -43202,19 +43464,19 @@ SLPM-65320:
   name-en: "Eve Burst Error Plus"
   region: "NTSC-J"
 SLPM-65321:
-  name: "テニスの王子様 Smash Hit！ [初回SP限定版]"
-  name-sort: "てにすのおうじさま Smash Hit！ [しょかいSPげんていばん]"
-  name-en: "Prince of Tennis - Smash Hit![Limited Edition]"
+  name: "テニスの王子様 Smash Hit！ [初回SP限定版] [特典ディスク-A]"
+  name-sort: "てにすのおうじさま Smash Hit！ [しょかいSPげんていばん] [とくてんでぃすく-A]"
+  name-en: "Prince of Tennis - Smash Hit! [First SP Limited Edition] [Bonus Disc-A]"
   region: "NTSC-J"
 SLPM-65322:
-  name: "テニスの王子様 Smash Hit！ [B-Type]"
-  name-sort: "てにすのおうじさま Smash Hit！ [B-Type]"
-  name-en: "Prince of Tennis - Smash Hit! [B-Type]"
+  name: "テニスの王子様 Smash Hit！ [初回SP限定版] [特典ディスク-B]"
+  name-sort: "てにすのおうじさま Smash Hit！ [しょかいSPげんていばん] [とくてんでぃすく-B]"
+  name-en: "Prince of Tennis - Smash Hit! [First SP Limited Edition] [Bonus Disc-B]"
   region: "NTSC-J"
 SLPM-65323:
-  name: "テニスの王子様 Smash Hit！ [C-Type]"
-  name-sort: "てにすのおうじさま Smash Hit！ [C-Type]"
-  name-en: "Prince of Tennis - Smash Hit! [C-Type]"
+  name: "テニスの王子様 Smash Hit！ [初回SP限定版] [特典ディスク-C]"
+  name-sort: "てにすのおうじさま Smash Hit！ [しょかいSPげんていばん] [とくてんでぃすく-C]"
+  name-en: "Prince of Tennis - Smash Hit! [First SP Limited Edition] [Bonus Disc-C]"
   region: "NTSC-J"
 SLPM-65324:
   name: "グレゴリーホラーショー ソウルコレクター"
@@ -43224,7 +43486,7 @@ SLPM-65324:
 SLPM-65325:
   name: "レスキューヘリ エアレンジャー2  [わくわくプライス]"
   name-sort: "れすきゅーへり えあれんじゃー2  [わくわくプライス]"
-  name-en: "Air Ranger 2 - Rescue Helicopter [WakWak Price]"
+  name-en: "Air Ranger 2 - Rescue Helicopter [WakuWaku Price]"
   region: "NTSC-J"
 SLPM-65326:
   name: "チョロQ HG4"
@@ -43378,9 +43640,9 @@ SLPM-65353:
   name-en: "Konohana 2 - Todokanai Requiem [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65354:
-  name: "三國志戦記2"
-  name-sort: "さんごくしせんき2"
-  name-en: "Sangokushi Senki 2"
+  name: "三國志戦記2 [三國志の世界 Duo TREASURE BOX]"
+  name-sort: "さんごくしせんき2 [さんごくしのせかい でゅお とれじゃーぼっくす]"
+  name-en: "Sangokushi Senki 2 [Sangokushi no Sekai Duo Treasure Box]"
   region: "NTSC-J"
 SLPM-65355:
   name: "夏色小町【一日千夏】 [初回限定版]"
@@ -43551,9 +43813,9 @@ SLPM-65384:
   region: "NTSC-J"
   compat: 5
 SLPM-65385:
-  name: "GⅠ JOCKEY3 2003 & Winning Post6 [プレミアムパック]"
-  name-sort: "ういにんぐぽすと6 じーわんじょっきー3 2003 & ういにんぐぽすと6 [ぷれみあむぱっく]"
-  name-en: "G1 JOCKEY3 2003 & Winning Post6 [Premium Pack]"
+  name: "Winning Post6 [GⅠ JOCKEY3 2003 & Winning Post6 プレミアムパック]"
+  name-sort: "ういにんぐぽすと6 [じーわんじょっきー3 2003 & ういにんぐぽすと6 ぷれみあむぱっく]"
+  name-en: "Winning Post6 [G1 JOCKEY3 2003 & Winning Post6 Premium Pack]"
   region: "NTSC-J"
 SLPM-65386:
   name: "Train Simulator 御堂筋線"
@@ -43950,23 +44212,23 @@ SLPM-65450:
   name-en: "Tantei Gakuen Q - Kiokan no Satsui [First Limited Edition]"
   region: "NTSC-J"
 SLPM-65451:
-  name: "テニスの王子様 Smash Hit！2 [初回SP限定版]"
-  name-sort: "てにすのおうじさま Smash Hit！2 [しょかいSPげんていばん]"
-  name-en: "Prince of Tennis - Smash Hit! 2 [Shokai SP Genteiban A-Type]"
+  name: "テニスの王子様 Smash Hit！2 Original Anime Game [初回SP限定版]"
+  name-sort: "てにすのおうじさま Smash Hit！2 Original Anime Game [しょかいSPげんていばん]"
+  name-en: "Prince of Tennis - Smash Hit! 2 Original Anime Game [Shokai SP Genteiban A-Type]"
   region: "NTSC-J"
   gsHWFixes:
     forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65452:
-  name: "テニスの王子様 Smash Hit 2！ Original Anime Game [初回SP限定版 B-Type]"
-  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game [しょかいSPげんていばん B-Type]"
-  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game [Shokai SP Genteiban B-Type]"
+  name: "テニスの王子様 Smash Hit！2 Original Anime Game [初回SP限定版 B-Type]"
+  name-sort: "てにすのおうじさま Smash Hit！2 Original Anime Game [しょかいSPげんていばん B-Type]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit ! 2 Original Anime Game [Shokai SP Genteiban B-Type]"
   region: "NTSC-J"
   gsHWFixes:
     forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
 SLPM-65453:
-  name: "テニスの王子様 Smash Hit 2！ Original Anime Game [初回SP限定版 C-Type]"
-  name-sort: "てにすのおうじさま Smash Hit 2！ Original Anime Game [しょかいSPげんていばん C-Type]"
-  name-en: "Tennis no Oji-Sama - Smash-Hit 2! Original Anime Game [Shokai SP Genteiban C-Type]"
+  name: "テニスの王子様 Smash Hit！2 Original Anime Game [初回SP限定版 C-Type]"
+  name-sort: "てにすのおうじさま Smash Hit！2 Original Anime Game [しょかいSPげんていばん C-Type]"
+  name-en: "Tennis no Oji-Sama - Smash-Hit! 2 Original Anime Game [Shokai SP Genteiban C-Type]"
   region: "NTSC-J"
   gsHWFixes:
     forceEvenSpritePosition: 1 # Fixes screen shake when upscaling.
@@ -44118,7 +44380,6 @@ SLPM-65479:
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLPM-65480:
   name: "michigan"
   name-sort: "みしがん"
@@ -44145,6 +44406,11 @@ SLPM-65484:
   name-en: "WISP - Word Image Sound Play"
   region: "NTSC-J"
   compat: 5
+SLPM-65485:
+  name: "ボンバーマンジェッターズ [HUDSON THE BEST]"
+  name-sort: "ぼんばーまんじぇったーず [HUDSON THE BEST]"
+  name-en: "Bomberman Jetters [HUDSON THE BEST]"
+  region: "NTSC-J"
 SLPM-65486:
   name: "エアフォースデルタ ブルーウイングナイツ"
   name-sort: "えあふぉーすでるた ぶるーういんぐないつ"
@@ -44588,6 +44854,11 @@ SLPM-65567:
   name-sort: "きんいろのこるだ [つうじょうばん]"
   name-en: "Kin'iro no Corda [Standard Edition]"
   region: "NTSC-J"
+SLPM-65568:
+  name: "ピューと吹く！ジャガー 明日のジャンプ [通常版]"
+  name-sort: "ぴゅーとふく！じゃがー あしたのじゃんぷ [つうじょうばん]"
+  name-en: "Pyu to Fuku! Jaguar Ashita no Japan [Standard Edition]"
+  region: "NTSC-J"
 SLPM-65569:
   name: "北へ。Diamond Dust + Kiss is Beginning"
   name-sort: "きたへ Diamond Dust + Kiss is Beginning"
@@ -44643,6 +44914,16 @@ SLPM-65576:
   name-sort: "たんてい じんぐうじさぶろう KIND OF BLUE"
   name-en: "Tantei Jinguuji Saburou - Kind of Blue"
   region: "NTSC-J"
+SLPM-65577:
+  name: "TBS オールスター感謝祭2003秋 超豪華！ クイズ決定版 [HUDSON THE BEST]"
+  name-sort: "TBS おーるすたーかんしゃさい2003秋 ちょうごうか！ くいずけっていばん [HUDSON THE BEST]"
+  name-en: "TBS All-Star Kansha-sai 2003 Autumn - Chou Gouka! Quiz Ketteiban [HUDSON THE BEST]"
+  region: "NTSC-J"
+SLPM-65578:
+  name: "TBS オールスター感謝祭 Vol.1 超豪華！ クイズ決定版 [HUDSON THE BEST]"
+  name-sort: "TBS おーるすたーかんしゃさい Vol.1 ちょうごうか！ くいずけっていばん [HUDSON THE BEST]"
+  name-en: "TBS All-Star Kansha-sai Vol. 1 - Chou Gouka! Quiz Ketteiban [HUDSON THE BEST]"
+  region: "NTSC-J"
 SLPM-65579:
   name: "放課後のLove Beat"
   name-sort: "ほうかごのLove Beat"
@@ -44664,7 +44945,7 @@ SLPM-65581:
   region: "NTSC-J"
 SLPM-65582:
   name: "Winning Post6 MAXIMUM 2004"
-  name-sort: "ういにんぐぽすと6 MAXIMUM 2004"
+  name-sort: "ういにんぐぽすと6 まきしまむ 2004"
   name-en: "Winning Post 6 Maximum 2004"
   region: "NTSC-J"
 SLPM-65583:
@@ -45042,9 +45323,9 @@ SLPM-65646:
   name-en: "Komorebi no Namikimichi - Utsurikawaru Kisetsu no Naka de"
   region: "NTSC-J"
 SLPM-65647:
-  name: "遊戯王真デュエルモンスターズⅡ 継承されし記憶 [KONAMI The Best]"
-  name-sort: "ゆうぎおうしんでゅえるもんすたーず2 けいしょうされしきおく [KONAMI The Best]"
-  name-en: "Yu-Gi-Oh!Shin Duel-Monsters 2 -Keishousaresshi Kioku [KONAMI The BEST]"
+  name: "遊戯王真デュエルモンスターズⅡ 継承されし記憶 [コナミ殿堂セレクション]"
+  name-sort: "ゆうぎおうしんでゅえるもんすたーず2 けいしょうされしきおく [コナミ殿堂セレクション]"
+  name-en: "Yu-Gi-Oh!Shin Duel-Monsters 2 -Keishousaresshi Kioku [KONAMI Dendou Selection]"
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 2 # Partially fixes battle animation.
@@ -45408,11 +45689,21 @@ SLPM-65705:
   name-sort: "ふぁいなるふぁんたじー11 ぷろましあのじゅばく かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Chains of Promathia [Expansion Disc]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65706:
   name: "ファイナルファンタジーⅪ オールインワンパック2004 [プレイオンライン]"
   name-sort: "ふぁいなるふぁんたじー11 おーるいんわんぱっく2004 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Chains of Promathia [All-in-One Pack]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65708:
   name: "鋼の錬金術師2 赤きエリクシルの悪魔 [初回限定版]"
   name-sort: "はがねのれんきんじゅつし2 あかきえりくしるのあくま [しょかいげんていばん]"
@@ -45797,7 +46088,7 @@ SLPM-65768:
   name-en: "Beatmania IIDX 8th Style"
   region: "NTSC-J"
 SLPM-65769:
-  name: "ポップンミュージック10 コントローラセット"
+  name: "ポップンミュージック10 [コントローラセット]"
   name-sort: "ぽっぷんみゅーじっく10 [こんとろーらせっと]"
   name-en: "Pop'n music 10 [Controller Set]"
   region: "NTSC-J"
@@ -45821,6 +46112,12 @@ SLPM-65773:
   name-sort: "しゃいにんぐ・てぃあーず"
   name-en: "Shining Tears"
   region: "NTSC-J"
+SLPM-65774:
+  name: "DDR Festival Dance Dance Revolution [コントローラセット]"
+  name-sort: "だんすだんすれぼりゅーしょん ふぇすてぃばる Dance Dance Revolution [こんとろーらせっと]"
+  name-en: "DDR Festival Dance Dance Revolution [With Controller]"
+  region: "NTSC-J"
+  compat: 5
 SLPM-65775:
   name: "DDR Festival Dance Dance Revolution"
   name-sort: "だんすだんすれぼりゅーしょん ふぇすてぃばる Dance Dance Revolution"
@@ -46132,6 +46429,11 @@ SLPM-65826:
   name-en: "Tsukiyo ni Saraba"
   region: "NTSC-J"
   compat: 5
+SLPM-65827:
+  name: "AngelWish 君の笑顔にチュッ！ スペシャルパック [限定版]"
+  name-sort: "えんぜるうぃっしゅ きみのえがおにちゅっ すぺしゃるぱっく [げんていばん]"
+  name-en: "Angel Wish - Kimi no Egao ni Chu! Special Pack [Limited Edition]"
+  region: "NTSC-J"
 SLPM-65828:
   name: "AngelWish 君の笑顔にチュッ！"
   name-sort: "えんぜるうぃっしゅ きみのえがおにちゅっ"
@@ -46271,9 +46573,9 @@ SLPM-65850:
   name-en: "Harukanaru Toki no Naka de 3 [Premium Box]"
   region: "NTSC-J"
 SLPM-65852:
-  name: "エキサイティングプロレス 6 - WWE SMACKDOWN! vs. RAW"
-  name-sort: "えきさいてぃんぐぷろれす6 - WWE SMACKDOWN! vs. RAW"
-  name-en: "Exciting Pro Wrestling 6 - WWE SmackDown! vs. Raw"
+  name: "エキサイティングプロレス 6 - WWE SMACKDOWN! vs. RAW [体験版]"
+  name-sort: "えきさいてぃんぐぷろれす6 - WWE SMACKDOWN! vs. RAW [たいけんばん]"
+  name-en: "Exciting Pro Wrestling 6 - WWE SmackDown! vs. Raw {Demo]"
   region: "NTSC-J"
 SLPM-65853:
   name: "プロ野球チームをつくろう！3"
@@ -46336,6 +46638,11 @@ SLPM-65864:
   name: "信長の野望・天下創世 with パワーアップキット"
   name-sort: "のぶながのやぼう てんかそうせい with ぱわーあっぷきっと"
   name-en: "Nobunaga no Yabou - Tenka Sousei [with Power-Up Kit]"
+  region: "NTSC-J"
+SLPM-65865:
+  name: "何処へ行くの、あの日 ～光る明日へ…～ [初回限定版]"
+  name-sort: "どこへいくの あのひ ひかるあしたへ [しょかいげんていばん]"
+  name-en: "Doko he Iku no, Anohi - Hikaru Ashita e [First Limited Edition]"
   region: "NTSC-J"
 SLPM-65866:
   name: "何処へ行くの、あの日 ～光る明日へ…～"
@@ -46509,9 +46816,9 @@ SLPM-65892:
   name-en: "Zill O'll Infinite"
   region: "NTSC-J"
 SLPM-65893:
-  name: "Winning Post6 Maximum 2005 [プレミアムパック]"
-  name-sort: "ういにんぐぽすと6 Maximum 2005 [ぷれみあむぱっく]"
-  name-en: "Winning Post 6 Maximum 2005 [Premium Pack]"
+  name: "Winning Post6 2005年度版 [GⅠ JOCKEY3 2003年度版 & Winning Post6 2005年度版 プレミアムパック]"
+  name-sort: "ういにんぐぽすと6 2005ねんどばん [じーわんじょっきー3 2005ねんどばん & ういにんぐぽすと6 2005ねんどばん ぷれみあむぱっく]"
+  name-en: "Winning Post 6 - 2005 [G1 Jockey 3 - 2005 & Winning Post 6 - 2005 Premium Pack]"
   region: "NTSC-J"
 SLPM-65894:
   name: "Winning Post6 2005年度版"
@@ -46864,6 +47171,11 @@ SLPM-65953:
   name-sort: "ふぁいなるふぁんたじー11 えんとりーでぃすく2005 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI [Entry Disc 2005]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-65954:
   name: "トム・クランシーシリーズ ゴーストリコン [UBISOFT BEST]"
   name-sort: "とむくらんしーしりーず ごーすとりこん [UBISOFT BEST]"
@@ -47971,10 +48283,14 @@ SLPM-66125:
     autoFlush: 1 # Fixes missing blur.
     textureInsideRT: 1 # Fixes broken FMVs.
 SLPM-66127:
-  name: "Harukanaru Toki no Naka de 3 - Izayoiki"
+  name: "遙かなる時空の中で3 十六夜記"
+  name-sort: "はるかなるときのなかで3 いざよいき"
+  name-en: "Harukanaru Toki no Nakade 3 - Izayoiki"
   region: "NTSC-J"
 SLPM-66128:
-  name: "Harukanaru Toki no Naka de 3"
+  name: "遙かなる時空の中で3"
+  name-sort: "はるかなるときのなかで3"
+  name-en: "Harukanaru Toki no Nakade 3"
   region: "NTSC-J"
 SLPM-66129:
   name: "GUILTY GEAR XX #RELOAD"
@@ -48257,7 +48573,9 @@ SLPM-66171:
     cpuSpriteRenderBW: 2 # Fixes broken sprite rendering and crowd rendering.
     cpuSpriteRenderLevel: 2 # Needed for above.
 SLPM-66172:
-  name: "Sangokushi IX"
+  name: "三國志Ⅸ [KOEI The Best]"
+  name-sort: "さんごくし 9  [KOEI The Best]"
+  name-en: "Sangokushi IX [KOEI The Best]"
   region: "NTSC-J"
 SLPM-66175:
   name: "悪魔城ドラキュラ 闇の呪印"
@@ -48644,19 +48962,24 @@ SLPM-66226:
   name-en: "Da Capo Four Seasons"
   region: "NTSC-J"
 SLPM-66227:
-  name: "GⅠ JOCKEY4 & Winning Post7 [ツインパック]"
-  name-sort: "じーわんじょっきー4 じーわんじょっきー4 & ういにんぐぽすと7 [ついんぱっく]"
-  name-en: "G1 Jockey 4 + Winning Post 7 [Twin Pack] [G1 Jockey 4 Disc]"
+  name: "GⅠ JOCKEY4 [GⅠ JOCKEY4 & Winning Post7 ツインパック]"
+  name-sort: "じーわんじょっきー4 [じーわんじょっきー4 & ういにんぐぽすと7 ついんぱっく]"
+  name-en: "G1 Jockey 4 [G1 Jockey 4 & Winning Post 7 Twin Pack]"
   region: "NTSC-J"
 SLPM-66228:
-  name: "GⅠ JOCKEY4 & Winning Post7 [ツインパック]"
-  name-sort: "ういにんぐぽすと7 じーわんじょっきー4 じーわんじょっきー4 & ういにんぐぽすと7 [ついんぱっく]"
-  name-en: "G1 Jockey 4 + Winning Post 7 [Twin Pack] [Winning Post 7 Disc]"
+  name: "Winning Post7 [GⅠ JOCKEY4 & Winning Post7 ツインパック]"
+  name-sort: "ういにんぐぽすと7 [じーわんじょっきー4 じーわんじょっきー4 & ういにんぐぽすと7 ついんぱっく]"
+  name-en: "Winning Post 7 [G1 Jockey 4 & Winning Post 7 Twin Pack]"
   region: "NTSC-J"
 SLPM-66229:
   name: "GⅠ JOCKEY4"
   name-sort: "じーわんじょっきー4"
   name-en: "G1 Jockey 4"
+  region: "NTSC-J"
+SLPM-66230:
+  name: "カルタグラ ～魂の苦悩～ [初回限定版]"
+  name-sort: "かるたぐら たましいのくのう [しょかいげんていばん]"
+  name-en: "Cartagra - Tamashii no Kunou [First Limited Edition]"
   region: "NTSC-J"
 SLPM-66231:
   name: "カルタグラ ～魂の苦悩～"
@@ -48695,8 +49018,8 @@ SLPM-66233:
     halfPixelOffset: 5 # Fixes post bloom positioning.
     nativeScaling: 4 # Fixes lighting effects due to upscaling.
 SLPM-66234:
-  name: "ウィザードリィ エクス ～前線の学府～ ワンダープライス"
-  name-sort: "うぃざーどりぃ えくす ぜんせんのがくふ [わんだーぷらいす]"
+  name: "ウィザードリィ エクス ～前線の学府～ [Wonder Price]"
+  name-sort: "うぃざーどりぃ えくす ぜんせんのがくふ [Wonder Price]"
   name-en: "Wizardry X - Zensen no Gakufu [Wonder Price]"
   region: "NTSC-J"
 SLPM-66235:
@@ -48841,8 +49164,8 @@ SLPM-66257:
   gameFixes:
     - SoftwareRendererFMVHack # Fixes upscale lines in FMVs.
 SLPM-66258:
-  name: "魔法先生ネギま！ 1時間目 お子ちゃま先生は魔法使い！ [KONAMI The BEST]"
-  name-sort: "まほうせんせいねぎま！ 1じかんめ おこちゃませんせいはまほうつかい！ [KONAMI The BEST]"
+  name: "魔法先生ネギま！ 1時間目 お子ちゃま先生は魔法使い！ ～優等生版 [KONAMI The Best]"
+  name-sort: "まほうせんせいねぎま！ 1じかんめ おこちゃませんせいはまほうつかい！ ～ゆうとうせいばん [KONAMI The Best]"
   name-en: "Magic Teacher Negima - Honor Version [KONAMI The BEST]"
   region: "NTSC-J"
 SLPM-66259:
@@ -49674,11 +49997,21 @@ SLPM-66393:
   name-sort: "ふぁいなるふぁんたじー11 おーるいんわんぱっく2006 [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - All-in-One Pack 2006"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66394:
   name: "ファイナルファンタジーⅪ アトルガンの秘宝 拡張データディスク"
   name-sort: "ふぁいなるふぁんたじー11 あとるがんのひほう かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Aht Urhgan no Hihou"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66395:
   name: "炎の宅配便"
   name-sort: "ほのおのたくはいびん"
@@ -49862,9 +50195,9 @@ SLPM-66424:
   name-en: "Kin'iro no Corda [KOEI The Best]"
   region: "NTSC-J"
 SLPM-66425:
-  name: "信長の野望・蒼天録 with パワーアップキット [KOEI The BEST]"
-  name-sort: "のぶながのやぼう そうてんろく with ぱわーあっぷきっと [こーえー ざ べすと]"
-  name-en: "Nobunaga no Yabou - Soutenroku with Power-Up Kit [KOEI The BEST]"
+  name: "信長の野望・蒼天録 with パワーアップキット [KOEI The Best]"
+  name-sort: "のぶながのやぼう そうてんろく with ぱわーあっぷきっと [KOEI The Best]"
+  name-en: "Nobunaga no Yabou - Soutenroku with Power-Up Kit [KOEI The Best]"
   region: "NTSC-J"
 SLPM-66426:
   name: "beatmania Ⅱ DX 11 Ⅱ DX RED"
@@ -50431,8 +50764,8 @@ SLPM-66505:
   name-en: "Shin Sangoku Musou 2 [MEGA HITS!]"
   region: "NTSC-J"
 SLPM-66506:
-  name: "機動戦士ガンダム 連邦VS.ジオンDX MEGA HITS！"
-  name-sort: "きどうせんしがんだむ れんぽうVS.じおんDX MEGA HITS！"
+  name: "機動戦士ガンダム 連邦VS.ジオンDX [MEGA HITS!]"
+  name-sort: "きどうせんしがんだむ れんぽうVS.じおんDX [MEGA HITS!]"
   name-en: "Gundam - Federation vs. Zeon DX [MEGA HITS!]"
   region: "NTSC-J"
 SLPM-66507:
@@ -50494,15 +50827,17 @@ SLPM-66515:
     halfPixelOffset: 4 # Fixes bloom misalignment.
     nativeScaling: 2 # Fixes post effects.
 SLPM-66516:
-  name: "ザ・シムズ&ザ・アーブズ シムズ・イン・ザ・シティ [EA BEST HITS]"
-  name-sort: "ざ・しむず&ざ・あーぶず しむず・いん・ざ・してぃ [EA BEST HITS]"
-  name-en: "Sims, The & The Urbz - Sims in the City [EA Best Hits]"
+  name: "ザ・シムズ [ザ・シムズ & ザ・アーブズ シムズ・イン・ザ・シティ] [EA BEST HITS]"
+  name-sort: "ざ・しむず [ざ・しむず&ざ・あーぶず しむず・いん・ざ・してぃ] [EA BEST HITS]"
+  name-en: "The Sims [The Sims & The Urbz - Sims in the City] [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes upscaling lines.
     nativeScaling: 2 # Fixes post-processing.
 SLPM-66517:
-  name: "The Urbz - Sims in the City"
+  name: "ザ・アーブズ シムズ・イン・ザ・シティ [ザ・シムズ & ザ・アーブズ シムズ・イン・ザ・シティ] [EA BEST HITS]"
+  name-sort: "ざ・あーぶず しむず・いん・ざ・してぃ [ざ・しむず & ざ・あーぶず しむず・いん・ざ・してぃ] [EA BEST HITS]"
+  name-en: "The Urbz - Sims in the City [The Sims & The Urbz - Sims in the City] [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes upscaling lines.
@@ -50982,6 +51317,12 @@ SLPM-66598:
   name-sort: "やとひめざんきこう けんのまき"
   name-en: "Yatohime Zankikou"
   region: "NTSC-J"
+SLPM-66599:
+  name: "ツキヨニサラバ [TAITO BEST]"
+  name-sort: "つきよにさらば [TAITO BEST]"
+  name-en: "Tsukiyo ni Saraba [TAITO BEST]"
+  region: "NTSC-J"
+  compat: 5
 SLPM-66600:
   name: "MADDEN NFL 07"
   name-sort: "まっでん NFL 07"
@@ -51078,19 +51419,24 @@ SLPM-66612:
   name-en: "School Love [First Limited Edition]"
   region: "NTSC-J"
 SLPM-66613:
-  name: "メダル・オブ・オナー ～史上最大の作戦～ & メダル・オブ・オナー ～ライジングサン～ [EA BEST HITS]"
+  name: "メダル・オブ・オナー ～史上最大の作戦～ [メダル・オブ・オナー ～史上最大の作戦～ & メダル・オブ・オナー ～ライジングサン～] [EA BEST HITS]"
   name-sort: "めだる・おぶ・おなー しじょうさいだいのさくせん & めだる・おぶ・おなー らいじんぐさん [EA BEST HITS]"
-  name-en: "Medal of Honor - Rising Sun & Frontline [EA Best Hits]"
+  name-en: "Medal of Honor - Frontline [Medal of Honor - Rising Sun & Frontline] [EA Best Hits]"
+  region: "NTSC-J"
+SLPM-66614:
+  name: "メダル・オブ・オナー ～ライジングサン [メダル・オブ・オナー ～史上最大の作戦～ & メダル・オブ・オナー ～ライジングサン～] [EA BEST HITS]"
+  name-sort: "めだる・おぶ・おなー しじょうさいだいのさくせん & めだる・おぶ・おなー らいじんぐさん [EA BEST HITS]"
+  name-en: "Medal of Honor - Rising Sun [Medal of Honor - Rising Sun & Frontline] [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66615:
-  name: "007 - nightfire & 007 エブリシング オア ナッシング [EA BEST HITS]"
+  name: "007 - nightfire & 007 - エブリシング オア ナッシング [EA BEST HITS]"
   name-sort: "007 - ないと ふぁいあ 007 - ないと ふぁいあ & 007 えぶりしんぐ おあ なっしんぐ [EA BEST HITS]"
-  name-en: "007 - Nightfire & 007 Everything or Nothing [EA Best Hits Dual Pack]"
+  name-en: "007 - Nightfire & 007 Everything or Nothing [EA Best Hits]"
   region: "NTSC-J"
 SLPM-66616:
-  name: "007 - nightfire & 007 - エブリシング オア ナッシング [EA Best Hits Dual Pack]"
+  name: "007 - nightfire & 007 - エブリシング オア ナッシング [EA Best HITS]"
   name-sort: "007 - えぶりしんぐ おあ なっしんぐ - ないと ふぁいあ & 007 えぶりしんぐ おあ なっしんぐ [EA BEST HITS]"
-  name-en: "007 - Nightfire & 007 Everything or Nothing [EA Best Hits Dual Pack]"
+  name-en: "007 - Nightfire & 007 Everything or Nothing [EA Best Hits]"
   region: "NTSC-J"
   gsHWFixes:
     halfPixelOffset: 2 # Fixes lines in cutscenes.
@@ -51662,7 +52008,7 @@ SLPM-66701:
   region: "NTSC-J"
 SLPM-66702:
   name: "Winning Post7 MAXIMUM2007"
-  name-sort: "ういにんぐぽすと7 MAXIMUM2007"
+  name-sort: "ういにんぐぽすと7 まきしまむ 2007"
   name-en: "Winning Post 7 Maximum 2007"
   region: "NTSC-J"
 SLPM-66703:
@@ -51710,6 +52056,11 @@ SLPM-66710:
   gsHWFixes:
     textureInsideRT: 1 # Required for complex offset shuffles.
     halfPixelOffset: 2 # Fixes center line in post-processing.
+SLPM-66711:
+  name: "ローゼンメイデン ドゥエルヴァルツァ [TAITO BEST]"
+  name-sort: "ろーぜんめいでん どぅえるゔぁるつぁ [TAITO BEST]"
+  name-en: "Rozen Maiden - Duellwalzer [TAITO BEST]"
+  region: "NTSC-J"
 SLPM-66712:
   name: "ローゼンメイデン ゲベートガルデン [通常版]"
   name-sort: "ろーぜんめいでん げべーとがるでん [つうじょうばん]"
@@ -52813,11 +53164,21 @@ SLPM-66893:
   name-sort: "ふぁいなるふぁんたじー11 ゔぁな・でぃーる これくしょん [ぷれいおんらいん]"
   name-en: "Final Fantasy XI - Vana'diel Collection"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66894:
   name: "ファイナルファンタジーⅪ アルタナの神兵 拡張データディスク"
   name-sort: "ふぁいなるふぁんたじー11 あるたなのかみへい かくちょうでーたでぃすく"
   name-en: "Final Fantasy XI - Wings of the Goddess"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPM-66895:
   name: "マネーすごろく カブコロ"
   name-sort: "まねーすごろく かぶころ"
@@ -52862,14 +53223,14 @@ SLPM-66902:
   name-en: "Disney Princess - Enchanted Journey"
   region: "NTSC-J"
 SLPM-66903:
-  name: "GⅠ JOCKEY4 2007 & Winning Post7 2007 [プレミアムパック]"
-  name-sort: "じーわんじょっきー4 2007 じーわんじょっきー4 2007 & ういにんぐぽすと7 2007 [ぷれみあむぱっく]"
-  name-en: "G1 Jockey 4 - 2007 [with Winning Post 7 Maximum 2007 - Premium Pack]"
+  name: "GⅠ JOCKEY4 2007 [GⅠ JOCKEY4 2007 & Winning Post7 MAXIMUM 2007 プレミアムパック]"
+  name-sort: "じーわんじょっきー4 2007 [じーわんじょっきー4 2007 & ういにんぐぽすと7 まきしまむ 2007 ぷれみあむぱっく]"
+  name-en: "G1 Jockey 4 - 2007 [G1 Jockey 4 - 2007 & Winning Post 7 Maximum 2007 Premium Pack]"
   region: "NTSC-J"
 SLPM-66904:
-  name: "GⅠ JOCKEY4 2007 & Winning Post7 2007 [プレミアムパック]"
-  name-sort: "ういにんぐぽすと7 2007 じーわんじょっきー4 2007 & ういにんぐぽすと7 2007 [ぷれみあむぱっく]"
-  name-en: "G1 Jockey 4 - 2007 [with Winning Post 7 Maximum 2007 - Premium Pack]"
+  name: "Winning Post7 MAXIMUM 2007 [GⅠ JOCKEY4 2007 & Winning Post7 MAXIMUM 2007 プレミアムパック]"
+  name-sort: "ういにんぐぽすと7 2007 [じーわんじょっきー4 2007 & ういにんぐぽすと7 まきしまむ 2007 ぷれみあむぱっく]"
+  name-en: "Winning Post 7 Maximum 2007 [G1 Jockey 4 - 2007 & Winning Post 7 Maximum 2007 Premium Pack]"
   region: "NTSC-J"
 SLPM-66905:
   name: "D.C. ～ダ・カーポ～ the Origin"
@@ -53123,7 +53484,7 @@ SLPM-66948:
   region: "NTSC-J"
 SLPM-66950:
   name: "Winning Post7 MAXIMUM 2008"
-  name-sort: "ういにんぐぽすと7 MAXIMUM 2008"
+  name-sort: "ういにんぐぽすと7 まきしまむ 2008"
   name-en: "Winning Post 7 Maximum 2008"
   region: "NTSC-J"
 SLPM-66951:
@@ -53145,6 +53506,11 @@ SLPM-66954:
   name: "信長の野望 Online 争覇の章"
   name-sort: "のぶながのやぼう おんらいん そうはのしょう"
   name-en: "Nobunaga no Yabou - Online - Souha no Shou"
+  region: "NTSC-J"
+SLPM-66955:
+  name: "ネオ アンジェリーク フルボイス [プレミアムBOX]"
+  name-sort: "ねお あんじぇりーく ふるぼいす [ぷれみあむぼっくす]"
+  name-en: "Neo Angelique - Full Voice [Premium Box]"
   region: "NTSC-J"
 SLPM-66956:
   name: "ネオ アンジェリーク フルボイス"
@@ -53292,6 +53658,11 @@ SLPM-66978:
   name-en: "Persona 4 [Konami-style Special Edition]"
   region: "NTSC-J"
   compat: 5
+SLPM-66979:
+  name: "銀のエクリプス [初回限定版]"
+  name-sort: "ぎんのえくりぷす [しょかいげんていばん]"
+  name-en: "Gin no Eclipse [First Limited Edition]"
+  region: "NTSC-J"
 SLPM-66980:
   name: "銀のエクリプス"
   name-sort: "ぎんのえくりぷす"
@@ -53308,7 +53679,7 @@ SLPM-66982:
   name-en: "AIR [Best]"
   region: "NTSC-J"
 SLPM-66984:
-  name: "学園ヘヴン BOY'S LOVE SCRAMBLE！ [Best版]"
+  name: "学園ヘヴン BOY'S LOVE SCRAMBLE！ [ベスト版]"
   name-sort: "がくえんへゔん BOY'S LOVE SCRAMBLE！ [べすとばん]"
   name-en: "Gakuen Heaven - Boy's Love Scramble! [Best Version]"
   region: "NTSC-J"
@@ -53770,9 +54141,9 @@ SLPM-67552:
   name-en: "Tomak - Save the Earth [Limited Edition]"
   region: "NTSC-K"
 SLPM-68003:
-  name: "FORMULA SUZUKI 隼 タイムアタック"
-  name-sort: "ふぉーみゅら すずき はやぶさ たいむあたっく"
-  name-en: "Formula SUZUKI Hayabusa Time Attack"
+  name: "FORMULA SUZUKI 隼 タイムアタック [抽選賞品]"
+  name-sort: "ふぉーみゅら すずき はやぶさ たいむあたっく [ちゅうせんしょうひん]"
+  name-en: "Formula SUZUKI Hayabusa Time Attack [Special Prize]"
   region: "NTSC-J"
 SLPM-68005:
   name: "ハリー・ポッターと秘密の部屋 [Demo - Coca Cola Original Version]"
@@ -53876,9 +54247,9 @@ SLPM-68504:
   name-en: "Tokimeki Memorial 3 - Special Sound Track"
   region: "NTSC-J"
 SLPM-68505:
-  name: "幻想水滸伝Ⅲ"
-  name-sort: "げんそうすいこでん3"
-  name-en: "Gensou Suikoden III"
+  name: "幻想水滸伝Ⅲ [幻想水滸伝祭 発行記念]"
+  name-sort: "げんそうすいこでん3 [げんそうすいこでんまつり はっこうきねん]"
+  name-en: "Gensou Suikoden III [Gensou Suikoden Matsuri Hakkou KInen]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes half screen.
@@ -53897,7 +54268,9 @@ SLPM-68513:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post-processing and lighting smoothness and position.
 SLPM-68514:
-  name: "Front Mission Online"
+  name: "フロントミッション オンライン β Version"
+  name-sort: "ふろんとみっしょん おんらいん β Version"
+  name-en: "Front Mission Online β Version"
   region: "NTSC-J"
 SLPM-68516:
   name: "METAL GEAR SOLID 3 SNAKE EATER [第二回メタルギアソリッド債 発行記念]"
@@ -54121,9 +54494,9 @@ SLPM-74211:
   region: "NTSC-J"
   compat: 5
 SLPM-74212:
-  name: "戦国無双 猛将伝 [PlayStation2 the Best]"
-  name-sort: "せんごくむそう もうしょうでん [PlayStation2 the Best]"
-  name-en: "Sengoku Musou Moushouden [PlayStation2 the Best]"
+  name: "戦国無双 [PlayStation2 the Best]"
+  name-sort: "せんごくむそう [PlayStation2 the Best]"
+  name-en: "Sengoku Musou [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74213:
   name: "幻想水滸伝Ⅳ [PlayStation2 the Best]"
@@ -54153,9 +54526,9 @@ SLPM-74216:
   gsHWFixes:
     textureInsideRT: 1 # Fixes missing graphics.
 SLPM-74217:
-  name: "真・三國無双3 [PlayStation2 the Best] [メガパック]"
-  name-sort: "しんさんごくむそう3 [PlayStation2 the Best] [めがぱっく]"
-  name-en: "Shin Sangoku Musou 3 [PlayStation2 the Best] [Mega Pack]"
+  name: "真・三國無双3 [コーエーメガパック] [PLay Station2 the Best]"
+  name-sort: "しんさんごくむそう3 [こーえーめがぱっく] [PlayStation2 the Best]"
+  name-en: "Shin Sangoku Musou 3 [KOEI Mega Pack] [PlayStation2 the Best]"
   region: "NTSC-J"
   gsHWFixes:
     textureInsideRT: 1 # Fixes missing graphics.
@@ -54775,9 +55148,9 @@ SLPM-74415:
   name-en: "Shinobi [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPM-74416:
-  name: "クロックタワー3 [PlayStation2 the Best]"
-  name-sort: "くろっくたわー3 [PlayStation2 the Best]"
-  name-en: "Clock Tower 3 [PlayStation2 the Best]"
+  name: "クロックタワー3 [PlayStation2 the Best] [未発売]"
+  name-sort: "くろっくたわー3 [PlayStation2 the Best] [みはつばい]"
+  name-en: "Clock Tower 3 [PlayStation2 the Best] [Canceled]"
   region: "NTSC-J"
   gameFixes:
     - SoftwareRendererFMVHack # Fixes brightness and striped lines in FMVs.
@@ -55336,9 +55709,9 @@ SLPS-20089:
   name-en: "Gun-Heats [Cancelled]"
   region: "NTSC-J"
 SLPS-20090:
-  name: "A列車で行こう2001"
-  name-sort: "Aれっしゃでいこう 2001"
-  name-en: "A Ressha de Ikou 2001"
+  name: "トレインキット for A列車で行こう2001"
+  name-sort: "とれいんきっと ふぉー Aれっしゃでいこう2001"
+  name-en: "Train Kit for A Ressha de Ikou 2001"
   region: "NTSC-J"
 SLPS-20091:
   name: "激写ボーイ2 ～特ダネ王国ニッポン～"
@@ -55510,6 +55883,11 @@ SLPS-20123:
   name: "頭文字D 高橋涼介のタイピング最速理論 [キーボード同梱版]"
   name-sort: "いにしゃるD たかはしりょうすけのたいぴんぐさいそくりろん [きーぼーどどうこんばん]"
   name-en: "Initial D - Takahashi Ryousuke no Typing Saisoku Riron [with KeyBoard]"
+  region: "NTSC-J"
+SLPS-20124:
+  name: "頭文字D 高橋涼介のタイピング最速理論"
+  name-sort: "いにしゃるD たかはしりょうすけのたいぴんぐさいそくりろん"
+  name-en: "Initial D - Takahashi Ryousuke no Typing Saisoku Riron"
   region: "NTSC-J"
 SLPS-20125:
   name: "上海フォーエレメント [super value 2800]"
@@ -55752,6 +56130,11 @@ SLPS-20178:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Stops crash after intro movie.
+SLPS-20180:
+  name: "レイクマスターズEX Super [廉価版]"
+  name-sort: "れいくますたーずEX Super [れんかばん]"
+  name-en: "Lake Masters EX Super [Low Price]"
+  region: "NTSC-J"
 SLPS-20181:
   name: "ALPINE RACER 3"
   name-sort: "アルペンレーサー 3"
@@ -55826,8 +56209,8 @@ SLPS-20195:
   gameFixes:
     - FullVU0SyncHack # Fixes SPS.
 SLPS-20196:
-  name: "月の光 ～沈める鐘の殺人～"
-  name-sort: "つきのひかり ～しずめるかねのさつじん～"
+  name: "赤川次郎 月の光 ～沈める鐘の殺人～"
+  name-sort: "あかがわじろう つきのひかり ～しずめるかねのさつじん～"
   name-en: "Akagawa Jirou - Tsuki no Hikari - Shizumeru Kane no Satsujin"
   region: "NTSC-J"
 SLPS-20197:
@@ -55858,6 +56241,16 @@ SLPS-20200:
   name-sort: "ふぁいなるふぁんたじー11 [でぃすく2/2]"
   name-en: "Final Fantasy XI [Disc 2 of 2]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
+SLPS-20201:
+  name: "最強 東大将棋4 付・矢倉道場"
+  name-sort: "さいきょう とうだいしょうぎ4  つき・やぐらどうじょう"
+  name-en: "Saikyou Toudai Shogi 4 Tsuki-Yagura Dojo"
+  region: "NTSC-J"
 SLPS-20202:
   name: "コロボール2002"
   name-sort: "ころぼーる2002"
@@ -55872,6 +56265,11 @@ SLPS-20204:
   name: "マジカルスポーツ 2001 甲子園 [NewPrice]"
   name-sort: "まじかるすぽーつ 2001 こうしえん [NewPrice]"
   name-en: "Magical Sports - 2001 Koushien [NewPrice]"
+  region: "NTSC-J"
+SLPS-20205:
+  name: "マジカルスポーツ Hard Hitter [New Price]"
+  name-sort: "まじかるすぽーつ Hard Hitter [New Price]"
+  name-en: "Magical Sports - Hard Hitter [New Price]"
   region: "NTSC-J"
 SLPS-20207:
   name: "兎 ～野生の闘牌～"
@@ -55915,8 +56313,8 @@ SLPS-20215:
   name-en: "Jissen Pachi-Slot Hisshouhou! Aladdin A"
   region: "NTSC-J"
 SLPS-20216:
-  name: "AIR RANGER -RESCUE HELICOPTER- [わくわくプライス]"
-  name-sort: "えあれんじゃー れすきゅー へりこぷたー [わくわくぷらいす]"
+  name: "レスキューヘリ エアレンジャー [わくわくプライス]"
+  name-sort: "れすきゅーへり えあれんじゃー [わくわくぷらいす]"
   name-en: "Air Ranger - Rescue Helicopter [WakuWaku Price]"
   region: "NTSC-J"
   gameFixes:
@@ -55962,9 +56360,9 @@ SLPS-20222:
   name-en: "Inaka Gurashi - Minami no Shima no Monogatari"
   region: "NTSC-J"
 SLPS-20223:
-  name: "エキサイティングプロレス 4"
-  name-sort: "エキサイティングプロレス4"
-  name-en: "Exciting Pro Wrestling 4"
+  name: "エキサイティングプロレス 3 [PlayStation2 The Best] [体験版同梱]"
+  name-sort: "エキサイティングプロレス3 [PlayStation2 The Best] [たいけんばんどうこん]"
+  name-en: "Exciting Pro Wrestling 3 [PlayStation2 The Best] [with Demo]"
   region: "NTSC-J"
 SLPS-20224:
   name: "麻雀覇王 段級バトル"
@@ -56007,6 +56405,14 @@ SLPS-20231:
   name-sort: "ふりーくすたいる もとくろす"
   name-en: "Freekstyle Motocross"
   region: "NTSC-J"
+SLPS-20232:
+  name: "PlayOnline Viewer - Tetra Master & Janhourou"
+  region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-20233:
   name: "必殺パチンコステーションV6 夢の超特急"
   name-sort: "ひっさつぱちんこすてーしょんV 6 ゆめのちょうとっきゅう"
@@ -56024,10 +56430,14 @@ SLPS-20234:
     textureInsideRT: 1 # Fixes right side shadow lookup.
     halfPixelOffset: 5 # Fixes misaligned lighting and other effects.
 SLPS-20237:
-  name: "Saikyou Toudai Shougi 3"
+  name: "最強 東大将棋3 [MYCOM BEST]"
+  name-sort: "さいきょう とうだいしょうぎ3 [MYCOM BEST]"
+  name-en: "Saikyou Toudai Shogi 3 [MYCOM BEST]"
   region: "NTSC-J"
 SLPS-20238:
-  name: "Train Kit for A Ressha de Ikou 2001"
+  name: "トレインキット for A列車で行こう2001 [A列車で行こう2001 パーフェクトセット]"
+  name-sort: "とれいんきっと ふぉー Aれっしゃでいこう2001 [Aれっしゃでいう2001 ぱーふぇくとせっと]"
+  name-en: "Train Kit for A Ressha de Ikou 2001 [A Ressha de Ikou 2001 Perfect Set]"
   region: "NTSC-J"
 SLPS-20239:
   name: "実戦パチスロ必勝法！ 猛獣王S [限定版]"
@@ -56091,6 +56501,11 @@ SLPS-20251:
   name: "魔界戦記 ディスガイア [通常版]"
   name-sort: "まかいせんき でぃすがいあ [つうじょうばん]"
   name-en: "Makai Senki Disgaea [Standard Edition]"
+  region: "NTSC-J"
+SLPS-20252:
+  name: "激指2 ～将棋ワールドチャンピオン～"
+  name-sort: "げきさし2 ～しょうぎわーるどちゃんぴおん～"
+  name-en: "Shougi World Champion - Gekisashi 2"
   region: "NTSC-J"
 SLPS-20253:
   name: "パチってちょんまげ達人2 ～ CRジュラシックパーク"
@@ -56167,6 +56582,11 @@ SLPS-20268:
   name: "実戦パチスロ必勝法！ サラリーマン金太郎"
   name-sort: "じっせんぱちすろひっしょうほう！ さらりーまんきんたろう"
   name-en: "Jissen Pachi-Slot Hisshouhou! Salaryman Kintarou"
+  region: "NTSC-J"
+SLPS-20270:
+  name: "マジカルスポーツ Hard Hitter2 [New Price]"
+  name-sort: "まじかるすぽーつ Hard Hitter2 [New Price]"
+  name-en: "Magical Sports - Hard Hitter 2 [New Price]"
   region: "NTSC-J"
 SLPS-20272:
   name: "太鼓の達人 ドキッ！新曲だらけの春祭り"
@@ -56303,6 +56723,11 @@ SLPS-20296:
   name-sort: "ぷろやきゅうしみゅれーしょん だぐあうと'03-the TURNING POINT-"
   name-en: "Dugout '03 - The Turning Point"
   region: "NTSC-J"
+SLPS-20297:
+  name: "赤川次郎 月の光 ～沈める鐘の殺人～ [Best Collection]"
+  name-sort: "あかがわじろう つきのひかり ～しずめるかねのさつじん～ [Best Collection]"
+  name-en: "Akagawa Jirou - Tsuki no Hikari - Shizumeru Kane no Satsujin [Best Collection]"
+  region: "NTSC-J"
 SLPS-20298:
   name: "FEVER8 SANKYO公式パチンコシミュレーション"
   name-sort: "ふぃーばー 8 さんきょーこうしきぱちんこしみゅれーしょん"
@@ -56377,9 +56802,9 @@ SLPS-20310:
   name-en: "Mahjong Hiryuu Densetsu - Tenpai"
   region: "NTSC-J"
 SLPS-20311:
-  name: "プリモプエル おしゃべりは～とな～ コプエルマイク同梱版"
-  name-sort: "ぷりもぷえる おしゃべりはーとなー こぷえるまいくどうこんばん"
-  name-en: "Primopuel - Oshaberi Heartner [Limited Edition]"
+  name: "プリモプエル おしゃべりは～とな～ [コプエルマイク同梱版]"
+  name-sort: "ぷりもぷえる おしゃべりはーとなー [こぷえるまいくどうこんばん]"
+  name-en: "Primopuel - Oshaberi Heartner [with Mic Edition]"
   region: "NTSC-J"
 SLPS-20312:
   name: "プリモプエル おしゃべりは～とな～"
@@ -56483,9 +56908,9 @@ SLPS-20331:
   name-en: "Fever 9 - Sankyo Koushiki Pachinko Simulation"
   region: "NTSC-J"
 SLPS-20332:
-  name: "最強 東大将棋4"
-  name-sort: "さいきょう とうだいしょうぎ4"
-  name-en: "Saikyou Toudai Shogi 4"
+  name: "最強 東大将棋4 [MYCOM BEST]"
+  name-sort: "さいきょう とうだいしょうぎ4 [MYCOM BEST]"
+  name-en: "Saikyou Toudai Shogi 4 [MYCOM BEST]"
   region: "NTSC-J"
 SLPS-20333:
   name: "TAISEN① 将棋"
@@ -56598,9 +57023,9 @@ SLPS-20361:
   name-en: "Princess Maker - Refine"
   region: "NTSC-J"
 SLPS-20362:
-  name: "かいけつゾロリ めざせ！いたずらキング EyeToy USBカメラ同梱版"
-  name-sort: "かいけつぞろり めざせ！いたずらきんぐ あいとーいUSBかめらどうこんばん"
-  name-en: "Kaiketsu Zorro Mezase! Itazura King [Limited Edition]"
+  name: "かいけつゾロリ めざせ！いたずらキング [EyeToy USBカメラ同梱版]"
+  name-sort: "かいけつぞろり めざせ！いたずらきんぐ [あいとーいUSBかめらどうこんばん]"
+  name-en: "Kaiketsu Zorro Mezase! Itazura King [with eyetoy Camera Edition]"
   region: "NTSC-J"
 SLPS-20364:
   name: "世界最強銀星囲碁5"
@@ -56699,14 +57124,15 @@ SLPS-20380:
     halfPixelOffset: 4 # Fixes ghosting.
     nativeScaling: 1 # Fixes post-processing.
     targetPageRearranging: 1 # Fixes garbage on screen.
+    preloadFrameData: 1 # Preserves palette data.
 SLPS-20381:
   name: "モンキーターンV"
   name-sort: "もんきーたーんV"
   name-en: "Monkey Turn V"
   region: "NTSC-J"
 SLPS-20382:
-  name: "太鼓の達人 あつまれ！祭りだ！！四代目 タタコン同梱セット"
-  name-sort: "たいこのたつじん あつまれ！まつりだ！！よんだいめ たたこんどうこんせっと"
+  name: "太鼓の達人 あつまれ！祭りだ！！四代目 [タタコン同梱セット]"
+  name-sort: "たいこのたつじん あつまれ！まつりだ！！よんだいめ [たたこんどうこんせっと]"
   name-en: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime [with Tatacon]"
   region: "NTSC-J"
   gsHWFixes:
@@ -56724,6 +57150,11 @@ SLPS-20384:
   name: "流行り神 警視庁怪異事件ファイル [初回限定版]"
   name-sort: "はやりがみ けいしちょうかいいじけんふぁいる [しょかいげんていばん]"
   name-en: "Hayarigami - Keishichou Kaii Jiken File [First Limited Edition]"
+  region: "NTSC-J"
+SLPS-20385:
+  name: "流行り神 警視庁怪異事件ファイル [通常版]"
+  name-sort: "はやりがみ けいしちょうかいいじけんふぁいる [つうじょうばん]"
+  name-en: "Hayarigami - Keishichou Kaii Jiken File [Standard Edition]"
   region: "NTSC-J"
 SLPS-20386:
   name: "バリュー2000シリーズ 囲碁4"
@@ -56877,6 +57308,11 @@ SLPS-20414:
   gsHWFixes:
     alignSprite: 1 # Fixes vertical lines.
     textureInsideRT: 1 # Fixes post effects.
+SLPS-20415:
+  name: "赤川次郎 月の光 ～沈める鐘の殺人～ [Super Best Collection]"
+  name-sort: "あかがわじろう つきのひかり ～しずめるかねのさつじん～ [Super Best Collection]"
+  name-en: "Akagawa Jirou - Tsuki no Hikari - Shizumeru Kane no Satsujin [Super Best Collection]"
+  region: "NTSC-J"
 SLPS-20416:
   name: "陰陽大戦記 白虎演舞 [“EyeToy”カメラ同梱版]"
   name-sort: "おんみょうたいせんき びゃっこえんぶ [あいとーいかめらどうこんばん]"
@@ -57046,6 +57482,12 @@ SLPS-20448:
   name-sort: "かめんらいだー ひびき たいこのたつじんすぺしゃるばーじょん [たいけんばん]"
   name-en: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
   region: "NTSC-J"
+SLPS-20449:
+  name: "仮面ライダー 響鬼 [通常版]"
+  name-sort: "かめんらいだー ひびき [つうじょうばん]"
+  name-en: "Kamen Rider Hibiki [Standard Edition]"
+  region: "NTSC-J"
+  compat: 5
 SLPS-20450:
   name: "太鼓の達人 わいわいハッピー！六代目 タタコン同梱版"
   name-sort: "たいこのたつじん わいわいはっぴー！ろくだいめ たたこんどうこんばん"
@@ -57348,7 +57790,7 @@ SLPS-20500:
 SLPS-20501:
   name: "流行り神2 警視庁怪異事件ファイル"
   name-sort: "はやりがみ2 けいしちょうかいいじけんふぁいる"
-  name-en: "Hayarigami 2"
+  name-en: "Hayarigami 2 - Keishichou Kaii Jiken File"
   region: "NTSC-J"
 SLPS-20502:
   name: "ゼロの使い魔 ファンタジー・フォース"
@@ -57379,6 +57821,11 @@ SLPS-20507:
   name: "ゼロの使い魔 ファンタジー・フォース 2nd Impact"
   name-sort: "ぜろのつかいま ふぁんたじーふぉーす 2nd いんぱくと"
   name-en: "Zero no Tsukaima - Fantasy Force 2nd Impact"
+  region: "NTSC-J"
+SLPS-20508:
+  name: "流行り神2 警視庁怪異事件ファイル [The Best Price]"
+  name-sort: "はやりがみ2 けいしちょうかいいじけんふぁいる [The Best Price]"
+  name-en: "Hayarigami 2 - Keishichou Kaii Jiken File [The Best Price]"
   region: "NTSC-J"
 SLPS-20509:
   name: "ハチワンダイバー"
@@ -57727,6 +58174,15 @@ SLPS-25045:
     - SoftwareRendererFMVHack # Fixes black FMVs.
   gsHWFixes:
     roundSprite: 1 # Fixes font artifacts.
+SLPS-25045P:
+  name: "リリーのアトリエ ～ザールブルグの錬金術士3～ [Premium Box]"
+  name-sort: "りりーのあとりえ ざーるぶるぐのれんきんじゅつし3 [Premium Box]"
+  name-en: "Lilie no Atelier - Salburg no Renkinjutsushi 3 [Premium Box]"
+  region: "NTSC-J"
+  gameFixes:
+    - SoftwareRendererFMVHack # Fixes black FMVs.
+  gsHWFixes:
+    roundSprite: 1 # Fixes font artifacts.
 SLPS-25046:
   name: "ゴルフナビゲーター Vol 1 ～カレドニアンゴルフクラブ・総武カントリークラブ 総武コース～"
   name-sort: "ごるふなびげーたー Vol. 1  ～かれどにあんごるふくらぶ・そうぶかんとりーくらぶ そうぶこーす～"
@@ -57958,9 +58414,9 @@ SLPS-25081:
   name-en: "Saishuu Densha"
   region: "NTSC-J"
 SLPS-25083:
-  name: "エキサイティングプロレス 3 [限定版]"
-  name-sort: "えきさいてぃんぐぷろれす3 [げんていばん]"
-  name-en: "Exciting Pro Wrestling 3 [Limited Editon]"
+  name: "エキサイティングプロレス 3 [初回限定版]"
+  name-sort: "えきさいてぃんぐぷろれす3 [しょかいげんていばん]"
+  name-en: "Exciting Pro Wrestling 3 [First Limited Editon]"
   region: "NTSC-J"
 SLPS-25084:
   name: "サンダーストライク:オペレーション フェニックス"
@@ -58020,9 +58476,9 @@ SLPS-25096:
   name-en: "Galerians 2 [Limited Edition]"
   region: "NTSC-J"
 SLPS-25097:
-  name: "Velvet File Plus"
-  name-sort: "ゔぇるヴぇっと ふぁいる ぷらす"
-  name-en: "Velvet File Plus"
+  name: "Velvet File Plus [廉価版]"
+  name-sort: "ゔぇるヴぇっと ふぁいる ぷらす [れんかばん]"
+  name-en: "Velvet File Plus [Low Price]"
   region: "NTSC-J"
 SLPS-25098:
   name: "レスキューヘリ エアレンジャー2"
@@ -58420,6 +58876,11 @@ SLPS-25160:
   name-sort: "ふぁいなるふぁんたじー11 2002 SPECIAL ART BOX"
   name-en: "Final Fantasy XI 2002 [Special Art Box]"
   region: "NTSC-J"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25161:
   name: "宇宙戦艦ヤマト 暗黒星団帝国の逆襲 [初回生産限定版]"
   name-sort: "うちゅうせんかんやまと あんこくせいだんていこくのぎゃくしゅう [しょかいせいさんげんてい]"
@@ -58507,9 +58968,9 @@ SLPS-25174:
     halfPixelOffset: 4 # Aligns post effects.
     nativeScaling: 2 # Fixes post-processing and lighting smoothness and position.
 SLPS-25175:
-  name: "A列車でいこう2001"
-  name-sort: "Aれっしゃでいこう 2001"
-  name-en: "A Ressha de Ikou 2001"
+  name: "トレインキット for A列車で行こう2001 [A列車で行こう2001 パーフェクトセット] [ARTDINK BEST CHOISE]"
+  name-sort: "とれいんきっと ふぉー Aれっしゃでいこう2001 [Aれっしゃでいう2001 ぱーふぇくとせっと] [ARTDINK BEST CHOISE]"
+  name-en: "Train Kit for A Ressha de Ikou 2001 [A Ressha de Ikou 2001 Perfect Set] [ARTDINK BEST CHOISE]"
   region: "NTSC-J"
 SLPS-25176:
   name: "neo atlas Ⅲ"
@@ -58648,6 +59109,11 @@ SLPS-25200:
   name-en: "Final Fantasy XI [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLPS-25201:
   name: "リーヴェルファンタジア マリエルと妖精物語"
   name-sort: "りーゔぇるふぁんたじあ まりえるとようせいものがたり"
@@ -58799,6 +59265,11 @@ SLPS-25228:
   name-sort: "だい2じすーぱーろぼっとたいせんあるふぁ"
   name-en: "Super Robot Wars - Alpha 2nd"
   region: "NTSC-J"
+SLPS-25229:
+  name: "アメリカ横断ウルトラクイズ [DigiCube Best Selection]"
+  name-sort: "あめりかおうだんうるとらくいず [DigiCube Best Selection]"
+  name-en: "America Oudan Ultra Quiz [DigiCube Best Selection]"
+  region: "NTSC-J"
 SLPS-25230:
   name: "ソウルキャリバーⅡ"
   name-sort: "そうるきゃりばー2"
@@ -58863,6 +59334,13 @@ SLPS-25238:
   name-sort: "まい めりー めいびー"
   name-en: "My Merry Maybe"
   region: "NTSC-J"
+SLPS-25239:
+  name: "NBA STREET2 ダンク天国"
+  name-sort: "NBA すとりーと2 だんくてんごく"
+  name-en: "NBA Street Vol. 2"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Missing environment with microVU.
 SLPS-25240:
   name: "MEGUMI / モーショングラビアシリーズ(仮)"
   name-sort: "めぐみ もーしょんぐらびあしりーず(かり)"
@@ -59099,6 +59577,22 @@ SLPS-25279:
   name-sort: "ぼうけんしょうねんくらぶがほう"
   name-en: "Bouken Shounen Club Gahou"
   region: "NTSC-J"
+SLPS-25280:
+  name: "ガレリアンズ:アッシュ [eb!コレ]"
+  name-sort: "がれりあんず あっしゅ [eb!コレ]"
+  name-en: "Galerians 2 [ebKore]"
+  region: "NTSC-J"
+  patches:
+    E8E54032:
+      content: |-
+        author=kozarovv, descawed
+        // Floats workaround to make HW GSDX mode working.
+        // There is still overflow on GS, but this time GSDX can handle it just fine in HW mode.
+        patch=1,EE,001da848,word,3c017e00
+        patch=1,EE,001da850,word,44812800
+        patch=1,EE,001da868,word,44813000
+        patch=1,EE,001da878,word,44813800
+        patch=1,EE,001da888,word,44810000
 SLPS-25281:
   name: "トゥルーラブストーリー3 [eb!コレ]"
   name-sort: "とぅるーらぶすとーりー3 [eb!これ]"
@@ -59627,7 +60121,7 @@ SLPS-25365:
   name-en: "Missing Blue [Best Price]"
   region: "NTSC-J"
 SLPS-25366:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [プレミアムボックス] [ディスク1/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [プレミアムボックス] [ディスク1/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [ぷれみあむぼっくす] [でぃすく1/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [Premium Box] [Disc 1 of 2]"
   region: "NTSC-J"
@@ -59644,7 +60138,7 @@ SLPS-25366:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-25367:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [プレミアムボックス] [ディスク2/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [プレミアムボックス] [ディスク2/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [ぷれみあむぼっくす] [でぃすく2/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [Premium Box] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -59661,7 +60155,7 @@ SLPS-25367:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-25368:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [ディスク1/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [ディスク1/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [でぃすく1/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-J"
@@ -59678,7 +60172,7 @@ SLPS-25368:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-25369:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [ディスク2/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [ディスク2/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [でぃすく2/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-J"
@@ -60066,8 +60560,8 @@ SLPS-25427:
   region: "NTSC-J"
   compat: 5
 SLPS-25428:
-  name: "メタルスラッグ 3 [SNK Best Collection]"
-  name-sort: "めたるすらっぐ 3 [SNK Best Collection]"
+  name: "メタルスラッグ 3 [SNK BEST COLLECTION]"
+  name-sort: "めたるすらっぐ 3 [SNK BEST COLLECTION]"
   name-en: "Metal Slug 3 [SNK Best Collection]"
   region: "NTSC-J"
   gsHWFixes:
@@ -60100,8 +60594,8 @@ SLPS-25433:
   name-en: "Teikoku Sensenki [First Limited Edition]"
   region: "NTSC-J"
 SLPS-25434:
-  name: "西風の狂詩曲～The Rhapsody of Zephyr～ Best Collection"
-  name-sort: "にしかぜのらぷそでぃ Best Collection"
+  name: "西風の狂詩曲～The Rhapsody of Zephyr～ [Best Collection]"
+  name-sort: "にしかぜのらぷそでぃ [Best Collection]"
   name-en: "Rhapsody of Zephyr, The [Best Collection]"
   region: "NTSC-J"
 SLPS-25435:
@@ -60398,8 +60892,8 @@ SLPS-25481:
     instantVU1: 0 # Fixes Turbo mode Freeze.
     mtvu: 0 # Fixes Turbo mode Freeze.
 SLPS-25482:
-  name: "雪語り リニューアル版"
-  name-sort: "ゆきがたり りにゅーあるばん"
+  name: "雪語り [リニューアル版]"
+  name-sort: "ゆきがたり [りにゅーあるばん]"
   name-en: "Yuki Gatari [Renewal Version]"
   region: "NTSC-J"
 SLPS-25483:
@@ -60890,18 +61384,18 @@ SLPS-25570:
   name-en: "Kino no Tabi II - The Beautiful World"
   region: "NTSC-J"
 SLPS-25571:
-  name: "メタルスラッグ 4 [SNK Best Collection]"
-  name-sort: "めたるすらっぐ 4 [SNK Best Collection]"
+  name: "メタルスラッグ 4 [SNK BEST COLLECTION]"
+  name-sort: "めたるすらっぐ 4 [SNK BEST COLLECTION]"
   name-en: "Metal Slug 4 [SNK Best Collection]"
   region: "NTSC-J"
 SLPS-25572:
-  name: "サムライスピリッツ零 [SNK Best Collection]"
-  name-sort: "さむらいすぴりっつぜろ [SNK Best Collection]"
+  name: "サムライスピリッツ零 [SNK BEST COLLECTION]"
+  name-sort: "さむらいすぴりっつぜろ [SNK BEST COLLECTION]"
   name-en: "Samurai Spirits Zero [SNK Best Collection]"
   region: "NTSC-J"
 SLPS-25573:
-  name: "THE KING OF FIGHTERS 2002 [SNK Best Collection]"
-  name-sort: "ざ きんぐ おぶ ふぁいたーず2002 [SNK Best Collection]"
+  name: "THE KING OF FIGHTERS 2002 [SNK BEST COLLECTION]"
+  name-sort: "ざ きんぐ おぶ ふぁいたーず2002 [SNK BEST COLLECTION]"
   name-en: "King of Fighters 2002, The [SNK Best Collection]"
   region: "NTSC-J"
   gsHWFixes:
@@ -61329,8 +61823,8 @@ SLPS-25639:
   name-en: "Plus Plum 2 Again"
   region: "NTSC-J"
 SLPS-25640:
-  name: "ゼノサーガ エピソードⅢ [ツァラトゥストラはかく語りき] [ディスク1/2]"
-  name-sort: "ぜのさーが えぴそーど3 [つぁらとぅすとらはかくかたりき] [でぃすく1/2]"
+  name: "ゼノサーガ エピソードⅢ ツァラトゥストラはかく語りき [ディスク1/2]"
+  name-sort: "ぜのさーが えぴそーど3 つぁらとぅすとらはかくかたりき [でぃすく1/2]"
   name-en: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -61345,8 +61839,8 @@ SLPS-25640:
     - "SLPS-25640"
     - "SLPS-25368"
 SLPS-25641:
-  name: "ゼノサーガ エピソードⅢ [ツァラトゥストラはかく語りき] [ディスク2/2]"
-  name-sort: "ぜのさーが えぴそーど3 [つぁらとぅすとらはかくかたりき] [でぃすく2/2]"
+  name: "ゼノサーガ エピソードⅢ ツァラトゥストラはかく語りき [ディスク2/2]"
+  name-sort: "ぜのさーが えぴそーど3 つぁらとぅすとらはかくかたりき [でぃすく2/2]"
   name-en: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-J"
   compat: 5
@@ -62104,9 +62598,9 @@ SLPS-25754:
   name-en: "Kino no Tabi II - The Beautiful World [Dengeki SP]"
   region: "NTSC-J"
 SLPS-25755:
-  name: ".hack//G.U. Vol.1 再誕"
-  name-sort: "どっとはっく G.U. Vol.1 さいたん"
-  name-en: ".hack//G.U. Vol.1 - Saitan"
+  name: ".hack//G.U. Vol.1 再誕 [Welcome Price]"
+  name-sort: "どっとはっく G.U. Vol.1 さいたん [Welcome Price]"
+  name-en: ".hack//G.U. Vol.1 - Saitan [Welcome Price]"
   region: "NTSC-J"
 SLPS-25756:
   name: ".hack//G.U. Vol.1 再誕 [Welcome Price]"
@@ -62824,6 +63318,11 @@ SLPS-25869:
   region: "NTSC-J"
   gameFixes:
     - EETimingHack # Fixes FMV hanging.
+SLPS-25870:
+  name: "ドラスティックキラー - エクセレント BOX [限定版]"
+  name-sort: "どらすてぃっくきらー - エクセレント BOX [げんていばん]"
+  name-en: "Drastic Killer - Excellent Box [Limited Edition]"
+  region: "NTSC-J"
 SLPS-25871:
   name: "ドラスティックキラー"
   name-sort: "どらすてぃっくきらー"
@@ -62980,9 +63479,9 @@ SLPS-25892:
   name-en: "Nogizaka Haruka no Himitsu - Cosplay Hajimemashita [Standard Edition]"
   region: "NTSC-J"
 SLPS-25893:
-  name: "ゼロの使い魔 夢魔が紡ぐ夜風の幻想曲 [PlayStation2 The Best]"
-  name-sort: "ぜろのつかいま むまがつむぐよかぜのげんそうきょく [PlayStation2 The Best]"
-  name-en: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [PlayStation2 The Best]"
+  name: "ゼロの使い魔 夢魔が紡ぐ夜風の幻想曲 [Best Collection]"
+  name-sort: "ぜろのつかいま むまがつむぐよかぜのげんそうきょく [Best Collection]"
+  name-en: "Zero no Tsukaima - Muma ga Tsumugu Yokaze no Gensoukyoku [Best Collection]"
   region: "NTSC-J"
 SLPS-25894:
   name: "ああっ女神さまっ [Best Collection]"
@@ -63021,6 +63520,11 @@ SLPS-25900:
     autoFlush: 2 # Corrects jet exhaust radiosity.
     halfPixelOffset: 4 # Fixes misaligned bloom.
     nativeScaling: 2 # Fixes post-processing smoothness and position.
+SLPS-25901:
+  name: "純情ロマンチカ ～恋のドキドキ大作戦 [限定版]"
+  name-sort: "じゅんじょうろまんちか こいのどきどきだいさくせん [げんていばん]"
+  name-en: "Junjou Romantica - Koi no Doki Doki Daisakusen [Limited Edition]"
+  region: "NTSC-J"
 SLPS-25902:
   name: "純情ロマンチカ ～恋のドキドキ大作戦"
   name-sort: "じゅんじょうろまんちか こいのどきどきだいさくせん"
@@ -63087,6 +63591,11 @@ SLPS-25912:
   name: "ソウルイーター バトルレゾナンス"
   name-sort: "そうるいーたー ばとるれぞなんす"
   name-en: "Soul Eater - Battle Resonance"
+  region: "NTSC-J"
+SLPS-25913:
+  name: "奈落の城 一柳和、2度目の受難 [The Best Price]"
+  name-sort: "ならくのしろ いちやなぎなごむ 2どめのじゅなん [The Best Price]"
+  name-en: "Naraku no Shiro [The Best Price]"
   region: "NTSC-J"
 SLPS-25914:
   name: "機動戦士ガンダム ギレンの野望 アクシズの脅威V"
@@ -63218,9 +63727,9 @@ SLPS-25936:
   name-en: "NeoGeo Online Collection Vol. 11 - Sunsoft Collection"
   region: "NTSC-J"
 SLPS-25937:
-  name: "メタルスラッグ  コンプリート"
-  name-sort: "ねおじおおんらいんこれくしょん THE BEST さんそふとこれくしょん"
-  name-en: "Metal Slug Complete"
+  name: "メタルスラッグ  コンプリート [SNK BEST Collection]"
+  name-sort: "めたるすらっぐ こんぷりーと [SNK BEST Collection]"
+  name-en: "Metal Slug Complete [SNK Best Collection]"
   region: "NTSC-J"
 SLPS-25938:
   name: "KOF MAXIMUM IMPACT REGULATION“A” [SNK BEST COLLECTION]"
@@ -63311,8 +63820,8 @@ SLPS-25953:
   name-en: "Dai Senryaku VII - Exceed"
   region: "NTSC-J"
 SLPS-25954:
-  name: "太平洋の嵐 ～戦艦大和、暁に出撃す～ [システムソフト セレクション]"
-  name-sort: "たいへいようのあらし せんかんやまと あかつきにしゅつげきす [しすてむそふと せれくしょん]"
+  name: "太平洋の嵐 ～戦艦大和、暁に出撃す～ [システムソフトセレクション]"
+  name-sort: "たいへいようのあらし せんかんやまと あかつきにしゅつげきす [しすてむそふとれくしょん]"
   name-en: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugeki su [SYSTEMSOFT Selection]"
   region: "NTSC-J"
 SLPS-25955:
@@ -63360,6 +63869,36 @@ SLPS-25962:
     autoFlush: 2 # Corrects jet exhaust radiosity.
     halfPixelOffset: 4 # Fixes misaligned bloom.
     nativeScaling: 2 # Fixes post-processing smoothness and position.
+SLPS-25964:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 餓狼伝説バトルアーカイブス1"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん がろうでんせつばとるあーかいぶす1"
+  name-en: "NegGeo Online Collection Complete Box 01 Garo Densetsu Battle Archives 1"
+  region: "NTSC-J"
+SLPS-25965:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 餓狼伝説バトルアーカイブス2"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん がろうでんせつばとるあーかいぶす2"
+  name-en: "NegGeo Online Collection Complete Box 01 Garo Densetsu Battle Archives 2"
+  region: "NTSC-J"
+SLPS-25966:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 餓狼 MARK OF THE WOLVES"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん がろう まーく おぶ ざ うるぶす"
+  name-en: "NegGeo Online Collection Complete Box 01 Garo Mark of the Wolves"
+  region: "NTSC-J"
+SLPS-25967:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 龍虎の拳 ～天・地・人～"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん りゅうこのけん てん ち じん"
+  name-en: "NegGeo Online Collection Complete Box 01 Ryuuko no Ken - Ten-Chi-Jin"
+  region: "NTSC-J"
+SLPS-25968:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 サムライスピリッツ 六番勝負"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん さむらいすぴりっつ ろくばんしょうぶ"
+  name-en: "NegGeo Online Collection Complete Box 01 Samurai Spirits Rokubanshobu"
+  region: "NTSC-J"
+SLPS-25969:
+  name: "NEOGEOオンラインコレクション COMPLETE BOX 上巻 サンソフトコレクション"
+  name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 01 じょうかん さんそふとこれくしょん"
+  name-en: "NegGeo Online Collection Complete Box 01 SUNSOFT Collection"
+  region: "NTSC-J"
 SLPS-25971:
   name: "NEOGEOオンラインコレクション COMPLETE BOX 下巻 幕末浪漫 月華の剣士 1・2"
   name-sort: "ねおじおおんらいんこれくしょん こんぷりーとぼっくす 02 げかん ばくまつろまん げっかのけんし 1・2"
@@ -63411,9 +63950,9 @@ SLPS-25980:
   name-en: "Pachitte Chonmage Tatsujin 16 - Pachinko Hissatsu Shigotonin 3 - Matsuri Version"
   region: "NTSC-J"
 SLPS-25981:
-  name: "大戦略 大東亜興亡史 ～トラ・トラ・トラ ワレ奇襲ニ成功セリ～"
-  name-sort: "だいせんりゃく だいとうあこうぼうし ～とら・とら・とら われきしゅうにせいこうせり～"
-  name-en: "Daisenryaku - Daitoua Kouboushi - Tora Tora Tora Ware Kishuu ni Seikou Seri"
+  name: "大戦略 大東亜興亡史 ～トラ・トラ・トラ ワレ奇襲ニ成功セリ～ [システムソフトセレクション]"
+  name-sort: "だいせんりゃく だいとうあこうぼうし ～とら・とら・とら われきしゅうにせいこうせり～ [しすてむそふとせれくしょん]"
+  name-en: "Daisenryaku - Daitoua Kouboushi - Tora Tora Tora Ware Kishuu ni Seikou Seri [SystemSoft Sellection]"
   region: "NTSC-J"
 SLPS-25982:
   name: "ティル・ナ・ノーグ ～悠久の仁～ [システムソフトセレクション]"
@@ -63536,6 +64075,11 @@ SLPS-29005:
   gsHWFixes:
     autoFlush: 1 # Fixes shadows in cutscenes.
     halfPixelOffset: 4 # Removes puppet lines shadows.
+SLPS-55013:
+  name: "ソウルリーバー2"
+  name-sort: "そうるりーばー2"
+  name-en: "Soul Reaver 2 - Legacy of Kain"
+  region: "NTSC-J"
 SLPS-71501:
   name: "鉄拳タッグトーナメント [MEGA HITS!]"
   name-sort: "てっけんたっぐとーなめんと [MEGA HITS!]"
@@ -63581,9 +64125,9 @@ SLPS-72502:
   speedHacks:
     mvuFlag: 0 # Fixes graphical corruptions.
 SLPS-73001:
-  name: "パイロットになろう！ 2"
-  name-sort: "ぱいろっとになろう！ 2"
-  name-en: "Pilot ni Narou! 2"
+  name: "パイロットになろう！ 2 [PlayStation2 The Best]"
+  name-sort: "ぱいろっとになろう！ 2 [PlayStation2 The Best]"
+  name-en: "Pilot ni Narou! 2 [PlayStation2 The Best]"
   region: "NTSC-J"
 SLPS-73002:
   name: "剣豪 [PlayStation2 the Best]"
@@ -63900,7 +64444,7 @@ SLPS-73223:
     textureInsideRT: 1 # Fixes heat haze half screen problem.
     getSkipCount: "GSC_NamcoGames"
 SLPS-73224:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [PlayStation2 the Best] [ディスク1/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [PlayStation2 the Best] [ディスク1/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [PlayStation2 the Best] [でぃすく1/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [PlayStation2 the Best] [Disc 1 of 2]"
   region: "NTSC-J"
@@ -63917,7 +64461,7 @@ SLPS-73224:
     - "SLPS-25353"
     - "SLPS-73224"
 SLPS-73225:
-  name: "ゼノサーガ エピソードⅡ [善悪の彼岸] [PlayStation2 the Best] [ディスク2/2]"
+  name: "ゼノサーガ エピソードⅡ 善悪の彼岸 [PlayStation2 the Best] [ディスク2/2]"
   name-sort: "ぜのさーが えぴそーど2 ぜんあくのひがん [PlayStation2 the Best] [でぃすく2/2]"
   name-en: "Xenosaga Episode II - Jenseits von Gut und Böse [PlayStation2 the Best] [Disc 2 of 2]"
   region: "NTSC-J"
@@ -64372,9 +64916,9 @@ SLPS-73408:
   name-en: "7 (Seven) - Molmorth no Kiheitai [PlayStation2 the Best]"
   region: "NTSC-J"
 SLPS-73409:
-  name: "エキサイティングプロレス 3"
-  name-sort: "えきさいてぃんぐぷろれす3"
-  name-en: "Exciting Pro Wrestling 3"
+  name: "エキサイティングプロレス 3 [PlayStation2 The Best] [体験版同梱]"
+  name-sort: "えきさいてぃんぐぷろれす3 [PlayStation2 The Best] [たいけんばんどうこん]"
+  name-en: "Exciting Pro Wrestling 3 [PlayStation2 The Best] [with Demo]"
   region: "NTSC-J"
 SLPS-73410:
   name: "エースコンバット04 シャッタードスカイ [PlayStation2 the Best]"
@@ -66708,6 +67252,7 @@ SLUS-20468:
   region: "NTSC-U"
 SLUS-20469:
   name: "Xenosaga Episode I - Der Wille zur Macht"
+  name-sort: "Xenosaga Episode 1 - Der Wille zur Macht"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -68701,7 +69246,6 @@ SLUS-20842:
   compat: 5
   gsHWFixes:
     halfPixelOffset: 1 # Fixes vertical lines, font and others.
-    drawBuffering: 1 # Reduces draws and improves performance.
 SLUS-20843:
   name: "Dead to Rights II"
   region: "NTSC-U"
@@ -68915,6 +69459,9 @@ SLUS-20875:
   name: "Predator - Concrete Jungle"
   region: "NTSC-U"
   compat: 5
+  gsHWFixes:
+    halfPixelOffset: 5 # Fixes misaligned bloom.
+    nativeScaling: 2 # Softens and fixes misaligned bloom.
 SLUS-20876:
   name: "Backyard Football 2006"
   region: "NTSC-U"
@@ -69018,6 +69565,7 @@ SLUS-20891:
     - "SLUS-20488"
 SLUS-20892:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -70161,6 +70709,11 @@ SLUS-21069:
 SLUS-21070:
   name: "Final Fantasy XI - Chains of Promathia"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21071:
   name: "The Nightmare of Druaga - Fushigino Dungeon"
   region: "NTSC-U"
@@ -70517,6 +71070,7 @@ SLUS-21132:
   compat: 5
 SLUS-21133:
   name: "Xenosaga Episode II - Jenseits von Gut und Böse [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 2 - Jenseits von Gut und Böse [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -70992,6 +71546,7 @@ SLUS-21208:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
 SLUS-21209:
   name: "Urban Reign"
   region: "NTSC-U"
@@ -71653,6 +72208,7 @@ SLUS-21295:
     nativeScaling: 1 # Fixes post-processing smoothness and position.
     autoFlush: 1 # Improves post-processing rendering.
     preloadFrameData: 1 # Fixes missing loading screens.
+    targetPageRearranging: 1 # Fixes garbage on screen caused by bad shuffle.
   memcardFilters: # Game saves use the normal edition serial.
     - "SLUS-21208"
 SLUS-21296:
@@ -72325,6 +72881,7 @@ SLUS-21388:
     texturePreloading: 1 # Temporarily fixes black frame flickering.
 SLUS-21389:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 1 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 1 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -72418,6 +72975,11 @@ SLUS-21403:
 SLUS-21404:
   name: "Final Fantasy XI - Treasures of Aht Urhgan"
   region: "NTSC-U"
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21405:
   name: "Xiaolin Showdown"
   region: "NTSC-U"
@@ -72496,6 +73058,7 @@ SLUS-21416:
     eeClampMode: 3 # Fixes black screen.
 SLUS-21417:
   name: "Xenosaga Episode III - Also Sprach Zarathustra [Disc 2 of 2]"
+  name-sort: "Xenosaga Episode 3 - Also Sprach Zarathustra [Disc 2 of 2]"
   region: "NTSC-U"
   compat: 5
   gsHWFixes:
@@ -74063,6 +74626,11 @@ SLUS-21704:
   name: "Final Fantasy XI - Vana'diel Collection 2008"
   region: "NTSC-U"
   compat: 3
+  gsHWFixes:
+    halfPixelOffset: 5 # Helps various alignment issues.
+    nativeScaling: 1 # Fixes gird lines in setup process screen.
+    roundSprite: 1 # Fixes some text upscaling artefacts.
+    gpuPaletteConversion: 1 # Reduces hashcache size and improves performance.
 SLUS-21705:
   name: "Madden NFL 08 en Español"
   region: "NTSC-U"

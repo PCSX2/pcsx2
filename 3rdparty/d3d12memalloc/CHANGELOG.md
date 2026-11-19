@@ -1,6 +1,25 @@
+# 3.3.0 (2026-11-09)
+
+- Added support for the new Agility SDK to 1.620.1 / 1.722.0-preview.
+  - Added `Allocator::CreateResource4` and `CreateAliasingResource3` for `D3D12_RESOURCE_DESC2` and GUID texture layouts.
+  - Updated feature queries in the library to use `ID3D12Device16::CheckFeatureSupport1` when available, avoiding deprecation warnings while preserving compatibility with older SDKs and runtimes (#102).
+- Added file `AGENTS.md` for agentic AI.
+- Fixed automatic `D3D12_RESOURCE_FLAG_USE_TIGHT_ALIGNMENT` being added to resource descriptions with explicit nonzero alignment, which is invalid on older Agility SDK runtimes (#101).
+- Other fixes and improvements.
+
+# 3.2.1 (2026-10-26)
+
+- Improved `AllocateMemory` implementation, now allowing smaller size and alignment to be specified, while the heap alignment (if one is needed) is calculated correctly (#98).
+- Other fixes and improvements.
+
+# 3.2.0 (2026-06-05)
+
+- Added `POOL_FLAG_DONT_USE_TIGHT_ALIGNMENT` (#91).
+- Further improvements in the algorithm deciding when to use small alignment or tight alignment, including added support for `D3D12_FEATURE_DATA_D3D12_OPTIONS4::MSAA64KBAlignedTextureSupported`.
+
 # 3.1.0 (2026-02-23)
 
-- Added supported for resource tight alignment (feature added in Agility SDK 1.618.1). It is used automatically when available.
+- Added support for resource tight alignment (feature added in Agility SDK 1.618.1). It is used automatically when available.
   - Added function `Allocator::IsTightAlignmentSupported`.
   - Added `ALLOCATOR_FLAG_DONT_USE_TIGHT_ALIGNMENT`.
 - Fixes and improvements in the internal function `AllocatorPimpl::GetResourceAllocationInfo` (which decides when to use small alignment or tight alignment), including:

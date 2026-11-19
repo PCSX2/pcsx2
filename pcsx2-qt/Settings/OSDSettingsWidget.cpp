@@ -251,6 +251,7 @@ void OSDSettingsWidget::onPerformancePosChanged()
 	m_ui.showUsageCPU->setEnabled(enabled);
 	m_ui.showUsageGPU->setEnabled(enabled);
 	m_ui.showStatsGPU->setEnabled(enabled);
+	m_ui.showGPUShadersStats->setEnabled(enabled);
 	m_ui.showStatusIndicators->setEnabled(enabled);
 	m_ui.showFrameTimes->setEnabled(enabled);
 	m_ui.showHardwareInfo->setEnabled(enabled);
@@ -274,6 +275,7 @@ void OSDSettingsWidget::setAllCheckboxes(bool checked)
 		m_ui.showUsageCPU,
 		m_ui.showUsageGPU,
 		m_ui.showStatsGPU,
+		m_ui.showGPUShadersStats,
 		m_ui.showFrameTimes,
 		m_ui.showHardwareInfo,
 		m_ui.showVersion,
@@ -288,7 +290,6 @@ void OSDSettingsWidget::setAllCheckboxes(bool checked)
 #ifdef _WIN32
 	m_ui.showDebugGPU->setChecked(checked);
 #endif
-
 	// Keep these checked
 	m_ui.showStatusIndicators->setChecked(true);
 	m_ui.showVideoCapture->setChecked(true);

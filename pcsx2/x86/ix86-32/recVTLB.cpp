@@ -124,7 +124,6 @@ namespace vtlb_private
 	static void DynGen_PrepRegs(int addr_reg, int value_reg, u32 sz, bool xmm)
 	{
 		_freeX86reg(arg1regd);
-		EE::Profiler.EmitMem(addr_reg);
 		xMOV(arg1regd, xRegister32(addr_reg));
 
 		if (value_reg >= 0)
@@ -148,6 +147,9 @@ namespace vtlb_private
 				xMOV(arg2reg, xRegister64(value_reg));
 			}
 		}
+
+		// eax and arg3reg are free to use now that the arguments are copied.
+		EE::Profiler.EmitMem();
 
 		xMOV(eax, arg1regd);
 		xSHR(eax, VTLB_PAGE_BITS);

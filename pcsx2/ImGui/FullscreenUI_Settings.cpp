@@ -3028,6 +3028,12 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 		FSUI_NSTR("JPEG"),
 		FSUI_NSTR("WebP"),
 	};
+	static constexpr const char* s_depth_feedback_modes[] = {
+		FSUI_NSTR("None"),
+		FSUI_NSTR("Auto"),
+		FSUI_NSTR("Depth"),
+		FSUI_NSTR("Depth as RT"),
+	};
 
 	const GSRendererType renderer =
 		static_cast<GSRendererType>(GetEffectiveIntSetting(bsi, "EmuCore/GS", "Renderer", static_cast<int>(GSRendererType::Auto)));
@@ -3597,6 +3603,11 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 			FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
 			"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
 			(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Depth Feedback Mode"),
+			FSUI_CSTR("Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). "
+				"'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing."),
+			"EmuCore/GS", "DepthFeedbackMode", static_cast<int>(GSDepthFeedbackMode::Auto), s_depth_feedback_modes,
+			std::size(s_depth_feedback_modes), true, 0, renderer != GSRendererType::SW);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Override Texture Barriers"),
 			FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
 			s_generic_options, std::size(s_generic_options), true, -1);
@@ -6284,6 +6295,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flippi
 TRANSLATE_NOOP("FullscreenUI", "Displays additional, very high upscaling multipliers dependent on GPU and driver capability.");
 TRANSLATE_NOOP("FullscreenUI", "Changes synchronization behavior for GS downloads.");
 TRANSLATE_NOOP("FullscreenUI", "Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout.");
+TRANSLATE_NOOP("FullscreenUI", "Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). 'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing.");
 TRANSLATE_NOOP("FullscreenUI", "Forces texture barrier functionality to the specified value.");
 TRANSLATE_NOOP("FullscreenUI", "Change the compression algorithm used when creating a GS dump.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the usage of framebuffer fetch when supported by host GPU.");
@@ -6671,6 +6683,9 @@ TRANSLATE_NOOP("FullscreenUI", "Internal Resolution (No Aspect Correction)");
 TRANSLATE_NOOP("FullscreenUI", "PNG");
 TRANSLATE_NOOP("FullscreenUI", "JPEG");
 TRANSLATE_NOOP("FullscreenUI", "WebP");
+TRANSLATE_NOOP("FullscreenUI", "Auto");
+TRANSLATE_NOOP("FullscreenUI", "Depth");
+TRANSLATE_NOOP("FullscreenUI", "Depth as RT");
 TRANSLATE_NOOP("FullscreenUI", "0 (Disabled)");
 TRANSLATE_NOOP("FullscreenUI", "1 (64 Max Width)");
 TRANSLATE_NOOP("FullscreenUI", "2 (128 Max Width)");
@@ -6731,7 +6746,6 @@ TRANSLATE_NOOP("FullscreenUI", "Bottom Center");
 TRANSLATE_NOOP("FullscreenUI", "Bottom Right");
 TRANSLATE_NOOP("FullscreenUI", "PS1");
 TRANSLATE_NOOP("FullscreenUI", "Manual");
-TRANSLATE_NOOP("FullscreenUI", "Auto");
 TRANSLATE_NOOP("FullscreenUI", "Internal");
 TRANSLATE_NOOP("FullscreenUI", "Negative");
 TRANSLATE_NOOP("FullscreenUI", "Positive");
@@ -6907,6 +6921,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Extended Upscaling Multipliers");
 TRANSLATE_NOOP("FullscreenUI", "Hardware Download Mode");
 TRANSLATE_NOOP("FullscreenUI", "Allow Exclusive Fullscreen");
+TRANSLATE_NOOP("FullscreenUI", "Depth Feedback Mode");
 TRANSLATE_NOOP("FullscreenUI", "Override Texture Barriers");
 TRANSLATE_NOOP("FullscreenUI", "GS Dump Compression");
 TRANSLATE_NOOP("FullscreenUI", "Disable Framebuffer Fetch");

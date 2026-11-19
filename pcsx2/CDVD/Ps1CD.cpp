@@ -135,6 +135,7 @@ static __fi void StartReading(u32 type)
 	cdr.StatP &= ~STATUS_ERROR;
 	cdr.FirstSector = 1;
 	cdr.Readed = 0xff;
+	cdr.TransferRemaining = 0;
 	//DevCon.Warning("ReadN/ReadS delay: %d", sectorSeekReadDelay);
 	AddIrqQueue(READ_ACK, sectorSeekReadDelay);
 	sectorSeekReadDelay = shortSectorSeekReadDelay;
@@ -581,6 +582,7 @@ void cdrReadInterrupt()
 	{
 		DevCon.Warning("CD err");
 		std::memset(cdr.Transfer, 0, sizeof(cdr.Transfer));
+		cdr.TransferRemaining = 0;
 		cdr.Stat = DiskError;
 		cdr.StatP |= STATUS_ERROR;
 		cdr.Result[0] = cdr.StatP;
@@ -607,6 +609,7 @@ void cdrReadInterrupt()
 	}
 
 	cdr.Readed = 0;
+	cdr.TransferRemaining = 0;
 
 	if ((cdr.Transfer[4 + 2] & 0x80) && (cdr.Mode & 0x2))
 	{ // EOF
@@ -957,13 +960,14 @@ u8 cdrRead2(void)
 {
 	u8 ret;
 
-	if (cdr.Readed == 0)
+	if (cdr.Readed == 0 || cdr.TransferRemaining == 0)
 	{
 		ret = 0;
 	}
 	else
 	{
 		ret = *cdr.pTransfer++;
+		cdr.TransferRemaining--;
 	}
 
 	CDVD_LOG("CD2 Read: %x", ret);
@@ -1043,11 +1047,16 @@ void cdrWrite3(u8 rt)
 
 		switch (cdr.Mode & 0x30)
 		{
-			case 0x10:
 			case 0x00:
 				cdr.pTransfer += 12;
+				cdr.TransferRemaining = 2048;
+				break;
+			case 0x10:
+				cdr.pTransfer += 12;
+				cdr.TransferRemaining = 2328;
 				break;
 			default:
+				cdr.TransferRemaining = 2340;
 				break;
 		}
 	}
@@ -1069,10 +1078,14 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr)
 				break;
 			}
 
-			cdsize = (bcr & 0xffff) * 4;
-			memcpy(iopPhysMem(madr), cdr.pTransfer, cdsize);
-			psxCpu->Clear(madr, cdsize / 4);
-			cdr.pTransfer += cdsize;
+			cdsize = std::min((bcr & 0xffff) * 4, cdr.TransferRemaining);
+			if (cdsize != 0)
+			{
+				memcpy(iopPhysMem(madr), cdr.pTransfer, cdsize);
+				psxCpu->Clear(madr, cdsize / 4);
+				cdr.pTransfer += cdsize;
+				cdr.TransferRemaining -= cdsize;
+			}
 
 			break;
 		case 0x41000200:
@@ -1109,5 +1122,25 @@ bool SaveStateBase::cdrFreeze()
 		return false;
 
 	Freeze(cdr);
+	if (IsLoading())
+	{
+		const u32 offset = (cdr.Mode & 0x20) ? 0 : 12;
+		const u32 length = (cdr.Mode & 0x30) == 0x00 ? 2048 :
+			(cdr.Mode & 0x30) == 0x10 ? 2328 : 2340;
+		const uptr start = reinterpret_cast<uptr>(cdr.Transfer) + offset;
+		const uptr current = reinterpret_cast<uptr>(cdr.pTransfer);
+
+		if (cdr.Readed == 1 && current >= start && current <= start + length)
+		{
+			cdr.TransferRemaining = static_cast<u32>(start + length - current);
+		}
+		else
+		{
+			cdr.pTransfer = cdr.Transfer;
+			cdr.TransferRemaining = 0;
+			if (cdr.Readed == 1)
+				cdr.Readed = 0;
+		}
+	}
 	return IsOkay();
 }

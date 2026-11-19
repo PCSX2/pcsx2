@@ -83,6 +83,8 @@ static const char microOpcodeName[][16] = {
 	"EEXP", "XITOP", "XTOP", "XGKICK"
 };
 
+//#define mVUprofileProg
+
 #ifdef mVUprofileProg
 #include <utility>
 #include <string>
@@ -101,8 +103,7 @@ struct microProfiler
 	}
 	void EmitOp(microOpcode op)
 	{
-		xADD(ptr32[&(((u32*)opStats)[op * 2 + 0])], 1);
-		xADC(ptr32[&(((u32*)opStats)[op * 2 + 1])], 0);
+		xADD(ptr64[&opStats[op]], 1);
 	}
 	void Print()
 	{

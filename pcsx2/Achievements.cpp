@@ -1531,7 +1531,11 @@ void Achievements::OnVMPaused(bool paused)
 {
 #ifdef ENABLE_RAINTEGRATION
 	if (IsUsingRAIntegration())
-		RA_SetPaused(paused);
+	{
+		// Suppress RAIntegration's built-in pause overlay so it does not
+		// obscure the viewport during pause and frame advance debugging.
+		RA_SetPaused(false);
+	}
 #endif
 }
 

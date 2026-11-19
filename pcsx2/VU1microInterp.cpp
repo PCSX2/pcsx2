@@ -66,7 +66,7 @@ static void _vu1Exec(VURegs* VU)
 	VU->code = ptr[1];
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
 
-	u32 cyclesBeforeOp = VU1.cycle-1;
+	u64 cyclesBeforeOp = VU1.cycle-1;
 
 	_vuTestUpperStalls(VU, &uregs);
 

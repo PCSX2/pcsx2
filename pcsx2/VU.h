@@ -156,7 +156,7 @@ struct alignas(16) VURegs
 	u32 statusflag;
 	u32 clipflag;
 
-	s64 nextBlockCycles;
+	s32 nextBlockCycles;
 
 	u8* Mem;
 	u8* Micro;

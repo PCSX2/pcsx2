@@ -160,6 +160,10 @@ public:
 	{
 		return IsRenderTarget(usage) && (format == Format::DepthColor);
 	}
+	static __fi bool IsColorClip(Format format)
+	{
+		return format == Format::ColorClip;
+	}
 	static __fi bool IsTexture(Usage usage)
 	{
 		return usage == Texture;
@@ -198,6 +202,10 @@ public:
 	{
 		return IsDepthColor(m_usage, m_format);
 	}
+	__fi bool IsColorClip() const
+	{
+		return IsColorClip(m_format);
+	}
 	__fi bool IsTexture() const
 	{
 		return IsTexture(m_usage);
@@ -234,9 +242,15 @@ public:
 	__fi u32 GetClearColor() const { return m_clear_value.color; }
 	__fi float GetClearDepth() const { return m_clear_value.depth; }
 	__fi GSVector4 GetUNormClearColor() const { return GSVector4::unorm8(m_clear_value.color); }
+	__fi GSVector4 GetColorClipClearColor() const
+	{
+		return GSVector4::rgba32(m_clear_value.color) / GSVector4::cxpr(65535, 65535, 65535, 255);
+	}
 	__fi GSVector4 GetClearForFormat() const
 	{
-		return IsDepthLike() ? GSVector4(m_clear_value.depth, 0.0f, 0.0f, 0.0f) : GetUNormClearColor();
+		return IsDepthLike() ? GSVector4(m_clear_value.depth, 0.0f, 0.0f, 0.0f)
+			: IsColorClip() ? GetColorClipClearColor()
+			: GetUNormClearColor();
 	}
 
 	__fi void SetClearColor(u32 color)

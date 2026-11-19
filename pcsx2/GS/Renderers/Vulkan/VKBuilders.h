@@ -29,7 +29,7 @@ namespace Vulkan
 	class RenderPassBuilder
 	{
 	public:
-		static constexpr u32 MAX_COLOR_ATTACHMENTS = 1;
+		static constexpr u32 MAX_COLOR_ATTACHMENTS = 2;
 		static constexpr u32 MAX_ATTACHMENTS = MAX_COLOR_ATTACHMENTS + 1;
 
 		void AddColorAttachment(VkImageLayout layout, VkFormat format,
@@ -144,7 +144,7 @@ namespace Vulkan
 			MAX_SHADER_STAGES = 3,
 			MAX_VERTEX_ATTRIBUTES = 16,
 			MAX_VERTEX_BUFFERS = 8,
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 			MAX_DYNAMIC_STATE = 8
 		};
 
@@ -174,6 +174,7 @@ namespace Vulkan
 		void SetStencilState(bool stencil_test, const VkStencilOpState& front, const VkStencilOpState& back);
 		void SetNoDepthTestState();
 		void SetNoStencilState();
+		void AddDepthStencilFlags(u32 flags);
 
 		void AddBlendAttachment(bool blend_enable, VkBlendFactor src_factor, VkBlendFactor dst_factor, VkBlendOp op,
 			VkBlendFactor alpha_src_factor, VkBlendFactor alpha_dst_factor, VkBlendOp alpha_op,
@@ -337,7 +338,7 @@ namespace Vulkan
 	{
 		enum : u32
 		{
-			MAX_ATTACHMENTS = 2,
+			MAX_ATTACHMENTS = 3,
 		};
 
 	public:

@@ -1,3 +1,9 @@
+# 3.5.0 (2026-10-26)
+
+- Added support for VK_KHR_extended_flags extension - added `VMA_ALLOCATOR_CREATE_KHR_EXTENDED_FLAGS_BIT` flag.
+- Fixed behavior of `vmaImportVulkanFunctionsFromVolk` (#546, #548).
+- Other fixes and improvements, including compatibility with various platforms and compilers.
+
 # 3.4.0 (2026-06-05)
 
 - Added file `AGENTS.md` for agentic AI.

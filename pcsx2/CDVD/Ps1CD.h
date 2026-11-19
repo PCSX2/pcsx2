@@ -69,7 +69,8 @@ struct cdrStruct
 	u8 Irq;
 	u32 eCycle;
 
-	char Unused[4087];
+	u32 TransferRemaining;
+	char Unused[4083];
 };
 
 extern cdrStruct cdr;

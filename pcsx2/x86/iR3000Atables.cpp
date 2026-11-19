@@ -1421,12 +1421,12 @@ static void rpsxJR()
 
 	if (!swap)
 	{
-		const int wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
+		const int wbreg = _allocX86reg(X86TYPE_PSX_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
 		_psxMoveGPRtoR(xRegister32(wbreg), _Rs_);
 
 		psxRecompileNextInstruction(true, false);
 
-		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
+		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PSX_PCWRITEBACK)
 		{
 			xMOV(eax, xRegister32(wbreg));
 			x86regs[wbreg].inuse = 0;
@@ -1461,7 +1461,7 @@ static void rpsxJALR()
 	int wbreg = -1;
 	if (!swap)
 	{
-		wbreg = _allocX86reg(X86TYPE_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
+		wbreg = _allocX86reg(X86TYPE_PSX_PCWRITEBACK, 0, MODE_WRITE | MODE_CALLEESAVED);
 		_psxMoveGPRtoR(xRegister32(wbreg), _Rs_);
 	}
 
@@ -1476,7 +1476,7 @@ static void rpsxJALR()
 	{
 		psxRecompileNextInstruction(true, false);
 
-		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PCWRITEBACK)
+		if (x86regs[wbreg].inuse && x86regs[wbreg].type == X86TYPE_PSX_PCWRITEBACK)
 		{
 			xMOV(eax, xRegister32(wbreg));
 			x86regs[wbreg].inuse = 0;

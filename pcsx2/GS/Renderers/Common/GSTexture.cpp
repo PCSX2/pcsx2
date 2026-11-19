@@ -93,8 +93,6 @@ const char* GSTexture::GetFormatName(Format format)
 {
 	switch (format)
 	{
-		default:
-			pxFailRel("Invalid texture format");
 		case Format::Invalid:      return "Invalid";
 		case Format::Color:        return "Color";
 		case Format::ColorHQ:      return "ColorHQ";
@@ -111,6 +109,8 @@ const char* GSTexture::GetFormatName(Format format)
 		case Format::BC3:          return "BC3";
 		case Format::BC7:          return "BC7";
 	}
+	pxFailRel("Invalid texture format");
+	return "Invalid";
 }
 
 bool GSTexture::IsBlockCompressedFormat(Format format)
@@ -136,8 +136,6 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 {
 	switch (format)
 	{
-		default:
-			pxFailRel("Invalid texture format");
 		case Format::Invalid:      return 1;  // Invalid
 		case Format::Color:        return 4;  // Color/RGBA8
 		case Format::ColorHQ:      return 4;  // ColorHQ/RGB10A2
@@ -154,6 +152,8 @@ u32 GSTexture::GetCompressedBytesPerBlock(Format format)
 		case Format::BC3:          return 16; // BC3 - 16 pixels in 128 bits
 		case Format::BC7:          return 16; // BC7 - 16 pixels in 128 bits
 	}
+	pxFailRel("Invalid texture format");
+	return 1;
 }
 
 u32 GSTexture::GetCompressedBlockSize() const
