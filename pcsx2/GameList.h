@@ -144,6 +144,12 @@ namespace GameList
 	/// Returns the total time played for a game. Requires the game to be scanned in the list.
 	std::time_t GetCachedPlayedTimeForSerial(const std::string& serial);
 
+	// Reads savestate slot for a game
+	s32 ReadSaveStateSlot(const std::string& serial, u32 crc);
+	// Writes savestate slot for a game
+	void WriteSaveStateSlot(const std::string& serial, u32 crc, s32 slot);
+
+
 	/// Formats a timestamp to something human readable (e.g. Today, Yesterday, 10/11/12).
 	std::string FormatTimestamp(std::time_t timestamp);
 
