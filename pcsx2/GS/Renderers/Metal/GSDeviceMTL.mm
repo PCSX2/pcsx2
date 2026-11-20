@@ -2347,8 +2347,14 @@ void GSDeviceMTL::RenderHW(GSHWDrawConfig& config)
 	if (config.tex && (config.ds == config.tex || config.rt == config.tex))
 		EndRenderPass(); // Barrier
 
-	if (m_dev.features.broken_shader_depth && (config.depth.ztst >= ZTST_GEQUAL || config.depth.zwe))
-		config.ps.zfloor = true; // Depth must always go through shader (see tfx vs for comment with details)
+	if (m_dev.features.broken_shader_depth)
+	{
+		// Depth must always go through shader (see tfx vs for comment with details)
+		if (config.depth.ztst >= ZTST_GEQUAL || config.depth.zwe)
+			config.ps.zfloor = true;
+		if (config.alpha_second_pass.depth.ztst >= ZTST_GEQUAL || config.alpha_second_pass.depth.zwe)
+			config.alpha_second_pass.ps.zfloor = true;
+	}
 
 	size_t vertsize = config.nverts * sizeof(*config.verts);
 	size_t idxsize = config.vs.UseFixedExpandIndexBuffer() ? 0 : (config.nindices * sizeof(*config.indices));
