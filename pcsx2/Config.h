@@ -310,6 +310,13 @@ enum class GSPostBilinearMode : u8
 	BilinearSharp,
 };
 
+enum class DisplaySizeOverrideMode : u8
+{
+	Off,
+	PixelMapping_1_1,
+	Custom,
+};
+
 // Ordering was done to keep compatibility with older ini file.
 enum class BiFiltering : u8
 {
@@ -719,6 +726,9 @@ struct Pcsx2Config
 		static constexpr AspectRatioType DEFAULT_ASPECT_RATIO = AspectRatioType::RAuto4_3_3_2;
 		static constexpr GSInterlaceMode DEFAULT_INTERLACE_MODE = GSInterlaceMode::Automatic;
 		static constexpr GSPostBilinearMode DEFAULT_BILINEAR_FILTERING_MODE = GSPostBilinearMode::BilinearSmooth;
+		static constexpr DisplaySizeOverrideMode DEFAULT_DISPLAY_SIZE_OVERRIDE_MODE = DisplaySizeOverrideMode::Off;
+		static constexpr int DEFAULT_DISPLAY_SIZE_OVERRIDE_WIDTH = 512;
+		static constexpr int DEFAULT_DISPLAY_SIZE_OVERRIDE_HEIGHT = 448;
 		static constexpr FMVAspectRatioSwitchType DEFAULT_FMV_ASPECT_RATIO = FMVAspectRatioSwitchType::Off;
 		static constexpr GSCASMode DEFAULT_CAS_MODE = GSCASMode::Disabled;
 
@@ -856,6 +866,9 @@ struct Pcsx2Config
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch = DEFAULT_FMV_ASPECT_RATIO;
 		GSInterlaceMode InterlaceMode = DEFAULT_INTERLACE_MODE;
 		GSPostBilinearMode LinearPresent = DEFAULT_BILINEAR_FILTERING_MODE;
+		DisplaySizeOverrideMode DisplaySizeOverride = DEFAULT_DISPLAY_SIZE_OVERRIDE_MODE;
+		int DisplaySizeOverrideWidth = DEFAULT_DISPLAY_SIZE_OVERRIDE_WIDTH;
+		int DisplaySizeOverrideHeight = DEFAULT_DISPLAY_SIZE_OVERRIDE_HEIGHT;
 
 		float StretchY = 100.0f;
 		int Crop[4] = {};
