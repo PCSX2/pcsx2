@@ -104,6 +104,11 @@ public:
 			return (rt ? 1 : 0) + (ds_as_rt ? 1 : 0) + (ds ? 1 : 0);
 		}
 
+		u32 NumColorAttachments() const
+		{
+			return (rt ? 1 : 0) + (ds_as_rt ? 1 : 0);
+		}
+
 		GSTextureVK* FirstAttachment() const
 		{
 			return rt ? rt : (ds_as_rt ? ds_as_rt : ds);
