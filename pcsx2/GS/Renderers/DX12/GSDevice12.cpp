@@ -4746,7 +4746,7 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 	SendHWDraw(pipe, config, draw_rt, draw_ds_as_rt, draw_rt_rov, draw_ds_rov,
 		feedback_rt, feedback_depth, config.require_one_barrier, config.require_full_barrier);
 
-	// blend second pass
+	// blend multi pass
 	if (config.blend_multi_pass.enable)
 	{
 		if (config.blend_multi_pass.blend.constant_enable)
@@ -4777,6 +4777,20 @@ void GSDevice12::RenderHW(GSHWDrawConfig& config)
 		SendHWDraw(pipe, config, draw_rt, draw_ds_as_rt, draw_rt_rov, draw_ds_rov,
 			feedback_rt, feedback_depth, config.alpha_second_pass.require_one_barrier,
 			config.alpha_second_pass.require_full_barrier);
+
+		// blend multi pass with alpha second pass
+		if (config.blend_multi_pass.enable)
+		{
+			if (config.blend_multi_pass.blend.constant_enable)
+				SetBlendConstants(config.blend_multi_pass.blend.constant);
+
+			pipe.bs = config.blend_multi_pass.blend;
+			pipe.ps.no_color1 = config.blend_multi_pass.no_color1;
+			pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
+			pipe.ps.dither = config.blend_multi_pass.dither;
+			if (BindDrawPipeline(pipe))
+				Draw(config);
+		}
 	}
 
 	if (date_image)

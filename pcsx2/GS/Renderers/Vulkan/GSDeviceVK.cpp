@@ -6633,7 +6633,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			pipe.IsDepthFeedbackLoop() ? depth_for_barrier : nullptr,
 			config.require_one_barrier, config.require_full_barrier);
 
-	// blend second pass
+	// blend multi pass
 	if (config.blend_multi_pass.enable)
 	{
 		if (config.blend_multi_pass.blend.constant_enable)
@@ -6644,10 +6644,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
 		pipe.ps.dither = config.blend_multi_pass.dither;
 		if (BindDrawPipeline(pipe))
-		{
-			// TODO: This probably should have barriers, in case we want to use it conditionally.
 			Draw(config);
-		}
 	}
 
 	// and the alpha pass
@@ -6669,6 +6666,20 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 			SendHWDraw(config, pipe.IsRTFeedbackLoop() ? fb.rt : nullptr,
 				pipe.IsDepthFeedbackLoop() ? depth_for_barrier : nullptr,
 				config.alpha_second_pass.require_one_barrier, config.alpha_second_pass.require_full_barrier);
+		}
+
+		// blend multi pass with alpha second pass
+		if (config.blend_multi_pass.enable)
+		{
+			if (config.blend_multi_pass.blend.constant_enable)
+				SetBlendConstants(config.blend_multi_pass.blend.constant);
+
+			pipe.bs = config.blend_multi_pass.blend;
+			pipe.ps.no_color1 = config.blend_multi_pass.no_color1;
+			pipe.ps.blend_hw = config.blend_multi_pass.blend_hw;
+			pipe.ps.dither = config.blend_multi_pass.dither;
+			if (BindDrawPipeline(pipe))
+				Draw(config);
 		}
 	}
 

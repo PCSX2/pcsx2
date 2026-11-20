@@ -3306,6 +3306,16 @@ void GSDevice11::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend), config.blend.constant);
 		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
 			one_barrier, config.alpha_second_pass.require_full_barrier, rtsize);
+
+		if (config.blend_multi_pass.enable)
+		{
+			config.alpha_second_pass.ps.no_color1 = config.blend_multi_pass.no_color1;
+			config.alpha_second_pass.ps.blend_hw = config.blend_multi_pass.blend_hw;
+			config.alpha_second_pass.ps.dither = config.blend_multi_pass.dither;
+			SetupPS(config.alpha_second_pass.ps, &config.cb_ps, config.sampler);
+			SetupOM(config.alpha_second_pass.depth, OMBlendSelector(config.alpha_second_pass.colormask, config.blend_multi_pass.blend), config.blend_multi_pass.blend.constant);
+			Draw(config);
+		}
 	}
 
 	if (colclip_rt)

@@ -3393,6 +3393,26 @@ void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
 		SetupOM(config.alpha_second_pass.depth);
 		SendHWDraw(config, rt_feedbackloop_pass2 ? draw_rt_clone : nullptr, draw_rt, ds_feedbackloop_pass2 ? draw_ds_clone : nullptr, draw_ds_as_rt ? draw_ds_as_rt : draw_ds,
 			one_barrier, config.alpha_second_pass.require_full_barrier);
+
+		if (config.blend_multi_pass.enable)
+		{
+			if (config.blend.IsEffective(config.alpha_second_pass.colormask))
+			{
+				OMSetBlendState(config.blend_multi_pass.blend.enable, s_gl_blend_factors[config.blend_multi_pass.blend.src_factor],
+					s_gl_blend_factors[config.blend_multi_pass.blend.dst_factor], s_gl_blend_ops[config.blend_multi_pass.blend.op],
+					s_gl_blend_factors[config.blend_multi_pass.blend.src_factor_alpha], s_gl_blend_factors[config.blend_multi_pass.blend.dst_factor_alpha],
+					config.blend_multi_pass.blend.constant_enable, config.blend_multi_pass.blend.constant);
+			}
+			else
+			{
+				OMSetBlendState();
+			}
+			psel.ps.no_color1 = config.blend_multi_pass.no_color1;
+			psel.ps.blend_hw = config.blend_multi_pass.blend_hw;
+			psel.ps.dither = config.blend_multi_pass.dither;
+			SetupPipeline(psel);
+			Draw(config);
+		}
 	}
 
 	if (colclip_rt)
