@@ -115,6 +115,8 @@ namespace VMManager
 	static bool HasValidOrInitializingVM();
 	static void PrecacheCDVDFile();
 
+	static void SetState(VMState state);
+
 	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
 	static bool DoLoadState(const char* filename, Error* error = nullptr);
 	static void DoSaveState(const char* filename, s32 slot_for_message, bool zip_on_thread, bool backup_old_state, std::function<void(const std::string&)> error_callback);
@@ -267,52 +269,12 @@ void VMManager::ResetResumeTimestamp()
 	s_session_resume_timestamp = static_cast<u64>(Common::Timer::GetCurrentValue());
 }
 
-void VMManager::SetState(VMState state)
+static void VMManager::SetState(VMState state)
 {
 	// Some state transitions aren't valid.
-	const VMState old_state = s_state.load(std::memory_order_acquire);
 	pxAssert(state != VMState::Initializing && state != VMState::Shutdown);
 	SetTimerResolutionIncreased(state == VMState::Running);
 	s_state.store(state, std::memory_order_release);
-
-	if (state != VMState::Stopping && (state == VMState::Paused || old_state == VMState::Paused))
-	{
-		const bool paused = (state == VMState::Paused);
-		if (paused)
-		{
-			if (THREAD_VU1)
-				vu1Thread.WaitVU();
-			MTGS::WaitGS(false);
-			InputManager::PauseVibration();
-		}
-		else
-		{
-			PerformanceMetrics::Reset();
-			ResetFrameLimiter();
-		}
-
-		SPU2::SetOutputPaused(paused);
-		Achievements::OnVMPaused(paused);
-
-		UpdateInhibitScreensaver(!paused && EmuConfig.InhibitScreensaver);
-
-		if (paused)
-		{
-			Host::OnVMPaused();
-			AccumulateSessionPlaytime();
-		}
-		else
-		{
-			FullscreenUI::OnVMResumed();
-			Host::OnVMResumed();
-			ResetResumeTimestamp();
-		}
-	}
-	else if (state == VMState::Stopping && old_state == VMState::Running)
-	{
-		// If stopping, break execution as soon as possible.
-		Cpu->ExitExecution();
-	}
 }
 
 bool VMManager::HasValidVM()
@@ -759,7 +721,7 @@ void VMManager::ApplySettings()
 	Console.WriteLn("Applying settings...");
 
 	// If we're running, ensure the threads are synced.
-	if (GetState() == VMState::Running)
+	if (IsRunning())
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
@@ -782,7 +744,7 @@ void VMManager::ApplyCoreSettings()
 	Console.WriteLn("Applying core settings...");
 
 	// If we're running, ensure the threads are synced.
-	if (GetState() == VMState::Running)
+	if (IsRunning())
 	{
 		if (THREAD_VU1)
 			vu1Thread.WaitVU();
@@ -2815,13 +2777,113 @@ void VMManager::IdlePollUpdate()
 	InputManager::PollSources();
 }
 
-void VMManager::SetPaused(bool paused)
+bool VMManager::IsPaused()
+{
+	VMState state = GetState();
+
+	return state == VMState::Paused || state == VMState::Halted;
+}
+
+bool VMManager::IsRunning() {
+	VMState state = GetState();
+
+	return state == VMState::Running;
+}
+
+void VMManager::Pause()
 {
 	if (!HasValidVM())
 		return;
 
-	Console.WriteLn(paused ? "(VMManager) Pausing..." : "(VMManager) Resuming...");
-	SetState(paused ? VMState::Paused : VMState::Running);
+	VMState state = GetState();
+
+	if (state == VMState::Paused || state == VMState::Halted)
+	{
+		// Already paused
+		return;
+	}
+
+	Console.WriteLn("(VMManager) Pausing...");
+
+	if (THREAD_VU1)
+		vu1Thread.WaitVU();
+	MTGS::WaitGS(false);
+	InputManager::PauseVibration();
+
+	SPU2::SetOutputPaused(true);
+	Achievements::OnVMPaused(true);
+
+	UpdateInhibitScreensaver(false);
+
+	Host::OnVMPaused();
+	AccumulateSessionPlaytime();
+
+	SetState(VMState::Paused);
+}
+
+void VMManager::Resume()
+{
+	if (!HasValidVM())
+		return;
+
+	VMState state = GetState();
+
+	if (state == VMState::Running || state == VMState::Halted) {
+		return;
+	}
+
+	Console.WriteLn("(VMManager) Resuming...");
+
+	PerformanceMetrics::Reset();
+	ResetFrameLimiter();
+
+	SPU2::SetOutputPaused(false);
+	Achievements::OnVMPaused(false);
+
+	UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver);
+
+	FullscreenUI::OnVMResumed();
+	Host::OnVMResumed();
+	ResetResumeTimestamp();
+
+	SetState(VMState::Running);
+}
+
+void VMManager::Halt() {
+	if (!HasValidVM())
+		return;
+
+	// Do normal pause
+	Pause();
+
+	// Then change to the unresumable halted state
+	SetState(VMState::Halted);
+}
+
+void VMManager::Stop() {
+	if (!HasValidVM())
+		return;
+
+	VMState state = GetState();
+
+	if (state == VMState::Running) {
+		Cpu->ExitExecution();
+	}
+
+	Console.WriteLn("(VMManager) Stopping...");
+	SetState(VMState::Stopping);
+}
+
+void VMManager::SetPaused(bool paused)
+{
+	if (paused)
+	{
+		VMManager::Pause();
+	}
+	else
+	{
+		VMManager::Resume();
+	}
 }
 
 GSVSyncMode VMManager::GetEffectiveVSyncMode()
