@@ -41,6 +41,7 @@ public:
 
 	static std::optional<Column> getColumnIdForName(std::string_view name);
 	static const char* getColumnName(Column col);
+	static QString formatByte(const u64& byte = 0.0);
 
 	static QIcon getIconForType(GameList::EntryType type);
 	static QIcon getIconForRegion(GameList::Region region);
