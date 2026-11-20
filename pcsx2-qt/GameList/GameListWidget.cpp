@@ -253,8 +253,8 @@ namespace
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 		{
 			QStyledItemDelegate::paint(painter, option, index);
-			const bool favorite = index.data(GameListModel::FavoriteRole).toBool();
-			const bool custom_settings = index.data(GameListModel::CustomSettingsRole).toBool();
+			const bool favorite = index.data(GameListModel::FavoriteIconRole).toBool();
+			const bool custom_settings = index.data(GameListModel::CustomSettingsIconRole).toBool();
 			if (!favorite && !custom_settings)
 				return;
 
