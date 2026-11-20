@@ -31,6 +31,9 @@
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QGraphicsDropShadowEffect>
+#include <QtWidgets/QGraphicsPixmapItem>
+#include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
@@ -247,14 +250,37 @@ namespace
 
 	class CoverDecorationsDelegate final : public QStyledItemDelegate
 	{
+		QPixmap createShadowedDecor(const QPixmap src, float radius, float offset) const
+		{
+			QGraphicsScene scene;
+			QGraphicsPixmapItem* item = scene.addPixmap(src);
+			QGraphicsDropShadowEffect shadow;
+			shadow.setBlurRadius(radius);
+			shadow.setOffset(offset);
+			shadow.setColor(Qt::black);
+			item->setGraphicsEffect(&shadow);
+
+			const QSize new_size(src.width() + offset, src.height() + offset);
+			QPixmap new_pixmap(new_size);
+			new_pixmap.setDevicePixelRatio(src.devicePixelRatio());
+			new_pixmap.fill(Qt::transparent);
+
+			QPainter painter(&new_pixmap);
+			scene.render(&painter, QRectF(0, 0, new_size.width(), new_size.height()),
+				QRectF(0, 0, new_size.width(), new_size.height()));
+			painter.end();
+
+			return new_pixmap;
+		}
+
 	public:
 		using QStyledItemDelegate::QStyledItemDelegate;
 
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
 		{
 			QStyledItemDelegate::paint(painter, option, index);
-			const bool favorite = index.data(GameListModel::FavoriteRole).toBool();
-			const bool custom_settings = index.data(GameListModel::CustomSettingsRole).toBool();
+			const bool favorite = index.data(GameListModel::FavoriteIconRole).toBool();
+			const bool custom_settings = index.data(GameListModel::CustomSettingsIconRole).toBool();
 			if (!favorite && !custom_settings)
 				return;
 
@@ -274,16 +300,30 @@ namespace
 			if (favorite)
 			{
 				const QRect star_rect(cover_rect.right() - icon_size - margin, cover_rect.top() + margin, icon_size, icon_size);
-				static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
-				const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(star_rect.topLeft(), star_pixmap);
+				QPixmap star_shadowed;
+				const QString favorite_key = QString::fromStdString(fmt::format("CoverDecor{}", GameListModel::FavoriteIconRole));
+				if (!QPixmapCache::find(favorite_key, &star_shadowed))
+				{
+					static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
+					const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+					star_shadowed = createShadowedDecor(star_pixmap, 6.0f, 3.0f);
+					QPixmapCache::insert(favorite_key, star_shadowed);
+				}
+				painter->drawPixmap(star_rect.topLeft(), star_shadowed);
 			}
 			if (custom_settings)
 			{
 				const QRect gear_rect(cover_rect.left() + margin, cover_rect.top() + margin, icon_size, icon_size);
-				static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
-				const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(gear_rect.topLeft(), gear_pixmap);
+				QPixmap gear_shadowed;
+				const QString custom_settings_key = QString::fromStdString(fmt::format("CoverDecor{}", GameListModel::CustomSettingsIconRole));
+				if (!QPixmapCache::find(custom_settings_key, &gear_shadowed))
+				{
+					static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
+					const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+					gear_shadowed = createShadowedDecor(gear_pixmap, 6.0f, 3.0f);
+					QPixmapCache::insert(custom_settings_key, gear_shadowed);
+				}
+				painter->drawPixmap(gear_rect.topLeft(), gear_shadowed);
 			}
 			painter->restore();
 		}
