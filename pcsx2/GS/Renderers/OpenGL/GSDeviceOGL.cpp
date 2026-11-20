@@ -775,7 +775,10 @@ bool GSDeviceOGL::CreateTextureFX()
 		return false;
 	}
 
-	if (!GetTFXShaderSource(&*shader))
+	// We currently only use static branches on GL. In the future if
+	// dynamic branches are ever used for e.g. uber shaders, note that they
+	// may break and/or crash some older GL drivers on Intel/Nvidia.
+	if (!GetTFXShaderSource(&*shader, false))
 	{
 		Host::ReportErrorAsync("GS", "Failed to resolve includes/branches for tfx shader.");
 		return false;

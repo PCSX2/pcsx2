@@ -73,28 +73,31 @@ VSOutputGeneric vs_main_impl(IN_PARAM(VSInput, v))
 	// Integer coordinate => normalized
 	vout.ti.xy = uv * cb.texture_scale;
 
-	if (VS_FST != 0)
+	__IF__ (VS_FST != 0)
 	{
 		// Integer coordinate => integral
 		vout.ti.zw = uv;
 	}
-	else
+	__ELSE__
 	{
 		// Some games uses float coordinate for post-processing effects
 		vout.ti.zw = st / cb.texture_scale;
 	}
+	__ENDIF__
 
 	vout.c = float4(v.c);
 
 	vout.t.z = v.f.x; // pack fog with texture
 
-	if (VS_POINT_SIZE != 0)
+	__IF__ (VS_POINT_SIZE != 0)
 		vout.point_size = cb.point_size.x;
-	else
+	__ELSE__
 		vout.point_size = 0.0f;
+	__ENDIF__
 
-	if (BROKEN_SHADER_DEPTH != 0)
+	__IF__ (BROKEN_SHADER_DEPTH != 0)
 		vs_broken_shader_depth(vout);
+	__ENDIF__
 
 	vout.inv_cov = 0.0f;
 	vout.interior = 0u;
@@ -152,21 +155,23 @@ void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_PARAM(V
 {
 	// Get texture deltas
 	float2x2 dt;
-	if (VS_FST != 0)
+	__IF__ (VS_FST != 0)
 	{
 		dt = float2x2(v1.ti.zw - v0.ti.zw, v2.ti.zw - v0.ti.zw);
 	}
-	else
+	__ELSE__
 	{
 		dt = float2x2(v1.t.xy - v0.t.xy, v2.t.xy - v0.t.xy);
 	}
+	__ENDIF__
 
 	// Get color delta if interpolating
 	float2x4 dc;
-	if (VS_IIP != 0)
+	__IF__ (VS_IIP != 0)
 	{
 		dc = float2x4(v1.c - v0.c, v2.c - v0.c);
 	}
+	__ENDIF__
 
 	float2 dz = float2(v1.p.z - v0.p.z, v2.p.z - v0.p.z); // Z deltas
 
@@ -190,24 +195,26 @@ void extrapolate_aa1_triangle_edge(IN_OUT_PARAM(VSOutputGeneric, v0), IN_PARAM(V
 	v0.p.xy += dp * cb.point_size; // Extrapolate position
 
 	// Extrapolate texture coords
-	if (VS_FST != 0)
+	__IF__ (VS_FST != 0)
 	{
 			v0.ti.zw += MAT_MUL(dt, weights);
 			v0.ti.xy = v0.ti.zw * cb.texture_scale;
 	}
-	else
+	__ELSE__
 	{
 		v0.t.xy += MAT_MUL(dt, weights);
 		v0.ti.zw = v0.t.xy / cb.texture_scale;
 		v0.t.w += dot(dq, weights);
 	}
+	__ENDIF__
 
 	// Extrapolate and clamp color
-	if (VS_IIP != 0)
+	__IF__ (VS_IIP != 0)
 	{
 		v0.c += MAT_MUL(dc, weights);
 		v0.c = clamp(v0.c, 0, 255);
 	}
+	__ENDIF__
 
 	v0.p.z += dot(dz, weights); // Extrapolate depth
 
@@ -243,15 +250,17 @@ VSOutputGeneric vs_expand_line_impl(uint vid)
 	float2 line_vector = normalize(line_delta / cb.vertex_scale);
 	float2 line_expand = float2(line_vector.y, -line_vector.x);
 
-	if (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
 		line_expand *= 2.f * cb.line_aa1_width;
+	__ENDIF__
 
 	float2 line_width = (line_expand * cb.point_size) / 2;
 	float2 offset = is_right ? line_width : -line_width;
 	vout.p.xy += offset;
 
-	if (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
 		vout.inv_cov = is_right ? 1.f : -1.f;
+	__ENDIF__
 
 	// Lines will be run as (0 1 2) (1 2 3)
 	// This means that both triangles will have a point based off the top line point as their first point
@@ -391,18 +400,23 @@ VSOutputGeneric vs_expand_triangle_aa1_impl(uint vid)
 
 VSOutputGeneric vs_expand_impl(uint vid)
 {
-	switch (VS_EXPAND_TYPE)
-	{
-		case VS_EXPAND_NONE:
-			return vs_expand_none_impl(vid);
-		case VS_EXPAND_POINT:
-			return vs_expand_point_impl(vid);
-		case VS_EXPAND_LINE:
-		case VS_EXPAND_LINE_AA1:
-			return vs_expand_line_impl(vid);
-		case VS_EXPAND_SPRITE:
-			return vs_expand_sprite_impl(vid);
-		case VS_EXPAND_TRIANGLE_AA1:
-			return vs_expand_triangle_aa1_impl(vid);
-	}
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_NONE)
+		return vs_expand_none_impl(vid);
+	__ENDIF__
+
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_POINT)
+		return vs_expand_point_impl(vid);
+	__ENDIF__
+
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_LINE || VS_EXPAND_TYPE == VS_EXPAND_LINE_AA1)
+		return vs_expand_line_impl(vid);
+	__ENDIF__
+
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_SPRITE)
+		return vs_expand_sprite_impl(vid);
+	__ENDIF__
+
+	__IF__ (VS_EXPAND_TYPE == VS_EXPAND_TRIANGLE_AA1)
+		return vs_expand_triangle_aa1_impl(vid);
+	__ENDIF__
 }

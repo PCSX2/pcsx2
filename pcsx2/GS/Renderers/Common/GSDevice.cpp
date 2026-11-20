@@ -1386,7 +1386,22 @@ static void ResolveShaderIncludes(std::string* source, std::span<const ShaderInc
 	}
 }
 
-bool GSDevice::GetTFXShaderSource(std::string* source)
+static void ReplaceShaderStaticBranches(std::string* source)
+{
+	// Comment out the dynamic branch definitions.
+	StringUtil::ReplaceAll(source, "#define __IF__", "//");
+	StringUtil::ReplaceAll(source, "#define __ELIF__", "//");
+	StringUtil::ReplaceAll(source, "#define __ELSE__", "//");
+	StringUtil::ReplaceAll(source, "#define __ENDIF__", "//");
+
+	// Replace the macros with preprocessor branches.
+	StringUtil::ReplaceAll(source, "__IF__", "#if");
+	StringUtil::ReplaceAll(source, "__ELIF__", "#elif");
+	StringUtil::ReplaceAll(source, "__ELSE__", "#else");
+	StringUtil::ReplaceAll(source, "__ENDIF__", "#endif");
+}
+
+bool GSDevice::GetTFXShaderSource(std::string* source, bool dynamic_branches)
 {
 	static constexpr const char* names[] = {
 		"tfx_defs.inc",
@@ -1421,6 +1436,13 @@ bool GSDevice::GetTFXShaderSource(std::string* source)
 	}
 
 	ResolveShaderIncludes(source, includes);
+
+	if (!dynamic_branches)
+	{
+		// Replace dynamic branches in the shader with preprocessor branches.
+		ReplaceShaderStaticBranches(source);
+	}
+
 	return true;
 }
 
