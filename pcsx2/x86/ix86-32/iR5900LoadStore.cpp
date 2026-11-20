@@ -370,14 +370,14 @@ void recLWR()
 	// mask off bytes loaded
 	xMOV(ecx, 24);
 	xSUB(ecx, temp);
-	xMOV(edx, 0xffffff00);
-	xSHL(edx, cl);
-	xAND(xRegister32(treg), edx);
+	xMOV(rdx, ~0xff);
+	xSHL(rdx, cl);
+	xAND(xRegister64(treg), rdx);
 
 	// OR in bytes loaded
 	xMOV(ecx, temp);
 	xSHR(eax, cl);
-	xOR(xRegister32(treg), eax);
+	xOR(xRegister64(treg), rax);
 
 	xForwardJump8 end;
 	nomask.SetTarget();

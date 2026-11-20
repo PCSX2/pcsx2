@@ -529,11 +529,13 @@ static void recCTC2()
 				_eeMoveGPRtoR(xRegister32(flagreg), _Rt_);
 
 				iFlushCall(FLUSH_FREE_VU0);
+				xMOV(eax, xRegister32(flagreg));
+				xAND(eax, 0x0C0C);
+				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eax);
+
+				// Reset clears the flags for that VU.
 				TEST_FBRST_RESET(flagreg, vu0ResetRegs, 0);
 				TEST_FBRST_RESET(flagreg, vu1ResetRegs, 1);
-
-				xAND(xRegister32(flagreg), 0x0C0C);
-				xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], xRegister32(flagreg));
 				_freeX86reg(flagreg);
 			}
 			break;
