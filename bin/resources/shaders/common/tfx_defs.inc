@@ -1,6 +1,12 @@
 // SPDX-FileCopyrightText: 2002-2026 PCSX2 Dev Team
 // SPDX-License-Identifier: GPL-3.0+
 
+// Allows certain branches to be made either either dynamic or static.
+#define __IF__(...)   if (__VA_ARGS__) {
+#define __ELIF__(...) } else if (__VA_ARGS__) {
+#define __ELSE__      } else {
+#define __ENDIF__     }
+
 #if !defined(PCSX2_MSL)
 	// Constants for non-Metal backends (Metal defines them separately).
 	#define FMT_32 0

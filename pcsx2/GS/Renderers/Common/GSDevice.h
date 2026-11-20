@@ -1523,7 +1523,8 @@ protected:
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex, const float params[4]) = 0;
 
 	/// Resolves TFX shader includes for the specified source.
-	static bool GetTFXShaderSource(std::string* source);
+	/// If dynamic branches are disabled the branches are replaced with static branches.
+	static bool GetTFXShaderSource(std::string* source, bool dynamic_branches = true);
 
 	/// Resolves CAS shader includes for the specified source.
 	static bool GetCASShaderSource(std::string* source);

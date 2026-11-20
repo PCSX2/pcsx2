@@ -3,24 +3,27 @@
 
 PS_STATIC void discard_all()
 {
-	if (PS_ROV_COLOR != 0 || PS_ROV_DEPTH != PS_ROV_DEPTH_NONE)
+	__IF__ (PS_ROV_COLOR != 0 || PS_ROV_DEPTH != PS_ROV_DEPTH_NONE)
 		color_discarded = depth_discarded = true;
-	else
+	__ELSE__
 		discard;
+	__ENDIF__
 }
 
 PS_STATIC void discard_color(IN_OUT_PARAM(float4, color))
 {
-	if (PS_ROV_COLOR != 0)
+	__IF__ (PS_ROV_COLOR != 0)
 		color_discarded = true;
-	else
+	__ELSE__
 		color = current_color;
+	__ENDIF__
 }
 
 PS_STATIC void discard_depth(IN_OUT_PARAM(float, depth))
 {
-	if (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
+	__IF__ (PS_ROV_DEPTH == PS_ROV_DEPTH_READ_WRITE)
 		depth_discarded = true;
-	else
+	__ELSE__
 		depth = current_depth;
+	__ENDIF__
 }

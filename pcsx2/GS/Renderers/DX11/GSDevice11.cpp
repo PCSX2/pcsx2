@@ -220,7 +220,7 @@ bool GSDevice11::Create(GSVSyncMode vsync_mode, bool allow_present_throttle)
 		return false;
 	}
 
-	if (!GetTFXShaderSource(&*shader))
+	if (!GetTFXShaderSource(&*shader, false))
 	{
 		Host::ReportErrorAsync("GS", "Failed to includes for tfx shader.");
 		return false;

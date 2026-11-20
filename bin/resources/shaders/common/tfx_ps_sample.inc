@@ -13,11 +13,13 @@ PS_STATIC float manual_lod(float uv_w)
 
 PS_STATIC float4 sample_c(float2 uv)
 {
-	if (PS_TEX_IS_FB != 0)
+	__IF__ (PS_TEX_IS_FB != 0)
 		return current_color;
-	if (PS_REGION_RECT != 0)
+	__ENDIF__
+	__IF__ (PS_REGION_RECT != 0)
 		return read_tex(uint2(uv));
-	if (PS_POINT_SAMPLER != 0)
+	__ENDIF__
+	__IF__ (PS_POINT_SAMPLER != 0)
 	{
 		// Weird issue with ATI/AMD cards on DX,
 		// it looks like they add 127/128 of a texel to sampling coordinates
@@ -27,12 +29,13 @@ PS_STATIC float4 sample_c(float2 uv)
 		// As of 2018 this issue is still present.
 		uv = (trunc(uv * cb.wh.zw) + float2(0.5, 0.5)) / cb.wh.zw;
 	}
+	__ENDIF__
 
-	if (PS_ADJS == 0 && PS_ADJT == 0)
+	__IF__ (PS_ADJS == 0 && PS_ADJT == 0)
 	{
 		uv *= cb.st_scale;
 	}
-	else
+	__ELSE__
 	{
 		if (PS_ADJS != 0)
 			uv.x = (uv.x - cb.st_range.x) * cb.st_range.z;
@@ -43,15 +46,17 @@ PS_STATIC float4 sample_c(float2 uv)
 		else
 			uv.y = uv.y * cb.st_scale.y;
 	}
+	__ENDIF__
 
-	if (PS_SW_ANISO > 1)
+	__IF__ (PS_SW_ANISO > 1)
 		return sample_c_af(uv, ps_in.t.w);
-	else if (PS_AUTOMATIC_LOD != 0)
+	__ELIF__ (PS_AUTOMATIC_LOD != 0)
 		return sample_tex(uv);
-	else if (PS_MANUAL_LOD != 0)
+	__ELIF__ (PS_MANUAL_LOD != 0)
 		return sample_tex_lod(uv, manual_lod(ps_in.t.w));
-	else
+	__ELSE__
 		return sample_tex_lod(uv, 0);
+	__ENDIF__
 }
 
 PS_STATIC float4 sample_p_norm(float u)
@@ -63,21 +68,21 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 {
 	float4 tex_size = cb.wh.xyxy;
 
-	if (PS_WMS == PS_WMT)
+	__IF__ (PS_WMS == PS_WMT)
 	{
-		if (PS_REGION_RECT != 0 && PS_WMS == 0)
+		__IF__ (PS_REGION_RECT != 0 && PS_WMS == 0)
 		{
 			uv = frac(uv);
 		}
-		else if (PS_REGION_RECT != 0 && PS_WMS == 1)
+		__ELIF__ (PS_REGION_RECT != 0 && PS_WMS == 1)
 		{
 			uv = saturate(uv);
 		}
-		else if (PS_WMS == 2)
+		__ELIF__ (PS_WMS == 2)
 		{
 			uv = clamp(uv, cb.uv_min_max.xyxy, cb.uv_min_max.zwzw);
 		}
-		else if (PS_WMS == 3)
+		__ELIF__ (PS_WMS == 3)
 		{
 			// wrap negative uv coords to avoid an off by one error that shifted
 			// textures. Fixes Xenosaga's hair issue.
@@ -87,22 +92,23 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			uint4 uv_msk_fix = asuint(cb.uv_min_max);
 			uv = float4((ushort4(uv * tex_size) & ushort4(uv_msk_fix.xyxy)) | ushort4(uv_msk_fix.zwzw)) / tex_size;
 		}
+		__ENDIF__
 	}
-	else
+	__ELSE__
 	{
-		if (PS_REGION_RECT != 0 && PS_WMS == 0)
+		__IF__ (PS_REGION_RECT != 0 && PS_WMS == 0)
 		{
 			uv.xz = frac(uv.xz);
 		}
-		else if (PS_REGION_RECT != 0 && PS_WMS == 1)
+		__ELIF__ (PS_REGION_RECT != 0 && PS_WMS == 1)
 		{
 			uv.xz = saturate(uv.xz);
 		}
-		else if (PS_WMS == 2)
+		__ELIF__ (PS_WMS == 2)
 		{
 			uv.xz = clamp(uv.xz, cb.uv_min_max.xx, cb.uv_min_max.zz);
 		}
-		else if (PS_WMS == 3)
+		__ELIF__ (PS_WMS == 3)
 		{
 			if (PS_FST == 0)
 				uv.xz = frac(uv.xz);
@@ -110,20 +116,21 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			uint4 uv_msk_fix = asuint(cb.uv_min_max);
 			uv.xz = float2((ushort2(uv.xz * tex_size.xx) & ushort2(uv_msk_fix.xx)) | ushort2(uv_msk_fix.zz)) / tex_size.xx;
 		}
+		__ENDIF__
 
-		if (PS_REGION_RECT != 0 && PS_WMT == 0)
+		__IF__ (PS_REGION_RECT != 0 && PS_WMT == 0)
 		{
 			uv.yw = frac(uv.yw);
 		}
-		else if (PS_REGION_RECT != 0 && PS_WMT == 1)
+		__ELIF__ (PS_REGION_RECT != 0 && PS_WMT == 1)
 		{
 			uv.yw = saturate(uv.yw);
 		}
-		else if (PS_WMT == 2)
+		__ELIF__ (PS_WMT == 2)
 		{
 			uv.yw = clamp(uv.yw, cb.uv_min_max.yy, cb.uv_min_max.ww);
 		}
-		else if (PS_WMT == 3)
+		__ELIF__ (PS_WMT == 3)
 		{
 			if (PS_FST == 0)
 				uv.yw = frac(uv.yw);
@@ -131,13 +138,16 @@ PS_STATIC float4 clamp_wrap_uv(float4 uv)
 			uint4 uv_msk_fix = asuint(cb.uv_min_max);
 			uv.yw = float2((ushort2(uv.yw * tex_size.yy) & ushort2(uv_msk_fix.yy)) | ushort2(uv_msk_fix.ww)) / tex_size.yy;
 		}
+		__ENDIF__
 	}
+	__ENDIF__
 
-	if (PS_REGION_RECT != 0)
+	__IF__ (PS_REGION_RECT != 0)
 	{
 		// Normalized -> Integer Coordinates.
 		uv = clamp(uv * cb.wh.zwzw + cb.st_range.xyxy, cb.st_range.xyxy, cb.st_range.zwzw);
 	}
+	__ENDIF__
 
 	return uv;
 }
@@ -168,19 +178,22 @@ PS_STATIC uint4 sample_4_index(float4 uv)
 	
 	uint4 i;
 	
-	if (PS_RTA_SRC_CORRECTION != 0)
+	__IF__ (PS_RTA_SRC_CORRECTION != 0)
 	{
 		i = uint4(round(c * 128.25f)); // Denormalize value
 	}
-	else
+	__ELSE__
 	{
 		i = uint4(c * 255.5f); // Denormalize value
 	}
+	__ENDIF__
 	
-	if (PS_PAL_FMT == 1)
+	__IF__ (PS_PAL_FMT == 1)
 		return i & 0xFu;
-	if (PS_PAL_FMT == 2)
+	__ENDIF__
+	__IF__ (PS_PAL_FMT == 2)
 		return i >> 4;
+	__ENDIF__
 
 	return i;
 }
@@ -197,21 +210,22 @@ PS_STATIC float4x4 sample_4p(uint4 u)
 
 PS_STATIC float4 sample_color(float2 st)
 {
-	if (PS_TCOFFSETHACK != 0)
+	__IF__ (PS_TCOFFSETHACK != 0)
 		st += cb.tc_offset;
+	__ENDIF__
 
 	float4 t;
 	float4x4 c;
 	float2 dd;
 
-	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
+	__IF__ (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_REGION_RECT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
 		c[0] = sample_c(st);
 	}
-	else
+	__ELSE__
 	{
 		float4 uv;
-		if (PS_LTF != 0)
+		__IF__ (PS_LTF != 0)
 		{
 			uv = st.xyxy + cb.half_texel;
 			dd = frac(uv.xy * cb.wh.zw);
@@ -222,36 +236,42 @@ PS_STATIC float4 sample_color(float2 st)
 				dd = clamp(dd, splat2(0.0f), splat2(0.9999999f));
 			}
 		}
-		else
+		__ELSE__
 		{
 			uv = st.xyxy;
 		}
+		__ENDIF__
 
 		uv = clamp_wrap_uv(uv);
 
-		if (PS_PAL_FMT != 0)
+		__IF__ (PS_PAL_FMT != 0)
 			c = sample_4p(sample_4_index(uv));
-		else
+		__ELSE__
 			c = sample_4c(uv);
+		__ENDIF__
 	}
+	__ENDIF__
 
 	UNROLL
 	for (int i = 0; i < 4; i++)
 	{
-		if (PS_AEM_FMT == FMT_24)
+		__IF__ (PS_AEM_FMT == FMT_24)
 			c[i].a = (PS_AEM == 0 || any_nonzero(c[i].rgb)) ? cb.ta.x : 0.f;
-		else if (PS_AEM_FMT == FMT_16)
+		__ELIF__ (PS_AEM_FMT == FMT_16)
 			c[i].a = c[i].a >= 0.5 ? cb.ta.y : PS_AEM == 0 || any_nonzero(int3(c[i].rgb * 255.0f) & int(0xF8)) ? cb.ta.x : 0.f;
+		__ENDIF__
 	}
 
-	if (PS_LTF != 0)
+	__IF__ (PS_LTF != 0)
 		t = lerp(lerp(c[0], c[1], dd.x), lerp(c[2], c[3], dd.x), dd.y);
-	else
+	__ELSE__
 		t = c[0];
+	__ENDIF__
 
-	if (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION != 0)
+	__IF__ (PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_RTA_SRC_CORRECTION != 0)
 		t.a = t.a * (128.5f / 255.0f);
-		
+	__ENDIF__
+
 	// The 0.05f helps to fix the overbloom of sotc
 	// I think the issue is related to the rounding of texture coodinate. The linear (from fixed unit)
 	// interpolation could be slightly below the correct one.
@@ -267,25 +287,29 @@ PS_STATIC ushort2 clamp_wrap_uv_depth(ushort2 uv)
 	uint4 uv_msk_fix = asuint(cb.uv_min_max);
 	ushort4 mask = ushort4(uv_msk_fix << 4);
 
-	if (PS_WMS == PS_WMT)
+	__IF__ (PS_WMS == PS_WMT)
 	{
-		if (PS_WMS == 2)
+		__IF__ (PS_WMS == 2)
 			uv_out = clamp(uv, mask.xy, mask.zw);
-		else if (PS_WMS == 3)
+		__ELIF__ (PS_WMS == 3)
 			uv_out = (uv & mask.xy) | mask.zw;
+		__ENDIF__
 	}
-	else
+	__ELSE__
 	{
-		if (PS_WMS == 2)
+		__IF__ (PS_WMS == 2)
 			uv_out.x = clamp(uv.x, mask.x, mask.z);
-		else if (PS_WMS == 3)
+		__ELIF__ (PS_WMS == 3)
 			uv_out.x = (uv.x & mask.x) | mask.z;
+		__ENDIF__
 
-		if (PS_WMT == 2)
+		__IF__ (PS_WMT == 2)
 			uv_out.y = clamp(uv.y, mask.y, mask.w);
-		else if (PS_WMT == 3)
+		__ELIF__ (PS_WMT == 3)
 			uv_out.y = (uv.y & mask.y) | mask.w;
+		__ENDIF__
 	}
+	__ENDIF__
 
 	return uv_out;
 }
@@ -294,20 +318,21 @@ PS_STATIC float4 sample_depth(float2 st)
 {
 	float2 uv_f = float2(clamp_wrap_uv_depth(ushort2(st))) * splat2(cb.scale_factor.x);
 
-	if (PS_REGION_RECT != 0)
+	__IF__ (PS_REGION_RECT != 0)
 		uv_f = clamp(uv_f + cb.st_range.xy, cb.st_range.xy, cb.st_range.zw);
+	__ENDIF__
 
 	uint2 uv = uint2(uv_f);
 	float4 t = splat4(0.0f);
 
-	if (PS_TALES_OF_ABYSS_HLE != 0)
+	__IF__ (PS_TALES_OF_ABYSS_HLE != 0)
 	{
 		// Warning: UV can't be used in channel effect
 		uint depth = fetch_raw_depth();
 		// Convert msb based on the palette
 		t = sample_p((depth >> 8) & 0xFFu) * 255.f;
 	}
-	else if (PS_URBAN_CHAOS_HLE != 0)
+	__ELIF__ (PS_URBAN_CHAOS_HLE != 0)
 	{
 		// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
 		// So it will do a first channel trick to extract lsb, value is right-shifted.
@@ -327,25 +352,27 @@ PS_STATIC float4 sample_depth(float2 st)
 
 		t.g += green;
 	}
-	else if (PS_DEPTH_FMT == 1)
+	__ELIF__ (PS_DEPTH_FMT == 1)
 	{
 		t = convert_depth32_rgba8(fetch_c(uv).r);
 	}
-	else if (PS_DEPTH_FMT == 2)
+	__ELIF__ (PS_DEPTH_FMT == 2)
 	{
 		t = convert_depth16_rgba8(fetch_c(uv).r);
 	}
-	else if (PS_DEPTH_FMT == 3)
+	__ELIF__ (PS_DEPTH_FMT == 3)
 	{
 		t = fetch_c(uv) * 255.f;
 	}
+	__ENDIF__
 
-	if (PS_AEM_FMT == FMT_24)
+	__IF__ (PS_AEM_FMT == FMT_24)
 		t.a = (PS_AEM == 0 || any_nonzero(t.rgb)) ? 255.f * cb.ta.x : 0.f;
-	else if (PS_AEM_FMT == FMT_16)
+	__ELIF__ (PS_AEM_FMT == FMT_16)
 		t.a = t.a >= 128.f ? 255.f * cb.ta.y : (PS_AEM == 0 || any_nonzero(t.rgb)) ? 255.f * cb.ta.x : 0.f;
-	else if (PS_PAL_FMT != 0 && PS_TALES_OF_ABYSS_HLE == 0 && PS_URBAN_CHAOS_HLE == 0)
+	__ELIF__ (PS_PAL_FMT != 0 && PS_TALES_OF_ABYSS_HLE == 0 && PS_URBAN_CHAOS_HLE == 0)
 		t = trunc(sample_4p(uint4(t.aaaa))[0] * 255.0f + 0.05f);
-	
+	__ENDIF__
+
 	return t;
 }
