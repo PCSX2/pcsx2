@@ -14,6 +14,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <numeric>
 

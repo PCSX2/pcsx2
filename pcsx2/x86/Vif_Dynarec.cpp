@@ -6,6 +6,8 @@
 #include "common/Perf.h"
 #include "common/StringUtil.h"
 
+#include <inttypes.h>
+
 void dVifReset(int idx)
 {
 	nVif[idx].vifBlocks.reset();
