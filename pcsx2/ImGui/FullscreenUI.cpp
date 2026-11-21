@@ -351,7 +351,7 @@ bool FullscreenUI::Initialize()
 
 	LoadCustomBackground();
 
-	if (VMManager::HasValidVM())
+	if (VMManager::HasValidVM() || VMManager::GetState() == VMState::Initializing)
 	{
 		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(s_prefer_english_titles), VMManager::GetDiscCRC(),
 			VMManager::GetCurrentCRC());
