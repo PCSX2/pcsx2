@@ -15,6 +15,7 @@ namespace usb_pad
 		PARA_PARA_PARADISE,
 		DANCE_UK_XL,
 		DANCING_WITH_THE_STARS,
+		PUMP_IT_UP_EXCEED,
 	};
 
 	class RhythmDevice final : public DeviceProxy
@@ -71,14 +72,14 @@ namespace usb_pad
 
 		enum DanceMat_ControlID
 		{
-			DM_UP,
-			DM_DOWN,
-			DM_LEFT,
-			DM_RIGHT,
-			DM_CROSS,
-			DM_CIRCLE,
-			DM_TRIANGLE,
-			DM_SQUARE,
+			DM_NW,
+			DM_N,
+			DM_NE,
+			DM_W,
+			DM_E,
+			DM_SW,
+			DM_S,
+			DM_SE,
 			DM_SELECT,
 			DM_START,
 			DM_BTN_1,
@@ -244,6 +245,26 @@ namespace usb_pad
 				u8 start : 1;
 				u8 : 3;
 			} dwts;
+			// Pump It Up: Exceed
+			struct
+			{
+				u8 : 1;
+				u8 l1 : 1;
+				u8 r2 : 1;
+				u8 l2 : 1;
+				u8 r1 : 1;
+				u8 start : 1;
+				u8 : 2;
+
+				u8 back: 1;
+				u8 up : 1;
+				u8 down : 1;
+				u8 left : 1;
+				u8 right : 1;
+				u8 : 3;
+
+				u32 : 32;
+			} piue;
 		};
 		#pragma pack(pop)
 	};
@@ -624,6 +645,24 @@ namespace usb_pad
 		0x08,        // bMaxPacketSize0 8
 		0x30, 0x14,  // idVendor 0x1430
 		0x00, 0x31,  // idProduct 0x3100
+		0x00, 0x01,  // bcdDevice 1.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x00,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+
+	// Pump It Up: Exceed
+	static const u8 piue_dev_descriptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x10, 0x01,  // bcdUSB 1.10
+		0x00,        // bDeviceClass
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x2f, 0x0d,  // idVendor 0x0d2f
+		0x03, 0x00,  // idProduct 0x0003
 		0x00, 0x01,  // bcdDevice 1.00
 		0x01,        // iManufacturer (String Index)
 		0x02,        // iProduct (String Index)

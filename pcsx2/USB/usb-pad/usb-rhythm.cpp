@@ -123,6 +123,18 @@ namespace usb_pad
 			dwts.triangle = 1;
 			dwts.start = 1;
 			break;
+		case PUMP_IT_UP_EXCEED:
+			piue.up = 1;
+			piue.down = 1;
+			piue.left = 1;
+			piue.right = 1;
+			piue.l1 = 1;
+			piue.r1 = 1;
+			piue.l2 = 1;
+			piue.r2 = 1;
+			piue.back = 1;
+			piue.start = 1;
+			break;
 		}
 	}
 
@@ -244,6 +256,9 @@ namespace usb_pad
 					case DANCING_WITH_THE_STARS:
 						usb_packet_copy(p, &s->dwts, sizeof(s->dwts));
 						break;
+					case PUMP_IT_UP_EXCEED:
+						usb_packet_copy(p, &s->piue, sizeof(s->piue));
+						break;
 				}
 				break;
 			}
@@ -289,7 +304,8 @@ namespace usb_pad
 			TRANSLATE_NOOP("USB", "KeyboardMania"),
 			TRANSLATE_NOOP("USB", "Para Para Paradise"),
 			TRANSLATE_NOOP("USB", "Dance:UK XL / Party"),
-			TRANSLATE_NOOP("USB", "Dancing With the Stars")
+			TRANSLATE_NOOP("USB", "Dancing With the Stars"),
+			TRANSLATE_NOOP("USB", "Pump It Up: Exceed"),
 		};
 		return subtypes;
 	}
@@ -330,6 +346,12 @@ namespace usb_pad
 			case DANCE_UK_XL:
 			case DANCING_WITH_THE_STARS:
 				if (usb_desc_parse_dev(dwts_dev_descriptor, sizeof(dwts_dev_descriptor), s->desc, s->desc_dev) < 0)
+					goto fail;
+				if (usb_desc_parse_config(kbm_config_descriptor, sizeof(kbm_config_descriptor), s->desc_dev) < 0)
+					goto fail;
+				break;
+			case PUMP_IT_UP_EXCEED:
+				if (usb_desc_parse_dev(piue_dev_descriptor, sizeof(piue_dev_descriptor), s->desc, s->desc_dev) < 0)
 					goto fail;
 				if (usb_desc_parse_config(kbm_config_descriptor, sizeof(kbm_config_descriptor), s->desc_dev) < 0)
 					goto fail;
@@ -432,14 +454,14 @@ namespace usb_pad
 			case DANCE_UK_XL:
 			{
 				static constexpr const InputBindingInfo bindings[] = {
-					{"Up", TRANSLATE_NOOP("USB", "Up"), nullptr, InputBindingInfo::Type::Button, DM_UP, GenericInputBinding::DPadUp},
-					{"Down", TRANSLATE_NOOP("USB", "Down"), nullptr, InputBindingInfo::Type::Button, DM_DOWN, GenericInputBinding::DPadDown},
-					{"Left", TRANSLATE_NOOP("USB", "Left"), nullptr, InputBindingInfo::Type::Button, DM_LEFT, GenericInputBinding::DPadLeft},
-					{"Right", TRANSLATE_NOOP("USB", "Right"), nullptr, InputBindingInfo::Type::Button, DM_RIGHT, GenericInputBinding::DPadRight},
-					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, DM_CROSS, GenericInputBinding::Cross},
-					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, DM_CIRCLE, GenericInputBinding::Circle},
-					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, DM_TRIANGLE, GenericInputBinding::Triangle},
-					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, DM_SQUARE, GenericInputBinding::Square},
+					{"Up", TRANSLATE_NOOP("USB", "Up"), nullptr, InputBindingInfo::Type::Button, DM_N, GenericInputBinding::DPadUp},
+					{"Down", TRANSLATE_NOOP("USB", "Down"), nullptr, InputBindingInfo::Type::Button, DM_S, GenericInputBinding::DPadDown},
+					{"Left", TRANSLATE_NOOP("USB", "Left"), nullptr, InputBindingInfo::Type::Button, DM_W, GenericInputBinding::DPadLeft},
+					{"Right", TRANSLATE_NOOP("USB", "Right"), nullptr, InputBindingInfo::Type::Button, DM_E, GenericInputBinding::DPadRight},
+					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, DM_NW, GenericInputBinding::Cross},
+					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, DM_NE, GenericInputBinding::Circle},
+					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, DM_SW, GenericInputBinding::Triangle},
+					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, DM_SE, GenericInputBinding::Square},
 					{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, DM_SELECT, GenericInputBinding::Select},
 					{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, DM_START, GenericInputBinding::Start},
 					{"1", TRANSLATE_NOOP("USB", "1"), nullptr, InputBindingInfo::Type::Button, DM_BTN_1, GenericInputBinding::Unknown},
@@ -457,15 +479,32 @@ namespace usb_pad
 			case DANCING_WITH_THE_STARS:
 			{
 				static constexpr const InputBindingInfo bindings[] = {
-					{"Up", TRANSLATE_NOOP("USB", "Up"), nullptr, InputBindingInfo::Type::Button, DM_UP, GenericInputBinding::DPadUp},
-					{"Down", TRANSLATE_NOOP("USB", "Down"), nullptr, InputBindingInfo::Type::Button, DM_DOWN, GenericInputBinding::DPadDown},
-					{"Left", TRANSLATE_NOOP("USB", "Left"), nullptr, InputBindingInfo::Type::Button, DM_LEFT, GenericInputBinding::DPadLeft},
-					{"Right", TRANSLATE_NOOP("USB", "Right"), nullptr, InputBindingInfo::Type::Button, DM_RIGHT, GenericInputBinding::DPadRight},
-					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, DM_CROSS, GenericInputBinding::Cross},
-					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, DM_CIRCLE, GenericInputBinding::Circle},
-					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, DM_TRIANGLE, GenericInputBinding::Triangle},
-					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, DM_SQUARE, GenericInputBinding::Square},
+					{"Up", TRANSLATE_NOOP("USB", "Up"), nullptr, InputBindingInfo::Type::Button, DM_N, GenericInputBinding::DPadUp},
+					{"Down", TRANSLATE_NOOP("USB", "Down"), nullptr, InputBindingInfo::Type::Button, DM_S, GenericInputBinding::DPadDown},
+					{"Left", TRANSLATE_NOOP("USB", "Left"), nullptr, InputBindingInfo::Type::Button, DM_W, GenericInputBinding::DPadLeft},
+					{"Right", TRANSLATE_NOOP("USB", "Right"), nullptr, InputBindingInfo::Type::Button, DM_E, GenericInputBinding::DPadRight},
+					{"Cross", TRANSLATE_NOOP("USB", "Cross"), nullptr, InputBindingInfo::Type::Button, DM_NW, GenericInputBinding::Cross},
+					{"Circle", TRANSLATE_NOOP("USB", "Circle"), nullptr, InputBindingInfo::Type::Button, DM_NE, GenericInputBinding::Circle},
+					{"Triangle", TRANSLATE_NOOP("USB", "Triangle"), nullptr, InputBindingInfo::Type::Button, DM_SW, GenericInputBinding::Triangle},
+					{"Square", TRANSLATE_NOOP("USB", "Square"), nullptr, InputBindingInfo::Type::Button, DM_SE, GenericInputBinding::Square},
 					{"Select", TRANSLATE_NOOP("USB", "Select"), nullptr, InputBindingInfo::Type::Button, DM_SELECT, GenericInputBinding::Select},
+					{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, DM_START, GenericInputBinding::Start},
+				};
+				return bindings;
+			}
+
+			case PUMP_IT_UP_EXCEED:
+			{
+				static constexpr const InputBindingInfo bindings[] = {
+					{"Up", TRANSLATE_NOOP("USB", "Up"), nullptr, InputBindingInfo::Type::Button, DM_N, GenericInputBinding::DPadUp},
+					{"Down", TRANSLATE_NOOP("USB", "Down"), nullptr, InputBindingInfo::Type::Button, DM_S, GenericInputBinding::DPadDown},
+					{"Left", TRANSLATE_NOOP("USB", "Left"), nullptr, InputBindingInfo::Type::Button, DM_W, GenericInputBinding::DPadLeft},
+					{"Right", TRANSLATE_NOOP("USB", "Right"), nullptr, InputBindingInfo::Type::Button, DM_E, GenericInputBinding::DPadRight},
+					{"L1", TRANSLATE_NOOP("USB", "L1"), nullptr, InputBindingInfo::Type::Button, DM_NW, GenericInputBinding::Cross},
+					{"R1", TRANSLATE_NOOP("USB", "R1"), nullptr, InputBindingInfo::Type::Button, DM_NE, GenericInputBinding::Circle},
+					{"L2", TRANSLATE_NOOP("USB", "L2"), nullptr, InputBindingInfo::Type::Button, DM_SW, GenericInputBinding::Triangle},
+					{"R2", TRANSLATE_NOOP("USB", "R2"), nullptr, InputBindingInfo::Type::Button, DM_SE, GenericInputBinding::Square},
+					{"Back", TRANSLATE_NOOP("USB", "Back"), nullptr, InputBindingInfo::Type::Button, DM_SELECT, GenericInputBinding::Select},
 					{"Start", TRANSLATE_NOOP("USB", "Start"), nullptr, InputBindingInfo::Type::Button, DM_START, GenericInputBinding::Start},
 				};
 				return bindings;
@@ -560,24 +599,24 @@ namespace usb_pad
 		case DANCE_UK_XL:
 			switch (bind_index)
 			{
-				case DM_UP: return s->duk.up;
-				case DM_DOWN: return s->duk.down;
-				case DM_LEFT: return s->duk.left;
-				case DM_RIGHT: return s->duk.right;
-				case DM_CROSS: return s->duk.cross;
-				case DM_CIRCLE: return s->duk.circle;
-				case DM_TRIANGLE: return s->duk.triangle;
-				case DM_SQUARE: return s->duk.square;
+				case DM_N:      return s->duk.up;
+				case DM_S:      return s->duk.down;
+				case DM_W:      return s->duk.left;
+				case DM_E:      return s->duk.right;
+				case DM_NW:     return s->duk.cross;
+				case DM_NE:     return s->duk.circle;
+				case DM_SW:     return s->duk.triangle;
+				case DM_SE:     return s->duk.square;
 				case DM_SELECT: return s->duk.select;
-				case DM_START: return s->duk.start;
-				case DM_BTN_1: return s->btn1;
-				case DM_BTN_2: return s->btn2;
-				case DM_BTN_3: return s->btn3;
-				case DM_BTN_4: return s->btn4;
-				case DM_BTN_5: return s->duk.btn_5;
-				case DM_BTN_6: return s->duk.btn_6;
-				case DM_BTN_7: return s->duk.btn_7;
-				case DM_BTN_8: return s->duk.btn_8;
+				case DM_START:  return s->duk.start;
+				case DM_BTN_1:  return s->btn1;
+				case DM_BTN_2:  return s->btn2;
+				case DM_BTN_3:  return s->btn3;
+				case DM_BTN_4:  return s->btn4;
+				case DM_BTN_5:  return s->duk.btn_5;
+				case DM_BTN_6:  return s->duk.btn_6;
+				case DM_BTN_7:  return s->duk.btn_7;
+				case DM_BTN_8:  return s->duk.btn_8;
 				default:
 					return 0.0f;
 			}
@@ -585,16 +624,33 @@ namespace usb_pad
 		case DANCING_WITH_THE_STARS:
 			switch (bind_index)
 			{
-				case DM_UP: return !s->dwts.up;
-				case DM_DOWN: return !s->dwts.down;
-				case DM_LEFT: return !s->dwts.left;
-				case DM_RIGHT: return !s->dwts.right;
-				case DM_CROSS: return !s->dwts.cross;
-				//case DM_CIRCLE: return !s->dwts.circle;
-				case DM_TRIANGLE: return !s->dwts.triangle;
-				//case DM_SQUARE: return !s->dwts.square;
+				case DM_N:  return !s->dwts.up;
+				case DM_S:  return !s->dwts.down;
+				case DM_W:  return !s->dwts.left;
+				case DM_E:  return !s->dwts.right;
+				case DM_NW: return !s->dwts.cross;
+				//case DM_NE: return !s->dwts.circle;
+				case DM_SW: return !s->dwts.triangle;
+				//case DM_SE: return !s->dwts.square;
 				//case DM_SELECT: return !s->dwts.select;
 				case DM_START: return !s->dwts.start;
+				default:
+					return 0.0f;
+			}
+			break;
+		case PUMP_IT_UP_EXCEED:
+			switch (bind_index)
+			{
+				case DM_N:      return !s->piue.up;
+				case DM_S:      return !s->piue.down;
+				case DM_W:      return !s->piue.left;
+				case DM_E:      return !s->piue.right;
+				case DM_NW:     return !s->piue.l1;
+				case DM_NE:     return !s->piue.r1;
+				case DM_SW:     return !s->piue.l2;
+				case DM_SE:     return !s->piue.r2;
+				case DM_SELECT: return !s->piue.back;
+				case DM_START:  return !s->piue.start;
 				default:
 					return 0.0f;
 			}
@@ -673,39 +729,54 @@ namespace usb_pad
 		case DANCE_UK_XL:
 			switch (bind_index)
 			{
-				case DM_UP:       s->duk.up       = (value >= 0.5f); break;
-				case DM_DOWN:     s->duk.down     = (value >= 0.5f); break;
-				case DM_LEFT:     s->duk.left     = (value >= 0.5f); break;
-				case DM_RIGHT:    s->duk.right    = (value >= 0.5f); break;
-				case DM_CROSS:    s->duk.cross    = (value >= 0.5f); break;
-				case DM_CIRCLE:   s->duk.circle   = (value >= 0.5f); break;
-				case DM_TRIANGLE: s->duk.triangle = (value >= 0.5f); break;
-				case DM_SQUARE:   s->duk.square   = (value >= 0.5f); break;
-				case DM_SELECT:   s->duk.select   = (value >= 0.5f); break;
-				case DM_START:    s->duk.start    = (value >= 0.5f); break;
-				case DM_BTN_1:    s->btn1         = (value >= 0.5f); break;
-				case DM_BTN_2:    s->btn2         = (value >= 0.5f); break;
-				case DM_BTN_3:    s->btn3         = (value >= 0.5f); break;
-				case DM_BTN_4:    s->btn4         = (value >= 0.5f); break;
-				case DM_BTN_5:    s->duk.btn_5    = (value >= 0.5f); break;
-				case DM_BTN_6:    s->duk.btn_6    = (value >= 0.5f); break;
-				case DM_BTN_7:    s->duk.btn_7    = (value >= 0.5f); break;
-				case DM_BTN_8:    s->duk.btn_8    = (value >= 0.5f); break;
+				case DM_N:  s->duk.up       = (value >= 0.5f); break;
+				case DM_S:  s->duk.down     = (value >= 0.5f); break;
+				case DM_W:  s->duk.left     = (value >= 0.5f); break;
+				case DM_E:  s->duk.right    = (value >= 0.5f); break;
+				case DM_NW: s->duk.cross    = (value >= 0.5f); break;
+				case DM_NE: s->duk.circle   = (value >= 0.5f); break;
+				case DM_SW: s->duk.triangle = (value >= 0.5f); break;
+				case DM_SE: s->duk.square   = (value >= 0.5f); break;
+				case DM_SELECT: s->duk.select = (value >= 0.5f); break;
+				case DM_START: s->duk.start = (value >= 0.5f); break;
+				case DM_BTN_1: s->btn1      = (value >= 0.5f); break;
+				case DM_BTN_2: s->btn2      = (value >= 0.5f); break;
+				case DM_BTN_3: s->btn3      = (value >= 0.5f); break;
+				case DM_BTN_4: s->btn4      = (value >= 0.5f); break;
+				case DM_BTN_5: s->duk.btn_5 = (value >= 0.5f); break;
+				case DM_BTN_6: s->duk.btn_6 = (value >= 0.5f); break;
+				case DM_BTN_7: s->duk.btn_7 = (value >= 0.5f); break;
+				case DM_BTN_8: s->duk.btn_8 = (value >= 0.5f); break;
 			}
 			break;
 		case DANCING_WITH_THE_STARS:
 			switch (bind_index)
 			{
-				case DM_UP:       s->dwts.up       = !(value >= 0.5f); break;
-				case DM_DOWN:     s->dwts.down     = !(value >= 0.5f); break;
-				case DM_LEFT:     s->dwts.left     = !(value >= 0.5f); break;
-				case DM_RIGHT:    s->dwts.right    = !(value >= 0.5f); break;
-				case DM_CROSS:    s->dwts.cross    = !(value >= 0.5f); break;
-				//case DM_CIRCLE: s->dwts.circle   = !(value >= 0.5f); break;
-				case DM_TRIANGLE: s->dwts.triangle = !(value >= 0.5f); break;
-				//case DM_SQUARE: s->dwts.square   = !(value >= 0.5f); break;
+				case DM_N:  s->dwts.up       = !(value >= 0.5f); break;
+				case DM_S:  s->dwts.down     = !(value >= 0.5f); break;
+				case DM_W:  s->dwts.left     = !(value >= 0.5f); break;
+				case DM_E:  s->dwts.right    = !(value >= 0.5f); break;
+				case DM_NW: s->dwts.cross    = !(value >= 0.5f); break;
+				//case DM_NE: s->dwts.circle   = !(value >= 0.5f); break;
+				case DM_SW: s->dwts.triangle = !(value >= 0.5f); break;
+				//case DM_SE: s->dwts.square   = !(value >= 0.5f); break;
 				//case DM_SELECT: s->dwts.select   = !(value >= 0.5f); break;
-				case DM_START:    s->dwts.start    = !(value >= 0.5f); break;
+				case DM_START: s->dwts.start = !(value >= 0.5f); break;
+			}
+			break;
+		case PUMP_IT_UP_EXCEED:
+			switch (bind_index)
+			{
+				case DM_N:      s->piue.up    = !(value >= 0.5f); break;
+				case DM_S:      s->piue.down  = !(value >= 0.5f); break;
+				case DM_W:      s->piue.left  = !(value >= 0.5f); break;
+				case DM_E:      s->piue.right = !(value >= 0.5f); break;
+				case DM_NW:     s->piue.l1    = !(value >= 0.5f); break;
+				case DM_NE:     s->piue.r1    = !(value >= 0.5f); break;
+				case DM_SW:     s->piue.l2    = !(value >= 0.5f); break;
+				case DM_SE:     s->piue.r2    = !(value >= 0.5f); break;
+				case DM_SELECT: s->piue.back  = !(value >= 0.5f); break;
+				case DM_START:  s->piue.start = !(value >= 0.5f); break;
 			}
 			break;
 		}
