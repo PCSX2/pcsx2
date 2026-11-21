@@ -83,6 +83,34 @@ void* HostSys::CreateSharedMemory(const char* name, size_t size)
 	return reinterpret_cast<void*>(static_cast<intptr_t>(fd));
 }
 
+void* HostSys::CreateMappingFromFile(FILE* file)
+{
+	return reinterpret_cast<void*>(static_cast<intptr_t>(fileno(file)));
+}
+
+void* HostSys::MapMapping(void* handle, size_t size, const PageProtectionMode& mode)
+{
+	void* ptr = mmap(nullptr, size, LinuxProt(mode), MAP_SHARED, static_cast<int>(reinterpret_cast<intptr_t>(handle)), 0);
+	return (ptr == MAP_FAILED) ? nullptr : ptr;
+}
+
+void HostSys::UnmapMapping(void* baseaddr, size_t size)
+{
+	if (munmap(baseaddr, size) != 0)
+		pxFailRel("Failed to unmap shared memory");
+}
+
+void HostSys::DestroyMapping(void* handle)
+{
+	// The handle mmap requires is the same as the file descriptor.
+	return;
+}
+
+void HostSys::FlushMapping(void* handle, [[maybe_unused]] void* baseAddr, size_t size)
+{
+	msync(handle, size, MS_SYNC);
+}
+
 void HostSys::DestroySharedMemory(void* ptr)
 {
 	close(static_cast<int>(reinterpret_cast<intptr_t>(ptr)));
