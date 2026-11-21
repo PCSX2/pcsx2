@@ -194,7 +194,7 @@
       <item row="3" column="1">
        <widget class="QCheckBox" name="enableSDLMFIDriver">
         <property name="text">
-         <string>Enable MFI Driver</string>
+         <string>Enable MFi Driver</string>
         </property>
        </widget>
       </item>
