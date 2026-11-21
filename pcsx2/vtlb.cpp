@@ -79,6 +79,11 @@ static constexpr size_t FASTMEM_AREA_SIZE = 0x100000000ULL;
 static constexpr u32 FASTMEM_PAGE_COUNT = FASTMEM_AREA_SIZE / VTLB_PAGE_SIZE;
 static constexpr u32 NO_FASTMEM_MAPPING = 0xFFFFFFFFu;
 
+static constexpr u32 ERROR_QUEUED_TLB_MISS = 1u << 0;
+static constexpr u32 ERROR_QUEUED_BUS_ERROR = 1u << 1;
+
+static u32 s_queued_errors = 0;
+
 static std::unique_ptr<SharedMemoryMappingArea> s_fastmem_area;
 static std::vector<u32> s_fastmem_virtual_mapping; // maps vaddr -> mainmem offset
 static std::unordered_multimap<u32, u32> s_fastmem_physical_mapping; // maps mainmem offset -> vaddr
@@ -109,6 +114,11 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 	{
 		value = phys.raw() - vaddr;
 	}
+}
+
+void vtlb_ResetQueuedErrors()
+{
+	s_queued_errors = 0;
 }
 
 __inline int CheckCache(u32 addr)
@@ -538,7 +548,11 @@ static __ri void vtlb_Miss(u32 addr, u32 mode)
 	if (EmuConfig.Cpu.Recompiler.PauseOnTLBMiss)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
-		Host::ReportErrorAsync("R5900 Exception", message);
+		if ((s_queued_errors & ERROR_QUEUED_TLB_MISS) == 0)
+		{
+			s_queued_errors |= ERROR_QUEUED_TLB_MISS;
+			Host::ReportErrorAsync("R5900 Exception", message);
+		}
 		VMManager::SetPaused(true);
 		Cpu->ExitExecution();
 		return;
@@ -558,7 +572,11 @@ static __ri void vtlb_BusError(u32 addr, u32 mode)
 	if (EmuConfig.Cpu.Recompiler.PauseOnTLBMiss)
 	{
 		// Pause, let the user try to figure out what went wrong in the debugger.
-		Host::ReportErrorAsync("R5900 Exception", message);
+		if ((s_queued_errors & ERROR_QUEUED_BUS_ERROR) == 0)
+		{
+			s_queued_errors |= ERROR_QUEUED_BUS_ERROR;
+			Host::ReportErrorAsync("R5900 Exception", message);
+		}
 		VMManager::SetPaused(true);
 		Cpu->ExitExecution();
 		return;
