@@ -111,6 +111,18 @@ namespace Achievements
 	/// Forces hardcore mode off until next reset.
 	void DisableHardcoreMode();
 
+	/// Returns true if hardcore mode is on because we don't know whether the game has achievements yet.
+	bool IsHardcoreModePending();
+
+	/// Returns true while the game is being loaded from the server.
+	bool IsLoadingGame();
+
+	/// Returns true if loading the game from the server failed.
+	bool HasLoadGameFailed();
+
+	/// Tries loading the game from the server again.
+	void RetryLoadGame();
+
 	/// Returns the translated title to display for the message box asking the
 	// user to disable hardcore mode.
 	const char* GetHardcoreModeDisableTitle();

@@ -852,9 +852,8 @@ void FullscreenUI::DoVMInitialize(const VMBootParameters& boot_params, bool swit
 								switch_to_landing_on_failure]() {
 			const auto callback = [restart_callback = std::move(restart_callback),
 									  switch_to_landing_on_failure](bool confirmed) {
-				if (confirmed)
-					Host::RunOnCPUThread(restart_callback);
-				else if (switch_to_landing_on_failure)
+				Host::RunOnCPUThread([restart_callback, confirmed]() { restart_callback(confirmed); });
+				if (!confirmed && switch_to_landing_on_failure)
 					SwitchToLanding();
 			};
 

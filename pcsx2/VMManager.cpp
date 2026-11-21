@@ -20,6 +20,8 @@
 #include "Host.h"
 #include "INISettingsInterface.h"
 #include "ImGui/FullscreenUI.h"
+#include "ImGui/ImGuiFullscreen.h"
+#include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiOverlays.h"
 #include "Input/InputManager.h"
 #include "IopBios.h"
@@ -82,6 +84,16 @@
 
 namespace VMManager
 {
+	struct PendingBoot
+	{
+		u32 id;
+		std::string state_to_load;
+		VMBootHardcoreDisableCallback hardcore_disable_callback;
+		VMBootDoneCallback done_callback;
+		bool load_failed = false;
+		bool prompting = false;
+	};
+
 	static void SetDefaultLoggingSettings(SettingsInterface& si);
 	static void UpdateLoggingSettings(SettingsInterface& si);
 
@@ -114,6 +126,11 @@ namespace VMManager
 	static bool HasBootedELF();
 	static bool HasValidOrInitializingVM();
 	static void PrecacheCDVDFile();
+	static VMBootResult FinishBoot(const std::string& state_to_load, Error* error);
+	static void UpdatePendingBoot();
+	static void FinishPendingBoot();
+	static void ShowPendingBootDialog();
+	static void ClosePendingBootDialog();
 
 	static std::string GetCurrentSaveStateFileName(s32 slot, bool backup = false);
 	static bool DoLoadState(const char* filename, Error* error = nullptr);
@@ -186,6 +203,11 @@ static u32 s_frame_advance_count = 0;
 static bool s_fast_boot_requested = false;
 static bool s_gs_open_on_initialize = false;
 static bool s_thread_affinities_set = false;
+
+static bool s_hardcore_settings_enforced = false;
+
+static std::optional<VMManager::PendingBoot> s_pending_boot;
+static u32 s_last_pending_boot_id = 0;
 
 static LimiterModeType s_limiter_mode = LimiterModeType::Nominal;
 static s64 s_limiter_ticks_per_frame = 0;
@@ -1346,7 +1368,10 @@ void VMManager::InitializeAsync(
 			reason = TRANSLATE_STR("VMManager", "Resuming state");
 
 		hardcore_disable_callback(reason,
-			[boot_params, done_callback = std::move(done_callback)]() {
+			[boot_params, done_callback = std::move(done_callback)](bool confirmed) {
+				if (!confirmed)
+					return;
+
 				VMBootParameters new_boot_params = std::move(boot_params);
 				new_boot_params.disable_achievements_hardcore_mode = true;
 
@@ -1358,7 +1383,141 @@ void VMManager::InitializeAsync(
 		return;
 	}
 
+	if (result == VMBootResult::StartupPending)
+	{
+		s_pending_boot->hardcore_disable_callback = std::move(hardcore_disable_callback);
+		s_pending_boot->done_callback = std::move(done_callback);
+
+		// Start polling so we get the server's response.
+		Host::OnVMPaused();
+		ShowPendingBootDialog();
+		return;
+	}
+
 	done_callback(result, error);
+}
+
+void VMManager::UpdatePendingBoot()
+{
+	if (!s_pending_boot.has_value() || s_pending_boot->prompting)
+		return;
+
+	if (!Achievements::IsHardcoreModePending() &&
+		(s_pending_boot->state_to_load.empty() || !Achievements::IsLoadingGame()))
+	{
+		FinishPendingBoot();
+		return;
+	}
+
+	const bool load_failed = Achievements::HasLoadGameFailed();
+	if (s_pending_boot->load_failed != load_failed)
+	{
+		s_pending_boot->load_failed = load_failed;
+		ShowPendingBootDialog();
+	}
+}
+
+void VMManager::FinishPendingBoot()
+{
+	// Shutdown might have been requested, and queued events can still run before it happens.
+	if (GetState() != VMState::Paused)
+		return;
+
+	// Runs after any dialog we've already queued, so it can't show up once the boot has finished.
+	ClosePendingBootDialog();
+
+	Internal::UpdateHardcoreModeSettings();
+
+	if (Achievements::IsHardcoreModeActive() &&
+		(!s_pending_boot->state_to_load.empty() || DebugInterface::getPauseOnEntry()))
+	{
+		std::string reason;
+		if (DebugInterface::getPauseOnEntry())
+			reason = TRANSLATE_STR("VMManager", "Boot and Debug");
+		else
+			reason = TRANSLATE_STR("VMManager", "Resuming state");
+
+		s_pending_boot->prompting = true;
+		s_pending_boot->hardcore_disable_callback(reason, [id = s_pending_boot->id](bool confirmed) {
+			if (!s_pending_boot.has_value() || s_pending_boot->id != id || GetState() != VMState::Paused)
+				return;
+
+			if (!confirmed)
+			{
+				Host::RequestVMShutdown(false, false, false);
+				return;
+			}
+
+			Achievements::DisableHardcoreMode();
+			FinishPendingBoot();
+		});
+		return;
+	}
+
+	PendingBoot boot = std::move(s_pending_boot.value());
+	s_pending_boot.reset();
+
+	Error error;
+	const VMBootResult result = FinishBoot(boot.state_to_load, &error);
+	boot.done_callback(result, error);
+}
+
+void VMManager::ShowPendingBootDialog()
+{
+	// Loading a state needs the game's achievements, so it can only start early if loading them failed.
+	const bool can_start = s_pending_boot->state_to_load.empty() || s_pending_boot->load_failed;
+
+	MTGS::RunOnGSThread([id = s_pending_boot->id, load_failed = s_pending_boot->load_failed, can_start]() {
+		if (!ImGuiManager::InitializeFullscreenUI())
+			return;
+
+		const auto callback = [id](s32 button) {
+			Host::RunOnCPUThread([id, button]() {
+				if (!s_pending_boot.has_value() || s_pending_boot->id != id || s_pending_boot->prompting)
+					return;
+
+				if (button == 0) // Retry
+				{
+					Achievements::RetryLoadGame();
+					s_pending_boot->load_failed = Achievements::HasLoadGameFailed();
+					ShowPendingBootDialog();
+				}
+				else if (button == 1) // Start Anyway
+				{
+					FinishPendingBoot();
+				}
+				else // Cancel, or the dialog was closed
+				{
+					Host::RequestVMShutdown(false, false, false);
+				}
+			});
+		};
+
+		std::string message;
+		if (load_failed)
+			message = TRANSLATE_STR("VMManager", "Failed to load achievements for this game.");
+		else
+			message = TRANSLATE_STR("VMManager", "Loading achievements for this game...");
+		message += "\n\n";
+		if (can_start)
+			message += TRANSLATE_SV("VMManager", "Hardcore mode will stay enabled if you start the game now.");
+		else
+			message += TRANSLATE_SV("VMManager", "Your save state will be loaded once this has finished.");
+
+		ImGuiFullscreen::OpenMessageDialog(fmt::format(ICON_FA_TROPHY " {}", TRANSLATE_SV("VMManager", "Achievements")),
+			std::move(message), callback, load_failed ? 0 : (can_start ? 1 : 2),
+			load_failed ? fmt::format(ICON_FA_ARROW_ROTATE_RIGHT " {}", TRANSLATE_SV("VMManager", "Retry")) : std::string(),
+			can_start ? fmt::format(ICON_FA_PLAY " {}", TRANSLATE_SV("VMManager", "Start Anyway")) : std::string(),
+			fmt::format(ICON_FA_XMARK " {}", TRANSLATE_SV("VMManager", "Cancel")));
+	});
+}
+
+void VMManager::ClosePendingBootDialog()
+{
+	MTGS::RunOnGSThread([]() {
+		if (ImGuiFullscreen::IsMessageBoxDialogOpen(fmt::format(ICON_FA_TROPHY " {}", TRANSLATE_SV("VMManager", "Achievements"))))
+			ImGuiFullscreen::CloseMessageDialog();
+	});
 }
 
 VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* error)
@@ -1544,8 +1703,17 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 	else
 		Achievements::ResetHardcoreMode(true);
 
-	if (Achievements::IsHardcoreModeActive() && (!state_to_load.empty() || DebugInterface::getPauseOnEntry()))
+	// If we don't know whether the game has achievements yet, InitializeAsync() waits for the server
+	// before loading a state or starting.
+	const bool hardcore_mode_pending = Achievements::IsHardcoreModePending();
+	if (!hardcore_mode_pending && Achievements::IsHardcoreModeActive() &&
+		(!state_to_load.empty() || DebugInterface::getPauseOnEntry()))
+	{
 		return VMBootResult::PromptDisableHardcoreMode;
+	}
+
+	// Settings and patches were loaded in UpdateDiscDetails() before hardcore mode was decided.
+	Internal::UpdateHardcoreModeSettings();
 
 	if (boot_params.start_unlimited.value_or(false))
 		s_limiter_mode = LimiterModeType::Unlimited;
@@ -1674,6 +1842,19 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 
 	SetEmuThreadAffinities();
 
+	// Don't start until we know if hardcore mode is needed, or until achievements are loaded if there's
+	// a state to load. LoadState() would block otherwise.
+	if (hardcore_mode_pending || (!state_to_load.empty() && Achievements::IsLoadingGame()))
+	{
+		s_pending_boot = PendingBoot{.id = ++s_last_pending_boot_id, .state_to_load = std::move(state_to_load)};
+		return VMBootResult::StartupPending;
+	}
+
+	return FinishBoot(state_to_load, error);
+}
+
+VMBootResult VMManager::FinishBoot(const std::string& state_to_load, Error* error)
+{
 	// do we want to load state?
 	if (!GSDumpReplayer::IsReplayingDump() && !state_to_load.empty())
 	{
@@ -1694,6 +1875,14 @@ void VMManager::Shutdown(bool save_resume_state)
 	// we'll probably already be stopping (this is how Qt calls shutdown),
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);
+
+	// The game never started, so don't replace the resume state.
+	if (s_pending_boot.has_value())
+	{
+		s_pending_boot.reset();
+		save_resume_state = false;
+		ClosePendingBootDialog();
+	}
 
 	SetTimerResolutionIncreased(false);
 
@@ -1807,6 +1996,13 @@ void VMManager::Reset()
 {
 	pxAssert(HasValidVM());
 
+	if (s_pending_boot.has_value())
+	{
+		Host::AddIconOSDMessage("Reset", ICON_FA_TRIANGLE_EXCLAMATION,
+			TRANSLATE_SV("VMManager", "Cannot reset while waiting for RetroAchievements."), Host::OSD_WARNING_DURATION);
+		return;
+	}
+
 	// If we're running, we're probably going to be executing this at event test time,
 	// at vsync, which happens in the middle of event handling. Resetting everything
 	// immediately here is a bad idea (tm), in fact, it breaks some games (e.g. TC:NYC).
@@ -1821,10 +2017,6 @@ void VMManager::Reset()
 	if (!Achievements::ConfirmSystemReset())
 		return;
 
-	// Re-enforce hardcode mode constraints if we're now enabling it.
-	if (!GSDumpReplayer::IsReplayingDump() && Achievements::ResetHardcoreMode(false))
-		ApplySettings();
-
 	vu1Thread.WaitVU();
 	vu1Thread.Reset();
 	MTGS::WaitGS();
@@ -1833,6 +2025,11 @@ void VMManager::Reset()
 	ClearELFInfo();
 	if (elf_was_changed)
 		HandleELFChange(false);
+
+	// Has to be after HandleELFChange(), otherwise we'd be checking the game that was running before the reset.
+	if (!GSDumpReplayer::IsReplayingDump())
+		Achievements::ResetHardcoreMode(false);
+	Internal::UpdateHardcoreModeSettings();
 
 	Achievements::ResetClient();
 
@@ -1967,6 +2164,12 @@ void VMManager::DoSaveState(const char* filename, s32 slot_for_message, bool zip
 		return;
 	}
 
+	if (s_pending_boot.has_value())
+	{
+		error_callback(TRANSLATE_STR("VMManager", "Cannot save state while waiting for RetroAchievements."));
+		return;
+	}
+
 	Error error;
 	std::unique_ptr<ArchiveEntryList> elist = SaveState_DownloadState(&error);
 	if (!elist)
@@ -2091,6 +2294,12 @@ u32 VMManager::DeleteSaveStates(const char* game_serial, u32 game_crc, bool also
 
 bool VMManager::LoadState(const char* filename, Error* error)
 {
+	if (s_pending_boot.has_value())
+	{
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while waiting for RetroAchievements."));
+		return false;
+	}
+
 	if (Achievements::IsHardcoreModeActive())
 	{
 		Error::SetString(error,
@@ -2121,6 +2330,12 @@ bool VMManager::LoadStateFromSlot(s32 slot, bool backup, Error* error)
 	if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
 	{
 		Error::SetString(error, TRANSLATE_STR("VMManager", "The save slot is empty."));
+		return false;
+	}
+
+	if (s_pending_boot.has_value())
+	{
+		Error::SetString(error, TRANSLATE_STR("VMManager", "Cannot load state while waiting for RetroAchievements."));
 		return false;
 	}
 
@@ -2360,7 +2575,7 @@ void VMManager::Internal::FrameRateChanged()
 
 void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 {
-	if (!HasValidVM())
+	if (!HasValidVM() || s_pending_boot.has_value())
 		return;
 
 	if (Achievements::IsHardcoreModeActive())
@@ -2377,6 +2592,13 @@ void VMManager::FrameAdvance(u32 num_frames /*= 1*/)
 
 bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 {
+	if (s_pending_boot.has_value())
+	{
+		Host::AddIconOSDMessage("ChangeDisc", ICON_FA_COMPACT_DISC,
+			TRANSLATE_SV("VMManager", "Cannot change disc while waiting for RetroAchievements."), Host::OSD_WARNING_DURATION);
+		return false;
+	}
+
 	const CDVD_SourceType old_type = CDVDsys_GetSourceType();
 	const std::string old_path(CDVDsys_GetFile(old_type));
 
@@ -2436,7 +2658,7 @@ bool VMManager::ChangeDisc(CDVD_SourceType source, std::string path)
 
 bool VMManager::SetELFOverride(std::string path)
 {
-	if (!HasValidVM() || (!path.empty() && !FileSystem::FileExists(path.c_str())))
+	if (!HasValidVM() || s_pending_boot.has_value() || (!path.empty() && !FileSystem::FileExists(path.c_str())))
 		return false;
 
 	s_elf_override = std::move(path);
@@ -2809,6 +3031,7 @@ void VMManager::Execute()
 void VMManager::IdlePollUpdate()
 {
 	Achievements::IdleUpdate();
+	UpdatePendingBoot();
 
 	PollDiscordPresence();
 
@@ -2819,6 +3042,13 @@ void VMManager::SetPaused(bool paused)
 {
 	if (!HasValidVM())
 		return;
+
+	// Don't start until we know whether the game needs hardcore mode. Tell the UI we're still paused.
+	if (!paused && s_pending_boot.has_value())
+	{
+		Host::OnVMPaused();
+		return;
+	}
 
 	Console.WriteLn(paused ? "(VMManager) Pausing..." : "(VMManager) Resuming...");
 	SetState(paused ? VMState::Paused : VMState::Running);
@@ -2883,6 +3113,16 @@ void VMManager::Internal::DisableFastBoot()
 bool VMManager::Internal::HasBootedELF()
 {
 	return VMManager::HasBootedELF();
+}
+
+void VMManager::Internal::UpdateHardcoreModeSettings()
+{
+	if (Achievements::IsHardcoreModeActive() == s_hardcore_settings_enforced)
+		return;
+
+	// Patch files have to be loaded before ApplySettings() turns cheats back on.
+	Patch::ReloadPatches(s_disc_serial, HasBootedELF() ? s_current_crc : 0, true, false, false, HasBootedELF());
+	ApplySettings();
 }
 
 u32 VMManager::Internal::GetCurrentELFEntryPoint()
@@ -3140,6 +3380,9 @@ void VMManager::CheckForMiscConfigChanges(const Pcsx2Config& old_config)
 	if (EmuConfig.InhibitScreensaver != old_config.InhibitScreensaver)
 		UpdateInhibitScreensaver(EmuConfig.InhibitScreensaver && VMManager::GetState() == VMState::Running);
 
+	if (EmuConfig.EnablePINE != old_config.EnablePINE || EmuConfig.PINESlot != old_config.PINESlot)
+		ReloadPINE();
+
 	if (EmuConfig.EnableDiscordPresence != old_config.EnableDiscordPresence)
 	{
 		if (EmuConfig.EnableDiscordPresence)
@@ -3197,7 +3440,8 @@ void VMManager::ReloadPatches(bool reload_files, bool reload_enabled_list, bool 
 
 void VMManager::EnforceAchievementsChallengeModeSettings()
 {
-	if (!Achievements::IsHardcoreModeActive())
+	s_hardcore_settings_enforced = Achievements::IsHardcoreModeActive();
+	if (!s_hardcore_settings_enforced)
 	{
 		return;
 	}

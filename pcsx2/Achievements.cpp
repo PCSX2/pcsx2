@@ -240,6 +240,7 @@ namespace Achievements
 
 	static rc_client_async_handle_t* s_login_request;
 	static rc_client_async_handle_t* s_load_game_request;
+	static bool s_load_game_failed = false;
 
 	static rc_client_achievement_list_t* s_achievement_list;
 	static rc_client_subset_list_t* s_subset_list;
@@ -974,6 +975,10 @@ void Achievements::GameChanged(u32 disc_crc, u32 crc)
 		return;
 
 	IdentifyGame(disc_crc, crc);
+
+	// Don't carry hardcore mode over to the next boot. IdentifyGame() won't turn it off if no game was identified.
+	if (disc_crc == 0 && crc == 0 && !VMManager::HasValidVM() && !IsUsingRAIntegration())
+		DisableHardcoreMode();
 }
 
 void Achievements::IdentifyGame(u32 disc_crc, u32 crc)
@@ -1066,12 +1071,14 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 	{
 		// We would've asked to re-authenticate, so leave HC on for now.
 		// Once we've done so, we'll reload the game.
+		s_load_game_failed = true;
 		return;
 	}
 	else if (result != RC_OK)
 	{
+		// We still don't know whether the game has achievements, so leave hardcore mode as it is.
 		ReportFmtError("Loading game failed: {}", error_message);
-		DisableHardcoreMode();
+		s_load_game_failed = true;
 		return;
 	}
 
@@ -1114,6 +1121,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 			DownloadImage(s_game_icon_url, s_game_icon);
 	}
 
+	if (has_achievements || has_leaderboards)
+		DisplayHardcoreDeferredMessage();
+
 	UpdateGameSummary();
 	UpdateCacheEntry(true);
 	DisplayAchievementSummary();
@@ -1131,6 +1141,7 @@ void Achievements::ClearGameInfo()
 		rc_client_abort_async(s_client, s_load_game_request);
 		s_load_game_request = nullptr;
 	}
+	s_load_game_failed = false;
 	rc_client_unload_game(s_client);
 
 	s_active_leaderboard_trackers = {};
@@ -1587,6 +1598,33 @@ void Achievements::DisableHardcoreMode()
 		SetHardcoreMode(false, true);
 }
 
+bool Achievements::IsHardcoreModePending()
+{
+	if (IsUsingRAIntegration())
+		return false;
+
+	const auto lock = GetLock();
+	return s_hardcore_mode && s_game_hash.has_value() && !HasActiveGame() &&
+	       !LookupCacheEntry(s_game_crc, &*s_game_hash).has_value();
+}
+
+bool Achievements::IsLoadingGame()
+{
+	return s_load_game_request != nullptr;
+}
+
+bool Achievements::HasLoadGameFailed()
+{
+	return s_load_game_failed;
+}
+
+void Achievements::RetryLoadGame()
+{
+	const auto lock = GetLock();
+	if (s_game_hash.has_value() && IsLoggedInOrLoggingIn())
+		BeginLoadGame();
+}
+
 bool Achievements::ResetHardcoreMode(bool is_booting)
 {
 	if (!IsActive())
@@ -1608,11 +1646,18 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 
 	// If we're not logged in, don't apply hardcore mode restrictions.
 	// If we later log in, we'll start with it off anyway.
-	// If we're running an unknown game, don't enable HC mode. We have to do this here,
-	// because the gameid can be cached, and identify immediately on GameChanged(),
-	// which gets called before ResetHardcoreMode().
-	const bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_load_game_request) &&
-	                                  EmuConfig.Achievements.HardcoreMode;
+	bool wanted_hardcore_mode = (IsLoggedInOrLoggingIn() || s_load_game_request) &&
+	                            EmuConfig.Achievements.HardcoreMode;
+
+	// Don't enable it for games with nothing to unlock. Use the server's answer if we have it, otherwise the cache.
+	if (wanted_hardcore_mode && s_game_hash.has_value())
+	{
+		if (HasActiveGame())
+			wanted_hardcore_mode = HasAchievementsOrLeaderboards();
+		else if (const std::optional<CacheEntry> entry = LookupCacheEntry(s_game_crc, &*s_game_hash))
+			wanted_hardcore_mode = entry->has_achievements || entry->has_leaderboards;
+	}
+
 	if (s_hardcore_mode == wanted_hardcore_mode)
 		return false;
 
@@ -1657,6 +1702,14 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 		MTGS::RunOnGSThread(&Achievements::ClearUIState);
 
 	Host::OnAchievementsHardcoreModeChanged(enabled);
+
+	if (VMManager::HasValidVM())
+	{
+		Host::RunOnCPUThread([]() {
+			if (VMManager::HasValidVM())
+				VMManager::Internal::UpdateHardcoreModeSettings();
+		});
+	}
 }
 
 void Achievements::LoadState(std::span<const u8> data)
@@ -1688,7 +1741,7 @@ void Achievements::LoadState(std::span<const u8> data)
 
 	// if we're active, make sure we've downloaded and activated all the achievements
 	// before deserializing, otherwise that state's going to get lost.
-	if (s_http_downloader->HasAnyRequests())
+	if (s_load_game_request)
 	{
 		bool was_running_idle;
 		BeginLoadingScreen("Downloading achievements data...", &was_running_idle);

@@ -52,12 +52,15 @@ enum class VMBootResult
 	/// The boot failed because the user needs to be prompted to disable
 	/// hardcore mode. If the user agrees, VMManager::Initialize should be
 	/// called again with disable_achievements_hardcore_mode set to true.
-	PromptDisableHardcoreMode
+	PromptDisableHardcoreMode,
+	/// The VM has been initialized, but is waiting for RetroAchievements
+	/// before it can start. Only handled by VMManager::InitializeAsync.
+	StartupPending
 };
 
-/// Callback used to restart the VM boot process after the user has consented
-/// to hardcore mode being disabled.
-using VMBootRestartCallback = std::function<void()>;
+/// Callback used to continue the VM boot process after the user has been
+/// asked to disable hardcore mode.
+using VMBootRestartCallback = std::function<void(bool confirmed)>;
 
 /// Callback used when the VM boot process has been interrupted because the user
 /// needs to be prompted to disable hardcore mode.
@@ -318,6 +321,9 @@ namespace VMManager
 
 		/// Returns true if the current ELF has started executing.
 		bool HasBootedELF();
+
+		/// Reloads settings and patches if hardcore mode was turned on or off since they were loaded.
+		void UpdateHardcoreModeSettings();
 
 		/// Returns the PC of the currently-executing ELF's entry point.
 		u32 GetCurrentELFEntryPoint();
