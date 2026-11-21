@@ -144,7 +144,7 @@ in SHADER
 
 // Depth feedback mode 2 is for depth as color.
 // Use FB fetch for the feedback if it's available.
-#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+#if SW_DEPTH && PS_NO_COLOR1 && (PS_DEPTH_FEEDBACK_SUPPORT == 2)
 	#if HAS_FRAMEBUFFER_FETCH
 		layout(location = 1) inout float o_col1;
 	#else
@@ -168,7 +168,7 @@ layout(binding = 3) uniform sampler2D img_prim_min;
 // Depth feedback mode 1 binds depth buffer directly as a texture.
 // Depth feedback mode 2 (depth as color) can use FB fetch for the feedback,
 // in which case we don't need to explicitly bind depth as a texture.
-#if (DEPTH_FEEDBACK_SUPPORT == 1 || (DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
+#if (PS_DEPTH_FEEDBACK_SUPPORT == 1 || (PS_DEPTH_FEEDBACK_SUPPORT == 2 && !HAS_FRAMEBUFFER_FETCH)) && SW_DEPTH
 layout(binding = 4) uniform sampler2D DepthSampler;
 #endif
 
@@ -191,7 +191,7 @@ float sample_from_depth()
 {
 #if !SW_DEPTH
 	return 0.0f;
-#elif HAS_FRAMEBUFFER_FETCH && (DEPTH_FEEDBACK_SUPPORT == 2)
+#elif HAS_FRAMEBUFFER_FETCH && (PS_DEPTH_FEEDBACK_SUPPORT == 2)
 	return o_col1;
 #else
 	return texelFetch(DepthSampler, ivec2(gl_FragCoord.xy), 0).r;
@@ -216,7 +216,7 @@ float manual_lod(float uv_w)
 }
 #endif
 
-#if PS_ANISOTROPIC_FILTERING > 1
+#if PS_SW_ANISO > 1
 vec4 sample_c_af(vec2 uv, float uv_w)
 {
 	// HW sampler will reject bad UVs, match that here.
@@ -305,7 +305,7 @@ vec4 sample_c_af(vec2 uv, float uv_w)
 	{
 		vec2 aniso_line_dir = is_major_x ? dX : dY;
 
-		aniso_ratio = min(length_major / length_minor, PS_ANISOTROPIC_FILTERING);
+		aniso_ratio = min(length_major / length_minor, PS_SW_ANISO);
 		length_lod = length_major / aniso_ratio;
 
 		// clamp to top Lod
@@ -369,7 +369,7 @@ vec4 sample_c(vec2 uv)
 	#endif
 #endif
 
-#if PS_ANISOTROPIC_FILTERING > 1
+#if PS_SW_ANISO > 1
 	return sample_c_af(uv, PSin.t_float.w);
 #elif PS_AUTOMATIC_LOD == 1
 	return texture(TextureSampler, uv);
@@ -885,17 +885,17 @@ vec4 ps_color()
 
 #if !NEEDS_TEX
 	vec4 T = vec4(0.0);
-#elif PS_CHANNEL_FETCH == 1
+#elif PS_CHANNEL == 1
 	vec4 T = fetch_red();
-#elif PS_CHANNEL_FETCH == 2
+#elif PS_CHANNEL == 2
 	vec4 T = fetch_green();
-#elif PS_CHANNEL_FETCH == 3
+#elif PS_CHANNEL == 3
 	vec4 T = fetch_blue();
-#elif PS_CHANNEL_FETCH == 4
+#elif PS_CHANNEL == 4
 	vec4 T = fetch_alpha();
-#elif PS_CHANNEL_FETCH == 5
+#elif PS_CHANNEL == 5
 	vec4 T = fetch_rgb();
-#elif PS_CHANNEL_FETCH == 6
+#elif PS_CHANNEL == 6
 	vec4 T = fetch_gXbY();
 #elif PS_DEPTH_FMT > 0
 	// Integral coordinate
@@ -1418,7 +1418,7 @@ void ps_main()
 
 // Writing back depth
 #if ZWRITE
-	#if SW_DEPTH && PS_NO_COLOR1 && (DEPTH_FEEDBACK_SUPPORT == 2)
+	#if SW_DEPTH && PS_NO_COLOR1 && (PS_DEPTH_FEEDBACK_SUPPORT == 2)
 		// Depth as color write. For depth as color feedback we write to both
 		// color copy and real depth to avoid having to copy back to real depth.
 		// Warning: do not write o_col1 until the end since the value might
