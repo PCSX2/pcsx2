@@ -5439,8 +5439,8 @@ void FullscreenUI::DrawControllerGlobalSettings()
 #ifdef __APPLE__
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable IOKit Driver"), FSUI_CSTR("Allow SDL to use the IOKit driver for controllers."),
 		"InputSources", "SDLIOKitDriver", true, bsi->GetBoolValue("InputSources", "SDL", true), false);
-	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable MFI Driver"),
-		FSUI_CSTR("Allow SDL to use Apple's GameController (MFI) framework for controllers."), "InputSources", "SDLMFIDriver", true,
+	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GEAR, "Enable MFi Driver"),
+		FSUI_CSTR("Allow SDL to use Apple's Game Controller (MFi) framework for controllers."), "InputSources", "SDLMFIDriver", true,
 		bsi->GetBoolValue("InputSources", "SDL", true), false);
 #endif
 #ifdef _WIN32
