@@ -133,12 +133,22 @@ GSDevice12::ComPtr<ID3D12RootSignature> GSDevice12::CreateRootSignature(const D3
 	return rs;
 }
 
+HRESULT GSDevice12::CheckFeatureSupport(D3D12_FEATURE feature, void* data, UINT size) const
+{
+	// Avoid the CheckFeatureSupport deprecation warning on newer runtimes.
+	if (m_device16)
+		return m_device16->CheckFeatureSupport1(feature, data, size, D3D12_SDK_VERSION);
+
+	// Use the old API if Device16 isn't available.
+	return m_device->CheckFeatureSupport(feature, data, size);
+}
+
 bool GSDevice12::SupportsTextureFormat(DXGI_FORMAT format)
 {
 	constexpr u32 required = D3D12_FORMAT_SUPPORT1_TEXTURE2D | D3D12_FORMAT_SUPPORT1_SHADER_SAMPLE;
 
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT support = {format};
-	return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
+	return SUCCEEDED(CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
 	       (support.Support1 & required) == required;
 }
 
@@ -147,21 +157,21 @@ bool GSDevice12::IsTextureFormatUAVCapable(DXGI_FORMAT format)
 	constexpr u32 required = D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW;
 
 	D3D12_FEATURE_DATA_FORMAT_SUPPORT support = { format };
-	return SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
+	return SUCCEEDED(CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &support, sizeof(support))) &&
 		(support.Support1 & required) == required;
 }
 
 bool GSDevice12::SupportsProgrammableSamplePositions()
 {
 	D3D12_FEATURE_DATA_D3D12_OPTIONS2 options = {};
-	if (SUCCEEDED(m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options, sizeof(options))))
+	if (SUCCEEDED(CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options, sizeof(options))))
 		return options.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
 
 	return false;
 }
 
 D3D_SHADER_MODEL GSDevice12::DetectShaderModelSupport() {
-	// CheckFeatureSupport will fail if the runtime dosen't support a requested shader model.
+	// CheckFeatureSupport will fail if the runtime doesn't support a requested shader model.
 	// Loop though ranges of valid shader models until the check succeeds.
 	constexpr std::array<std::array<D3D_SHADER_MODEL, 2>, 2> shader_model_ranges{{
 		{D3D_SHADER_MODEL_6_5, D3D_SHADER_MODEL_6_0},
@@ -173,7 +183,7 @@ D3D_SHADER_MODEL GSDevice12::DetectShaderModelSupport() {
 		for (int i = range[0]; i >= range[1]; i--)
 		{
 			D3D12_FEATURE_DATA_SHADER_MODEL shader_model_device = {static_cast<D3D_SHADER_MODEL>(i)};
-			const HRESULT hr = m_device->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model_device, sizeof(shader_model_device));
+			const HRESULT hr = CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shader_model_device, sizeof(shader_model_device));
 			if (SUCCEEDED(hr))
 				return shader_model_device.HighestShaderModel;
 		}
@@ -332,6 +342,9 @@ bool GSDevice12::CreateDevice(u32& vendor_id)
 		Console.Error("D3D12: Failed to create device: %08X", hr);
 		return false;
 	}
+
+	// CheckFeatureSupport1 is optional.
+	m_device16 = m_device.try_query<ID3D12Device16>();
 
 	if (!m_adapter)
 	{
@@ -1576,12 +1589,12 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	Console.WriteLnFmt("D3D12: Shader Model: {}.{}", (m_shader_model & 0xF0) >> 4, (m_shader_model & 0xF));
 
 	D3D12_FEATURE_DATA_ARCHITECTURE1 device_architecture1 = {};
-	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
+	hr = CheckFeatureSupport(D3D12_FEATURE_ARCHITECTURE1, &device_architecture1, sizeof(device_architecture1));
 	m_uma = SUCCEEDED(hr) && device_architecture1.UMA;
 	Console.WriteLnFmt("D3D12: {}", m_uma ? (device_architecture1.CacheCoherentUMA ? "Cache Coherent Unified Memory Architecture" : "Unified Memory Architecture") : "Non-Unified Memory Architecture");
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS3 device_options3 = {};
-	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &device_options3, sizeof(device_options3));
+	hr = CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &device_options3, sizeof(device_options3));
 	m_typed_casting_supported = SUCCEEDED(hr) && device_options3.CastingFullyTypedFormatSupported;
 	Console.WriteLnFmt("D3D12: Casting Fully Typed Formats: {}", m_typed_casting_supported ? "Supported" : "Not Supported");
 
@@ -1591,7 +1604,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	Console.WriteLnFmt("D3D12: Render Passes: Tier {}", static_cast<u32>(m_render_pass_tier));
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS12 device_options12 = {};
-	hr = m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &device_options12, sizeof(device_options12));
+	hr = CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS12, &device_options12, sizeof(device_options12));
 	if (SUCCEEDED(hr))
 	{
 		Console.WriteLnFmt("D3D12: Enhanced Barriers: {}", device_options12.EnhancedBarriersSupported ? "Supported" : "Not Supported");
@@ -1605,7 +1618,7 @@ bool GSDevice12::CheckFeatures(const u32& vendor_id)
 	}
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS options{};
-	m_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
+	CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
 	m_features.rov = options.TypedUAVLoadAdditionalFormats && options.ROVsSupported;
 	for (u32 fmt = static_cast<u32>(GSTexture::Format::Color); fmt <= static_cast<u32>(GSTexture::Format::PrimID); fmt++)
 	{
@@ -3252,6 +3265,7 @@ void GSDevice12::DestroyResources()
 
 	m_allocator.reset();
 	m_command_queue.reset();
+	m_device16.reset();
 	m_device.reset();
 }
 
