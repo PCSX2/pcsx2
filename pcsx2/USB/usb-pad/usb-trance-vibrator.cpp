@@ -87,7 +87,7 @@ namespace usb_pad
 			case VendorDeviceOutRequest:
 				// Vibration = wValue
 				// LED1 = wIndex&1, LED2 = wIndex&2, LED3 = wIndex&4
-				InputManager::SetUSBVibrationIntensity(s->port, value & 0xff, 0);
+				InputManager::SetUSBVibrationIntensity(s->port, static_cast<float>(value & 0xff) / 255.0f, 0.0f);
 				break;
 			default:
 				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
