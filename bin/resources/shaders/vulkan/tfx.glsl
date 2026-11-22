@@ -650,7 +650,7 @@ layout(location = 0) in VSOutput
 	vec4 o_col0;
 #endif
 
-#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
+#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_NO_COLOR1 && !(PS_ROV_COLOR || PS_ROV_DEPTH) && PS_DEPTH_FEEDBACK_SUPPORT == 2
 	#if !PS_NO_COLOR || PS_DATE >= 5
 		// Color target occupies location 1.
 		layout(location = 1) out float o_col1;
