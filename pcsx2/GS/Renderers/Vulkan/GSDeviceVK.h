@@ -326,14 +326,20 @@ public:
 	{
 		switch (type)
 		{
-			default:
-				pxFailRel("Impossible.");
-			case ResourceType::SRV:
-				return GSTextureVK::Layout::ShaderReadOnly;
-			case ResourceType::UAV:
-				return GSTextureVK::Layout::ReadWriteImage;
+			case ResourceType::SRV: return GSTextureVK::Layout::ShaderReadOnly;
+			case ResourceType::UAV: return GSTextureVK::Layout::ReadWriteImage;
 		}
+		pxFail("Invalid case");
+		return GSTextureVK::Layout::ShaderReadOnly;
 	}
+
+	enum class PipelineLayout
+	{
+		Undefined,
+		TFX,
+		TFXROV,
+		Utility
+	};
 
 	using FramebufferInfo = GSTextureVK::FramebufferInfo;
 	using FeedbackLoopFlags = FeedbackLoopFlagsVK;
@@ -370,6 +376,7 @@ public:
 		__fi bool IsRTFeedbackLoop() const { return ::IsRTFeedbackLoop(feedback_loop_flags); }
 		__fi bool IsDepthFeedbackLoop() const { return ::IsDepthFeedbackLoop(feedback_loop_flags); }
 		__fi bool IsTestingAndSamplingDepth() const { return ::IsTestingAndSamplingDepth(feedback_loop_flags); }
+		__fi PipelineLayout Layout() const { return ps.HasColorROV() || ps.HasDepthROV() ? PipelineLayout::TFXROV : PipelineLayout::TFX; }
 	};
 	static_assert(sizeof(PipelineSelector) == 32, "Pipeline selector is 32 bytes");
 
@@ -403,10 +410,8 @@ public:
 		TFX_TEXTURE_TEXTURE = 0,
 		TFX_TEXTURE_PALETTE,
 		TFX_TEXTURE_RT,
-		TFX_TEXTURE_PRIMID,
 		TFX_TEXTURE_DEPTH,
-		TFX_TEXTURE_RT_ROV,
-		TFX_TEXTURE_DEPTH_ROV,
+		TFX_TEXTURE_PRIMID,
 
 		NUM_TFX_TEXTURES
 	};
@@ -421,7 +426,9 @@ private:
 
 	VkDescriptorSetLayout m_tfx_ubo_ds_layout = VK_NULL_HANDLE;
 	VkDescriptorSetLayout m_tfx_texture_ds_layout = VK_NULL_HANDLE;
+	VkDescriptorSetLayout m_tfx_texture_rov_ds_layout = VK_NULL_HANDLE;
 	VkPipelineLayout m_tfx_pipeline_layout = VK_NULL_HANDLE;
+	VkPipelineLayout m_tfx_rov_pipeline_layout = VK_NULL_HANDLE;
 
 	VKStreamBuffer m_vertex_stream_buffer;
 	VKStreamBuffer m_index_stream_buffer;
@@ -673,7 +680,7 @@ public:
 
 	/// Binds all dirty state to the command buffer.
 	bool ApplyUtilityState(bool already_execed = false);
-	bool ApplyTFXState(bool already_execed = false);
+	bool ApplyTFXState(PipelineLayout layout, bool already_execed = false);
 
 	void SetIndexBuffer(VkBuffer buffer);
 	void SetBlendConstants(u8 color);
@@ -702,7 +709,7 @@ public:
 private:
 	enum DIRTY_FLAG : u32
 	{
-		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4, 5, 6
+		DIRTY_FLAG_TFX_TEXTURE_0 = (1 << 0), // 0, 1, 2, 3, 4
 		DIRTY_FLAG_TFX_UBO = (1 << 7),
 		DIRTY_FLAG_UTILITY_TEXTURE = (1 << 8),
 		DIRTY_FLAG_BLEND_CONSTANTS = (1 << 9),
@@ -718,15 +725,12 @@ private:
 		DIRTY_FLAG_TFX_TEXTURE_TEX = (DIRTY_FLAG_TFX_TEXTURE_0 << 0),
 		DIRTY_FLAG_TFX_TEXTURE_PALETTE = (DIRTY_FLAG_TFX_TEXTURE_0 << 1),
 		DIRTY_FLAG_TFX_TEXTURE_RT = (DIRTY_FLAG_TFX_TEXTURE_0 << 2),
-		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
-		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
-		DIRTY_FLAG_TFX_TEXTURE_RT_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 5),
-		DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV = (DIRTY_FLAG_TFX_TEXTURE_0 << 6),
+		DIRTY_FLAG_TFX_TEXTURE_DEPTH = (DIRTY_FLAG_TFX_TEXTURE_0 << 3),
+		DIRTY_FLAG_TFX_TEXTURE_PRIMID = (DIRTY_FLAG_TFX_TEXTURE_0 << 4),
 
 		DIRTY_FLAG_TFX_TEXTURES = DIRTY_FLAG_TFX_TEXTURE_TEX | DIRTY_FLAG_TFX_TEXTURE_PALETTE |
-		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_PRIMID |
-		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH | DIRTY_FLAG_TFX_TEXTURE_RT_ROV |
-		                          DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV,
+		                          DIRTY_FLAG_TFX_TEXTURE_RT | DIRTY_FLAG_TFX_TEXTURE_DEPTH |
+		                          DIRTY_FLAG_TFX_TEXTURE_PRIMID,
 
 		DIRTY_BASE_STATE = DIRTY_FLAG_INDEX_BUFFER | DIRTY_FLAG_PIPELINE | DIRTY_FLAG_VIEWPORT | DIRTY_FLAG_SCISSOR |
 		                   DIRTY_FLAG_BLEND_CONSTANTS | DIRTY_FLAG_LINE_WIDTH,
@@ -734,13 +738,6 @@ private:
 		DIRTY_UTILITY_STATE = DIRTY_BASE_STATE | DIRTY_FLAG_UTILITY_TEXTURE,
 		DIRTY_CONSTANT_BUFFER_STATE = DIRTY_FLAG_VS_CONSTANT_BUFFER | DIRTY_FLAG_PS_CONSTANT_BUFFER | DIRTY_FLAG_VS_PUSH_CONSTANTS,
 		ALL_DIRTY_STATE = DIRTY_BASE_STATE | DIRTY_TFX_STATE | DIRTY_UTILITY_STATE | DIRTY_CONSTANT_BUFFER_STATE,
-	};
-
-	enum class PipelineLayout
-	{
-		Undefined,
-		TFX,
-		Utility
 	};
 
 	void InitializeState();
