@@ -1819,7 +1819,7 @@ namespace
 	class QtHostProgressCallback final : public BaseProgressCallback
 	{
 	public:
-		QtHostProgressCallback();
+		explicit QtHostProgressCallback(bool use_fullscreen_ui);
 		~QtHostProgressCallback() override;
 
 		__fi const std::string& GetName() const { return m_name; }
@@ -1847,6 +1847,8 @@ namespace
 		void SetCancelled();
 
 	private:
+		static constexpr const char* FULLSCREEN_DIALOG_ID = "HostProgress";
+
 		struct SharedData
 		{
 			QProgressDialog* dialog = nullptr;
@@ -1862,18 +1864,28 @@ namespace
 		void Redraw(bool force);
 
 		std::string m_name;
+		std::string m_title;
 		std::shared_ptr<SharedData> m_data;
 		int m_last_progress_percent = -1;
+		bool m_use_fullscreen_ui;
+		bool m_fullscreen_dialog_open = false;
 	};
 } // namespace
 
-QtHostProgressCallback::QtHostProgressCallback()
-	: BaseProgressCallback()
+QtHostProgressCallback::QtHostProgressCallback(bool use_fullscreen_ui)
+	: m_use_fullscreen_ui(use_fullscreen_ui)
 {
 }
 
 QtHostProgressCallback::~QtHostProgressCallback()
 {
+	if (m_use_fullscreen_ui)
+	{
+		if (m_fullscreen_dialog_open)
+			ImGuiFullscreen::CloseProgressDialog(FULLSCREEN_DIALOG_ID);
+		return;
+	}
+
 	if (m_data)
 	{
 		QtHost::RunOnUIThread([data = m_data]() {
@@ -1908,6 +1920,12 @@ void QtHostProgressCallback::SetCancellable(bool cancellable)
 
 void QtHostProgressCallback::SetTitle(const char* title)
 {
+	if (m_use_fullscreen_ui)
+	{
+		m_title = title;
+		return;
+	}
+
 	EnsureHasData();
 	QtHost::RunOnUIThread([data = m_data, title = QString::fromUtf8(title)]() {
 		if (data->dialog)
@@ -1920,6 +1938,13 @@ void QtHostProgressCallback::SetTitle(const char* title)
 void QtHostProgressCallback::SetStatusText(const char* text)
 {
 	BaseProgressCallback::SetStatusText(text);
+
+	if (m_use_fullscreen_ui)
+	{
+		if (m_fullscreen_dialog_open)
+			Redraw(true);
+		return;
+	}
 
 	EnsureHasData();
 	QtHost::RunOnUIThread([data = m_data, text = QString::fromUtf8(text)]() {
@@ -1952,16 +1977,36 @@ void QtHostProgressCallback::SetProgressValue(u32 value)
 
 void QtHostProgressCallback::Redraw(bool force)
 {
-	const int percent = static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
+	const int percent = static_cast<int>(static_cast<u64>(m_progress_value) * 100 / std::max(m_progress_range, 1u));
 	if (percent == m_last_progress_percent && !force)
 		return;
 
-	// If this is the emu uthread, we need to process the un-fullscreen message.
+	// Service input while precaching blocks the emulation thread.
 	if (g_emu_thread->isOnEmuThread())
 		Host::PumpMessagesOnCPUThread();
 
 	m_last_progress_percent = percent;
 	EnsureHasData();
+	if (m_use_fullscreen_ui)
+	{
+		const std::string& message = m_status_text.empty() ? m_title : m_status_text;
+		if (!m_fullscreen_dialog_open)
+		{
+			std::function<void()> cancel_callback;
+			if (m_data->cancellable)
+			{
+				cancel_callback = [data = m_data]() { data->cancelled.store(true, std::memory_order_release); };
+			}
+			ImGuiFullscreen::OpenProgressDialog(FULLSCREEN_DIALOG_ID, message, 0, 100, percent, std::move(cancel_callback));
+			m_fullscreen_dialog_open = true;
+		}
+		else
+		{
+			ImGuiFullscreen::UpdateProgressDialog(FULLSCREEN_DIALOG_ID, message, 0, 100, percent);
+		}
+		return;
+	}
+
 	QtHost::RunOnUIThread([data = m_data, percent]() {
 		EnsureDialogVisible(data);
 		data->dialog->setValue(percent);
@@ -2053,7 +2098,14 @@ void QtHostProgressCallback::EnsureDialogVisible(const std::shared_ptr<SharedDat
 
 std::unique_ptr<ProgressCallback> Host::CreateHostProgressCallback()
 {
-	return std::make_unique<QtHostProgressCallback>();
+	bool use_fullscreen_ui = false;
+	if (g_emu_thread->isRunningFullscreenUI() || g_emu_thread->isFullscreen())
+	{
+		// A direct fullscreen launch may not have started Big Picture mode.
+		MTGS::RunOnGSThread([&use_fullscreen_ui]() { use_fullscreen_ui = ImGuiManager::InitializeFullscreenUI(); });
+		MTGS::WaitGS();
+	}
+	return std::make_unique<QtHostProgressCallback>(use_fullscreen_ui);
 }
 
 //////////////////////////////////////////////////////////////////////////

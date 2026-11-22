@@ -329,7 +329,8 @@ namespace ImGuiFullscreen
 	void SetNotificationVerticalPosition(float position, float direction);
 	void SetNotificationPosition(float horizontal_position, float vertical_position, float direction);
 
-	void OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
+	void OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value,
+		std::function<void()> cancel_callback = {});
 	void UpdateProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value);
 	void CloseProgressDialog(const char* str_id);
 

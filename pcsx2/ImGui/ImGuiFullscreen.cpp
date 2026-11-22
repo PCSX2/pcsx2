@@ -195,6 +195,7 @@ namespace ImGuiFullscreen
 	struct ProgressDialogData
 	{
 		std::string message;
+		std::function<void()> cancel_callback;
 		ImGuiID id;
 		s32 min;
 		s32 max;
@@ -3115,7 +3116,8 @@ void ImGuiFullscreen::SetNotificationPosition(float horizontal_position, float v
 	s_notification_vertical_direction = direction;
 }
 
-void ImGuiFullscreen::OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value)
+void ImGuiFullscreen::OpenProgressDialog(const char* str_id, std::string message, s32 min, s32 max, s32 value,
+	std::function<void()> cancel_callback)
 {
 	const ImGuiID id = ImHashStr(str_id);
 
@@ -3131,6 +3133,7 @@ void ImGuiFullscreen::OpenProgressDialog(const char* str_id, std::string message
 	ProgressDialogData data;
 	data.id = id;
 	data.message = std::move(message);
+	data.cancel_callback = std::move(cancel_callback);
 	data.min = min;
 	data.max = max;
 	data.value = value;
@@ -3182,7 +3185,8 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 	if (s_progress_dialogs.empty())
 		return;
 
-	for (const ProgressDialogData& data : s_progress_dialogs)
+	std::function<void()> cancel_callback;
+	for (ProgressDialogData& data : s_progress_dialogs)
 	{
 		const std::string popup_id = fmt::format("##progress_dialog_{}", data.id);
 		ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
@@ -3228,6 +3232,14 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 
 			ImGui::PopStyleColor(2);
 
+			if (data.cancel_callback)
+			{
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+				if (ActiveButton(TRANSLATE("FullscreenUI", "Cancel"), false))
+					cancel_callback = std::move(data.cancel_callback);
+				ImGui::SetItemDefaultFocus();
+			}
+
 			EndMenuButtons();
 
 			ImGui::EndPopup();
@@ -3238,6 +3250,10 @@ void ImGuiFullscreen::DrawProgressDialogs(ImVec2& position, float spacing)
 		ImGui::PopFont();
 		break;
 	}
+
+	lock.unlock();
+	if (cancel_callback)
+		cancel_callback();
 }
 
 //////////////////////////////////////////////////////////////////////////
