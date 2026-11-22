@@ -10,7 +10,7 @@
 #include <limits>
 #include <tuple>
 
-enum class FeedbackLoopFlagsVK : u8
+enum class FeedbackLoopFlagsVK : u32
 {
 	None = 0,
 	ReadAndWriteRT = 1,
