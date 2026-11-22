@@ -279,7 +279,7 @@ bool Path::IsAbsolute(const std::string_view path)
 #ifdef _WIN32
 	return (path.length() >= 3 && ((path[0] >= 'A' && path[0] <= 'Z') || (path[0] >= 'a' && path[0] <= 'z')) &&
 			   path[1] == ':' && (path[2] == '/' || path[2] == '\\')) ||
-		   (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
+	       (path.length() >= 3 && path[0] == '\\' && path[1] == '\\');
 #else
 	return (path.length() >= 1 && path[0] == '/');
 #endif

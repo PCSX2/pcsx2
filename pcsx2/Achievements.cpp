@@ -749,19 +749,14 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(
 	const rc_api_request_t* request, rc_client_server_callback_t callback, void* callback_data, rc_client_t* client)
 {
-	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data)
-	{
+	HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
 		const bool is_error = (status_code <= 0);
 		const bool is_retryable =
 			is_error && (status_code != HTTPDownloader::HTTP_STATUS_CANCELLED);
 
 		rc_api_server_response_t rr;
 		rr.http_status_code =
-			is_error
-			? (is_retryable
-				? RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR
-				: RC_API_SERVER_RESPONSE_CLIENT_ERROR)
-			: status_code;
+			is_error ? (is_retryable ? RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR : RC_API_SERVER_RESPONSE_CLIENT_ERROR) : status_code;
 
 		rr.body_length = data.size();
 		rr.body = reinterpret_cast<const char*>(data.data());
@@ -3037,9 +3032,9 @@ void Achievements::DrawLeaderboardsWindow()
 	const bool is_leaderboard_open = (s_open_leaderboard != nullptr);
 	bool close_leaderboard_on_exit = false;
 
-	const bool has_multiple_subsets = (s_subset_list && std::count_if(s_subset_list->subsets, 
-		s_subset_list->subsets + s_subset_list->num_subsets,
-		[](const rc_client_subset_t* subset) { return subset->num_leaderboards > 0; }) > 1);
+	const bool has_multiple_subsets = (s_subset_list && std::count_if(s_subset_list->subsets,
+															s_subset_list->subsets + s_subset_list->num_subsets,
+															[](const rc_client_subset_t* subset) { return subset->num_leaderboards > 0; }) > 1);
 	static ImGuiFullscreen::SidebarState sidebar;
 	if (!has_multiple_subsets || is_leaderboard_open)
 		sidebar = {};
@@ -3137,7 +3132,7 @@ void Achievements::DrawLeaderboardsWindow()
 			{
 				const bool wants_to_go_back = ImGuiFullscreen::FloatingButton(
 												  ICON_FA_SQUARE_CARET_LEFT, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font) ||
-												ImGuiFullscreen::WantsToCloseMenu();
+				                              ImGuiFullscreen::WantsToCloseMenu();
 				if (wants_to_go_back)
 				{
 					close_leaderboard_on_exit = true;
