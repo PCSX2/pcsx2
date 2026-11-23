@@ -1833,11 +1833,11 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const bool is_color, const 
 						t->RearrangeTarget(bw);
 					}
 
-					u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
+					const u32 rt_tbw = std::max(1U, t->m_TEX0.TBW);
 					horz_page_offset = ((adj_bp - t->m_TEX0.TBP0) >> 5) % rt_tbw;
 					const GSVector2i& page_size = GSLocalMemory::m_psm[t->m_TEX0.PSM].pgs;
 					// when checking if there's page boundary crossing, we need to check from any offset in to the page, not just the raw height, which could be less than a page.
-					const u32 height_from_offset = block_boundary_rect.w - (block_boundary_rect.y & ~(page_size.y - 1));
+					const int height_from_offset = block_boundary_rect.w - (block_boundary_rect.y & ~(page_size.y - 1));
 
 					if (GSLocalMemory::m_psm[psm].bpp == GSLocalMemory::m_psm[t->m_TEX0.PSM].bpp && bw != rt_tbw && height_from_offset > GSLocalMemory::m_psm[psm].pgs.y)
 						continue;
