@@ -164,7 +164,7 @@ void ToDouble(int reg)
 void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 {
 	if (flags)
-		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU));
+		xAND(ptr32[&fpuRegs.fcr31], ~(FPUflagO | FPUflagU));
 	if (flags && acc)
 		xAND(ptr32[&fpuRegs.ACCflag], ~1);
 
@@ -194,7 +194,7 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg));
 	xOR.PS(xRegisterSSE(reg), ptr[&s_const.pos]); //clamp
 	if (flags && FPU_FLAGS_OVERFLOW)
-		xOR(ptr32[&fpuRegs.fprc[31]], (FPUflagO | FPUflagSO));
+		xOR(ptr32[&fpuRegs.fcr31], (FPUflagO | FPUflagSO));
 	if (flags && FPU_FLAGS_OVERFLOW && acc)
 		xOR(ptr32[&fpuRegs.ACCflag], 1);
 	u8* end3 = JMP8(0);
@@ -207,7 +207,7 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 		xUCOMI.SD(xRegisterSSE(reg), xRegisterSSE(absreg));
 		u8* is_zero = JE8(0);
 
-		xOR(ptr32[&fpuRegs.fprc[31]], (FPUflagU | FPUflagSU));
+		xOR(ptr32[&fpuRegs.fcr31], (FPUflagU | FPUflagSU));
 		if (addsub)
 		{
 			//On ADD/SUB, the PS2 simply leaves the mantissa bits as they are (after normalization)
@@ -303,7 +303,7 @@ void SetMaxValue(int regd)
 
 #define CLEAR_OU_FLAGS \
 	do { \
-		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU)); \
+		xAND(ptr32[&fpuRegs.fcr31], ~(FPUflagO | FPUflagU)); \
 	} while (0)
 
 
@@ -494,10 +494,10 @@ void recC_EQ_xmm(int info)
 	recCMP(info);
 
 	j8Ptr[0] = JZ8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
+		xAND(ptr32[&fpuRegs.fcr31], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
+		xOR(ptr32[&fpuRegs.fcr31], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
@@ -509,10 +509,10 @@ void recC_LE_xmm(int info)
 	recCMP(info);
 
 	j8Ptr[0] = JBE8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
+		xAND(ptr32[&fpuRegs.fcr31], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
+		xOR(ptr32[&fpuRegs.fcr31], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
@@ -524,10 +524,10 @@ void recC_LT_xmm(int info)
 	recCMP(info);
 
 	j8Ptr[0] = JB8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
+		xAND(ptr32[&fpuRegs.fcr31], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
+		xOR(ptr32[&fpuRegs.fcr31], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
@@ -554,7 +554,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u32 *ajmp32, *bjmp32;
 	const int t1reg = _allocTempXMMreg(XMMT_FPS);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fcr31], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	//--- Check for divide by zero ---
 	xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
@@ -569,10 +569,10 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 		xMOVMSKPS(eax, xRegisterSSE(t1reg));
 		xAND(eax, 1); //Check sign (if regd == zero, sign will be set)
 		pjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fcr31], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			pjmp2 = JMP8(0);
 		x86SetJ8(pjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fcr31], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(pjmp2);
 
 		//--- Make regd +/- Maximum ---
@@ -658,7 +658,7 @@ void recMaddsub(int info, int regd, int op, bool acc)
 
 	//          TEST FOR ACC/MUL OVERFLOWS, PROPOGATE THEM IF THEY OCCUR
 
-	xTEST(ptr32[&fpuRegs.fprc[31]], FPUflagO);
+	xTEST(ptr32[&fpuRegs.fcr31], FPUflagO);
 	u8* mulovf = JNZ8(0);
 	ToDouble(sreg); //else, convert
 
@@ -676,7 +676,7 @@ void recMaddsub(int info, int regd, int op, bool acc)
 	SetMaxValue(treg); //just in case... I think it has to be a MaxValue already here
 	CLEAR_OU_FLAGS; //clear U flag
 	if (FPU_FLAGS_OVERFLOW)
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagO | FPUflagSO);
+		xOR(ptr32[&fpuRegs.fcr31], FPUflagO | FPUflagSO);
 	if (FPU_FLAGS_OVERFLOW && acc)
 		xOR(ptr32[&fpuRegs.ACCflag], 1);
 	u32* skipall = JMP32(0);
@@ -893,13 +893,13 @@ void recSQRT_S_xmm(int info)
 
 	if (FPU_FLAGS_ID)
 	{
-		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
+		xAND(ptr32[&fpuRegs.fcr31], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 		//--- Check for negative SQRT --- (sqrt(-0) = 0, unlike what the docs say)
 		xMOVMSKPS(eax, xRegisterSSE(EEREC_D));
 		xAND(eax, 1); //Check sign
 		u8* pjmp = JZ8(0); //Skip if none are
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
+			xOR(ptr32[&fpuRegs.fcr31], FPUflagI | FPUflagSI); // Set I and SI flags
 			xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_const.pos[0]]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);
 	}
@@ -935,13 +935,13 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u32* pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fcr31], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	//--- (first) Check for negative SQRT ---
 	xMOVMSKPS(eax, xRegisterSSE(regt));
 	xAND(eax, 1); //Check sign
 	pjmp2 = JZ8(0); //Skip if not set
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
+		xOR(ptr32[&fpuRegs.fcr31], FPUflagI | FPUflagSI); // Set I and SI flags
 		xAND.PS(xRegisterSSE(regt), ptr[&s_const.pos[0]]); // Make regt Positive
 	x86SetJ8(pjmp2);
 
@@ -958,10 +958,10 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 		xMOVMSKPS(eax, xRegisterSSE(t1reg));
 		xAND(eax, 1); //Check sign (if regd == zero, sign will be set)
 		qjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fcr31], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			qjmp2 = JMP8(0);
 		x86SetJ8(qjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fcr31], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(qjmp2);
 
 		SetMaxValue(regd); //clamp to max

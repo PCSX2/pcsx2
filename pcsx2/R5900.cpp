@@ -64,12 +64,11 @@ void cpuReset()
 	std::memset(&tlb, 0, sizeof(tlb));
 	cachedTlbs.count = 0;
 
-	cpuRegs.pc				= 0xbfc00000; //set pc reg to stack
-	cpuRegs.CP0.n.Config	= 0x440;
-	cpuRegs.CP0.n.Status.val= 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
-	cpuRegs.CP0.n.PRid		= 0x00002e20; // PRevID = Revision ID, same as R5900
-	fpuRegs.fprc[0]			= 0x00002e30; // fpu Revision..
-	fpuRegs.fprc[31]		= 0x01000001; // fpu Status/Control
+	cpuRegs.pc               = 0xbfc00000; //set pc reg to stack
+	cpuRegs.CP0.n.Config     = 0x440;
+	cpuRegs.CP0.n.Status.val = 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
+	cpuRegs.CP0.n.PRid       = 0x00002e20; // PRevID = Revision ID, same as R5900
+	fpuRegs.fcr31            = 0x01000001; // fpu Status/Control
 
 	cpuRegs.nextEventCycle = cpuRegs.cycle + 4;
 	EEsCycle = 0;
