@@ -335,20 +335,24 @@ void NEG_S() {
 }
 
 void RSQRT_S() {
-	FPRreg temp;
 	clearFPUFlags(FPUflagD | FPUflagI);
 
-	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) { // Ft is zero (Denormals are Zero)
-		_ContVal_ |= FPUflagD | FPUflagSD;
-		_FdValUl_ = ( _FtValUl_ & 0x80000000 ) | posFmax;
+	if ( _FtValUl_ & 0x80000000 ) // Ft is negative
+		_ContVal_ |= FPUflagI | FPUflagSI;
+
+	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // Ft is zero (Denormals are Zero)
+	{
+		if ( ( _FsValUl_ & 0x7F800000 ) == 0 )
+			_ContVal_ |= FPUflagI | FPUflagSI; // 0 / 0
+		else
+			_ContVal_ |= FPUflagD | FPUflagSD; // x / 0
+		_FdValUl_ = ( _FsValUl_ & 0x80000000 ) | posFmax;
 		return;
 	}
-	else if ( _FtValUl_ & 0x80000000 ) { // Ft is negative
-		_ContVal_ |= FPUflagI | FPUflagSI;
-		temp.f = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
-		_FdValf_ = fpuDouble( _FsValUl_ ) / fpuDouble( temp.UL );
+	else
+	{
+		_FdValf_ = fpuDouble( _FsValUl_ ) / sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
 	}
-	else { _FdValf_ = fpuDouble( _FsValUl_ ) / sqrt( fpuDouble( _FtValUl_ ) ); } // Ft is positive and not zero
 
 	if (checkOverflow( _FdValUl_, 0)) return;
 	checkUnderflow( _FdValUl_, 0);
@@ -357,13 +361,13 @@ void RSQRT_S() {
 void SQRT_S() {
 	clearFPUFlags(FPUflagI | FPUflagD);
 
-	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
-		_FdValUl_ = _FtValUl_ & 0x80000000;// result is 0
-	else if ( _FtValUl_ & 0x80000000 ) { // If Ft is Negative
+	if ( _FtValUl_ & 0x80000000 ) // Ft is negative
 		_ContVal_ |= FPUflagI | FPUflagSI;
+
+	if ( ( _FtValUl_ & 0x7F800000 ) == 0 ) // If Ft = +/-0
+		_FdValUl_ = 0; // result is 0
+	else
 		_FdValf_ = sqrt( fabs( fpuDouble( _FtValUl_ ) ) );
-	} else
-		_FdValf_ = sqrt( fpuDouble( _FtValUl_ ) ); // If Ft is Positive
 }
 
 void SUB_S() {
