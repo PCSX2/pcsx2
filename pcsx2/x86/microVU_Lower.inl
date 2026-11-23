@@ -127,7 +127,7 @@ mVUop(mVU_RSQRT)
 				xMOV(ptr32[&mVU.divFlag], divI); // Set invalid flag (0/0)
 				xForwardJump8 cjmp;
 			bjmp.SetTarget();
-				xMOV(ptr32[&mVU.divFlag], divD); // Zero divide flag (only when not 0/0)
+				xOR(ptr32[&mVU.divFlag], divD); // Zero divide flag (only when not 0/0)
 			cjmp.SetTarget();
 
 			xAND.PS(Fs, ptr128[mVUglob.signbit]);
