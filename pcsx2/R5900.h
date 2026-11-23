@@ -155,11 +155,13 @@ union FPRreg {
 	s32 SL;				// signed 32bit used for sign extension in interpreters.
 };
 
+static constexpr u32 FPU_REVISION = 0x2e30;
+
 struct fpuRegisters {
-	FPRreg fpr[32];		// 32bit floating point registers
-	u32 fprc[32];		// 32bit floating point control registers
-	FPRreg ACC;			// 32 bit accumulator
-	u32 ACCflag;        // an internal accumulator overflow flag
+	FPRreg fpr[32]; // 32bit floating point registers
+	u32 fcr31;      // FPU status register control registers
+	FPRreg ACC;     // 32 bit accumulator
+	u32 ACCflag;    // an internal accumulator overflow flag
 };
 
 union PageMask_t

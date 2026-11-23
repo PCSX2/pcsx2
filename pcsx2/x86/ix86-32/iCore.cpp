@@ -341,9 +341,9 @@ int _allocX86reg(int type, int reg, int mode)
 			}
 			break;
 
-			case X86TYPE_FPRC:
-				RALOG("Loading guest reg FPCR %d to GPR %d\n", reg, regnum);
-				xMOV(xRegister32(regnum), ptr32[&fpuRegs.fprc[reg]]);
+			case X86TYPE_FCR31:
+				RALOG("Loading guest FP status to GPR %d\n", regnum);
+				xMOV(xRegister32(regnum), ptr32[&fpuRegs.fcr31]);
 				break;
 
 			case X86TYPE_PSX:
@@ -421,9 +421,9 @@ void _writebackX86Reg(int x86reg)
 			xMOV(ptr64[&cpuRegs.GPR.r[x86regs[x86reg].reg].UD[0]], xRegister64(x86reg));
 			break;
 
-		case X86TYPE_FPRC:
-			RALOG("Writing back GPR reg %d for guest reg FPCR %d P2\n", x86reg, x86regs[x86reg].reg);
-			xMOV(ptr32[&fpuRegs.fprc[x86regs[x86reg].reg]], xRegister32(x86reg));
+		case X86TYPE_FCR31:
+			RALOG("Writing back GPR reg %d for guest reg FP status P2\n", x86reg);
+			xMOV(ptr32[&fpuRegs.fcr31], xRegister32(x86reg));
 			break;
 
 		case X86TYPE_VIREG:

@@ -45,7 +45,7 @@
 #define _FAValSl_    fpuRegs.ACC.SL
 
 // FPU Control Reg (FCR31)
-#define _ContVal_    fpuRegs.fprc[ 31 ]
+#define _ContVal_    fpuRegs.fcr31
 
 // FCR31 Flags
 #define FPUflagC	0X00800000
@@ -234,17 +234,15 @@ void C_LT() {
 void CFC1() {
 	if (!_Rt_) return;
 
-	if (_Fs_ == 31)
-		cpuRegs.GPR.r[_Rt_].SD[0] = (s32)fpuRegs.fprc[31];	// force sign extension to 64 bit
-	else if (_Fs_ == 0)
-		cpuRegs.GPR.r[_Rt_].SD[0] = 0x2E00;
+	if (_Fs_ >= 16)
+		cpuRegs.GPR.r[_Rt_].SD[0] = (fpuRegs.fcr31 & 0x0083c078) | 0x01000001;
 	else
-		cpuRegs.GPR.r[_Rt_].SD[0] = 0;
+		cpuRegs.GPR.r[_Rt_].SD[0] = FPU_REVISION;
 }
 
 void CTC1() {
 	if ( _Fs_ != 31 ) return;
-	fpuRegs.fprc[_Fs_] = cpuRegs.GPR.r[_Rt_].UL[0];
+	fpuRegs.fcr31 = cpuRegs.GPR.r[_Rt_].UL[0];
 }
 
 void CVT_S() {

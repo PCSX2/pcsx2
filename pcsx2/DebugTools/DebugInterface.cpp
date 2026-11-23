@@ -467,7 +467,7 @@ u128 R5900DebugInterface::getRegister(int cat, int num)
 			result = u128::From32(fpuRegs.fpr[num].UL);
 			break;
 		case EECAT_FCR:
-			result = u128::From32(fpuRegs.fprc[num]);
+			result = u128::From32(num >= 16 ? fpuRegs.fcr31 : FPU_REVISION);
 			break;
 		case EECAT_VU0F:
 			switch (num)
@@ -565,7 +565,8 @@ void R5900DebugInterface::setRegister(int cat, int num, u128 newValue)
 			fpuRegs.fpr[num].UL = newValue._u32[0];
 			break;
 		case EECAT_FCR:
-			fpuRegs.fprc[num] = newValue._u32[0];
+			if (num == 31)
+				fpuRegs.fcr31 = newValue._u32[0];
 			break;
 		case EECAT_VU0F:
 			switch (num)
