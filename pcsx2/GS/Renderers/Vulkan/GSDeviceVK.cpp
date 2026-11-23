@@ -2865,7 +2865,7 @@ bool GSDeviceVK::CheckFeatures()
 	{
 		m_features.framebuffer_fetch = m_optional_extensions.vk_ext_rasterization_order_attachment_access;
 	}
-	m_features.texture_barrier = GSConfig.OverrideTextureBarriers != 0;
+	m_features.texture_barrier = false; // GSConfig.OverrideTextureBarriers != 0;
 	m_features.multidraw_fb_copy = false;
 	m_features.broken_point_sampler = false;
 
@@ -2892,7 +2892,7 @@ bool GSDeviceVK::CheckFeatures()
 
 	// Buggy drivers with broken barriers probably have no chance using GENERAL layout for depth either...
 	// TODO: VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL ?
-	m_features.test_and_sample_depth = true;
+	m_features.test_and_sample_depth = false;// true;
 
 	// Use D32F depth instead of D32S8 when we have framebuffer fetch.
 	m_features.stencil_buffer &= !m_features.framebuffer_fetch;
@@ -2910,7 +2910,7 @@ bool GSDeviceVK::CheckFeatures()
 	{
 		m_features.depth_feedback &= m_optional_extensions.vk_ext_rasterization_order_attachment_access_depth;
 	}
-	m_features.aa1 = GSConfig.HWAA1 && m_features.vs_expand && m_features.feedback_loops();
+	m_features.aa1 = false;// GSConfig.HWAA1&& m_features.vs_expand&& m_features.feedback_loops();
 
 	if (!m_features.depth_feedback && !m_device_features.independentBlend)
 	{
@@ -2967,10 +2967,11 @@ bool GSDeviceVK::CheckFeatures()
 	m_max_framebuffer_width = m_device_properties.limits.maxFramebufferWidth;
 	m_max_framebuffer_height = m_device_properties.limits.maxFramebufferHeight;
 
-	m_features.rov = m_optional_extensions.vk_ext_fragment_shader_interlock &&
-	                 m_device_features.fragmentStoresAndAtomics &&
-	                 has_rov_storage_flags &&
-	                 !m_features.framebuffer_fetch;
+	m_features.rov = false;
+	//m_optional_extensions.vk_ext_fragment_shader_interlock&&
+	//m_device_features.fragmentStoresAndAtomics &&
+	//has_rov_storage_flags &&
+	//!m_features.framebuffer_fetch;
 
 	return true;
 }

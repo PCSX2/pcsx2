@@ -708,9 +708,9 @@ layout(set = 1, binding = 1) uniform texture2D Palette;
 layout(set = 1, binding = 3) uniform texture2D PrimMinTexture;
 #endif
 
-#if ZWRITE && !PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
-layout(depth_less) out float gl_FragDepth;
-#endif
+//#if ZWRITE && !PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH
+//layout(depth_less) out float gl_FragDepth;
+//#endif
 
 #if NEEDS_TEX
 
@@ -1985,10 +1985,10 @@ void main()
 	
 	// Writing back depth
 	#if PS_RETURN_DEPTH
-		gl_FragDepth = input_z;
+		//gl_FragDepth = input_z;
 		#if PS_FEEDBACK_LOOP_IS_NEEDED_DEPTH && PS_NO_COLOR1 && PS_DEPTH_FEEDBACK_SUPPORT == 2
 			// Output color clone for feedback.
-			o_col1 = input_z;
+			//o_col1 = input_z;
 		#endif
 	#elif PS_RETURN_DEPTH_ROV
 		if (!rov_discard_depth)
