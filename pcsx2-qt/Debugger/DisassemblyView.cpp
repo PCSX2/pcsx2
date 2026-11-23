@@ -1226,7 +1226,7 @@ bool DisassemblyView::FunctionCanRestore(u32 address)
 
 u32 DisassemblyView::GetAddrFromRow(int row)
 {
-	if (row >= m_lines.size())
+	if (static_cast<size_t>(row) >= m_lines.size())
 	{
 		return 0;
 	}
