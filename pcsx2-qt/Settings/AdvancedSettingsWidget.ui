@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>1100</height>
+    <height>1190</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="_2">
@@ -129,7 +129,7 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <layout class="QGridLayout" name="eeSettingsMisc">
         <item row="1" column="0">
          <widget class="QCheckBox" name="eeWaitLoopDetection">
@@ -182,6 +182,36 @@
         </item>
        </layout>
       </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QGroupBox" name="eeSoftFloat">
+        <property name="title">
+         <string>Software Float</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="eeSoftMul">
+           <property name="text">
+            <string>Multiplication</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="eeSoftAddSub">
+           <property name="text">
+            <string>Addition/Subtraction</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="eeSoftDivSqrt">
+           <property name="text">
+            <string>Division/Square Root</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -191,7 +221,7 @@
       <string extracomment="Vector Unit/VU: refers to two of PS2's processors. Do not translate the full text or do so as a comment. Leave the acronym as-is.">Vector Units (VU)</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="vu1RoundingLabel">
         <property name="text">
          <string>VU1 Rounding Mode:</string>
@@ -225,7 +255,67 @@
         </item>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
+       <widget class="QGroupBox" name="vu1SoftFloat">
+        <property name="title">
+         <string>VU1 Software Float</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_8">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="vu1SoftMul">
+           <property name="text">
+            <string>Multiplication</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="vu1SoftAddSub">
+           <property name="text">
+            <string>Addition/Subtraction</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="vu1SoftDivSqrt">
+           <property name="text">
+            <string>Division/Square Root</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QGroupBox" name="vu0SoftFloat">
+        <property name="title">
+         <string>VU0 Software Float</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="vu0SoftMul">
+           <property name="text">
+            <string>Multiplication</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="vu0SoftAddSub">
+           <property name="text">
+            <string>Addition/Subtraction</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="vu0SoftDivSqrt">
+           <property name="text">
+            <string>Division/Square Root</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
        <layout class="QGridLayout" name="vuSettingsLayout">
         <item row="1" column="0">
          <widget class="QCheckBox" name="vuFlagHack">
@@ -301,7 +391,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="vu1ClampLabel">
         <property name="text">
          <string>VU1 Clamping Mode:</string>
@@ -311,7 +401,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QComboBox" name="vu1RoundingMode">
         <item>
          <property name="text">
@@ -335,7 +425,7 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QComboBox" name="vu1ClampMode">
         <item>
          <property name="text">
