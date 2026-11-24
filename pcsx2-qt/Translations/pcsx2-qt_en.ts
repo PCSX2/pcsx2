@@ -3589,11 +3589,6 @@ Unread messages: {2}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="197"/>
-        <source>Enable MFI Driver</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="259"/>
         <source>The XInput source provides support for Xbox 360 / Xbox One / Xbox Series controllers, and third party controllers which implement the XInput protocol.</source>
         <translation type="unfinished"></translation>
@@ -3616,6 +3611,11 @@ Unread messages: {2}</source>
     <message>
         <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="55"/>
         <source>Multitap on Console Port 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Settings/ControllerGlobalSettingsWidget.ui" line="197"/>
+        <source>Enable MFi Driver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7198,12 +7198,12 @@ Do you want to overwrite?</source>
 <context>
     <name>ExpressionParser</name>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1386"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1387"/>
         <source>Invalid memory access size %d.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1392"/>
+        <location filename="../../pcsx2/DebugTools/DebugInterface.cpp" line="1393"/>
         <source>Invalid memory access (unaligned).</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11386,6 +11386,11 @@ which produces much nicer sound during fast-forward/slowdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6564"/>
+        <source>Allow SDL to use Apple&apos;s Game Controller (MFi) framework for controllers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6597"/>
         <source>Enables emulation of the EE&apos;s hardware cache. Interpreter only, provided for diagnostics.</source>
         <translation type="unfinished"></translation>
@@ -11778,11 +11783,6 @@ which produces much nicer sound during fast-forward/slowdown.</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="7185"/>
         <source>Enable IOKit Driver</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="7186"/>
-        <source>Enable MFI Driver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12293,11 +12293,6 @@ which produces much nicer sound during fast-forward/slowdown.</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6563"/>
         <source>Allow SDL to use the IOKit driver for controllers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="6564"/>
-        <source>Allow SDL to use Apple&apos;s GameController (MFI) framework for controllers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13144,6 +13139,11 @@ which produces much nicer sound during fast-forward/slowdown.</source>
     <message>
         <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="7179"/>
         <source>Reset Controller Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../pcsx2/ImGui/FullscreenUI_Settings.cpp" line="7186"/>
+        <source>Enable MFi Driver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
