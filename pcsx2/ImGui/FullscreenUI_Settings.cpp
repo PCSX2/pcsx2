@@ -6561,7 +6561,7 @@ TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers."
 TRANSLATE_NOOP("FullscreenUI", "Provides vibration and LED control support over Bluetooth.");
 TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense controllers.");
 TRANSLATE_NOOP("FullscreenUI", "Allow SDL to use the IOKit driver for controllers.");
-TRANSLATE_NOOP("FullscreenUI", "Allow SDL to use Apple's GameController (MFI) framework for controllers.");
+TRANSLATE_NOOP("FullscreenUI", "Allow SDL to use Apple's Game Controller (MFi) framework for controllers.");
 TRANSLATE_NOOP("FullscreenUI", "Allow SDL to use raw access to input devices.");
 TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The DInput source provides support for legacy controllers which do not support XInput.");
@@ -7183,7 +7183,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable SDL Input Source");
 TRANSLATE_NOOP("FullscreenUI", "DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Enable DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "Enable IOKit Driver");
-TRANSLATE_NOOP("FullscreenUI", "Enable MFI Driver");
+TRANSLATE_NOOP("FullscreenUI", "Enable MFi Driver");
 TRANSLATE_NOOP("FullscreenUI", "Enable SDL Raw Input");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable DInput Input Source");
