@@ -2890,7 +2890,7 @@ void FullscreenUI::DrawClampingModeSetting(SettingsInterface* bsi, const char* t
 }
 
 static constexpr const char* s_resolution_options[] = {
-	FSUI_NSTR("Native (PS2)"),
+	FSUI_NSTR("Native (PS2) (Default)"),
 	FSUI_NSTR("2x Native (~720px/HD)"),
 	FSUI_NSTR("3x Native (~1080px/FHD)"),
 	FSUI_NSTR("4x Native (~1440px/QHD)"),
@@ -3113,6 +3113,20 @@ void FullscreenUI::DrawGraphicsDisplaySettings(SettingsInterface* bsi)
 		"13", //GSRendererType::SW,
 		"11", //GSRendererType::Null
 	};
+	static constexpr const char* s_aspect_ratio_names[] = {
+		FSUI_NSTR("Fit to Window / Fullscreen"),
+		FSUI_NSTR("Auto Standard (4:3 Interlaced / 3:2 Progressive)"),
+		FSUI_NSTR("Standard (4:3)"),
+		FSUI_NSTR("Widescreen (16:9)"),
+		FSUI_NSTR("Native/Full (10:7)"),
+	};
+	static constexpr const char* s_fmv_aspect_ratio_names[] = {
+		FSUI_NSTR("Off (Default)"),
+		FSUI_NSTR("Auto Standard (4:3 Interlaced / 3:2 Progressive)"),
+		FSUI_NSTR("Standard (4:3)"),
+		FSUI_NSTR("Widescreen (16:9)"),
+		FSUI_NSTR("Native/Full (10:7)"),
+	};
 	static constexpr const char* s_bilinear_present_options[] = {
 		FSUI_NSTR("Off"),
 		FSUI_NSTR("Bilinear (Smooth)"),
@@ -3123,10 +3137,10 @@ void FullscreenUI::DrawGraphicsDisplaySettings(SettingsInterface* bsi)
 		FSUI_NSTR("No Deinterlacing"),
 		FSUI_NSTR("Weave (Top Field First, Sawtooth)"),
 		FSUI_NSTR("Weave (Bottom Field First, Sawtooth)"),
-		FSUI_NSTR("Bob (Top Field First)"),
-		FSUI_NSTR("Bob (Bottom Field First)"),
-		FSUI_NSTR("Blend (Top Field First, Half FPS)"),
-		FSUI_NSTR("Blend (Bottom Field First, Half FPS)"),
+		FSUI_NSTR("Bob (Top Field First, Full Frames)"),
+		FSUI_NSTR("Bob (Bottom Field First, Full Frames)"),
+		FSUI_NSTR("Blend (Top Field First, Merge 2 Fields)"),
+		FSUI_NSTR("Blend (Bottom Field First, Merge 2 Fields)"),
 		FSUI_NSTR("Adaptive (Top Field First)"),
 		FSUI_NSTR("Adaptive (Bottom Field First)"),
 	};
@@ -3139,11 +3153,11 @@ void FullscreenUI::DrawGraphicsDisplaySettings(SettingsInterface* bsi)
 
 	MenuHeading(FSUI_CSTR("Display"));
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS, "Aspect Ratio"), FSUI_CSTR("Selects the aspect ratio to display the game content at."),
-		"EmuCore/GS", "AspectRatio", "Auto 4:3/3:2", Pcsx2Config::GSOptions::AspectRatioNames, Pcsx2Config::GSOptions::AspectRatioNames, 0,
-		false);
+		"EmuCore/GS", "AspectRatio", "Auto 4:3/3:2", s_aspect_ratio_names, Pcsx2Config::GSOptions::AspectRatioNames,
+		std::size(s_aspect_ratio_names), true);
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "FMV Aspect Ratio Override"),
 		FSUI_CSTR("Selects the aspect ratio for display when a FMV is detected as playing."), "EmuCore/GS", "FMVAspectRatioSwitch",
-		"Off", Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, 0, false);
+		"Off", s_fmv_aspect_ratio_names, Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, std::size(s_fmv_aspect_ratio_names), true);
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Deinterlacing"),
 		FSUI_CSTR("Determines the deinterlacing method to be used on the interlaced screen of the emulated console.\nAutomatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."), "EmuCore/GS",
 		"deinterlace_mode", static_cast<int>(GSInterlaceMode::Automatic), s_deinterlacing_options, std::size(s_deinterlacing_options),
@@ -3349,7 +3363,7 @@ void FullscreenUI::DrawGraphicsHardwareFixesSettings(SettingsInterface* bsi)
 		FSUI_NSTR("2 (Aggressive)"),
 	};
 	static constexpr const char* s_texture_inside_rt_options[] = {
-		FSUI_NSTR("Disabled"),
+		FSUI_NSTR("Disabled (Default)"),
 		FSUI_NSTR("Inside Target"),
 		FSUI_NSTR("Merge Targets"),
 	};
@@ -3538,7 +3552,7 @@ void FullscreenUI::DrawGraphicsPostProcessingSettings(SettingsInterface* bsi)
 {
 	BeginMenuButtons();
 
-	MenuHeading(FSUI_CSTR("Post-Processing"));
+	MenuHeading(FSUI_CSTR("Sharpening/Anti-Aliasing"));
 	{
 		static constexpr const char* s_cas_options[] = {
 			FSUI_NSTR("None (Default)"),
@@ -3724,6 +3738,11 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 		FSUI_NSTR("Force Disabled"),
 		FSUI_NSTR("Force Enabled"),
 	};
+	static constexpr const char* s_exclusive_fullscreen_options[] = {
+		FSUI_NSTR("Automatic (Default)"),
+		FSUI_NSTR("Disallowed"),
+		FSUI_NSTR("Allowed"),
+	};
 	static constexpr const char* s_hw_download[] = {
 		FSUI_NSTR("Accurate (Recommended)"),
 		FSUI_NSTR("Accurate Force Full (Can Reduce Readbacks)"),
@@ -3738,7 +3757,7 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 	};
 	static constexpr const char* s_depth_feedback_modes[] = {
 		FSUI_NSTR("None"),
-		FSUI_NSTR("Auto"),
+		FSUI_NSTR("Auto (Default)"),
 		FSUI_NSTR("Depth"),
 		FSUI_NSTR("Depth as RT"),
 	};
@@ -3793,7 +3812,7 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 #ifdef _WIN32
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Allow Exclusive Fullscreen"),
 		FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
-		"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1, is_vk);
+		"ExclusiveFullscreenControl", -1, s_exclusive_fullscreen_options, std::size(s_exclusive_fullscreen_options), true, -1, is_vk);
 #endif
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Depth Feedback Mode"),
 		FSUI_CSTR("Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). "
