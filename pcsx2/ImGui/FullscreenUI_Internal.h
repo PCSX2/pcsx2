@@ -202,6 +202,18 @@ namespace FullscreenUI
 		Hotkeys,
 	};
 
+	enum class GraphicsCategory
+	{
+		Display,
+		Rendering,
+		HardwareFixes,
+		UpscalingFixes,
+		TextureReplacement,
+		PostProcessing,
+		MediaCapture,
+		Advanced,
+	};
+
 	enum class GameListView
 	{
 		Grid,
@@ -428,6 +440,15 @@ namespace FullscreenUI
 	void DrawBIOSSettingsPage();
 	void DrawEmulationSettingsPage();
 	void DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_advanced_settings);
+	void DrawGraphicsDisplaySettings(SettingsInterface* bsi);
+	void DrawGraphicsRenderingSettings(SettingsInterface* bsi, bool is_hardware, bool hw_fixes_visible,
+		GSRendererType effective_renderer, u32 max_upscale_multiplier, bool supports_extended_upscales);
+	void DrawGraphicsHardwareFixesSettings(SettingsInterface* bsi);
+	void DrawGraphicsUpscalingFixesSettings(SettingsInterface* bsi);
+	void DrawGraphicsTextureReplacementSettings(SettingsInterface* bsi);
+	void DrawGraphicsPostProcessingSettings(SettingsInterface* bsi);
+	void DrawGraphicsMediaCaptureSettings(SettingsInterface* bsi);
+	void DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRendererType renderer, bool supports_extended_upscales);
 	void DrawOSDSettingsPage();
 	void DrawAudioSettingsPage();
 	void DrawMemoryCardSettingsPage();
@@ -540,6 +561,8 @@ namespace FullscreenUI
 	inline ControllerCategory s_controller_category = ControllerCategory::Global;
 	inline u32 s_controller_index = 0; // pad slot or USB port
 	inline SidebarState s_controller_sidebar;
+	inline GraphicsCategory s_graphics_category = GraphicsCategory::Display;
+	inline SidebarState s_graphics_sidebar;
 	inline std::unique_ptr<INISettingsInterface> s_game_settings_interface;
 	inline std::unique_ptr<GameList::Entry> s_game_settings_entry;
 	inline std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
