@@ -1072,6 +1072,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 	const bool is_vk = (type == GSRendererType::VK);
 	const bool is_ogl = (type == GSRendererType::OGL);
 	const bool is_disable_barriers = (type == GSRendererType::Metal || type == GSRendererType::SW);
+	const bool is_disable_depth_feedback = (type == GSRendererType::SW || type == GSRendererType::DX12);
 	const bool hw_fixes = (is_hardware && m_hw.enableHWFixes && m_hw.enableHWFixes->checkState() == Qt::Checked);
 
 	QWidget* prev_tab;
@@ -1106,6 +1107,9 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 
 	if (m_advanced.overrideTextureBarriers)
 		m_advanced.overrideTextureBarriers->setDisabled(is_disable_barriers);
+
+	if (m_advanced.depthFeedback)
+		m_advanced.depthFeedback->setDisabled(is_disable_depth_feedback);
 
 	if (m_advanced.disableFramebufferFetch)
 		m_advanced.disableFramebufferFetch->setDisabled(is_sw_dx);
