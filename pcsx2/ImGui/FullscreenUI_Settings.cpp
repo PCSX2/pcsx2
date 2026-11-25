@@ -2996,8 +2996,10 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 #endif
 
 	const bool show_hw_fixes = hw_fixes_visible && GetEffectiveBoolSetting(bsi, "EmuCore/GS", "UserHacks", false);
+	const bool show_rendering = (effective_renderer != GSRendererType::Null);
 
-	if ((!show_hw_fixes && (s_graphics_category == GraphicsCategory::HardwareFixes || s_graphics_category == GraphicsCategory::UpscalingFixes)) ||
+	if ((!show_rendering && s_graphics_category == GraphicsCategory::Rendering) ||
+		(!show_hw_fixes && (s_graphics_category == GraphicsCategory::HardwareFixes || s_graphics_category == GraphicsCategory::UpscalingFixes)) ||
 		(!is_hardware && s_graphics_category == GraphicsCategory::TextureReplacement) ||
 		(!show_advanced_settings && s_graphics_category == GraphicsCategory::Advanced))
 	{
@@ -3016,7 +3018,8 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 	BeginSidebar("graphics_sidebar", LayoutScale(LAYOUT_SIDEBAR_WIDTH), s_graphics_sidebar);
 
 	sidebar_item(GraphicsCategory::Display, FSUI_CSTR("Display"), ICON_FA_TV);
-	sidebar_item(GraphicsCategory::Rendering, FSUI_CSTR("Rendering"), ICON_FA_PAINTBRUSH);
+	if (show_rendering)
+		sidebar_item(GraphicsCategory::Rendering, FSUI_CSTR("Rendering"), ICON_FA_PAINTBRUSH);
 	if (show_hw_fixes)
 	{
 		sidebar_item(GraphicsCategory::HardwareFixes, FSUI_CSTR("Hardware Fixes"), ICON_FA_TOOLBOX);
@@ -3065,7 +3068,7 @@ void FullscreenUI::DrawGraphicsSettingsPage(SettingsInterface* bsi, bool show_ad
 				break;
 
 			case GraphicsCategory::Advanced:
-				DrawGraphicsAdvancedSettings(bsi, renderer, supports_extended_upscales);
+				DrawGraphicsAdvancedSettings(bsi, effective_renderer, supports_extended_upscales);
 				break;
 		}
 	}
@@ -3140,7 +3143,7 @@ void FullscreenUI::DrawGraphicsDisplaySettings(SettingsInterface* bsi)
 		false);
 	DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "FMV Aspect Ratio Override"),
 		FSUI_CSTR("Selects the aspect ratio for display when a FMV is detected as playing."), "EmuCore/GS", "FMVAspectRatioSwitch",
-		"Auto 4:3/3:2", Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, 0, false);
+		"Off", Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, Pcsx2Config::GSOptions::FMVAspectRatioSwitchNames, 0, false);
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TV, "Deinterlacing"),
 		FSUI_CSTR("Determines the deinterlacing method to be used on the interlaced screen of the emulated console.\nAutomatic should be able to correctly deinterlace most games, but if you see visibly shaky graphics, try one of the other options."), "EmuCore/GS",
 		"deinterlace_mode", static_cast<int>(GSInterlaceMode::Automatic), s_deinterlacing_options, std::size(s_deinterlacing_options),
@@ -3162,7 +3165,7 @@ void FullscreenUI::DrawGraphicsDisplaySettings(SettingsInterface* bsi)
 	}
 
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLE_CELLS, "Bilinear Filtering"), FSUI_CSTR("Smooths out the image when upscaling the console to the screen."),
-		"EmuCore/GS", "linear_present_mode", static_cast<int>(GSPostBilinearMode::BilinearSharp), s_bilinear_present_options,
+		"EmuCore/GS", "linear_present_mode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_BILINEAR_FILTERING_MODE), s_bilinear_present_options,
 		std::size(s_bilinear_present_options), true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SQUARE_ARROW_UP_RIGHT, "Integer Scaling"),
 		FSUI_CSTR("Adds padding to the display area to ensure that the ratio between pixels on the host to pixels in the console is an "
@@ -3259,18 +3262,25 @@ void FullscreenUI::DrawGraphicsRenderingSettings(SettingsInterface* bsi, bool is
 	MenuHeading(FSUI_CSTR("Rendering"));
 	if (is_hardware)
 	{
+		const bool forced_trilinear = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "TriFilter",
+										   static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TRILINEAR_FILTERING_MODE)) >= static_cast<int>(TriFiltering::Forced));
+		const bool gpu_palette_conversion = GetEffectiveBoolSetting(bsi, "EmuCore/GS", "UserHacks", false) &&
+		                                    GetEffectiveBoolSetting(bsi, "EmuCore/GS", "paltex", false);
+
 		DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE, "Internal Resolution"),
 			FSUI_CSTR("Multiplies the render resolution by the specified factor (upscaling)."), "EmuCore/GS", "upscale_multiplier",
 			"1.000000", s_shown_resolution_options, s_shown_resolution_values, num_resolutions, true);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLE_CELLS_LARGE, "Texture Filtering"),
 			FSUI_CSTR("Selects where bilinear filtering is utilized when rendering textures."), "EmuCore/GS", "filter",
-			static_cast<int>(BiFiltering::PS2), s_bilinear_options, std::size(s_bilinear_options), true);
+			static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TEXTURE_FILTERING_MODE), s_bilinear_options, std::size(s_bilinear_options), true, 0,
+			!forced_trilinear);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLE_CELLS_LARGE, "Trilinear Filtering"),
 			FSUI_CSTR("Selects where trilinear filtering is utilized when rendering textures."), "EmuCore/GS", "TriFilter",
 			static_cast<int>(TriFiltering::Automatic), s_trilinear_options, std::size(s_trilinear_options), true, -1);
 		DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_EYE_LOW_VISION, "Anisotropic Filtering"),
 			FSUI_CSTR("Reduces texture aliasing at extreme viewing angles."), "EmuCore/GS", "MaxAnisotropy", "0",
-			s_anisotropic_filtering_entries, s_anisotropic_filtering_values, std::size(s_anisotropic_filtering_entries), true);
+			s_anisotropic_filtering_entries, s_anisotropic_filtering_values, std::size(s_anisotropic_filtering_entries), true,
+			!gpu_palette_conversion);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_DROPLET_SLASH, "Dithering"), FSUI_CSTR("Selects the type of dithering applies when the game requests it."),
 			"EmuCore/GS", "dithering_ps2", 2, s_dithering_options, std::size(s_dithering_options), true);
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SPLOTCH, "Blending Accuracy"),
@@ -3298,6 +3308,9 @@ void FullscreenUI::DrawGraphicsRenderingSettings(SettingsInterface* bsi, bool is
 	}
 	else
 	{
+		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_TABLE_CELLS_LARGE, "Texture Filtering"),
+			FSUI_CSTR("Selects where bilinear filtering is utilized when rendering textures."), "EmuCore/GS", "filter",
+			static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_TEXTURE_FILTERING_MODE), s_bilinear_options, std::size(s_bilinear_options), true);
 		DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_USERS, "Software Rendering Threads"),
 			FSUI_CSTR("Number of threads to use in addition to the main GS thread for rasterization."), "EmuCore/GS", "extrathreads", 2, 0,
 			10);
@@ -3356,6 +3369,8 @@ void FullscreenUI::DrawGraphicsHardwareFixesSettings(SettingsInterface* bsi)
 		FSUI_NSTR("Prioritize Lower Bits"),
 	};
 
+	const bool cpu_sprite_render_enabled = (GetEffectiveIntSetting(bsi, "EmuCore/GS", "UserHacks_CPUSpriteRenderBW", 0) != 0);
+
 	BeginMenuButtons();
 
 	MenuHeading(FSUI_CSTR("Hardware Fixes"));
@@ -3364,7 +3379,7 @@ void FullscreenUI::DrawGraphicsHardwareFixesSettings(SettingsInterface* bsi)
 		"UserHacks_CPUSpriteRenderBW", 0, s_cpu_sprite_render_bw_options, std::size(s_cpu_sprite_render_bw_options), true);
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHAPES, "CPU Sprite Render Level"), FSUI_CSTR("Determines filter level for CPU sprite render."),
 		"EmuCore/GS", "UserHacks_CPUSpriteRenderLevel", 0, s_cpu_sprite_render_level_options,
-		std::size(s_cpu_sprite_render_level_options), true);
+		std::size(s_cpu_sprite_render_level_options), true, 0, cpu_sprite_render_enabled);
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_PALETTE, "Software CLUT Render"),
 		FSUI_CSTR("Tries to detect when a game is drawing its own color palette and then renders it in software, instead of on the GPU."), "EmuCore/GS", "UserHacks_CPUCLUTRender", 0,
 		s_cpu_clut_render_options, std::size(s_cpu_clut_render_options), true);
@@ -3702,7 +3717,7 @@ void FullscreenUI::DrawGraphicsMediaCaptureSettings(SettingsInterface* bsi)
 	EndMenuButtons();
 }
 
-void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRendererType renderer, bool supports_extended_upscales)
+void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRendererType effective_renderer, bool supports_extended_upscales)
 {
 	static constexpr const char* s_generic_options[] = {
 		FSUI_NSTR("Automatic (Default)"),
@@ -3733,6 +3748,23 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 		FSUI_NSTR("Zstandard (zst)"),
 	};
 
+#ifdef _WIN32
+	const bool is_dx11 = (effective_renderer == GSRendererType::DX11 || effective_renderer == GSRendererType::SW);
+	const bool is_sw_dx = (effective_renderer == GSRendererType::DX11 || effective_renderer == GSRendererType::DX12 ||
+						   effective_renderer == GSRendererType::SW);
+#else
+	const bool is_dx11 = false;
+	const bool is_sw_dx = false;
+#endif
+	const bool is_vk = (effective_renderer == GSRendererType::VK);
+	const bool is_disable_barriers = (effective_renderer == GSRendererType::Metal || effective_renderer == GSRendererType::SW);
+	const bool is_disable_depth_feedback = (effective_renderer == GSRendererType::SW || effective_renderer == GSRendererType::DX12);
+#ifndef PCSX2_DEVBUILD
+	const bool show_hw_download_mode = IsEditingGameSettings(bsi);
+#else
+	const bool show_hw_download_mode = true;
+#endif
+
 	BeginMenuButtons();
 
 	MenuHeading(FSUI_CSTR("Advanced Options"));
@@ -3748,30 +3780,31 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 		FSUI_CSTR("Uses a blit presentation model instead of flipping when using the Direct3D 11 "
 				  "graphics API. This usually results in slower performance, but may be required for some "
 				  "streaming applications, or to uncap framerates on some systems."),
-		"EmuCore/GS", "UseBlitSwapChain", false, renderer == GSRendererType::DX11);
+		"EmuCore/GS", "UseBlitSwapChain", false, is_dx11);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_UP_RIGHT_FROM_SQUARE, "Extended Upscaling Multipliers"),
 		FSUI_CSTR("Displays additional, very high upscaling multipliers dependent on GPU and driver capability."),
 		"EmuCore/GS", "ExtendedUpscalingMultipliers", false, supports_extended_upscales);
-	if (IsEditingGameSettings(bsi))
+	if (show_hw_download_mode)
 	{
 		DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "Hardware Download Mode"), FSUI_CSTR("Changes synchronization behavior for GS downloads."),
 			"EmuCore/GS", "HWDownloadMode", static_cast<int>(GSHardwareDownloadMode::Enabled), s_hw_download, std::size(s_hw_download),
 			true);
 	}
+#ifdef _WIN32
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Allow Exclusive Fullscreen"),
 		FSUI_CSTR("Overrides the driver's heuristics for enabling exclusive fullscreen, or direct flip/scanout."), "EmuCore/GS",
-		"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1,
-		(renderer == GSRendererType::Auto || renderer == GSRendererType::VK));
+		"ExclusiveFullscreenControl", -1, s_generic_options, std::size(s_generic_options), true, -1, is_vk);
+#endif
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_LAYER_GROUP, "Depth Feedback Mode"),
 		FSUI_CSTR("Depth feedback mode to use for AAT (accurate alpha test) and AA1 (antialiasing). "
 				  "'Depth as RT' is more compatible though slower than 'Depth'. Keep at Auto unless testing."),
 		"EmuCore/GS", "DepthFeedbackMode", static_cast<int>(GSDepthFeedbackMode::Auto), s_depth_feedback_modes,
-		std::size(s_depth_feedback_modes), true, 0, renderer != GSRendererType::SW);
+		std::size(s_depth_feedback_modes), true, 0, !is_disable_depth_feedback);
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ZIPPER, "GS Dump Compression"), FSUI_CSTR("Change the compression algorithm used when creating a GS dump."), "EmuCore/GS",
-		"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::LZMA), s_gsdump_compression, std::size(s_gsdump_compression), true);
+		"GSDumpCompression", static_cast<int>(GSDumpCompressionMethod::Zstandard), s_gsdump_compression, std::size(s_gsdump_compression), true);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ROAD_BARRIER, "ROV Barriers Vulkan"),
 		FSUI_CSTR("Forces extra barriers when using ROV with Vulkan to fix graphical issues present in some games and hardware configurations."),
-		"EmuCore/GS", "HWROVBarriersVK", false);
+		"EmuCore/GS", "HWROVBarriersVK", false, is_vk);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "Spin CPU During Readbacks"),
 		FSUI_CSTR("Does useless work on the CPU during readbacks to prevent it from going into powersave modes. "
 				  "May improve performance during readbacks but with a significant increase in power usage."),
@@ -3795,9 +3828,10 @@ void FullscreenUI::DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRender
 	MenuHeading(FSUI_CSTR("Debugging Options"));
 	DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SHIELD_HALVED, "Override Texture Barriers"),
 		FSUI_CSTR("Forces texture barrier functionality to the specified value."), "EmuCore/GS", "OverrideTextureBarriers", -1,
-		s_generic_options, std::size(s_generic_options), true, -1);
+		s_generic_options, std::size(s_generic_options), true, -1, !is_disable_barriers);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Framebuffer Fetch"),
-		FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false);
+		FSUI_CSTR("Prevents the usage of framebuffer fetch when supported by host GPU."), "EmuCore/GS", "DisableFramebufferFetch", false,
+		!is_sw_dx);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Shader Cache"), FSUI_CSTR("Prevents the loading and saving of shaders/pipelines to disk."),
 		"EmuCore/GS", "DisableShaderCache", false);
 	DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BAN, "Disable Vertex Shader Expand"), FSUI_CSTR("Falls back to the CPU for expanding sprites/lines."),

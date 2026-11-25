@@ -448,7 +448,7 @@ namespace FullscreenUI
 	void DrawGraphicsTextureReplacementSettings(SettingsInterface* bsi);
 	void DrawGraphicsPostProcessingSettings(SettingsInterface* bsi);
 	void DrawGraphicsMediaCaptureSettings(SettingsInterface* bsi);
-	void DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRendererType renderer, bool supports_extended_upscales);
+	void DrawGraphicsAdvancedSettings(SettingsInterface* bsi, GSRendererType effective_renderer, bool supports_extended_upscales);
 	void DrawOSDSettingsPage();
 	void DrawAudioSettingsPage();
 	void DrawMemoryCardSettingsPage();
