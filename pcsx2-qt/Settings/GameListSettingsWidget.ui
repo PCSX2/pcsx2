@@ -69,7 +69,7 @@
            <string>Add...</string>
           </property>
           <property name="icon">
-           <iconset theme="folder-add-line"/>
+           <iconset theme="folder-add-fill"/>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -88,7 +88,7 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset theme="folder-reduce-line"/>
+           <iconset theme="folder-reduce-fill"/>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -151,7 +151,7 @@
            <string>Directory...</string>
           </property>
           <property name="icon">
-           <iconset theme="folder-add-line"/>
+           <iconset theme="folder-add-fill"/>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -170,7 +170,7 @@
            <string>File...</string>
           </property>
           <property name="icon">
-           <iconset theme="file-add-line"/>
+           <iconset theme="file-plus-fill"/>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -189,7 +189,7 @@
            <string>Remove</string>
           </property>
           <property name="icon">
-           <iconset theme="file-reduce-line"/>
+           <iconset theme="file-minus-fill"/>
           </property>
           <property name="toolButtonStyle">
            <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -228,7 +228,7 @@
            <string>Scan For New Games</string>
           </property>
           <property name="icon">
-           <iconset theme="file-search-line"/>
+           <iconset theme="file-search-fill"/>
           </property>
          </widget>
         </item>

@@ -43,7 +43,7 @@
       <string>&amp;Change Disc</string>
      </property>
      <property name="icon">
-      <iconset theme="disc-eject-line"/>
+      <iconset theme="eject-fill"/>
      </property>
      <actiongroup name="actionGroupChangeDiscSubImages"/>
      <addaction name="actionChangeDiscFromFile"/>
@@ -57,7 +57,7 @@
       <string>&amp;Load State</string>
      </property>
      <property name="icon">
-      <iconset theme="floppy-out-line"/>
+      <iconset theme="floppy-out-fill"/>
      </property>
     </widget>
     <widget class="QMenu" name="menuSaveState">
@@ -65,7 +65,7 @@
       <string>Sa&amp;ve State</string>
      </property>
      <property name="icon">
-      <iconset theme="floppy-in-line"/>
+      <iconset theme="floppy-in-fill"/>
      </property>
     </widget>
     <addaction name="actionStartFile"/>
@@ -137,7 +137,7 @@
       <string>&amp;Switch Graphics API</string>
      </property>
      <property name="icon">
-      <iconset theme="brush-line"/>
+      <iconset theme="brush-fill"/>
      </property>
     </widget>
     <addaction name="menuDebugSwitchRenderer"/>
@@ -159,7 +159,7 @@
       <string>&amp;Window Size</string>
      </property>
      <property name="icon">
-      <iconset theme="window-2-line"/>
+      <iconset theme="enbiggen-fill"/>
      </property>
     </widget>
     <addaction name="actionViewToolbar"/>
@@ -190,7 +190,7 @@
       <string>&amp;Input Recording</string>
      </property>
      <property name="icon">
-      <iconset theme="keyboard-line"/>
+      <iconset theme="keyboard-fill"/>
      </property>
      <addaction name="actionInputRecNew"/>
      <addaction name="actionInputRecPlay"/>
@@ -276,7 +276,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStartFile">
    <property name="icon">
-    <iconset theme="file-line"/>
+    <iconset theme="file-fill"/>
    </property>
    <property name="text">
     <string>Start &amp;File...</string>
@@ -284,7 +284,7 @@
   </action>
   <action name="actionToolbarStartFile">
    <property name="icon">
-    <iconset theme="file-line"/>
+    <iconset theme="file-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Start File</string>
@@ -292,7 +292,7 @@
   </action>
   <action name="actionStartDisc">
    <property name="icon">
-    <iconset theme="disc-2-line"/>
+    <iconset theme="disc-fill"/>
    </property>
    <property name="text">
     <string>Start D&amp;isc...</string>
@@ -300,7 +300,7 @@
   </action>
   <action name="actionToolbarStartDisc">
    <property name="icon">
-    <iconset theme="disc-2-line"/>
+    <iconset theme="disc-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Start Disc</string>
@@ -308,7 +308,7 @@
   </action>
   <action name="actionStartBios">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset theme="chip-fill"/>
    </property>
    <property name="text">
     <string>Start &amp;BIOS</string>
@@ -316,7 +316,7 @@
   </action>
   <action name="actionToolbarStartBios">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset theme="chip-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Start BIOS</string>
@@ -324,7 +324,7 @@
   </action>
   <action name="actionScanForNewGames">
    <property name="icon">
-    <iconset theme="file-search-line"/>
+    <iconset theme="file-search-fill"/>
    </property>
    <property name="text">
     <string>&amp;Scan For New Games</string>
@@ -383,7 +383,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pause-line"/>
+    <iconset theme="pause-fill"/>
    </property>
    <property name="text">
     <string>&amp;Pause</string>
@@ -394,7 +394,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pause-line"/>
+    <iconset theme="pause-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Pause</string>
@@ -402,7 +402,7 @@
   </action>
   <action name="actionToolbarLoadState">
    <property name="icon">
-    <iconset theme="floppy-out-line"/>
+    <iconset theme="floppy-out-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Load State</string>
@@ -410,7 +410,7 @@
   </action>
   <action name="actionToolbarSaveState">
    <property name="icon">
-    <iconset theme="floppy-in-line"/>
+    <iconset theme="floppy-in-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Save State</string>
@@ -418,7 +418,7 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset theme="door-open-line"/>
+    <iconset theme="exit-line"/>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -426,7 +426,7 @@
   </action>
   <action name="actionBIOSSettings">
    <property name="icon">
-    <iconset theme="chip-line"/>
+    <iconset theme="chip-fill"/>
    </property>
    <property name="text">
     <string>&amp;BIOS</string>
@@ -442,7 +442,7 @@
   </action>
   <action name="actionControllerSettings">
    <property name="icon">
-    <iconset theme="controller-line"/>
+    <iconset theme="controller-fill"/>
    </property>
    <property name="text">
     <string>&amp;Controllers</string>
@@ -450,7 +450,7 @@
   </action>
   <action name="actionToolbarControllerSettings">
    <property name="icon">
-    <iconset theme="controller-line"/>
+    <iconset theme="controller-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Controllers</string>
@@ -458,7 +458,7 @@
   </action>
   <action name="actionHotkeySettings">
    <property name="icon">
-    <iconset theme="keyboard-line"/>
+    <iconset theme="keyboard-fill"/>
    </property>
    <property name="text">
     <string>&amp;Hotkeys</string>
@@ -466,7 +466,7 @@
   </action>
   <action name="actionToolbarHotkeySettings">
    <property name="icon">
-    <iconset theme="keyboard-line"/>
+    <iconset theme="keyboard-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Hotkeys</string>
@@ -482,7 +482,7 @@
   </action>
   <action name="actionAchievementSettings">
    <property name="icon">
-    <iconset theme="trophy-line"/>
+    <iconset theme="trophy-fill"/>
    </property>
    <property name="text">
     <string>Achie&amp;vements</string>
@@ -524,7 +524,7 @@
   </action>
   <action name="actionSupportForums">
    <property name="icon">
-    <iconset theme="at"/>
+    <iconset theme="at-line"/>
    </property>
    <property name="text">
     <string>Support &amp;Forums...</string>
@@ -532,7 +532,7 @@
   </action>
   <action name="actionWiki">
    <property name="icon">
-    <iconset theme="book"/>
+    <iconset theme="book-atlas-fill"/>
    </property>
    <property name="text">
     <string>PCSX2 &amp;Wiki...</string>
@@ -540,7 +540,7 @@
   </action>
   <action name="actionDocumentation">
    <property name="icon">
-    <iconset theme="booklet"/>
+    <iconset theme="book-fill"/>
    </property>
    <property name="text">
     <string>D&amp;ocumentation...</string>
@@ -556,7 +556,7 @@
   </action>
   <action name="actionCheckForUpdates">
    <property name="icon">
-    <iconset theme="download-2-line"/>
+    <iconset theme="download-line"/>
    </property>
    <property name="text">
     <string>Check for &amp;Updates...</string>
@@ -582,7 +582,7 @@
   </action>
   <action name="actionToolbarChangeDisc">
    <property name="icon">
-    <iconset theme="disc-eject-line"/>
+    <iconset theme="eject-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Change Disc...</string>
@@ -590,7 +590,7 @@
   </action>
   <action name="actionAudioSettings">
    <property name="icon">
-    <iconset theme="volume-up-line"/>
+    <iconset theme="volume-up-fill"/>
    </property>
    <property name="text">
     <string>&amp;Audio</string>
@@ -598,7 +598,7 @@
   </action>
   <action name="actionOSDSettings">
    <property name="icon">
-    <iconset theme="heart-circle-line"/>
+    <iconset theme="dashboard-fill"/>
    </property>
    <property name="text">
     <string>&amp;On-Screen Display</string>
@@ -606,7 +606,7 @@
   </action>
   <action name="actionGameListSettings">
    <property name="icon">
-    <iconset theme="folder-open-line"/>
+    <iconset theme="folder-open-fill"/>
    </property>
    <property name="text">
     <string>Game &amp;List</string>
@@ -614,7 +614,7 @@
   </action>
   <action name="actionInterfaceSettings">
    <property name="icon">
-    <iconset theme="interface-line"/>
+    <iconset theme="interface-fill"/>
    </property>
    <property name="text">
     <string>&amp;Interface</string>
@@ -622,7 +622,7 @@
   </action>
   <action name="actionAddGameDirectory">
    <property name="icon">
-    <iconset theme="folder-add-line"/>
+    <iconset theme="folder-add-fill"/>
    </property>
    <property name="text">
     <string>Add Game &amp;Directory...</string>
@@ -630,7 +630,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset theme="settings-fill"/>
    </property>
    <property name="text">
     <string>S&amp;ettings</string>
@@ -641,7 +641,7 @@
   </action>
   <action name="actionToolbarSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset theme="settings-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Settings</string>
@@ -677,7 +677,7 @@
   </action>
   <action name="actionScreenshot">
    <property name="icon">
-    <iconset theme="screenshot-2-line"/>
+    <iconset theme="screenshot-fill"/>
    </property>
    <property name="text">
     <string>&amp;Screenshot</string>
@@ -685,7 +685,7 @@
   </action>
   <action name="actionToolbarScreenshot">
    <property name="icon">
-    <iconset theme="screenshot-2-line"/>
+    <iconset theme="screenshot-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">Screenshot</string>
@@ -693,7 +693,7 @@
   </action>
   <action name="actionMemoryCardSettings">
    <property name="icon">
-    <iconset theme="memcard-line"/>
+    <iconset theme="memcard-fill"/>
    </property>
    <property name="text">
     <string>&amp;Memory Cards</string>
@@ -709,7 +709,7 @@
   </action>
   <action name="actionFolderSettings">
    <property name="icon">
-    <iconset theme="folder-settings-line"/>
+    <iconset theme="folder-settings-fill"/>
    </property>
    <property name="text">
     <string>&amp;Folders</string>
@@ -766,7 +766,7 @@
   </action>
   <action name="actionViewGameList">
    <property name="icon">
-    <iconset theme="list-check"/>
+    <iconset theme="list-fill"/>
    </property>
    <property name="text">
     <string>Game &amp;List</string>
@@ -788,7 +788,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="file-settings-line"/>
+    <iconset theme="file-settings-fill"/>
    </property>
    <property name="text">
     <string>Game &amp;Properties</string>
@@ -810,7 +810,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="price-tag-3-line"/>
+    <iconset theme="price-tag-fill"/>
    </property>
    <property name="text">
     <string>Show Titl&amp;es (Grid View)</string>
@@ -824,7 +824,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset theme="price-tag-2-line"/>
+    <iconset theme="price-tag-list-fill"/>
    </property>
    <property name="text">
     <string>Show F&amp;ull Titles (Grid View)</string>
@@ -832,7 +832,7 @@
   </action>
   <action name="actionGridViewZoomIn">
    <property name="icon">
-    <iconset theme="zoom-in-line"/>
+    <iconset theme="zoom-in-fill"/>
    </property>
    <property name="text">
     <string>Zoom &amp;In (Grid View)</string>
@@ -862,7 +862,7 @@
   </action>
   <action name="actionOpen_Memory_Card_Directory">
    <property name="icon">
-    <iconset theme="memcard-line"/>
+    <iconset theme="memcard-fill"/>
    </property>
    <property name="text">
     <string>Open Memory Card Directory...</string>
@@ -870,7 +870,7 @@
   </action>
   <action name="actionOpenDataDirectory">
    <property name="icon">
-    <iconset theme="folder-open-line"/>
+    <iconset theme="folder-open-fill"/>
    </property>
    <property name="text">
     <string>&amp;Open Data Directory...</string>
@@ -878,7 +878,7 @@
   </action>
   <action name="actionToggleSoftwareRendering">
    <property name="icon">
-    <iconset theme="brush-line"/>
+    <iconset theme="brush-fill"/>
    </property>
    <property name="text">
     <string>&amp;Toggle Software Rendering</string>
@@ -886,7 +886,7 @@
   </action>
   <action name="actionDebugger">
    <property name="icon">
-    <iconset theme="bug-line"/>
+    <iconset theme="bug-fill"/>
    </property>
    <property name="text">
     <string>&amp;Open Debugger</string>
@@ -950,7 +950,7 @@
   </action>
   <action name="actionSaveGSDump">
    <property name="icon">
-    <iconset theme="save-3-line"/>
+    <iconset theme="save-fill"/>
    </property>
    <property name="text">
     <string>Save Single Frame &amp;GS Dump</string>
@@ -1051,7 +1051,7 @@
   </action>
   <action name="actionCoverDownloader">
    <property name="icon">
-    <iconset theme="artboard-2-line"/>
+    <iconset theme="artboard-line"/>
    </property>
    <property name="text">
     <string>&amp;Cover Downloader...</string>
@@ -1059,7 +1059,7 @@
   </action>
   <action name="actionControllerTester">
    <property name="icon">
-    <iconset theme="controller-line"/>
+    <iconset theme="controller-fill"/>
    </property>
    <property name="text">
     <string>Controller &amp;Tester</string>
@@ -1083,7 +1083,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="camera-video"/>
+    <iconset theme="camera-video-fill"/>
    </property>
    <property name="text">
     <string comment="In Toolbar">&amp;Video Capture</string>
@@ -1091,7 +1091,7 @@
   </action>
   <action name="actionEditCheats">
    <property name="icon">
-    <iconset theme="pencil-line"/>
+    <iconset theme="pencil-fill"/>
    </property>
    <property name="text">
     <string>&amp;Edit Cheats...</string>
@@ -1099,7 +1099,7 @@
   </action>
   <action name="actionEditPatches">
    <property name="icon">
-    <iconset theme="pencil-line"/>
+    <iconset theme="pencil-fill"/>
    </property>
    <property name="text">
     <string>Edit &amp;Patches...</string>

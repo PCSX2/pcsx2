@@ -169,7 +169,7 @@
   </widget>
   <action name="actionRun">
    <property name="icon">
-    <iconset theme="play-line"/>
+    <iconset theme="play-fill"/>
    </property>
    <property name="text">
     <string>Run</string>
@@ -213,7 +213,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset theme="pin-filled"/>
+    <iconset theme="pin-fill"/>
    </property>
    <property name="text">
     <string>Always On Top</string>
@@ -224,7 +224,7 @@
   </action>
   <action name="actionAnalyse">
    <property name="icon">
-    <iconset theme="search-line"/>
+    <iconset theme="magnifier-line"/>
    </property>
    <property name="text">
     <string>Analyze</string>
@@ -280,7 +280,7 @@
   </action>
   <action name="actionIncreaseFontSize">
    <property name="icon">
-    <iconset theme="zoom-in-line"/>
+    <iconset theme="zoom-in-fill"/>
    </property>
    <property name="text">
     <string>Increase Font Size</string>
@@ -316,7 +316,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset theme="settings-3-line"/>
+    <iconset theme="settings-fill"/>
    </property>
    <property name="text">
     <string>Settings</string>
@@ -327,7 +327,7 @@
   </action>
   <action name="actionGameSettings">
    <property name="icon">
-    <iconset theme="file-settings-line"/>
+    <iconset theme="file-settings-fill"/>
    </property>
    <property name="text">
     <string>Game Settings</string>

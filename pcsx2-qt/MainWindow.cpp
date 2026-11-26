@@ -320,7 +320,7 @@ void MainWindow::setupStatusBarWidgets()
 	m_status_volume_widget->setContentsMargins(10, 0, 10, 0);
 	m_status_volume_widget->setAutoRaise(true);
 	m_status_volume_widget->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-	m_status_volume_widget->setIcon(QIcon::fromTheme(QStringLiteral("volume-up-line")));
+	m_status_volume_widget->setIcon(QIcon::fromTheme(QStringLiteral("volume-up-fill")));
 	m_status_volume_widget->setPopupMode(QToolButton::InstantPopup);
 	m_status_volume_widget->setFixedHeight(20);
 
@@ -343,7 +343,7 @@ void MainWindow::setupStatusBarWidgets()
 	});
 
 	m_status_volume_toggle_mute_action = new QAction(tr("Toggle Mute"), m_status_volume_menu);
-	m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(QStringLiteral("volume-mute-line")));
+	m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(QStringLiteral("volume-mute-fill")));
 
 	connect(m_status_volume_toggle_mute_action, &QAction::triggered, this, [this]() {
 		m_status_volume_slider_applied = true;
@@ -1287,8 +1287,8 @@ void MainWindow::setStatusVolumeText(const QString& text, int volume, bool muted
 	if (muted != m_status_volume_muted)
 	{
 		m_status_volume_muted = muted;
-		m_status_volume_widget->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-mute-line") : QStringLiteral("volume-up-line")));
-		m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-up-line") : QStringLiteral("volume-mute-line")));
+		m_status_volume_widget->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-mute-fill") : QStringLiteral("volume-up-fill")));
+		m_status_volume_toggle_mute_action->setIcon(QIcon::fromTheme(muted ? QStringLiteral("volume-up-fill") : QStringLiteral("volume-mute-fill")));
 	}
 
 	if (!muted && !m_status_volume_slider->isSliderDown())

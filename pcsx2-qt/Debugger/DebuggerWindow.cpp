@@ -361,7 +361,7 @@ void DebuggerWindow::onVMStarting()
 void DebuggerWindow::onVMPaused()
 {
 	m_ui.actionRun->setText(tr("Run"));
-	m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("play-line")));
+	m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("play-fill")));
 	m_ui.actionStepInto->setEnabled(true);
 	m_ui.actionStepOver->setEnabled(true);
 	m_ui.actionStepOut->setEnabled(true);
@@ -401,7 +401,7 @@ void DebuggerWindow::onVMPaused()
 void DebuggerWindow::onVMResumed()
 {
 	m_ui.actionRun->setText(tr("Pause"));
-	m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("pause-line")));
+	m_ui.actionRun->setIcon(QIcon::fromTheme(QStringLiteral("pause-fill")));
 	m_ui.actionStepInto->setEnabled(false);
 	m_ui.actionStepOver->setEnabled(false);
 	m_ui.actionStepOut->setEnabled(false);

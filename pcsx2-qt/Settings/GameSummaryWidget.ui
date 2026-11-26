@@ -185,7 +185,7 @@
        <string>PS2 Disc</string>
       </property>
       <property name="icon">
-       <iconset theme="disc-2-line"/>
+       <iconset theme="disc-fill"/>
       </property>
      </item>
      <item>
@@ -193,7 +193,7 @@
        <string>PS1 Disc</string>
       </property>
       <property name="icon">
-       <iconset theme="disc-2-line"/>
+       <iconset theme="disc-fill"/>
       </property>
      </item>
      <item>
@@ -201,7 +201,7 @@
        <string>ELF (PS2 Executable)</string>
       </property>
       <property name="icon">
-       <iconset theme="file-settings-line"/>
+       <iconset theme="file-settings-fill"/>
       </property>
      </item>
     </widget>

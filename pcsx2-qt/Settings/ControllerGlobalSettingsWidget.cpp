@@ -174,7 +174,7 @@ ControllerMouseSettingsDialog::ControllerMouseSettingsDialog(QWidget* parent, Co
 
 	SettingsInterface* sif = dialog->getProfileSettingsInterface();
 
-	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("mouse-line")), QSize(32, 32));
+	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("mouse-fill")), QSize(32, 32));
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerXSpeedSlider, "Pad", "PointerXSpeed", 40.0f);
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, m_ui.pointerYSpeedSlider, "Pad", "PointerYSpeed", 40.0f);
@@ -206,7 +206,7 @@ ControllerMappingSettingsDialog::ControllerMappingSettingsDialog(ControllerSetti
 
 	SettingsInterface* sif = parent->getProfileSettingsInterface();
 
-	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("settings-3-line")), QSize(32, 32));
+	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("settings-fill")), QSize(32, 32));
 
 	ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.ignoreInversion, "InputSources", "IgnoreInversion", false);
 

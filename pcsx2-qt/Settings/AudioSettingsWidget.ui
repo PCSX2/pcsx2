@@ -53,7 +53,7 @@
            <string>Expansion Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="settings-3-line"/>
+           <iconset theme="settings-fill"/>
           </property>
          </widget>
         </item>
@@ -109,7 +109,7 @@
            <string>Stretch Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="settings-3-line"/>
+           <iconset theme="settings-fill"/>
           </property>
          </widget>
         </item>

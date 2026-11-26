@@ -60,7 +60,7 @@
           <string>Game List</string>
          </property>
          <property name="icon">
-          <iconset theme="list-check"/>
+          <iconset theme="list-fill"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -110,7 +110,7 @@
           <string>Show Titles</string>
          </property>
          <property name="icon">
-          <iconset theme="price-tag-3-line"/>
+          <iconset theme="price-tag-fill"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -135,7 +135,7 @@
           <string>Show Full Titles</string>
          </property>
          <property name="icon">
-          <iconset theme="price-tag-2-line"/>
+          <iconset theme="price-tag-list-fill"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -197,7 +197,7 @@
            <string>All Types</string>
           </property>
           <property name="icon">
-           <iconset theme="filter-line"/>
+           <iconset theme="filter-fill"/>
           </property>
          </item>
         </widget>
@@ -209,7 +209,7 @@
            <string>All Regions</string>
           </property>
           <property name="icon">
-           <iconset theme="global-line"/>
+           <iconset theme="globe-fill"/>
           </property>
          </item>
         </widget>

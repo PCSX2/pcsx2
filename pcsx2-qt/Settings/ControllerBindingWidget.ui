@@ -40,7 +40,7 @@
            <string>Bindings</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-line">
+           <iconset theme="controller-fill">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="checkable">
@@ -80,7 +80,7 @@
            <string>Macros</string>
           </property>
           <property name="icon">
-           <iconset theme="flashlight-line">
+           <iconset theme="lightning-fill">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="checkable">
@@ -117,7 +117,7 @@
            <string>Automatic Mapping</string>
           </property>
           <property name="icon">
-           <iconset theme="controller-line">
+           <iconset theme="controller-fill">
             <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="toolButtonStyle">
