@@ -275,8 +275,8 @@ bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::
 
 bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 {
-	ElfObject eo;
-	if (!eo.OpenFile(path, false, nullptr))
+	// Avoid loading the whole file into memory in one go.
+	if (!ElfObject::ReadAndGetCRC(path.c_str(), &entry->crc, &entry->total_size))
 	{
 		Console.Error("Failed to parse ELF '%s'", path.c_str());
 		return false;
@@ -288,8 +288,6 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	entry->region = Region::Other;
 	entry->type = EntryType::ELF;
 	entry->compatibility_rating = CompatibilityRating::Unknown;
-	entry->crc = eo.GetCRC();
-	entry->total_size = eo.GetSize();
 
 	std::string disc_path(VMManager::GetDiscOverrideFromGameSettings(path));
 	if (!disc_path.empty())

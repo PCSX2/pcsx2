@@ -134,6 +134,8 @@ public:
 	u32 GetEntryPoint() const;
 	u32 GetCRC() const;
 
+	static bool ReadAndGetCRC(const char* path, u32* crc_output, u64* size_output);
+
 private:
 	std::vector<u8> data;
 	ELF_PHR* proghead = nullptr;
@@ -141,7 +143,7 @@ private:
 	std::string filename;
 	bool isPSXElf;
 
-	bool CheckElfSize(s64 size, Error* error);
+	static bool CheckElfSize(s64 size, Error* error);
 
 	void InitElfHeaders();
 	void LoadProgramHeaders();
