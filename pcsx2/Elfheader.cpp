@@ -4,13 +4,13 @@
 #include "Elfheader.h"
 #include "CDVD/IsoReader.h"
 #include "DebugTools/Debug.h"
-#include "DebugTools/SymbolGuardian.h"
 
 #include "common/Error.h"
 #include "common/FileSystem.h"
-#include "common/StringUtil.h"
 
 #include "fmt/format.h"
+
+static constexpr u32 ELF_MAGIC_NUMBER = 0x464c457f;
 
 #pragma pack(push, 1)
 struct PSXEXEHeader
@@ -254,6 +254,41 @@ u32 ElfObject::GetCRC() const
 		CRC ^= *srcdata;
 
 	return CRC;
+}
+
+bool ElfObject::ReadAndGetCRC(const char* path, u32* crc_output, u64* size_output)
+{
+	auto fp = FileSystem::OpenManagedCFile(path, "rb", nullptr);
+	FILESYSTEM_STAT_DATA sd;
+	if (!fp || !FileSystem::StatFile(fp.get(), &sd))
+		return false;
+
+	if (!CheckElfSize(sd.Size, nullptr))
+		return false;
+
+	u32 magic;
+	if (std::fread(&magic, 4, 1, fp.get()) != 1 || magic != ELF_MAGIC_NUMBER)
+		return false;
+
+	if (!FileSystem::FSeek64(fp.get(), 0, SEEK_SET) != 0)
+		return false;
+
+	u32 crc = 0;
+	std::vector<u8> buffer(_64kb);
+	for (s64 offset = 4; offset < sd.Size; offset += buffer.size())
+	{
+		size_t read_size = std::min(buffer.size(), static_cast<size_t>(sd.Size - offset));
+		if (std::fread(buffer.data(), read_size, 1, fp.get()) != 1)
+			return false;
+
+		for (size_t i = 0; i < read_size / 4; i++)
+			crc ^= *reinterpret_cast<u32*>(buffer.data() + i * 4);
+	}
+
+	*crc_output = crc;
+	*size_output = static_cast<u64>(sd.Size);
+
+	return true;
 }
 
 void ElfObject::LoadProgramHeaders()
