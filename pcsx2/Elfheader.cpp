@@ -275,7 +275,7 @@ bool ElfObject::ReadAndGetCRC(const char* path, u32* crc_output, u64* size_outpu
 
 	u32 crc = 0;
 	std::vector<u8> buffer(_64kb);
-	for (s64 offset = 4; offset < sd.Size; offset += buffer.size())
+	for (s64 offset = 0; offset < sd.Size; offset += buffer.size())
 	{
 		size_t read_size = std::min(buffer.size(), static_cast<size_t>(sd.Size - offset));
 		if (std::fread(buffer.data(), read_size, 1, fp.get()) != 1)
