@@ -397,7 +397,7 @@ void GSDeviceMTL::EndRenderPass()
 			[m_current_render.encoder updateFence:m_spin_fence afterStages:MTLRenderStageFragment];
 		[m_current_render.encoder endEncoding];
 		m_current_render.encoder = nil;
-		memset(&m_current_render, 0, offsetof(MainRenderEncoder, depth_sel));
+		memset(static_cast<void*>(&m_current_render), 0, offsetof(MainRenderEncoder, depth_sel));
 		m_current_render.depth_sel = DepthStencilSelector::NoDepth();
 	}
 }

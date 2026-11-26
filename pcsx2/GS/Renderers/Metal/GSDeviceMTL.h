@@ -77,22 +77,22 @@ struct PipelineSelectorMTL
 	u8 pad[3];
 	PipelineSelectorMTL()
 	{
-		memset(this, 0, sizeof(*this));
+		memset(static_cast<void*>(this), 0, sizeof(*this));
 	}
 	PipelineSelectorMTL(GSHWDrawConfig::VSSelector vs, GSHWDrawConfig::PSSelector ps, PipelineSelectorExtrasMTL extras)
 	{
-		memset(this, 0, sizeof(*this));
+		memset(static_cast<void*>(this), 0, sizeof(*this));
 		this->vs = vs;
 		this->ps = ps;
 		this->extras = extras;
 	}
 	PipelineSelectorMTL(const PipelineSelectorMTL& other)
 	{
-		memcpy(this, &other, sizeof(other));
+		memcpy(static_cast<void*>(this), &other, sizeof(other));
 	}
 	PipelineSelectorMTL& operator=(const PipelineSelectorMTL& other)
 	{
-		memcpy(this, &other, sizeof(other));
+		memcpy(static_cast<void*>(this), &other, sizeof(other));
 		return *this;
 	}
 	bool operator==(const PipelineSelectorMTL& other) const
