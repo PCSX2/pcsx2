@@ -270,7 +270,7 @@ bool ElfObject::ReadAndGetCRC(const char* path, u32* crc_output, u64* size_outpu
 	if (std::fread(&magic, 4, 1, fp.get()) != 1 || magic != ELF_MAGIC_NUMBER)
 		return false;
 
-	if (!FileSystem::FSeek64(fp.get(), 0, SEEK_SET) != 0)
+	if (FileSystem::FSeek64(fp.get(), 0, SEEK_SET) != 0)
 		return false;
 
 	u32 crc = 0;
