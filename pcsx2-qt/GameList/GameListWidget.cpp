@@ -31,6 +31,9 @@
 #include <QtGui/QWheelEvent>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QGraphicsDropShadowEffect>
+#include <QtWidgets/QGraphicsPixmapItem>
+#include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QScrollBar>
@@ -247,6 +250,35 @@ namespace
 
 	class CoverDecorationsDelegate final : public QStyledItemDelegate
 	{
+		QPixmap createShadowedDecor(const QPixmap& src, float radius_scale, float offset_scale) const
+		{
+			const double dpr = src.devicePixelRatio();
+			const double radius = src.width() * radius_scale;
+			const double offset = src.width() / dpr * offset_scale;
+			const QSize new_size(
+				(src.width() / dpr + 2 * radius + offset) * dpr,
+				(src.height() / dpr + 2 * radius + offset) * dpr);
+
+			QGraphicsScene scene;
+			QGraphicsPixmapItem* item = scene.addPixmap(src);
+			QGraphicsDropShadowEffect shadow;
+			shadow.setBlurRadius(radius);
+			shadow.setOffset(offset);
+			shadow.setColor(Qt::black);
+			item->setGraphicsEffect(&shadow);
+
+			QPixmap new_pixmap(new_size);
+			new_pixmap.setDevicePixelRatio(dpr);
+			new_pixmap.fill(Qt::transparent);
+
+			QPainter painter(&new_pixmap);
+			scene.render(&painter, QRectF(0, 0, new_size.width(), new_size.height()),
+				QRectF(0, 0, new_size.width(), new_size.height()));
+			painter.end();
+
+			return new_pixmap;
+		}
+
 	public:
 		using QStyledItemDelegate::QStyledItemDelegate;
 
@@ -274,16 +306,32 @@ namespace
 			if (favorite)
 			{
 				const QRect star_rect(cover_rect.right() - icon_size - margin, cover_rect.top() + margin, icon_size, icon_size);
-				static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
-				const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(star_rect.topLeft(), star_pixmap);
+				QPixmap star_shadowed;
+				const QString favorite_key = QString::fromStdString(
+					fmt::format("CoverDecor-star-{}-{}", icon_size, option.widget ? option.widget->devicePixelRatio() : 1.0));
+				if (!QPixmapCache::find(favorite_key, &star_shadowed))
+				{
+					static const QIcon star_icon(QStringLiteral("%1/icons/star.svg").arg(QtHost::GetResourcesBasePath()));
+					const QPixmap star_pixmap = star_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+					star_shadowed = createShadowedDecor(star_pixmap, 0.3f, 0.15f);
+					QPixmapCache::insert(favorite_key, star_shadowed);
+				}
+				painter->drawPixmap(star_rect.topLeft(), star_shadowed);
 			}
 			if (custom_settings)
 			{
 				const QRect gear_rect(cover_rect.left() + margin, cover_rect.top() + margin, icon_size, icon_size);
-				static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
-				const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
-				painter->drawPixmap(gear_rect.topLeft(), gear_pixmap);
+				QPixmap gear_shadowed;
+				const QString custom_settings_key = QString::fromStdString(
+					fmt::format("CoverDecor-gear-{}-{}", icon_size, option.widget ? option.widget->devicePixelRatio() : 1.0));
+				if (!QPixmapCache::find(custom_settings_key, &gear_shadowed))
+				{
+					static const QIcon gear_icon(QStringLiteral("%1/icons/gear.svg").arg(QtHost::GetResourcesBasePath()));
+					const QPixmap gear_pixmap = gear_icon.pixmap(QSize(icon_size, icon_size), option.widget ? option.widget->devicePixelRatio() : 1.0);
+					gear_shadowed = createShadowedDecor(gear_pixmap, 0.3f, 0.15f);
+					QPixmapCache::insert(custom_settings_key, gear_shadowed);
+				}
+				painter->drawPixmap(gear_rect.topLeft(), gear_shadowed);
 			}
 			painter->restore();
 		}
