@@ -13813,12 +13813,12 @@ which produces much nicer sound during fast-forward/slowdown.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2962"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2964"/>
         <source>Stencil buffers and texture barriers are both unavailable, this will break some graphical effects.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5475"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="5477"/>
         <source>Spin GPU During Readbacks is enabled, but calibrated timestamps are unavailable.  This might be really slow.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13906,7 +13906,7 @@ Please see our official documentation for more information.</source>
 <context>
     <name>GSDeviceVK</name>
     <message>
-        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2281"/>
+        <location filename="../../pcsx2/GS/Renderers/Vulkan/GSDeviceVK.cpp" line="2283"/>
         <source>Your GPU does not support the required Vulkan features.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14624,57 +14624,57 @@ accuracy, but this may increase system requirements.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="695"/>
+        <location filename="../../pcsx2/GameList.cpp" line="693"/>
         <source>Scanning directory {} (recursively)...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="698"/>
+        <location filename="../../pcsx2/GameList.cpp" line="696"/>
         <source>Scanning directory {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="727"/>
+        <location filename="../../pcsx2/GameList.cpp" line="725"/>
         <source>Scanning {}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1199"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1197"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1216"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1214"/>
         <source>Today</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1221"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1219"/>
         <source>Yesterday</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1250"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1248"/>
         <source>{}h {}m</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1252"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1250"/>
         <source>{}h {}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1254"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1252"/>
         <source>{}m {}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1256"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1254"/>
         <source>{}s</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/GameList.cpp" line="1267"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1265"/>
         <source>%n seconds</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -14682,7 +14682,7 @@ accuracy, but this may increase system requirements.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/GameList.cpp" line="1263"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1261"/>
         <source>%n hours</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -14690,7 +14690,7 @@ accuracy, but this may increase system requirements.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../pcsx2/GameList.cpp" line="1265"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1263"/>
         <source>%n minutes</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -14698,7 +14698,7 @@ accuracy, but this may increase system requirements.</source>
         </translation>
     </message>
     <message>
-        <location filename="../../pcsx2/GameList.cpp" line="1455"/>
+        <location filename="../../pcsx2/GameList.cpp" line="1453"/>
         <source>Downloading cover for {0} [{1}]...</source>
         <translation type="unfinished"></translation>
     </message>
