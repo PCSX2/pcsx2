@@ -18,7 +18,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-QT=6.12.0
+QT=6.12.1
 QTAPNG=1.3.0
 
 FFMPEG=9.0.1
@@ -48,12 +48,12 @@ cd deps-build
 export PKG_CONFIG_PATH="$INSTALLDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 grep . > SHASUMS <<EOF
-a951bd163c7b80fc6b8c88d7668fb56abf91c152373e13c10666763238131307  qtbase-everywhere-src-$QT.tar.xz
-0943132b5db8de6b6a7f1d162682173e8763c7ed94e80fd39113292845f67762  qtimageformats-everywhere-src-$QT.tar.xz
-e4ab39534ec97987b1b9b60ef7f4d3253d5912a69f8c713a01753174a4029331  qtsvg-everywhere-src-$QT.tar.xz
-8dab8f3611496486a470ad5f115ceea584f36bc22a2b8b6f6ebdbafbb8160693  qttools-everywhere-src-$QT.tar.xz
-85929c0c30d6f273f23bd879bb69803ea17b010ab73cab2f8abf95357f6f6bbb  qttranslations-everywhere-src-$QT.tar.xz
-ae14d9bcf1bb3c300a3ab2e6a53f50284e5c6c966a4ac4cc5aedcb1bc74e4d02  qtwayland-everywhere-src-$QT.tar.xz
+cd837bb9fd631e20439a04eaa0c2f252f19ad92fdf5adf10229d0fbc2fab2d53  qtbase-everywhere-src-$QT.tar.xz
+20a40732228cf0734c5b2335d4a816c1cab97dcdcc6d13073c0b1065e1c6c608  qtimageformats-everywhere-src-$QT.tar.xz
+6a7157a9a0556a129ae6582c7fbe57a0d6c0b83083cfcbd38d5d4a93b30c46e1  qtsvg-everywhere-src-$QT.tar.xz
+0d3d1a7eba32d1477f36211fb527c2c75f60cb10f3ddc41fdb804fd94147b640  qttools-everywhere-src-$QT.tar.xz
+5d537a0b849df9a0586fb20435ce232bc3e21e95025134f6ea8f5cc19622158a  qttranslations-everywhere-src-$QT.tar.xz
+226cafcfd3b8c009f178d157d0772f902f6ee693ee39d219aba50eef0473c143  qtwayland-everywhere-src-$QT.tar.xz
 f1d3be3489f758efe1a8f12118a212febbe611aa670af32e0159fa3c1feab2a6  QtApng-$QTAPNG.tar.gz
 
 cf38e0e28c7e5605942c4a77755349b0145804a397af37eb1fb4c77cb237f635  ffmpeg-$FFMPEG.tar.xz
