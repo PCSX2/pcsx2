@@ -714,7 +714,7 @@ void GameListWidget::onTableViewItemActivated(const QModelIndex& index)
 
 void GameListWidget::onTableViewContextMenuRequested(const QPoint& point)
 {
-	emit entryContextMenuRequested(m_table_view->mapToGlobal(point));
+	emit entryContextMenuRequested(m_table_view->viewport()->mapToGlobal(point));
 }
 
 void GameListWidget::onListViewItemActivated(const QModelIndex& index)
@@ -728,7 +728,7 @@ void GameListWidget::onListViewItemActivated(const QModelIndex& index)
 
 void GameListWidget::onListViewContextMenuRequested(const QPoint& point)
 {
-	emit entryContextMenuRequested(m_list_view->mapToGlobal(point));
+	emit entryContextMenuRequested(m_list_view->viewport()->mapToGlobal(point));
 }
 
 void GameListWidget::onTableViewHeaderContextMenuRequested(const QPoint& point)
