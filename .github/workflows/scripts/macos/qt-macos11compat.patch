@@ -1,15 +1,15 @@
 diff --git a/.cmake.conf b/.cmake.conf
 --- a/.cmake.conf
 +++ b/.cmake.conf
-@@ -51,7 +51,7 @@ set(QT_MAX_NEW_POLICY_CMAKE_VERSION_QT_APPLE "3.21")
- set(QT_SUPPORTED_MIN_MACOS_SDK_VERSION "14")
- set(QT_SUPPORTED_MAX_MACOS_SDK_VERSION "26")
- set(QT_SUPPORTED_MIN_MACOS_XCODE_VERSION "15")
--set(QT_SUPPORTED_MIN_MACOS_VERSION "13")
+@@ -55,7 +55,7 @@
+ set(QT_SUPPORTED_MIN_MACOS_SDK_VERSION "15")
+ set(QT_SUPPORTED_MAX_MACOS_SDK_VERSION "27")
+ set(QT_SUPPORTED_MIN_MACOS_XCODE_VERSION "16")
+-set(QT_SUPPORTED_MIN_MACOS_VERSION "14.4")
 +set(QT_SUPPORTED_MIN_MACOS_VERSION "11")
  set(QT_SUPPORTED_MAX_MACOS_VERSION_TESTED "26")
  
- set(QT_SUPPORTED_MIN_IOS_SDK_VERSION "17")
+ set(QT_SUPPORTED_MIN_IOS_SDK_VERSION "18")
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
@@ -48,6 +48,110 @@ diff --git a/src/corelib/kernel/qcore_mac.mm b/src/corelib/kernel/qcore_mac.mm
          if (!nvram) {
              qWarning("Failed to locate NVRAM entry in IO registry");
              return {};
+diff --git a/src/corelib/platform/darwin/qdarwinpermissionplugin_calendar.mm b/src/corelib/platform/darwin/qdarwinpermissionplugin_calendar.mm
+--- a/src/corelib/platform/darwin/qdarwinpermissionplugin_calendar.mm
++++ b/src/corelib/platform/darwin/qdarwinpermissionplugin_calendar.mm
+@@ -57,10 +57,14 @@
+         callback([self checkPermission:permission]);
+     };
+ 
++    if (@available(macOS 14, *)) {
+     if (accessMode == QCalendarPermission::WriteOnly)
+         [self.eventStore requestWriteOnlyAccessToEventsWithCompletion:completionHandler];
+     else
+         [self.eventStore requestFullAccessToEventsWithCompletion:completionHandler];
++    } else {
++        [self.eventStore requestAccessToEntityType:EKEntityTypeEvent completion:completionHandler];
++    }
+ }
+ 
+ @end
+diff --git a/src/corelib/thread/qfutex_mac_p.h b/src/corelib/thread/qfutex_mac_p.h
+--- a/src/corelib/thread/qfutex_mac_p.h
++++ b/src/corelib/thread/qfutex_mac_p.h
+@@ -22,6 +22,16 @@
+ 
+ #include <os/os_sync_wait_on_address.h>
+ 
++extern "C" {
++extern int __ulock_wait2(uint32_t operation, void *addr, uint64_t value,
++    uint64_t timeout, uint64_t value2);
++extern int __ulock_wake(uint32_t operation, void *addr, uint64_t wake_value);
++}
++#define UL_COMPARE_AND_WAIT             1
++#define UL_COMPARE_AND_WAIT64           5
++#define ULF_WAKE_ALL                    0x00000100
++#define ULF_NO_ERRNO                    0x01000000
++
+ #define QT_ALWAYS_USE_FUTEX
+ 
+ QT_BEGIN_NAMESPACE
+@@ -31,12 +41,22 @@
+ constexpr bool futexAvailable() { return true; }
+ 
+ template <typename Atomic>
++inline uint32_t ulockOperation(Atomic &)
++{
++    return ULF_NO_ERRNO | (sizeof(typename Atomic::Type) == 4 ? UL_COMPARE_AND_WAIT : UL_COMPARE_AND_WAIT64);
++}
++
++template <typename Atomic>
+ inline void futexWait(Atomic &futex, typename Atomic::Type expectedValue)
+ {
+     QtTsan::futexRelease(&futex);
+     static_assert(sizeof(typename Atomic::Type) == 4 || sizeof(typename Atomic::Type) == 8);
++    if (__builtin_available(macOS 14.4, *)) {
+     os_sync_wait_on_address(&futex, quint64(expectedValue), sizeof(typename Atomic::Type),
+                             OS_SYNC_WAIT_ON_ADDRESS_NONE);
++    } else {
++        __ulock_wait2(ulockOperation(futex), &futex, uint64_t(expectedValue), 0, 0);
++    }
+     QtTsan::futexAcquire(&futex);
+ }
+ 
+@@ -45,27 +65,42 @@
+ {
+     QtTsan::futexRelease(&futex);
+     static_assert(sizeof(typename Atomic::Type) == 4 || sizeof(typename Atomic::Type) == 8);
++    if (__builtin_available(macOS 14.4, *)) {
+     int r = os_sync_wait_on_address_with_timeout(
+             &futex, quint64(expectedValue), sizeof(typename Atomic::Type),
+             OS_SYNC_WAIT_ON_ADDRESS_NONE, OS_CLOCK_MACH_ABSOLUTE_TIME, timer.remainingTimeNSecs());
+     QtTsan::futexAcquire(&futex);
+     return r >= 0 || errno != ETIMEDOUT;
++    } else {
++        int r = __ulock_wait2(ulockOperation(futex), &futex, uint64_t(expectedValue),
++                              timer.remainingTimeNSecs(), 0);
++        QtTsan::futexAcquire(&futex);
++        return r == 0 || r != -ETIMEDOUT;
++    }
+ }
+ 
+ template <typename Atomic>
+ inline void futexWakeAll(Atomic &futex)
+ {
+     static_assert(sizeof(typename Atomic::Type) == 4 || sizeof(typename Atomic::Type) == 8);
++    if (__builtin_available(macOS 14.4, *)) {
+     os_sync_wake_by_address_all(&futex, sizeof(typename Atomic::Type),
+                                 OS_SYNC_WAKE_BY_ADDRESS_NONE);
++    } else {
++        __ulock_wake(ulockOperation(futex) | ULF_WAKE_ALL, &futex, 0);
++    }
+ }
+ 
+ template <typename Atomic>
+ inline void futexWakeOne(Atomic &futex)
+ {
+     static_assert(sizeof(typename Atomic::Type) == 4 || sizeof(typename Atomic::Type) == 8);
++    if (__builtin_available(macOS 14.4, *)) {
+     os_sync_wake_by_address_any(&futex, sizeof(typename Atomic::Type),
+                                 OS_SYNC_WAKE_BY_ADDRESS_NONE);
++    } else {
++        __ulock_wake(ulockOperation(futex), &futex, 0);
++    }
+ }
+ } //namespace QtDarwinFutex
+ 
 diff --git a/src/gui/platform/darwin/qappleiconengine.mm b/src/gui/platform/darwin/qappleiconengine.mm
 --- a/src/gui/platform/darwin/qappleiconengine.mm
 +++ b/src/gui/platform/darwin/qappleiconengine.mm
@@ -91,6 +195,73 @@ diff --git a/src/gui/platform/darwin/qappleiconengine.mm b/src/gui/platform/darw
  }
  #elif defined(QT_PLATFORM_UIKIT)
  auto *configuredImage(const UIImage *image, const QColor &color)
+diff --git a/src/gui/rhi/qrhimetal.mm b/src/gui/rhi/qrhimetal.mm
+--- a/src/gui/rhi/qrhimetal.mm
++++ b/src/gui/rhi/qrhimetal.mm
+@@ -675,6 +675,7 @@
+             caps.supportedSampleCounts.append(sampleCount);
+     }
+ 
++    if (@available(macOS 13, *))
+     caps.indirectCommandBuffers = ([d->dev supportsFamily:MTLGPUFamilyApple5]
+         || [d->dev supportsFamily:MTLGPUFamilyMac2])
+         && [d->dev supportsFamily:MTLGPUFamilyMetal3];
+@@ -5351,7 +5352,11 @@
+                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
+ {
+     QVarLengthArray<int, 8> versions;
+-    versions << 30 << 24 << 23 << 22 << 21 << 20 << 12;
++    if (@available(macOS 13, iOS 16, *))
++        versions << 30;
++    if (@available(macOS 12, iOS 15, *))
++        versions << 24;
++    versions << 23 << 22 << 21 << 20 << 12;
+ 
+     const QList<QShaderKey> shaders = shader.availableShaders();
+ 
+diff --git a/src/plugins/platforms/cocoa/qcocoaapplicationdelegate.mm b/src/plugins/platforms/cocoa/qcocoaapplicationdelegate.mm
+--- a/src/plugins/platforms/cocoa/qcocoaapplicationdelegate.mm
++++ b/src/plugins/platforms/cocoa/qcocoaapplicationdelegate.mm
+@@ -420,8 +420,10 @@
+ 
+ - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)application
+ {
++    if (@available(macOS 12, *)) {
+     if ([reflectionDelegate respondsToSelector:_cmd])
+         return [reflectionDelegate applicationSupportsSecureRestorableState:application];
++    }
+ 
+     // We don't support or implement state restorations via the AppKit
+     // state restoration APIs, but if we did, we would/should support
+diff --git a/src/plugins/platforms/cocoa/qcocoascreen.mm b/src/plugins/platforms/cocoa/qcocoascreen.mm
+--- a/src/plugins/platforms/cocoa/qcocoascreen.mm
++++ b/src/plugins/platforms/cocoa/qcocoascreen.mm
+@@ -623,6 +623,7 @@
+     }
+ 
+     auto grabFromDisplay = [](CGDirectDisplayID displayId, const QRect &grabRect) -> QPixmap {
++    if (@available(macOS 14.4, *)) {
+         QMacAutoReleasePool pool;
+ 
+         const qreal scale = QCocoaScreen::nativeScreenForDisplayId(displayId).backingScaleFactor;
+@@ -713,6 +714,17 @@
+         QPixmap pixmap = QPixmap::fromImage(image);
+         pixmap.setDevicePixelRatio(scale);
+         return pixmap;
++    } else {
++        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displayId, grabRect.toCGRect());
++        const QCFType<CGColorSpaceRef> sRGBcolorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
++        if (CGImageGetColorSpace(image) != sRGBcolorSpace) {
++            qCDebug(lcQpaScreen) << "applying color correction for display" << displayId;
++            image = CGImageCreateCopyWithColorSpace(image, sRGBcolorSpace);
++        }
++        QPixmap pixmap = QPixmap::fromImage(qt_mac_toQImage(image));
++        pixmap.setDevicePixelRatio(nativeScreenForDisplayId(displayId).backingScaleFactor);
++        return pixmap;
++    }
+     };
+ 
+     QRect grabRect = QRect(x, y, width, height);
 diff --git a/src/plugins/platforms/cocoa/qcocoawindow.mm b/src/plugins/platforms/cocoa/qcocoawindow.mm
 --- a/src/plugins/platforms/cocoa/qcocoawindow.mm
 +++ b/src/plugins/platforms/cocoa/qcocoawindow.mm
