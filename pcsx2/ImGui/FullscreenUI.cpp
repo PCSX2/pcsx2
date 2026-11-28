@@ -351,7 +351,7 @@ bool FullscreenUI::Initialize()
 
 	LoadCustomBackground();
 
-	if (VMManager::HasValidVM())
+	if (VMManager::HasValidVM() || VMManager::GetState() == VMState::Initializing)
 	{
 		UpdateGameDetails(VMManager::GetDiscPath(), VMManager::GetDiscSerial(), VMManager::GetTitle(s_prefer_english_titles), VMManager::GetDiscCRC(),
 			VMManager::GetCurrentCRC());
@@ -852,9 +852,8 @@ void FullscreenUI::DoVMInitialize(const VMBootParameters& boot_params, bool swit
 								switch_to_landing_on_failure]() {
 			const auto callback = [restart_callback = std::move(restart_callback),
 									  switch_to_landing_on_failure](bool confirmed) {
-				if (confirmed)
-					Host::RunOnCPUThread(restart_callback);
-				else if (switch_to_landing_on_failure)
+				Host::RunOnCPUThread([restart_callback, confirmed]() { restart_callback(confirmed); });
+				if (!confirmed && switch_to_landing_on_failure)
 					SwitchToLanding();
 			};
 
@@ -2694,6 +2693,26 @@ void FullscreenUI::PopulateGameListEntryList()
 					}
 				}
 				break;
+
+				case 8: // Achievements
+				{
+					// Unknown games sort first, then games without a set, then by completion.
+					const auto get_completion = [](const GameList::Entry* entry) {
+						const std::optional<Achievements::CacheEntry> achievements = Achievements::LookupCacheEntry(entry->crc);
+						if (!achievements.has_value())
+							return -2.0f;
+						if (!achievements->supported || achievements->num_core_achievements == 0)
+							return -1.0f;
+
+						return static_cast<float>(achievements->num_unlocked_achievements) / achievements->num_core_achievements;
+					};
+
+					const float lhs_completion = get_completion(lhs);
+					const float rhs_completion = get_completion(rhs);
+					if (lhs_completion != rhs_completion)
+						return reverse ? (lhs_completion > rhs_completion) : (lhs_completion < rhs_completion);
+				}
+				break;
 			}
 
 			// fallback to title when all else is equal
@@ -2975,7 +2994,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 			summary_line_height + text_spacing_y + // Serial
 			title_padding_below_y +
 			file_height + text_spacing_y + // File
-			6.0f * (summary_line_height + text_spacing_y) + // CRC, Region, Compat, Time/Last Played, Size
+			7.0f * (summary_line_height + text_spacing_y) + // CRC, Region, Compat, Time/Last Played, Achievements, Size
 			LayoutScale(12.0f); // Extra padding
 
 		// Limit cover height to avoid pushing text off the screen
@@ -3049,6 +3068,19 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 				SmallString::from_format(FSUI_FSTR("Time Played: {}"), GameList::FormatTimespan(selected_entry->total_played_time)));
 			ImGui::TextUnformatted(
 				SmallString::from_format(FSUI_FSTR("Last Played: {}"), GameList::FormatTimestamp(selected_entry->last_played_time)));
+
+			// achievements
+			const std::optional<Achievements::CacheEntry> achievements = Achievements::LookupCacheEntry(selected_entry->crc);
+			if (!achievements.has_value())
+				ImGui::TextUnformatted(FSUI_CSTR("Achievements: Unknown"));
+			else if (!achievements->supported || achievements->num_core_achievements == 0)
+				ImGui::TextUnformatted(FSUI_CSTR("Achievements: No set"));
+			else
+			{
+				ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Achievements: {} of {} unlocked ({} in hardcore)"),
+					achievements->num_unlocked_achievements, achievements->num_core_achievements,
+					achievements->num_unlocked_hardcore_achievements));
+			}
 
 			// size
 			ImGui::TextUnformatted(
@@ -3431,6 +3463,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
 		FSUI_NSTR("Time Played"),
 		FSUI_NSTR("Last Played"),
 		FSUI_NSTR("Size"),
+		FSUI_NSTR("Achievements"),
 	};
 
 	MenuHeading(FSUI_CSTR("List Settings"));

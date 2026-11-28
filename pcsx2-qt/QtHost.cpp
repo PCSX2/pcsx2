@@ -223,8 +223,8 @@ void EmuThread::startVM(std::shared_ptr<VMBootParameters> boot_params)
 		QtHost::RunOnUIThread([reason = std::move(reason), restart_callback = std::move(restart_callback)]() {
 			QString title(Achievements::GetHardcoreModeDisableTitle());
 			QString text(QString::fromStdString(Achievements::GetHardcoreModeDisableText(reason.c_str())));
-			if (g_main_window->confirmMessage(title, text))
-				Host::RunOnCPUThread(restart_callback);
+			const bool confirmed = g_main_window->confirmMessage(title, text);
+			Host::RunOnCPUThread([restart_callback, confirmed]() { restart_callback(confirmed); });
 		});
 	};
 

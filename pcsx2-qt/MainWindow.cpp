@@ -658,6 +658,7 @@ void MainWindow::connectVMThreadSignals(EmuThread* thread)
 	connect(thread, &EmuThread::onCaptureStopped, this, &MainWindow::onCaptureStopped);
 	connect(thread, &EmuThread::onAchievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
 	connect(thread, &EmuThread::onAchievementsHardcoreModeChanged, this, &MainWindow::onAchievementsHardcoreModeChanged);
+	connect(thread, &EmuThread::onAchievementsRefreshed, this, &MainWindow::onAchievementsRefreshed);
 
 	connect(m_ui.actionReset, &QAction::triggered, this, &MainWindow::requestReset);
 	connect(m_ui.actionPause, &QAction::toggled, thread, &EmuThread::setVMPaused);
@@ -1038,6 +1039,13 @@ void MainWindow::onAchievementsHardcoreModeChanged(bool enabled)
 		if (g_debugger_window && !DebugInterface::getPauseOnEntry())
 			DebuggerWindow::destroyInstance();
 	}
+}
+
+void MainWindow::onAchievementsRefreshed()
+{
+	const QString& path = (s_current_elf_override.isEmpty() ? s_current_disc_path : s_current_elf_override);
+	if (!path.isEmpty())
+		m_game_list_widget->getModel()->refreshDecorations(path.toStdString());
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()

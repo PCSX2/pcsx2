@@ -39,7 +39,7 @@
 
 namespace ImGuiFullscreen
 {
-	using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
+	using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback, MessageDialogCallback>;
 
 	static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 
@@ -2944,9 +2944,9 @@ void ImGuiFullscreen::CloseInputDialog()
 	s_input_dialog_filter_type = InputFilterType::None;
 }
 
-bool ImGuiFullscreen::IsMessageBoxDialogOpen()
+bool ImGuiFullscreen::IsMessageBoxDialogOpen(std::string_view title)
 {
-	return s_message_dialog_open;
+	return s_message_dialog_open && (title.empty() || s_message_dialog_title == title);
 }
 
 void ImGuiFullscreen::OpenConfirmMessageDialog(
@@ -3084,6 +3084,12 @@ void ImGuiFullscreen::DrawMessageDialog()
 			const ConfirmMessageDialogCallback& func = std::get<ConfirmMessageDialogCallback>(cb);
 			if (func)
 				func(result.value_or(1) == 0);
+		}
+		else if (std::holds_alternative<MessageDialogCallback>(cb))
+		{
+			const MessageDialogCallback& func = std::get<MessageDialogCallback>(cb);
+			if (func)
+				func(result.value_or(-1));
 		}
 	}
 	else

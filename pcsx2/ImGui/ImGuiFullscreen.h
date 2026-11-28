@@ -315,7 +315,7 @@ namespace ImGuiFullscreen
 	using ConfirmMessageDialogCallback = std::function<void(bool)>;
 	using InfoMessageDialogCallback = std::function<void()>;
 	using MessageDialogCallback = std::function<void(s32)>;
-	bool IsMessageBoxDialogOpen();
+	bool IsMessageBoxDialogOpen(std::string_view title = {});
 	void OpenConfirmMessageDialog(std::string title, std::string message, ConfirmMessageDialogCallback callback, bool default_yes = true,
 		std::string yes_button_text = ICON_FA_CHECK " Yes", std::string no_button_text = ICON_FA_XMARK " No");
 	void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback = {},

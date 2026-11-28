@@ -197,6 +197,22 @@ namespace FileSystem
 	/// Deletes a symbolic link (either a file or directory).
 	bool DeleteSymbolicLink(const char* path, Error* error = nullptr);
 
+	/// Read a length-prefixed string from a file.
+	bool ReadString(std::FILE* file, std::string* dest);
+
+	/// Read an integer from a file.
+	bool ReadU8(std::FILE* file, u8* dest);
+	bool ReadU32(std::FILE* file, u32* dest);
+	bool ReadU64(std::FILE* file, u64* dest);
+
+	/// Write a length-prefixed string to a file.
+	bool WriteString(std::FILE* file, const std::string& str);
+
+	/// Write an integer to a file.
+	bool WriteU8(std::FILE* file, u8 dest);
+	bool WriteU32(std::FILE* file, u32 dest);
+	bool WriteU64(std::FILE* file, u64 dest);
+
 #ifdef _WIN32
 	// Path limit remover, but also converts to a wide string at the same time.
 	bool GetWin32Path(std::wstring* dest, std::string_view str);
