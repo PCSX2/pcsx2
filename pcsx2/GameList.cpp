@@ -79,6 +79,7 @@ namespace GameList
 	static void RewriteCacheFile();
 
 	static std::string GetPlayedTimeFile();
+	static std::string GetSaveStateIniFile();
 	static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
 	static std::string MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry);
 	static PlayedTimeMap LoadPlayedTimeMap(const std::string& path);
@@ -1172,7 +1173,6 @@ void GameList::ClearPlayedTimeForSerial(const std::string& serial)
 	}
 }
 
-
 std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 {
 	if (serial.empty())
@@ -1186,6 +1186,35 @@ std::time_t GameList::GetCachedPlayedTimeForSerial(const std::string& serial)
 	}
 
 	return 0;
+}
+
+std::string GameList::GetSaveStateIniFile()
+{
+	return Path::Combine(EmuFolders::Settings, "sstates.ini");
+}
+
+s32 GameList::ReadSaveStateSlot(const std::string& serial, u32 crc)
+{
+	INISettingsInterface names(GetSaveStateIniFile());
+	names.Load();
+
+	std::string game_id = fmt::format("{}_{:08X}", serial, crc);
+	auto slot = names.GetOptionalIntValue(EncodeIniKey(game_id).c_str(), "ActiveSlot");
+
+	return slot ? slot.value() : 1;
+}
+
+void GameList::WriteSaveStateSlot(const std::string& serial, u32 crc, s32 slot)
+{
+	INISettingsInterface names(GetSaveStateIniFile());
+	names.Load();
+
+	std::string game_id = fmt::format("{}_{:08X}", serial, crc);
+
+	if (slot > 0)
+		names.SetIntValue(EncodeIniKey(game_id).c_str(), "ActiveSlot", slot);
+	else
+		names.DeleteValue(EncodeIniKey(game_id).c_str(), "ActiveSlot");
 }
 
 std::string GameList::FormatTimestamp(std::time_t timestamp)

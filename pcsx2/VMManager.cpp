@@ -1646,6 +1646,9 @@ VMBootResult VMManager::Initialize(const VMBootParameters& boot_params, Error* e
 	}
 	ScopedGuard close_fw = []() { FWclose(); };
 
+	s32 slot = GameList::ReadSaveStateSlot(s_disc_serial, s_disc_crc);
+	SaveStateSelectorUI::SetCurrentSlot(slot);
+
 	// Don't close when we return
 	close_fw.Cancel();
 	close_usb.Cancel();
@@ -1717,6 +1720,8 @@ void VMManager::Shutdown(bool save_resume_state)
 	// end input recording before clearing state
 	if (g_InputRecording.isActive())
 		g_InputRecording.stop();
+
+	GameList::WriteSaveStateSlot(s_disc_serial, s_disc_crc, SaveStateSelectorUI::GetCurrentSlot());
 
 	SaveSessionTime(s_disc_serial);
 	s_elf_override = {};
