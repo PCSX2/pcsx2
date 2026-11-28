@@ -1437,6 +1437,14 @@ bool GSHWDrawConfig::BlendState::IsEffective(ColorMaskSelector colormask) const
 	                  ((colormask.key & 8u) && (src_factor_alpha != GSDevice::CONST_ONE || dst_factor_alpha != GSDevice::CONST_ZERO)));
 }
 
+bool GSHWDrawConfig::BlendState::HasDualSourceBlendFactor() const
+{
+	return GSDevice::IsDualSourceBlendFactor(src_factor) ||
+		GSDevice::IsDualSourceBlendFactor(dst_factor) ||
+		GSDevice::IsDualSourceBlendFactor(src_factor_alpha) ||
+		GSDevice::IsDualSourceBlendFactor(dst_factor_alpha);
+}
+
 struct DrawConfigWriter
 {
 	fmt::memory_buffer buffer;
