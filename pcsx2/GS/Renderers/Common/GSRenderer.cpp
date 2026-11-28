@@ -352,7 +352,7 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 
 	target_height *= GSConfig.StretchY / 100.0f;
 
-	if (GSConfig.IntegerScaling)
+	if (GSConfig.IntegerScaling && GSConfig.DisplaySizeOverride == DisplaySizeOverrideMode::Off)
 	{
 		// make target width/height an integer multiple of the texture width/height
 		float t_width = static_cast<double>(src_rect.width());
@@ -384,6 +384,18 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 			target_width = target_width * adjust;
 			target_height = target_height * adjust;
 		}
+	}
+
+	if (GSConfig.DisplaySizeOverride == DisplaySizeOverrideMode::PixelMapping_1_1)
+	{
+		const GSVector2i resolution = g_gs_renderer->PCRTCDisplays.GetResolution();
+		target_width = static_cast<float>(resolution.x);
+		target_height = static_cast<float>(resolution.y);
+	}
+	else if (GSConfig.DisplaySizeOverride == DisplaySizeOverrideMode::Custom)
+	{
+		target_width = static_cast<float>(GSConfig.DisplaySizeOverrideWidth);
+		target_height = static_cast<float>(GSConfig.DisplaySizeOverrideHeight);
 	}
 
 	float target_x, target_y;
@@ -428,6 +440,8 @@ static GSVector4 CalculateDrawDstRect(s32 window_width, s32 window_height, const
 		}
 	}
 
+	target_x = std::floor(target_x);
+	target_y = std::floor(target_y);
 	GSVector4 ret(target_x, target_y, target_x + target_width, target_y + target_height);
 
 	if (flip_y)

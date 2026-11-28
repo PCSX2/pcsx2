@@ -81,6 +81,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 	SettingWidgetBinder::BindWidgetToIntSetting(sif, m_display.interlacing, "EmuCore/GS", "deinterlace_mode", DEFAULT_INTERLACE_MODE);
 	SettingWidgetBinder::BindWidgetToIntSetting(
 		sif, m_display.bilinearFiltering, "EmuCore/GS", "linear_present_mode", static_cast<int>(GSPostBilinearMode::BilinearSmooth));
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_display.displaySizeOverrideMode, "EmuCore/GS", "display_size_override_mode", static_cast<int>(DisplaySizeOverrideMode::Off));
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_display.displaySizeOverrideWidth, "EmuCore/GS", "DisplaySizeOverrideWidth", Pcsx2Config::GSOptions::DEFAULT_DISPLAY_SIZE_OVERRIDE_WIDTH);
+	SettingWidgetBinder::BindWidgetToIntSetting(
+		sif, m_display.displaySizeOverrideHeight, "EmuCore/GS", "DisplaySizeOverrideHeight", Pcsx2Config::GSOptions::DEFAULT_DISPLAY_SIZE_OVERRIDE_HEIGHT);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.widescreenPatches, "EmuCore", "EnableWideScreenPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.noInterlacingPatches, "EmuCore", "EnableNoInterlacingPatches", false);
 	SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_display.integerScaling, "EmuCore/GS", "IntegerScaling", false);
@@ -100,6 +106,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 
 	connect(
 		m_display.fullscreenModes, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onFullscreenModeChanged);
+	connect(
+		m_display.displaySizeOverrideMode, &QComboBox::currentIndexChanged, this, &GraphicsSettingsWidget::onDisplaySizeOverrideModeChanged);
+	onDisplaySizeOverrideModeChanged();
 
 	//////////////////////////////////////////////////////////////////////////
 	// HW Settings
@@ -433,6 +442,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* settings_dialog, 
 		dialog()->registerWidgetHelp(m_display.bilinearFiltering, tr("Bilinear Filtering"), tr("Bilinear (Smooth)"),
 			tr("Enables bilinear post processing filter. Smooths the overall picture as it is displayed on the screen. Corrects "
 			   "positioning between pixels."));
+
+		dialog()->registerWidgetHelp(m_display.displaySizeOverrideMode, tr("Display Size Override"), tr("Disabled"),
+			tr("Force the display size to 1:1 pixel mapping of rendering resolution, or custom dimensions."));
 
 		dialog()->registerWidgetHelp(m_display.PCRTCOffsets, tr("Screen Offsets"), tr("Unchecked"),
 			//: PCRTC: Programmable CRT (Cathode Ray Tube) Controller.
@@ -911,6 +923,17 @@ void GraphicsSettingsWidget::onFullscreenModeChanged(int index)
 		dialog()->setStringSettingValue("EmuCore/GS", "FullscreenMode", std::nullopt);
 
 	g_emu_thread->applySettings();
+}
+
+void GraphicsSettingsWidget::onDisplaySizeOverrideModeChanged()
+{
+	const int effectiveInt = dialog()->getEffectiveIntValue("EmuCore/GS", "display_size_override_mode", static_cast<int>(Pcsx2Config::GSOptions::DEFAULT_DISPLAY_SIZE_OVERRIDE_MODE));
+	const bool customSizeEnabled = effectiveInt == static_cast<int>(DisplaySizeOverrideMode::Custom);
+	m_display.displaySizeOverrideWidth->setEnabled(customSizeEnabled);
+	m_display.displaySizeOverrideHeight->setEnabled(customSizeEnabled);
+	const bool exclusiveOptionsEnabled = effectiveInt == static_cast<int>(DisplaySizeOverrideMode::Off);
+	m_display.aspectRatio->setEnabled(exclusiveOptionsEnabled);
+	m_display.integerScaling->setEnabled(exclusiveOptionsEnabled);
 }
 
 void GraphicsSettingsWidget::onTrilinearFilteringChanged()

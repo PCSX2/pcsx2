@@ -41,6 +41,7 @@ private Q_SLOTS:
 	void onGpuPaletteConversionChanged(int state);
 	void onCPUSpriteRenderBWChanged();
 	void onFullscreenModeChanged(int index);
+	void onDisplaySizeOverrideModeChanged();
 	void onTextureDumpChanged();
 	void onTextureReplacementChanged();
 	void onShadeBoostChanged();
