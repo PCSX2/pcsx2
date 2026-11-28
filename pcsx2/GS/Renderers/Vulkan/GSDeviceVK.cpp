@@ -3433,8 +3433,8 @@ void GSDeviceVK::BlitRect(GSTexture* sTex, const GSVector4i& sRect, u32 sLevel, 
 	dTexVK->TransitionToLayout(GSTextureVK::Layout::BlitDst);
 
 	// ensure we don't leave this bound later on
-	if (m_tfx_textures[0] == sTexVK)
-		PSSetShaderResource(0, nullptr, false);
+	if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == sTexVK)
+		PSSetShaderResource(TFX_TEXTURE_TEXTURE, nullptr, false);
 
 	pxAssert(sTexVK->IsDepthStencil() == dTexVK->IsDepthStencil());
 	const VkImageAspectFlags aspect =
@@ -4124,16 +4124,13 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	Vulkan::SetObjectName(dev, m_utility_pipeline_layout, "Convert pipeline layout");
 
 	//////////////////////////////////////////////////////////////////////////
-	// Draw/TFX Pipeline Layout
+	// Draw/TFX Descriptor Set Layouts
 	//////////////////////////////////////////////////////////////////////////
 	dslb.AddBinding(
 		0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT);
 	dslb.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if (m_features.vs_expand)
-	{
 		dslb.AddBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GSHWDrawConfig::VSPushConstants));
-	}
 	if (m_features.aa1)
 		dslb.AddBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 	if ((m_tfx_ubo_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
@@ -4141,28 +4138,45 @@ bool GSDeviceVK::CreatePipelineLayouts()
 	Vulkan::SetObjectName(dev, m_tfx_ubo_ds_layout, "TFX UBO descriptor layout");
 
 	dslb.SetPushFlag();
+	VkDescriptorType feedback_desc = m_features.texture_barrier && !UseFeedbackLoopLayout() ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
+	                                                                                        : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	dslb.AddBinding(TFX_TEXTURE_TEXTURE, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_RT,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-		                                                           VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-		1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_RT, feedback_desc, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_DEPTH, feedback_desc, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	dslb.AddBinding(TFX_TEXTURE_PRIMID, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_DEPTH,
-		(m_features.texture_barrier && !UseFeedbackLoopLayout()) ? VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT :
-		                                                           VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-		1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_RT_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-	dslb.AddBinding(TFX_TEXTURE_DEPTH_ROV, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 	if ((m_tfx_texture_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::SetObjectName(dev, m_tfx_texture_ds_layout, "TFX texture descriptor layout");
 
+	dslb.SetPushFlag();
+	dslb.AddBinding(TFX_TEXTURE_TEXTURE, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_PALETTE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_RT,      VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	dslb.AddBinding(TFX_TEXTURE_DEPTH,   VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+	if ((m_tfx_texture_rov_ds_layout = dslb.Create(dev)) == VK_NULL_HANDLE)
+		return false;
+	Vulkan::SetObjectName(dev, m_tfx_texture_rov_ds_layout, "TFX ROV texture descriptor layout");
+
+	//////////////////////////////////////////////////////////////////////////
+	// Draw/TFX Pipeline Layouts
+	//////////////////////////////////////////////////////////////////////////
+	if (m_features.vs_expand)
+		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GSHWDrawConfig::VSPushConstants));
 	plb.AddDescriptorSet(m_tfx_ubo_ds_layout);
 	plb.AddDescriptorSet(m_tfx_texture_ds_layout);
 	if ((m_tfx_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
 		return false;
 	Vulkan::SetObjectName(dev, m_tfx_pipeline_layout, "TFX pipeline layout");
+
+	if (m_features.vs_expand)
+		plb.AddPushConstants(VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GSHWDrawConfig::VSPushConstants));
+	plb.AddDescriptorSet(m_tfx_ubo_ds_layout);
+	plb.AddDescriptorSet(m_tfx_texture_rov_ds_layout);
+	if ((m_tfx_rov_pipeline_layout = plb.Create(dev)) == VK_NULL_HANDLE)
+		return false;
+	Vulkan::SetObjectName(dev, m_tfx_rov_pipeline_layout, "TFX ROV pipeline layout");
+
 	return true;
 }
 
@@ -5006,8 +5020,12 @@ void GSDeviceVK::DestroyResources()
 
 	if (m_tfx_pipeline_layout != VK_NULL_HANDLE)
 		vkDestroyPipelineLayout(m_device, m_tfx_pipeline_layout, nullptr);
+	if (m_tfx_rov_pipeline_layout != VK_NULL_HANDLE)
+		vkDestroyPipelineLayout(m_device, m_tfx_rov_pipeline_layout, nullptr);
 	if (m_tfx_texture_ds_layout != VK_NULL_HANDLE)
 		vkDestroyDescriptorSetLayout(m_device, m_tfx_texture_ds_layout, nullptr);
+	if (m_tfx_texture_rov_ds_layout != VK_NULL_HANDLE)
+		vkDestroyDescriptorSetLayout(m_device, m_tfx_texture_rov_ds_layout, nullptr);
 	if (m_tfx_ubo_ds_layout != VK_NULL_HANDLE)
 		vkDestroyDescriptorSetLayout(m_device, m_tfx_ubo_ds_layout, nullptr);
 	if (m_utility_pipeline_layout != VK_NULL_HANDLE)
@@ -5193,7 +5211,7 @@ VkPipeline GSDeviceVK::CreateTFXPipeline(const PipelineSelector& p)
 	SetPipelineProvokingVertex(m_features, gpb);
 
 	// Common state
-	gpb.SetPipelineLayout(m_tfx_pipeline_layout);
+	gpb.SetPipelineLayout(p.Layout() == PipelineLayout::TFX ? m_tfx_pipeline_layout : m_tfx_rov_pipeline_layout);
 	if (IsDATEModePrimIDInit(p.ps.date))
 	{
 		// DATE image prepass
@@ -5331,7 +5349,7 @@ bool GSDeviceVK::BindDrawPipeline(const PipelineSelector& p)
 
 	SetPipeline(pipeline);
 
-	return ApplyTFXState();
+	return ApplyTFXState(p.Layout());
 }
 
 void GSDeviceVK::InitializeState()
@@ -5526,10 +5544,10 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 {
 	GSTextureVK* vkRt = static_cast<GSTextureVK*>(rt);
 	GSTextureVK* vkDs = static_cast<GSTextureVK*>(ds);
-	GSTextureVK* oldVkRt = m_tfx_textures[TFX_TEXTURE_RT_ROV] != m_null_texture.get() ?
-	                       m_tfx_textures[TFX_TEXTURE_RT_ROV] : nullptr;
-	GSTextureVK* oldVkDs = m_tfx_textures[TFX_TEXTURE_DEPTH_ROV] != m_null_texture.get() ?
-	                       m_tfx_textures[TFX_TEXTURE_DEPTH_ROV] : nullptr;
+	GSTextureVK* oldVkRt = m_tfx_textures[TFX_TEXTURE_RT] != m_null_texture.get() ?
+	                       m_tfx_textures[TFX_TEXTURE_RT] : nullptr;
+	GSTextureVK* oldVkDs = m_tfx_textures[TFX_TEXTURE_DEPTH] != m_null_texture.get() ?
+	                       m_tfx_textures[TFX_TEXTURE_DEPTH] : nullptr;
 
 	if (!(vkRt || vkDs || oldVkRt || oldVkDs))
 		return;
@@ -5538,10 +5556,7 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 
 	if (vkRt)
 	{
-		PSSetShaderResource(TFX_TEXTURE_RT_ROV, vkRt, true, ResourceType::UAV);
-
-		// Unbind conflicting RT texture
-		PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
+		PSSetShaderResource(TFX_TEXTURE_RT, vkRt, true, ResourceType::UAV);
 
 		// Unbind conflicting source texture
 		if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkRt)
@@ -5557,15 +5572,12 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 	else
 	{
 		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TFX_TEXTURE_RT_ROV, nullptr, false);
+		PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
 	}
 
 	if (vkDs)
 	{
-		PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, vkDs, true, ResourceType::UAV);
-
-		// Unbind conflicting depth texture
-		PSSetShaderResource(TFX_TEXTURE_DEPTH, nullptr, false);
+		PSSetShaderResource(TFX_TEXTURE_DEPTH, vkDs, true, ResourceType::UAV);
 
 		// Unbind conflicting source texture
 		if (m_tfx_textures[TFX_TEXTURE_TEXTURE] == vkDs)
@@ -5581,7 +5593,7 @@ void GSDeviceVK::PSSetROVs(GSTexture* rt, GSTexture* ds, bool write_rt, bool wri
 	else
 	{
 		// Unbind to avoid conflicts with OM targets.
-		PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
+		PSSetShaderResource(TFX_TEXTURE_DEPTH, nullptr, false);
 	}
 
 	if (IsDeviceNVIDIA() && InRenderPass())
@@ -5892,9 +5904,9 @@ __ri void GSDeviceVK::ApplyBaseState(u32 flags, VkCommandBuffer cmdbuf)
 		vkCmdSetLineWidth(cmdbuf, m_current_line_width);
 }
 
-bool GSDeviceVK::ApplyTFXState(bool already_execed)
+bool GSDeviceVK::ApplyTFXState(PipelineLayout layout, bool already_execed)
 {
-	if (m_current_pipeline_layout == PipelineLayout::TFX && m_dirty_flags == 0)
+	if (m_current_pipeline_layout == layout && m_dirty_flags == 0)
 		return true;
 
 	const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
@@ -5914,7 +5926,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			}
 
 			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of vertex uniform space");
-			return ApplyTFXState(true);
+			return ApplyTFXState(layout, true);
 		}
 
 		std::memcpy(m_vertex_uniform_stream_buffer.GetCurrentHostPointer(), &m_vs_cb_cache, sizeof(m_vs_cb_cache));
@@ -5935,7 +5947,7 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			}
 
 			ExecuteCommandBufferAndRestartRenderPass(false, "Ran out of pixel uniform space");
-			return ApplyTFXState(true);
+			return ApplyTFXState(layout, true);
 		}
 
 		std::memcpy(m_fragment_uniform_stream_buffer.GetCurrentHostPointer(), &m_ps_cb_cache, sizeof(m_ps_cb_cache));
@@ -5945,19 +5957,35 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 	}
 
 	Vulkan::DescriptorSetUpdateBuilder dsub;
-	if (m_current_pipeline_layout != PipelineLayout::TFX)
+	if (m_current_pipeline_layout != layout)
 	{
-		m_current_pipeline_layout = PipelineLayout::TFX;
-		flags |= DIRTY_FLAG_TFX_UBO | DIRTY_FLAG_TFX_TEXTURES | DIRTY_FLAG_VS_PUSH_CONSTANTS;
+		bool was_tfx = m_current_pipeline_layout == PipelineLayout::TFX || m_current_pipeline_layout == PipelineLayout::TFXROV;
+		m_current_pipeline_layout = layout;
+		flags |= DIRTY_FLAG_TFX_TEXTURES;
+		if (!was_tfx) // Pipeline layout compatibility rules say these don't have to be updated when swapping between ROV and non-ROV TFX.
+			flags |= DIRTY_FLAG_TFX_UBO | DIRTY_FLAG_VS_PUSH_CONSTANTS;
 
 		// Clear out the RT/DS binding if feedback loop isn't on, because it'll be in the wrong state and make
 		// the validation layer cranky. Not a big deal since we need to write it anyway.
 		std::array<TFX_TEXTURES, 2> texture_types = { TFX_TEXTURE_RT, TFX_TEXTURE_DEPTH };
-		for (u32 texture_type : texture_types)
+		if (layout == PipelineLayout::TFX)
 		{
-			const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
-			if (tex_layout != GSTextureVK::Layout::FeedbackLoop && tex_layout != GSTextureVK::Layout::ShaderReadOnly)
-				m_tfx_textures[texture_type] = m_null_texture.get();
+			for (u32 texture_type : texture_types)
+			{
+				const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
+				if (tex_layout != GSTextureVK::Layout::FeedbackLoop && tex_layout != GSTextureVK::Layout::ShaderReadOnly)
+					m_tfx_textures[texture_type] = m_null_texture.get();
+			}
+		}
+		else
+		{
+			pxAssert(layout == PipelineLayout::TFXROV);
+			for (u32 texture_type : texture_types)
+			{
+				const GSTextureVK::Layout tex_layout = m_tfx_textures[texture_type]->GetLayout();
+				if (tex_layout != GSTextureVK::Layout::ReadWriteImage)
+					m_tfx_textures[texture_type] = m_null_texture.get();
+			}
 		}
 	}
 
@@ -5984,9 +6012,10 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PALETTE,
 				m_tfx_textures[TFX_TEXTURE_PALETTE]->GetView(), m_tfx_textures[TFX_TEXTURE_PALETTE]->GetVkLayout());
 		}
+		bool rt_is_storage = layout == PipelineLayout::TFXROV;
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT)
 		{
-			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
+			if (!rt_is_storage && m_features.texture_barrier && !UseFeedbackLoopLayout())
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
 					VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
@@ -5994,17 +6023,12 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			else
 			{
 				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT, m_tfx_textures[TFX_TEXTURE_RT]->GetView(),
-					m_tfx_textures[TFX_TEXTURE_RT]->GetVkLayout());
+					m_tfx_textures[TFX_TEXTURE_RT]->GetVkLayout(), rt_is_storage);
 			}
-		}
-		if (flags & DIRTY_FLAG_TFX_TEXTURE_PRIMID)
-		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PRIMID,
-				m_tfx_textures[TFX_TEXTURE_PRIMID]->GetView(), m_tfx_textures[TFX_TEXTURE_PRIMID]->GetVkLayout());
 		}
 		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH)
 		{
-			if (m_features.texture_barrier && !UseFeedbackLoopLayout())
+			if (!rt_is_storage && m_features.texture_barrier && !UseFeedbackLoopLayout())
 			{
 				dsub.AddInputAttachmentDescriptorWrite(
 					VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(), VK_IMAGE_LAYOUT_GENERAL);
@@ -6012,21 +6036,17 @@ bool GSDeviceVK::ApplyTFXState(bool already_execed)
 			else
 			{
 				dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH, m_tfx_textures[TFX_TEXTURE_DEPTH]->GetView(),
-					m_tfx_textures[TFX_TEXTURE_DEPTH]->GetVkLayout());
+					m_tfx_textures[TFX_TEXTURE_DEPTH]->GetVkLayout(), rt_is_storage);
 			}
 		}
-		if (flags & DIRTY_FLAG_TFX_TEXTURE_RT_ROV)
+		if (flags & DIRTY_FLAG_TFX_TEXTURE_PRIMID && layout == PipelineLayout::TFX)
 		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_RT_ROV, m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetView(),
-				m_tfx_textures[TFX_TEXTURE_RT_ROV]->GetVkLayout(), true);
-		}
-		if (flags & DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV)
-		{
-			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_DEPTH_ROV, m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetView(),
-				m_tfx_textures[TFX_TEXTURE_DEPTH_ROV]->GetVkLayout(), true);
+			dsub.AddImageDescriptorWrite(VK_NULL_HANDLE, TFX_TEXTURE_PRIMID,
+				m_tfx_textures[TFX_TEXTURE_PRIMID]->GetView(), m_tfx_textures[TFX_TEXTURE_PRIMID]->GetVkLayout());
 		}
 
-		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_tfx_pipeline_layout, TFX_DESCRIPTOR_SET_TEXTURES);
+		VkPipelineLayout vklayout = layout == PipelineLayout::TFX ? m_tfx_pipeline_layout : m_tfx_rov_pipeline_layout;
+		dsub.PushUpdate(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, vklayout, TFX_DESCRIPTOR_SET_TEXTURES);
 	}
 
 	ApplyBaseState(flags, cmdbuf);
@@ -6170,7 +6190,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 	UploadHWDrawVerticesAndIndices(config);
 
 	// primid texture will get re-bound, so clear it since we're using push descriptors
-	PSSetShaderResource(3, m_null_texture.get(), false);
+	PSSetShaderResource(TFX_TEXTURE_PRIMID, m_null_texture.get(), false);
 
 	// cut down the configuration for the prepass, we don't need blending or any feedback loop
 	PipelineSelector& pipe = m_pipeline_selector;
@@ -6195,7 +6215,7 @@ GSTextureVK* GSDeviceVK::SetupPrimitiveTrackingDATE(GSHWDrawConfig& config)
 
 	// and bind the image to the primitive sampler
 	image->TransitionToLayout(GSTextureVK::Layout::ShaderReadOnly);
-	PSSetShaderResource(3, image, false);
+	PSSetShaderResource(TFX_TEXTURE_PRIMID, image, false);
 	return image;
 }
 
@@ -6434,7 +6454,7 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 	if (!config.tex && ((config.rt && static_cast<GSTextureVK*>(config.rt) == m_tfx_textures[0]) ||
 		(config.ds && static_cast<GSTextureVK*>(config.ds) == m_tfx_textures[0])))
 	{
-		PSSetShaderResource(0, nullptr, false);
+		PSSetShaderResource(TFX_TEXTURE_TEXTURE, nullptr, false);
 	}
 
 	// render pass restart optimizations
@@ -6476,90 +6496,81 @@ void GSDeviceVK::RenderHW(GSHWDrawConfig& config)
 		pipe.feedback_loop_flags = flags;
 	}
 
-	if (fb.rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
+	GSTextureVK* depth_for_barrier = nullptr;
+	if (pipe.Layout() == PipelineLayout::TFXROV)
 	{
-		// Requires a copy of the RT.
-		draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, fb.rt->GetFormat(), true));
-		if (draw_rt_clone)
-		{
-			GL_PUSH("VK: Copy RT to temp texture {%d,%d %dx%d}",
-				config.drawarea.left, config.drawarea.top,
-				config.drawarea.width(), config.drawarea.height());
-			EndRenderPass();
-			if (config.tex_hazard)
-			{
-				const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
-				const u32 size_union = union_rect.width() * union_rect.height();
-				const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
-				                       config.samplearea.width() * config.samplearea.height();
-
-				// Do an individual copy if the union is larger than the sum of individual areas.
-				if (size_union > size_indiv)
-				{
-					const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
-					const GSVector4i snapped_samplearea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.samplearea);
-					CopyRect(fb.rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
-					CopyRect(fb.rt, draw_rt_clone, snapped_samplearea, snapped_samplearea.left, snapped_samplearea.top);
-				}
-				else
-				{
-					CopyRect(fb.rt, draw_rt_clone, union_rect, union_rect.left, union_rect.top);
-				}
-			}
-			else
-			{
-				CopyRect(fb.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
-			}
-
-			if (config.require_one_barrier)
-				PSSetShaderResource(TFX_TEXTURE_RT, draw_rt_clone, true);
-			if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
-				PSSetShaderResource(TFX_TEXTURE_TEXTURE, draw_rt_clone, true);
-		}
-		else
-			Console.Warning("VK: Failed to allocate temp texture for RT copy.");
-	}
-
-	if (pipe.IsRTFeedbackLoop() && fb.rt)
-	{
-		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
-		PSSetShaderResource(TFX_TEXTURE_RT, fb.rt, false);
-
-		if (m_tfx_textures[TFX_TEXTURE_RT_ROV] == fb.rt)
-		{
-			// Unbind to avoid conflicts.
-			PSSetShaderResource(TFX_TEXTURE_RT_ROV, nullptr, false);
-			m_dirty_flags |= static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_RT_ROV);
-		}
-	}
-	else if (!draw_rt_clone)
-	{
-		// Unbind to avoid conflicts with framebuffer
-		PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
-	}
-	
-	GSTextureVK* depth_for_barrier = pipe.IsDepthFeedbackLoop() ?
-		(m_features.depth_feedback ? fb.ds : fb.ds_as_rt) : nullptr;
-
-	if (depth_for_barrier)
-	{
-		pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
-		PSSetShaderResource(TFX_TEXTURE_DEPTH, depth_for_barrier, false);
-
-		if (m_tfx_textures[TFX_TEXTURE_DEPTH_ROV] == depth_for_barrier)
-		{
-			// Unbind to avoid conflicts.
-			PSSetShaderResource(TFX_TEXTURE_DEPTH_ROV, nullptr, false);
-			m_dirty_flags |= static_cast<u32>(DIRTY_FLAG_TFX_TEXTURE_DEPTH_ROV);
-		}
+		PSSetROVs(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
 	}
 	else
 	{
-		// Unbind to avoid conflicts with framebuffer
-		PSSetShaderResource(TFX_TEXTURE_DEPTH, nullptr, false);
+		if (fb.rt && ((config.require_one_barrier && (config.IsFeedbackLoopRT(config.ps) || config.IsFeedbackLoopRT(config.alpha_second_pass.ps)))) && !m_features.texture_barrier)
+		{
+			// Requires a copy of the RT.
+			draw_rt_clone = static_cast<GSTextureVK*>(CreateTexture(rtsize.x, rtsize.y, 1, fb.rt->GetFormat(), true));
+			if (draw_rt_clone)
+			{
+				GL_PUSH("VK: Copy RT to temp texture {%d,%d %dx%d}",
+					config.drawarea.left, config.drawarea.top,
+					config.drawarea.width(), config.drawarea.height());
+				EndRenderPass();
+				if (config.tex_hazard)
+				{
+					const GSVector4i union_rect = config.drawarea.runion(config.samplearea);
+					const u32 size_union = union_rect.width() * union_rect.height();
+					const u32 size_indiv = config.drawarea.width() * config.drawarea.height() +
+										   config.samplearea.width() * config.samplearea.height();
+
+					// Do an individual copy if the union is larger than the sum of individual areas.
+					if (size_union > size_indiv)
+					{
+						const GSVector4i snapped_drawarea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.drawarea);
+						const GSVector4i snapped_samplearea = ProcessCopyArea(GSVector4i(0, 0, rtsize.x, rtsize.y), config.samplearea);
+						CopyRect(fb.rt, draw_rt_clone, snapped_drawarea, snapped_drawarea.left, snapped_drawarea.top);
+						CopyRect(fb.rt, draw_rt_clone, snapped_samplearea, snapped_samplearea.left, snapped_samplearea.top);
+					}
+					else
+					{
+						CopyRect(fb.rt, draw_rt_clone, union_rect, union_rect.left, union_rect.top);
+					}
+				}
+				else
+				{
+					CopyRect(fb.rt, draw_rt_clone, config.drawarea, config.drawarea.left, config.drawarea.top);
+				}
+
+				if (config.require_one_barrier)
+					PSSetShaderResource(TFX_TEXTURE_RT, draw_rt_clone, true);
+				if (config.tex_hazard == GSHWDrawConfig::TEX_HAZARD_RT)
+					PSSetShaderResource(TFX_TEXTURE_TEXTURE, draw_rt_clone, true);
+			}
+			else
+				Console.Warning("VK: Failed to allocate temp texture for RT copy.");
+		}
+
+		if (pipe.IsRTFeedbackLoop() && fb.rt)
+		{
+			pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
+			PSSetShaderResource(TFX_TEXTURE_RT, fb.rt, false);
+		}
+		else if (!draw_rt_clone)
+		{
+			// Unbind to avoid conflicts with framebuffer
+			PSSetShaderResource(TFX_TEXTURE_RT, nullptr, false);
+		}
+
+		depth_for_barrier = pipe.IsDepthFeedbackLoop() ? (m_features.depth_feedback ? fb.ds : fb.ds_as_rt) : nullptr;
+
+		if (depth_for_barrier)
+		{
+			pxAssertMsg(m_features.texture_barrier, "Texture barriers enabled");
+			PSSetShaderResource(TFX_TEXTURE_DEPTH, depth_for_barrier, false);
+		}
+		else
+		{
+			// Unbind to avoid conflicts with framebuffer
+			PSSetShaderResource(TFX_TEXTURE_DEPTH, nullptr, false);
+		}
 	}
-	
-	PSSetROVs(draw_rt_rov, draw_ds_rov, config.ps.HasColorOutput(), config.ps.HasDepthROVWrite());
 
 	fb.feedback_loop_flags = pipe.feedback_loop_flags;
 	OMSetRenderTargets(fb, config.scissor, rtsize);
