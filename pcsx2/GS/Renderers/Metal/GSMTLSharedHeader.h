@@ -90,62 +90,38 @@ struct GSMTLMainVertex
 	unsigned char fog;
 };
 
-struct GSMTLMainVSUniform
+#ifdef __METAL_VERSION__
+	#define PCSX2_MSL
+#else
+	#define PCSX2_CPP
+#endif
+
+namespace GSUniforms
 {
-	vector_float2 vertex_scale;
-	vector_float2 vertex_offset;
-	vector_float2 texture_scale;
-	vector_float2 texture_offset;
-	vector_float2 point_size;
-	uint max_depth;
-	float line_aa1_width;
-};
+#define VERTEX_SHADER
+#define PIXEL_SHADER
+	typedef vector_uint2 uint2;
+	typedef vector_uint4 uint4;
+	typedef vector_float2 float2;
+	typedef vector_float4 float4;
+	typedef matrix_float4x4 float4x4;
+	// To better match glsl/hlsl, use packed types for xxx3
+#ifdef PCSX2_MSL
+	typedef packed_uint3 uint3;
+	typedef packed_float3 float3;
+#else
+	typedef uint uint3[3];
+	typedef float float3[3];
+#endif
+	static_assert(sizeof(uint3) == 12, "Size Check");
+	static_assert(sizeof(float3) == 12, "Size Check");
+	#include "../../../../bin/resources/shaders/common/tfx_uniforms.inc"
+#undef VERTEX_SHADER
+#undef PIXEL_SHADER
+} // namespace GSUniforms
 
-struct GSMTLMainPSUniform
-{
-	union
-	{
-		vector_float4 fog_color_aref;
-		vector_float3 fog_color;
-		struct
-		{
-			float pad0[3];
-			float aref;
-		};
-	};
-	vector_float4 wh; ///< xy => PS2, zw => actual (upscaled)
-	vector_float2 ta;
-	float max_depth;
-	float alpha_fix;
-	vector_uint4 fbmask;
-
-	vector_float4 half_texel;
-	union
-	{
-		vector_float4 uv_min_max;
-		vector_uint4 uv_msk_fix;
-	};
-	vector_float4 lod_params;
-	vector_float4 st_range;
-	struct
-	{
-		unsigned int blue_mask;
-		unsigned int blue_shift;
-		unsigned int green_mask;
-		unsigned int green_shift;
-	} channel_shuffle;
-	vector_float2 channel_shuffle_offset;
-	vector_float2 tc_offset;
-	vector_float2 st_scale;
-	matrix_float4x4 dither_matrix;
-
-	vector_float4 scale_factor;
-
-	float line_cov_scale;
-	float _pad0;
-	float _pad1;
-	float _pad2;
-};
+typedef GSUniforms::VSUniform GSMTLMainVSUniform;
+typedef GSUniforms::PSUniform GSMTLMainPSUniform;
 
 enum GSMTLAttributes
 {
