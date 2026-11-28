@@ -1452,6 +1452,8 @@ void Host::SetDefaultUISettings(SettingsInterface& si)
 	si.SetBoolValue("UI", "DisableWindowResize", false);
 	si.SetBoolValue("UI", "PreferEnglishGameList", false);
 	si.SetStringValue("UI", "Theme", QtHost::GetDefaultThemeName());
+	si.SetBoolValue("UI", "ShowFavoriteIcons", true);
+	si.SetBoolValue("UI", "ShowCustomSettingsIcons", true);
 }
 
 void QtHost::SaveSettings()
