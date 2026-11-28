@@ -136,7 +136,7 @@ void psxBreakpoint(bool memcheck)
 	}
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 	Cpu->ExitExecution();
 }
 

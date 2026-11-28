@@ -307,8 +307,8 @@ static void iopRecError(int err)
 			break;
 	}
 
-	VMManager::SetPaused(true);
-	Cpu->ExitExecution();
+	VMManager::Halt();
+	Cpu->ForceExit();
 }
 
 ////////////////////////////////////////////////////
@@ -1367,7 +1367,7 @@ static bool psxDynarecCheckBreakpoint()
 		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 
 	// Exit the EE too.
 	Cpu->ExitExecution();
@@ -1394,7 +1394,7 @@ static bool psxDynarecMemcheck(size_t i)
 		return false;
 
 	CBreakPoints::SetBreakpointTriggered(true, BREAKPOINT_IOP);
-	VMManager::SetPaused(true);
+	VMManager::Pause();
 
 	// Exit the EE too.
 	Cpu->ExitExecution();
