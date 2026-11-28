@@ -47,6 +47,7 @@
 #include "fmt/format.h"
 
 #include <set>
+#include <sstream>
 
 namespace FullscreenUI
 {
