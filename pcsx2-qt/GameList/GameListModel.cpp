@@ -515,11 +515,11 @@ QIcon GameListModel::getIconForType(const GameList::EntryType type)
 	{
 		case GameList::EntryType::PS2Disc:
 		case GameList::EntryType::PS1Disc:
-			return QIcon::fromTheme("disc-2-line");
+			return QIcon::fromTheme("disc-fill");
 
 		case GameList::EntryType::ELF:
 		default:
-			return QIcon::fromTheme("file-settings-line");
+			return QIcon::fromTheme("file-settings-fill");
 	}
 }
 

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">
+  <g id="By_Kam" data-name="By Kam">
+    <line id="pe" x1="39.95" y1="129.07" x2="110.05" y2="129.07" fill="none" stroke="#fff" stroke-linecap="round" stroke-miterlimit="10" stroke-width="12"/>
+    <g id="A_B" data-name="A B">
+      <g id="B">
+        <path id="path1211" d="M106.56,80.07h-37.51" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="9"/>
+        <rect x="40.7304" y="68.76" width="32.8191" height="22.62" rx="11.31" ry="11.31" fill="#fff"/>
+      </g>
+      <g id="A">
+        <path id="path858" d="M43.44,50.11h38.71" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="9"/>
+        <rect x="78.2404" y="38.8" width="32.8191" height="22.62" rx="11.31" ry="11.31" fill="#fff"/>
+      </g>
+    </g>
+    <rect id="monitor" x="18.39" y="20.93" width="113.21" height="87.73" rx="2.83" ry="2.83" fill="none" stroke="#fff" stroke-miterlimit="10" stroke-width="12"/>
+  </g>
+</svg>

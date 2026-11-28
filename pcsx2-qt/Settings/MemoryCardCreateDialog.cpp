@@ -17,7 +17,7 @@ MemoryCardCreateDialog::MemoryCardCreateDialog(QWidget* parent /* = nullptr */)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("memcard-line")), QSize(m_ui.icon->width(), m_ui.icon->width()));
+	QtUtils::SetScalableIcon(m_ui.icon, QIcon::fromTheme(QStringLiteral("memcard-fill")), QSize(m_ui.icon->width(), m_ui.icon->width()));
 
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 

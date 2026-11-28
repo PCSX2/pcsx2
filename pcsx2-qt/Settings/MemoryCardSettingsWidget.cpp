@@ -119,7 +119,7 @@ void MemoryCardSettingsWidget::createSlotWidgets(SlotGroup* port, u32 slot)
 	connect(port->enable, &QCheckBox::checkStateChanged, this, &MemoryCardSettingsWidget::refresh);
 
 	port->eject = new QToolButton(port->root);
-	port->eject->setIcon(QIcon::fromTheme(perGame ? QStringLiteral("delete-back-2-line") : QStringLiteral("eject-line")));
+	port->eject->setIcon(QIcon::fromTheme(perGame ? QStringLiteral("delete-fill") : QStringLiteral("eject-line")));
 	port->eject->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 	port->eject->setToolTip(perGame ? tr("Reset") : tr("Eject Memory Card"));
 	connect(port->eject, &QToolButton::clicked, this, [this, slot]() { ejectSlot(slot); });
@@ -419,9 +419,9 @@ static QString getSizeSummary(const AvailableMcdInfo& mcd)
 static QIcon getCardIcon(const AvailableMcdInfo& mcd)
 {
 	if (mcd.type == MemoryCardType::File)
-		return QIcon::fromTheme(QStringLiteral("memcard-line"));
+		return QIcon::fromTheme(QStringLiteral("memcard-fill"));
 	else
-		return QIcon::fromTheme(QStringLiteral("folder-open-line"));
+		return QIcon::fromTheme(QStringLiteral("folder-open-fill"));
 }
 
 MemoryCardListWidget::MemoryCardListWidget(QWidget* parent)

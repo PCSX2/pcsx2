@@ -109,7 +109,7 @@
           <string>Apply Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="folder-open-line"/>
+          <iconset theme="folder-open-fill"/>
          </property>
         </widget>
        </item>
@@ -119,7 +119,7 @@
           <string>Rename Profile</string>
          </property>
          <property name="icon">
-          <iconset theme="pencil-line"/>
+          <iconset theme="pencil-fill"/>
          </property>
         </widget>
        </item>
@@ -139,7 +139,7 @@
           <string>Mapping Settings</string>
          </property>
          <property name="icon">
-          <iconset theme="settings-3-line"/>
+          <iconset theme="settings-fill"/>
          </property>
         </widget>
        </item>

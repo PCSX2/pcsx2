@@ -411,7 +411,7 @@
             <string>Add...</string>
            </property>
            <property name="icon">
-            <iconset theme="folder-add-line"/>
+            <iconset theme="folder-add-fill"/>
            </property>
            <property name="toolButtonStyle">
             <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -430,7 +430,7 @@
             <string>Remove</string>
            </property>
            <property name="icon">
-            <iconset theme="folder-reduce-line"/>
+            <iconset theme="folder-reduce-fill"/>
            </property>
            <property name="toolButtonStyle">
             <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
@@ -542,7 +542,7 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="controller-line">
+               <iconset theme="controller-fill">
                 <normaloff>Settings</normaloff>Settings</iconset>
               </property>
               <property name="toolButtonStyle">
@@ -612,7 +612,7 @@
                <string>Automatic Mapping</string>
               </property>
               <property name="icon">
-               <iconset theme="controller-line">
+               <iconset theme="controller-fill">
                 <normaloff>Settings</normaloff>Settings</iconset>
               </property>
               <property name="toolButtonStyle">

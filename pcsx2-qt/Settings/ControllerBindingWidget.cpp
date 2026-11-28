@@ -344,7 +344,7 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* parent)
 		m_ui.container->addWidget(m_macros[i]);
 
 		QListWidgetItem* item = new QListWidgetItem();
-		item->setIcon(QIcon::fromTheme(QStringLiteral("flashlight-line")));
+		item->setIcon(QIcon::fromTheme(QStringLiteral("lightning-fill")));
 		m_ui.portList->addItem(item);
 		updateListItem(i);
 	}
@@ -853,7 +853,7 @@ ControllerBindingWidget_Base::~ControllerBindingWidget_Base()
 
 QIcon ControllerBindingWidget_Base::getIcon() const
 {
-	return QIcon::fromTheme("controller-strike-line");
+	return QIcon::fromTheme("controller-strike-fill");
 }
 
 void ControllerBindingWidget_Base::initBindingWidgets()
@@ -945,7 +945,7 @@ ControllerBindingWidget_DualShock2::~ControllerBindingWidget_DualShock2()
 
 QIcon ControllerBindingWidget_DualShock2::getIcon() const
 {
-	return QIcon::fromTheme("controller-line");
+	return QIcon::fromTheme("controller-fill");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_DualShock2::createInstance(ControllerBindingWidget* parent)
@@ -1029,7 +1029,7 @@ ControllerBindingWidget_Popn::~ControllerBindingWidget_Popn()
 
 QIcon ControllerBindingWidget_Popn::getIcon() const
 {
-	return QIcon::fromTheme("Popn-line");
+	return QIcon::fromTheme("Popn-fill");
 }
 
 ControllerBindingWidget_Base* ControllerBindingWidget_Popn::createInstance(ControllerBindingWidget* parent)
@@ -1067,26 +1067,26 @@ USBDeviceWidget::~USBDeviceWidget() = default;
 QIcon USBDeviceWidget::getIcon() const
 {
 	static constexpr const char* icons[][2] = {
-		{"Pad", "wheel-line"}, // Wheel Device
+		{"Pad", "wheel-fill"}, // Wheel Device
 		{"Msd", "msd-line"}, // Mass Storage Device
 		{"singstar", "singstar-line"}, // Singstar
 		{"logitech_usbmic", "mic-line"}, // Logitech USB Mic
-		{"headset", "headset-line"}, // Logitech Headset Mic
-		{"hidkbd", "keyboard-2-line"}, // HID Keyboard
-		{"hidmouse", "mouse-line"}, // HID Mouse
+		{"headset", "headset-fill"}, // Logitech Headset Mic
+		{"hidkbd", "keyboard-fill"}, // HID Keyboard
+		{"hidmouse", "mouse-fill"}, // HID Mouse
 		{"RBDrumKit", "drum-line"}, // Rock Band Drum Kit
 		{"BuzzDevice", "buzz-controller-line"}, // Buzz Controller
 		{"TranceVibrator", "trance-vibrator-line"}, // Trance Vibrator
 		{"webcam", "eyetoy-line"}, // EyeToy
-		{"beatmania", "keyboard-2-line"}, // BeatMania Da Da Da!! (Konami Keyboard)
+		{"beatmania", "keyboard-fill"}, // BeatMania Da Da Da!! (Konami Keyboard)
 		{"seamic", "seamic-line"}, // SEGA Seamic
-		{"printer", "printer-line"}, // Printer
+		{"printer", "printer-fill"}, // Printer
 		{"Keyboardmania", "keyboardmania-line"}, // KeyboardMania
 		{"guncon2", "guncon2-line"}, // GunCon 2
 		{"DJTurntable", "dj-hero-line"}, // DJ Hero TurnTable
 		{"Gametrak", "gametrak-line"}, // Gametrak Device
-		{"RealPlay", "realplay-sphere-line"}, // RealPlay Device
-		{"TrainController", "train-line"} // Train Controller
+		{"RealPlay", "realplay-sphere-fill"}, // RealPlay Device
+		{"TrainController", "train-fill"} // Train Controller
 	};
 
 	for (size_t i = 0; i < std::size(icons); i++)
@@ -1305,7 +1305,7 @@ USBBindingWidget::~USBBindingWidget()
 
 QIcon USBBindingWidget::getIcon() const
 {
-	return QIcon::fromTheme("controller-strike-line");
+	return QIcon::fromTheme("controller-strike-fill");
 }
 
 std::string USBBindingWidget::getBindingKey(const char* binding_name) const

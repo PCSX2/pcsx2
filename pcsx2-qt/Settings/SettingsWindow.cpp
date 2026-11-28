@@ -82,14 +82,14 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 		if (game)
 		{
 			addWidget(new GameSummaryWidget(game, this, m_ui.settingsContainer), tr("Summary"),
-				QStringLiteral("file-list-line"), std::move(summary));
+				QStringLiteral("clipboard-list-fill"), std::move(summary));
 		}
 		else
 		{
 			QLabel* placeholder_label =
 				new QLabel(tr("Summary is unavailable for files not present in game list."), m_ui.settingsContainer);
 			placeholder_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-			addWidget(placeholder_label, tr("Summary"), QStringLiteral("file-list-line"), std::move(summary));
+			addWidget(placeholder_label, tr("Summary"), QStringLiteral("clipboard-list-fill"), std::move(summary));
 		}
 
 		m_ui.restoreDefaultsButton->setVisible(false);
@@ -111,7 +111,7 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	}
 
 	addWidget(m_interface_settings = new InterfaceSettingsWidget(this, m_ui.settingsContainer), tr("Interface"),
-		QStringLiteral("interface-line"),
+		QStringLiteral("interface-fill"),
 		tr("<strong>Interface Settings</strong><hr>These options control how the software looks and behaves.<br><br>Mouse over an option "
 		   "for additional information, and Shift+Wheel to scroll this panel."));
 
@@ -119,10 +119,10 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	if (!isPerGameSettings())
 	{
 		addWidget(m_game_list_settings = new GameListSettingsWidget(this, m_ui.settingsContainer), tr("Game List"),
-			QStringLiteral("folder-open-line"),
+			QStringLiteral("folder-open-fill"),
 			tr("<strong>Game List Settings</strong><hr>The list above shows the directories which will be searched by PCSX2 to populate "
 			   "the game list. Search directories can be added, removed, and switched to recursive/non-recursive."));
-		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
+		addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-fill"),
 			tr("<strong>BIOS Settings</strong><hr>Configure your BIOS here.<br><br>Mouse over an option for additional information, "
 			   "and Shift+Wheel to scroll this panel."));
 	}
@@ -136,11 +136,11 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	if (isPerGameSettings())
 	{
 		addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(this, m_ui.settingsContainer),
-			tr("Patches"), QStringLiteral("band-aid-line"),
+			tr("Patches"), QStringLiteral("bandage-fill"),
 			tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
 			   "which may provide performance, visual, or gameplay improvements."));
 		addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(this, m_ui.settingsContainer),
-			tr("Cheats"), QStringLiteral("cheats-line"),
+			tr("Cheats"), QStringLiteral("cheats-fill"),
 			tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. You "
 			   "cannot enable/disable cheats without labels for old-format pnach files, those will automatically "
 			   "activate if the main cheat enable option is checked."));
@@ -159,14 +159,14 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 		tr("<strong>Graphics Settings</strong><hr>These options determine the configuration of the graphical output.<br><br>Mouse over an "
 		   "option for additional information, and Shift+Wheel to scroll this panel."));
 	addWidget(m_osd_settings = new OSDSettingsWidget(this, m_ui.settingsContainer), tr("On-Screen Display"),
-		QStringLiteral("heart-circle-line"),
+		QStringLiteral("dashboard-fill"),
 		tr("<strong>On-Screen Display Settings</strong><hr>These options control the on-screen display (OSD) overlays shown during gameplay.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
-	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-line"),
+	addWidget(m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"), QStringLiteral("volume-up-fill"),
 		tr("<strong>Audio Settings</strong><hr>These options control the audio output of the console.<br><br>Mouse over an option for "
 		   "additional information, and Shift+Wheel to scroll this panel."));
 
 	addWidget(m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
-		QStringLiteral("memcard-line"),
+		QStringLiteral("memcard-fill"),
 		tr("<strong>Memory Card Settings</strong><hr>Create and configure Memory Cards here.<br><br>Mouse over an option for "
 		   "additional information, and Shift+Wheel to scroll this panel."));
 
@@ -177,13 +177,13 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	if (!isPerGameSettings())
 	{
 		addWidget(m_folder_settings = new FolderSettingsWidget(this, m_ui.settingsContainer), tr("Folders"),
-			QStringLiteral("folder-settings-line"),
+			QStringLiteral("folder-settings-fill"),
 			tr("<strong>Folder Settings</strong><hr>These options control where PCSX2 will save runtime data files."));
 	}
 
 	{
 		QString title = tr("Achievements");
-		QString icon_text(QStringLiteral("trophy-line"));
+		QString icon_text(QStringLiteral("trophy-fill"));
 		QString help_text =
 			tr("<strong>Achievements Settings</strong><hr>"
 			   "These options control the RetroAchievements implementation in PCSX2, allowing you to earn achievements in your games.");
@@ -204,11 +204,11 @@ void SettingsWindow::setupUi(const GameList::Entry* game)
 	if (show_advanced_settings)
 	{
 		addWidget(m_advanced_settings = new AdvancedSettingsWidget(this, m_ui.settingsContainer), tr("Advanced"),
-			QStringLiteral("warning-line"),
+			QStringLiteral("warning-fill"),
 			tr("<strong>Advanced Settings</strong><hr>These are advanced options to determine the configuration of the simulated "
 			   "console.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
 		addWidget(m_debug_settings = new DebugSettingsWidget(this, m_ui.settingsContainer), tr("Debug"),
-			QStringLiteral("bug-line"),
+			QStringLiteral("bug-fill"),
 			tr("<strong>Debug Settings</strong><hr>These are options which can be used to log internal information about the application. "
 			   "<strong>Do not modify unless you know what you are doing</strong>, it will cause significant slowdown, and can waste large "
 			   "amounts of disk space."));

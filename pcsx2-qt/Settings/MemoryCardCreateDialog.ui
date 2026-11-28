@@ -40,7 +40,7 @@
         </size>
        </property>
        <property name="pixmap">
-        <pixmap resource="../resources/resources.qrc">:/icons/black/svg/memcard-line.svg</pixmap>
+        <pixmap resource="../resources/resources.qrc">:/icons/black/svg/memcard-fill.svg</pixmap>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>

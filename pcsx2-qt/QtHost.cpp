@@ -1102,10 +1102,10 @@ void EmuThread::updatePerformanceMetrics(bool force)
 		if (limiter_mode != m_last_limiter_mode || force)
 		{
 			QMetaObject::invokeMethod(g_main_window, [limiter_mode]() { g_main_window->getStatusSpeedWidget()->setIcon(QIcon::fromTheme(
-																			limiter_mode == LimiterModeType::Turbo     ? QStringLiteral("fast-forward-line") :
+																			limiter_mode == LimiterModeType::Turbo     ? QStringLiteral("fast-forward-fill") :
 																			limiter_mode == LimiterModeType::Slomo     ? QStringLiteral("slow-mo") :
-																			limiter_mode == LimiterModeType::Unlimited ? QStringLiteral("speed-line") :
-																														 QStringLiteral("dashboard-line"))); }, Qt::QueuedConnection);
+																			limiter_mode == LimiterModeType::Unlimited ? QStringLiteral("speed-line-fill") :
+																														 QStringLiteral("dashboard-fill"))); }, Qt::QueuedConnection);
 			m_last_limiter_mode = limiter_mode;
 		}
 	}

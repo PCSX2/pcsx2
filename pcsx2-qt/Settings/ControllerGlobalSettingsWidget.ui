@@ -171,7 +171,7 @@
            <string>Controller LED Settings</string>
           </property>
           <property name="icon">
-           <iconset theme="lightbulb-line"/>
+           <iconset theme="lightbulb-fill"/>
           </property>
          </widget>
         </item>

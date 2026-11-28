@@ -14,7 +14,7 @@ CoverDownloadDialog::CoverDownloadDialog(QWidget* parent /*= nullptr*/)
 	: QDialog(parent)
 {
 	m_ui.setupUi(this);
-	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-2-line")), QSize(32, 32));
+	QtUtils::SetScalableIcon(m_ui.coverIcon, QIcon::fromTheme(QStringLiteral("artboard-line")), QSize(32, 32));
 	updateEnabled();
 
 	connect(m_ui.start, &QPushButton::clicked, this, &CoverDownloadDialog::onStartClicked);
