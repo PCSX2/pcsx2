@@ -79,7 +79,7 @@ namespace GameList
 	static void RewriteCacheFile();
 
 	static std::string GetPlayedTimeFile();
-	static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
+	static bool ParsePlayedTimeLine(const char* line, std::string& serial, PlayedTimeEntry& entry);
 	static std::string MakePlayedTimeLine(const std::string& serial, const PlayedTimeEntry& entry);
 	static PlayedTimeMap LoadPlayedTimeMap(const std::string& path);
 	static PlayedTimeEntry UpdatePlayedTimeFile(
@@ -262,7 +262,7 @@ bool GameList::GetIsoSerialAndCRC(const std::string& path, s32* disc_type, std::
 	CDVD = &CDVDapi_Iso;
 	if (!CDVD->open(path, &error))
 	{
-		Console.Error(fmt::format("(GameList::GetIsoSerialAndCRC) CDVD open of '{}' failed: {}", path, error.GetDescription()));
+		ERROR_LOG("(GameList::GetIsoSerialAndCRC) CDVD open of '{}' failed: {}", path, error.GetDescription());
 		return false;
 	}
 
@@ -278,7 +278,7 @@ bool GameList::GetElfListEntry(const std::string& path, GameList::Entry* entry)
 	// Avoid loading the whole file into memory in one go.
 	if (!ElfObject::ReadAndGetCRC(path.c_str(), &entry->crc, &entry->total_size))
 	{
-		Console.Error("Failed to parse ELF '%s'", path.c_str());
+		ERROR_LOG("Failed to parse ELF '{}'", path);
 		return false;
 	}
 
@@ -438,7 +438,7 @@ bool GameList::GetIsoListEntry(const std::string& path, GameList::Entry* entry)
 
 bool GameList::PopulateEntryFromPath(const std::string& path, GameList::Entry* entry)
 {
-	if (VMManager::IsElfFileName(path.c_str()))
+	if (VMManager::IsElfFileName(path))
 		return GetElfListEntry(path, entry);
 	else
 		return GetIsoListEntry(path, entry);
@@ -513,7 +513,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 		FileSystem::FSeek64(stream, 0, SEEK_END) != 0 || (file_size = FileSystem::FTell64(stream)) < 0 ||
 		FileSystem::FSeek64(stream, start_pos, SEEK_SET) != 0)
 	{
-		Console.Warning("Game list cache is corrupted");
+		WARNING_LOG("Game list cache is corrupted");
 		return false;
 	}
 
@@ -533,7 +533,7 @@ bool GameList::LoadEntriesFromCache(std::FILE* stream)
 			region >= static_cast<u8>(Region::Count) || type >= static_cast<u8>(EntryType::Count) ||
 			compatibility_rating > static_cast<u8>(CompatibilityRating::Perfect))
 		{
-			Console.Warning("Game list cache entry is corrupted");
+			WARNING_LOG("Game list cache entry is corrupted");
 			return false;
 		}
 
@@ -567,7 +567,7 @@ void GameList::LoadCache()
 
 	if (!LoadEntriesFromCache(stream.get()))
 	{
-		Console.Warning("Deleting corrupted cache file '%s'", cache_filename.c_str());
+		WARNING_LOG("Deleting corrupted cache file '{}'", cache_filename);
 		stream.reset();
 		s_cache_map.clear();
 		DeleteCacheFile();
@@ -597,7 +597,7 @@ bool GameList::OpenCacheForWriting()
 		std::fclose(s_cache_write_stream);
 	}
 
-	Console.WriteLn("Creating new game list cache file: '%s'", cache_filename.c_str());
+	Console.WriteLnFmt("Creating new game list cache file: '{}'", cache_filename);
 
 	s_cache_write_stream = FileSystem::OpenCFile(cache_filename.c_str(), "w+b");
 	if (!s_cache_write_stream)
@@ -607,7 +607,7 @@ bool GameList::OpenCacheForWriting()
 	// new cache file, write header
 	if (!WriteU32(s_cache_write_stream, GAME_LIST_CACHE_SIGNATURE) || !WriteU32(s_cache_write_stream, GAME_LIST_CACHE_VERSION))
 	{
-		Console.Error("Failed to write game list cache header");
+		ERROR_LOG("Failed to write game list cache header");
 		std::fclose(s_cache_write_stream);
 		s_cache_write_stream = nullptr;
 		FileSystem::DeleteFilePath(cache_filename.c_str());
@@ -657,9 +657,9 @@ void GameList::DeleteCacheFile()
 		return;
 
 	if (FileSystem::DeleteFilePath(cache_filename.c_str()))
-		Console.WriteLn("Deleted game list cache '%s'", cache_filename.c_str());
+		Console.WriteLnFmt("Deleted game list cache '{}'", cache_filename);
 	else
-		Console.Warning("Failed to delete game list cache '%s'", cache_filename.c_str());
+		WARNING_LOG("Failed to delete game list cache '{}'", cache_filename);
 }
 
 void GameList::RewriteCacheFile()
@@ -684,7 +684,7 @@ static bool IsPathExcluded(const std::vector<std::string>& excluded_paths, const
 void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache, const std::vector<std::string>& excluded_paths,
 	const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini, ProgressCallback* progress)
 {
-	Console.WriteLn("Scanning %s%s", path, recursive ? " (recursively)" : "");
+	Console.WriteLnFmt("Scanning {}{}", path, recursive ? " (recursively)" : "");
 
 	progress->PushState();
 
@@ -761,7 +761,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 	// don't block UI while scanning
 	lock.unlock();
 
-	DevCon.WriteLn("Scanning '%s'...", path.c_str());
+	DevCon.WriteLnFmt("Scanning '{}'...", path);
 
 	Entry entry;
 	if (!PopulateEntryFromPath(path, &entry))
@@ -772,7 +772,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 	if (s_cache_write_stream || OpenCacheForWriting())
 	{
 		if (!WriteEntryToCache(&entry))
-			Console.Warning("Failed to write entry '%s' to cache", entry.path.c_str());
+			WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
 	}
 
 	if (entry.type == EntryType::Invalid)
@@ -984,12 +984,12 @@ std::string GameList::GetPlayedTimeFile()
 	return Path::Combine(EmuFolders::Settings, "playtime.dat");
 }
 
-bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry)
+bool GameList::ParsePlayedTimeLine(const char* line, std::string& serial, PlayedTimeEntry& entry)
 {
 	size_t len = std::strlen(line);
 	if (len != (PLAYED_TIME_LINE_LENGTH + 1)) // \n
 	{
-		Console.Warning("(ParsePlayedTimeLine) Malformed line: '%s'", line);
+		WARNING_LOG("(ParsePlayedTimeLine) Malformed line: '{}'", line);
 		return false;
 	}
 
@@ -1003,7 +1003,7 @@ bool GameList::ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEn
 	const std::optional<u64> last_played_time(StringUtil::FromChars<u64>(last_played_time_tok));
 	if (serial_tok.empty() || !last_played_time.has_value() || !total_played_time.has_value())
 	{
-		Console.Warning("(ParsePlayedTimeLine) Malformed line: '%s'", line);
+		WARNING_LOG("(ParsePlayedTimeLine) Malformed line: '{}'", line);
 		return false;
 	}
 
@@ -1051,7 +1051,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
 
 			if (ret.find(serial) != ret.end())
 			{
-				Console.Warning("(LoadPlayedTimeMap) Duplicate entry: '%s'", serial.c_str());
+				WARNING_LOG("(LoadPlayedTimeMap) Duplicate entry: '{}'", serial);
 				continue;
 			}
 
@@ -1084,7 +1084,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(
 
 	if (!fp)
 	{
-		Console.Error("Failed to open '%s' for update.", path.c_str());
+		ERROR_LOG("Failed to open '{}' for update.", path);
 		return new_entry;
 	}
 
@@ -1115,7 +1115,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(
 		if (FileSystem::FSeek64(fp.get(), line_pos, SEEK_SET) != 0 || std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1 ||
 			std::fflush(fp.get()) != 0)
 		{
-			Console.Error("Failed to update '%s'.", path.c_str());
+			ERROR_LOG("Failed to update '{}'.", path);
 		}
 
 		return line_entry;
@@ -1127,7 +1127,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(
 		std::string new_line(MakePlayedTimeLine(serial, new_entry));
 		if (FileSystem::FSeek64(fp.get(), 0, SEEK_END) != 0 || std::fwrite(new_line.data(), new_line.length(), 1, fp.get()) != 1)
 		{
-			Console.Error("Failed to write '%s'.", path.c_str());
+			ERROR_LOG("Failed to write '{}'.", path);
 		}
 	}
 
@@ -1140,8 +1140,7 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
 		return;
 
 	const PlayedTimeEntry pt(UpdatePlayedTimeFile(GetPlayedTimeFile(), serial, last_time, add_time));
-	Console.WriteLn("Add %u seconds play time to %s -> now %u", static_cast<unsigned>(add_time), serial.c_str(),
-		static_cast<unsigned>(pt.total_played_time));
+	Console.WriteLnFmt("Add {} seconds play time to {} -> now {}", add_time, serial, pt.total_played_time);
 
 	std::unique_lock<std::recursive_mutex> lock(s_mutex);
 	for (GameList::Entry& entry : s_entries)

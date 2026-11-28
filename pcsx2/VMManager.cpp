@@ -2466,7 +2466,14 @@ bool VMManager::ChangeGSDump(const std::string& path)
 
 bool VMManager::IsElfFileName(const std::string_view path)
 {
-	return StringUtil::EndsWithNoCase(path, ".elf");
+	if (StringUtil::EndsWithNoCase(path, ".elf"))
+		return true;
+
+	// Also accept any file with a 2-digit extension
+	const std::string_view extension = Path::GetExtension(path);
+	return extension.length() == 2 &&
+			extension[0] >= '0' && extension[0] <= '9' &&
+			extension[1] >= '0' && extension[1] <= '9';
 }
 
 bool VMManager::IsBlockDumpFileName(const std::string_view path)
